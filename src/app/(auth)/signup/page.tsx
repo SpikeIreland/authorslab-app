@@ -95,9 +95,10 @@ export default function SignupPage() {
         router.push('/onboarding')
         router.refresh()
       }
-    } catch (err: any) {
-      console.error('Signup error:', err)
-      setError(err.message || 'Failed to create account. Please try again.')
+    } catch (err) {
+      const error = err as Error
+      console.error('Signup error:', error)
+      setError(error.message || 'Failed to create account. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -236,7 +237,7 @@ export default function SignupPage() {
               className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-900 focus:ring-blue-900"
             />
             <label htmlFor="marketing" className="text-sm text-gray-600">
-              I'd like to receive updates about new features, writing tips, and publishing opportunities
+              I&apos;d like to receive updates about new features, writing tips, and publishing opportunities
             </label>
           </div>
         </div>
