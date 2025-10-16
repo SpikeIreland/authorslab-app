@@ -9,7 +9,7 @@ export default function HowItWorksPage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-blue-900 to-blue-700 bg-clip-text text-transparent">
-              📚 AuthorLab.ai
+              📚 AuthorsLab.ai
             </Link>
             <div className="flex items-center gap-6">
               <Link href="/how-it-works" className="text-gray-700 hover:text-blue-900 font-semibold">
@@ -17,6 +17,12 @@ export default function HowItWorksPage() {
               </Link>
               <Link href="/pricing" className="text-gray-700 hover:text-blue-900 font-semibold">
                 Pricing
+              </Link>
+              <Link href="/editors" className="text-gray-700 hover:text-blue-900 font-semibold">
+                Our Editors
+              </Link>
+              <Link href="/faq" className="text-gray-700 hover:text-blue-900 font-semibold">
+                FAQ
               </Link>
               <Link href="/login" className="text-gray-700 hover:text-blue-900 font-semibold">
                 Sign In
@@ -53,7 +59,7 @@ export default function HowItWorksPage() {
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
-            
+
             {/* Phase 1: Developmental Editing */}
             <div className="mb-20">
               <div className="flex items-center gap-4 mb-6">
@@ -65,7 +71,7 @@ export default function HowItWorksPage() {
                   <p className="text-green-600 font-semibold">Story Structure & Big Picture</p>
                 </div>
               </div>
-              
+
               <div className="bg-green-50 rounded-2xl p-8 border-2 border-green-200">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">What Happens in Phase 1:</h3>
                 <div className="grid md:grid-cols-2 gap-6">
@@ -131,7 +137,7 @@ export default function HowItWorksPage() {
                   <p className="text-purple-600 font-semibold">Prose Polish & Flow</p>
                 </div>
               </div>
-              
+
               <div className="bg-purple-50 rounded-2xl p-8 border-2 border-purple-200">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">What Happens in Phase 2:</h3>
                 <div className="grid md:grid-cols-2 gap-6">
@@ -197,7 +203,7 @@ export default function HowItWorksPage() {
                   <p className="text-red-600 font-semibold">Grammar & Technical Accuracy</p>
                 </div>
               </div>
-              
+
               <div className="bg-red-50 rounded-2xl p-8 border-2 border-red-200">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">What Happens in Phase 3:</h3>
                 <div className="grid md:grid-cols-2 gap-6">
@@ -263,7 +269,7 @@ export default function HowItWorksPage() {
                   <p className="text-yellow-600 font-semibold">Format & Launch</p>
                 </div>
               </div>
-              
+
               <div className="bg-yellow-50 rounded-2xl p-8 border-2 border-yellow-200">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">What Happens in Phase 4:</h3>
                 <div className="grid md:grid-cols-2 gap-6">
@@ -330,7 +336,7 @@ export default function HowItWorksPage() {
             <p className="text-xl text-gray-600 mb-12">
               From manuscript upload to published book
             </p>
-            
+
             <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
               <div className="grid md:grid-cols-4 gap-8">
                 <div>
@@ -350,7 +356,7 @@ export default function HowItWorksPage() {
                   <div className="text-sm text-gray-600">Phase 4</div>
                 </div>
               </div>
-              
+
               <div className="mt-8 pt-8 border-t border-gray-200">
                 <div className="text-4xl font-bold text-blue-900 mb-2">10-16 days</div>
                 <div className="text-gray-600">Average total time to publication-ready</div>

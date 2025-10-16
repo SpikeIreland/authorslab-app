@@ -9,7 +9,7 @@ export default function EditorsPage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-blue-900 to-blue-700 bg-clip-text text-transparent">
-              📚 AuthorLab.ai
+              📚 AuthorsLab.ai
             </Link>
             <div className="flex items-center gap-6">
               <Link href="/how-it-works" className="text-gray-700 hover:text-blue-900 font-semibold">
@@ -20,6 +20,9 @@ export default function EditorsPage() {
               </Link>
               <Link href="/editors" className="text-blue-900 font-semibold border-b-2 border-blue-900">
                 Our Editors
+              </Link>
+              <Link href="/faq" className="text-gray-700 hover:text-blue-900 font-semibold">
+                FAQ
               </Link>
               <Link href="/login" className="text-gray-700 hover:text-blue-900 font-semibold">
                 Sign In
