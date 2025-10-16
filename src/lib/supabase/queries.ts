@@ -1,270 +1,220 @@
-import { createClient } from './client'
+'use client'
 
-const supabase = createClient()
+import { useState, FormEvent } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
+import { createAuthorProfile } from '@/lib/supabase/queries'
 
-export interface AuthorProfile {
-  id: string
-  auth_user_id: string
-  first_name: string
-  last_name: string
-  email: string
-  onboarding_complete: boolean
-}
+export default function SignupPage() {
+  const router = useRouter()
+  const supabase = createClient()
+  
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
 
-export interface Manuscript {
-  id: string
-  author_id: string
-  title: string
-  genre: string
-  current_word_count: number
-  total_chapters: number
-  expected_chapters: number
-  has_prologue: boolean
-  has_epilogue: boolean
-  portal_phase: number
-  status: string
-  full_text: string
-  created_at: string
-  updated_at: string
-}
+  async function handleSignup(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setIsLoading(true)
+    setError('')
 
-export interface Chapter {
-  id: number
-  manuscript_id: string
-  chapter_number: number
-  title: string
-  content: string
-  word_count: number
-  status: string
-  created_at: string
-  updated_at: string
-}
+    // Validation
+    if (password !== confirmPassword) {
+      setError('Passwords do not match')
+      setIsLoading(false)
+      return
+    }
 
-export interface ManuscriptScores {
-  id: string
-  manuscript_id: string
-  structural: number
-  character_score: number
-  plot: number
-  pacing: number
-  thematic: number
-  analysis_date: string
-}
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters')
+      setIsLoading(false)
+      return
+    }
 
-// Get author profile by auth user ID
-export async function getAuthorProfile(authUserId: string) {
-  const { data, error } = await supabase
-    .from('author_profiles')
-    .select('*')
-    .eq('auth_user_id', authUserId)
-    .single()
+    try {
+      // Step 1: Sign up with Supabase Auth
+      const { data: authData, error: signupError } = await supabase.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+          data: {
+            firstName: firstName,
+            lastName: lastName
+          },
+          emailRedirectTo: `${window.location.origin}/api/auth/callback`
+        }
+      })
 
-  if (error) throw error
-  return data as AuthorProfile
-}
+      if (signupError) throw signupError
 
-// Create author profile
-export async function createAuthorProfile(profile: {
-  auth_user_id: string
-  email: string
-  first_name: string
-  last_name: string
-}) {
-  const { data, error } = await supabase
-    .from('author_profiles')
-    .insert({
-      ...profile,
-      onboarding_complete: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    })
-    .select()
-    .single()
+      if (!authData.user) {
+        throw new Error('Signup failed - no user returned')
+      }
 
-  if (error) throw error
-  return data as AuthorProfile
-}
+      console.log('✅ Auth user created:', authData.user.id)
 
-// Update author profile
-export async function updateAuthorProfile(
-  authUserId: string, 
-  updates: Partial<AuthorProfile>
-) {
-  const { data, error } = await supabase
-    .from('author_profiles')
-    .update({
-      ...updates,
-      updated_at: new Date().toISOString()
-    })
-    .eq('auth_user_id', authUserId)
-    .select()
-    .single()
+      // Step 2: Create author profile (trigger should handle this, but we'll ensure it exists)
+      try {
+        await createAuthorProfile({
+          auth_user_id: authData.user.id,
+          email: email,
+          first_name: firstName,
+          last_name: lastName
+        })
+        console.log('✅ Author profile created')
+      } catch (profileError: unknown) {
+        // Profile might already exist from trigger - that's okay
+        console.log('Author profile creation:', profileError)
+      }
 
-  if (error) throw error
-  return data as AuthorProfile
-}
+      // Step 3: Store in localStorage for immediate access
+      localStorage.setItem('currentUserId', authData.user.id)
+      localStorage.setItem('currentUserEmail', email)
+      localStorage.setItem('currentUserFirstName', firstName)
+      localStorage.setItem('currentUserLastName', lastName)
 
-// Get manuscripts by author
-export async function getManuscriptsByAuthor(authorId: string) {
-  const { data, error } = await supabase
-    .from('manuscripts')
-    .select('*')
-    .eq('author_id', authorId)
-    .order('updated_at', { ascending: false })
+      console.log('✅ Redirecting to onboarding...')
 
-  if (error) throw error
-  return data as Manuscript[]
-}
+      // Step 4: Redirect to onboarding
+      router.push(
+        `/onboarding?userId=${authData.user.id}&firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&email=${encodeURIComponent(email)}`
+      )
 
-// Get single manuscript
-export async function getManuscript(manuscriptId: string) {
-  const { data, error } = await supabase
-    .from('manuscripts')
-    .select('*')
-    .eq('id', manuscriptId)
-    .single()
+    } catch (error: unknown) {
+      console.error('Signup error:', error)
+      if (error instanceof Error) {
+        setError(error.message)
+      } else {
+        setError('An error occurred during signup')
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
-  if (error) throw error
-  return data as Manuscript
-}
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center p-6">
+      <div className="bg-white rounded-3xl shadow-2xl p-10 w-full max-w-md">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Create Account</h1>
+          <p className="text-gray-600">Join AuthorsLab.ai and start your writing journey</p>
+        </div>
 
-// Create manuscript
-export async function createManuscript(manuscript: {
-  author_id: string
-  title: string
-  genre: string
-  current_word_count: number
-  full_text: string
-  total_chapters?: number
-  expected_chapters?: number
-  has_prologue?: boolean
-  has_epilogue?: boolean
-}) {
-  const { data, error } = await supabase
-    .from('manuscripts')
-    .insert({
-      ...manuscript,
-      portal_phase: 1,
-      status: 'active',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    })
-    .select()
-    .single()
+        {error && (
+          <div className="bg-red-50 border-2 border-red-500 text-red-900 px-4 py-3 rounded-xl mb-6">
+            {error}
+          </div>
+        )}
 
-  if (error) throw error
-  return data as Manuscript
-}
+        <form onSubmit={handleSignup} className="space-y-5">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700 mb-2">
+                First Name
+              </label>
+              <input
+                type="text"
+                id="firstName"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition-all"
+                placeholder="John"
+              />
+            </div>
 
-// Update manuscript
-export async function updateManuscript(
-  manuscriptId: string,
-  updates: Partial<Manuscript>
-) {
-  const { data, error } = await supabase
-    .from('manuscripts')
-    .update({
-      ...updates,
-      updated_at: new Date().toISOString()
-    })
-    .eq('id', manuscriptId)
-    .select()
-    .single()
+            <div>
+              <label htmlFor="lastName" className="block text-sm font-semibold text-gray-700 mb-2">
+                Last Name
+              </label>
+              <input
+                type="text"
+                id="lastName"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                required
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition-all"
+                placeholder="Doe"
+              />
+            </div>
+          </div>
 
-  if (error) throw error
-  return data as Manuscript
-}
+          <div>
+            <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+              Email
+            </label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition-all"
+              placeholder="you@example.com"
+            />
+          </div>
 
-// Get chapters by manuscript
-export async function getChaptersByManuscript(manuscriptId: string) {
-  const { data, error } = await supabase
-    .from('chapters')
-    .select('*')
-    .eq('manuscript_id', manuscriptId)
-    .order('chapter_number', { ascending: true })
+          <div>
+            <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+              Password
+            </label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition-all"
+              placeholder="••••••••"
+            />
+          </div>
 
-  if (error) throw error
-  return data as Chapter[]
-}
+          <div>
+            <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-2">
+              Confirm Password
+            </label>
+            <input
+              type="password"
+              id="confirmPassword"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              minLength={6}
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition-all"
+              placeholder="••••••••"
+            />
+          </div>
 
-// Create chapter
-export async function createChapter(chapter: {
-  manuscript_id: string
-  chapter_number: number
-  title: string
-  content: string
-  word_count: number
-}) {
-  const { data, error } = await supabase
-    .from('chapters')
-    .insert({
-      ...chapter,
-      status: 'draft',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    })
-    .select()
-    .single()
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? 'Creating Account...' : 'Sign Up'}
+          </button>
+        </form>
 
-  if (error) throw error
-  return data as Chapter
-}
+        <div className="mt-6 text-center">
+          <p className="text-gray-600">
+            Already have an account?{' '}
+            <Link href="/login" className="text-blue-600 font-semibold hover:text-blue-700">
+              Log In
+            </Link>
+          </p>
+        </div>
 
-// Update chapter
-export async function updateChapter(
-  chapterId: number,
-  updates: Partial<Chapter>
-) {
-  const { data, error } = await supabase
-    .from('chapters')
-    .update({
-      ...updates,
-      updated_at: new Date().toISOString()
-    })
-    .eq('id', chapterId)
-    .select()
-    .single()
-
-  if (error) throw error
-  return data as Chapter
-}
-
-// Get manuscript scores
-export async function getManuscriptScores(manuscriptId: string) {
-  const { data, error } = await supabase
-    .from('manuscript_scores')
-    .select('*')
-    .eq('manuscript_id', manuscriptId)
-    .order('analysis_date', { ascending: false })
-    .limit(1)
-    .single()
-
-  if (error && error.code !== 'PGRST116') throw error // PGRST116 = no rows returned
-  return data as ManuscriptScores | null
-}
-
-// Create or update manuscript scores
-export async function upsertManuscriptScores(scores: {
-  manuscript_id: string
-  structural: number
-  character_score: number
-  plot: number
-  pacing: number
-  thematic: number
-}) {
-  const { data, error } = await supabase
-    .from('manuscript_scores')
-    .upsert({
-      ...scores,
-      analysis_date: new Date().toISOString(),
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }, {
-      onConflict: 'manuscript_id'
-    })
-    .select()
-    .single()
-
-  if (error) throw error
-  return data as ManuscriptScores
+        <div className="mt-6 pt-6 border-t border-gray-200 text-center">
+          <Link href="/" className="text-gray-600 hover:text-gray-900 font-medium">
+            ← Back to Home
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
 }

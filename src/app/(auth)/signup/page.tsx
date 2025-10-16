@@ -1,251 +1,220 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { AuthFormWrapper } from '@/components/auth/AuthFormWrapper'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { createAuthorProfile } from '@/lib/supabase/queries'
 
 export default function SignupPage() {
   const router = useRouter()
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    password: '',
-    confirmPassword: '',
-  })
-  const [acceptedTerms, setAcceptedTerms] = useState(false)
-  const [marketingEmails, setMarketingEmails] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [passwordStrength, setPasswordStrength] = useState(0)
+  const supabase = createClient()
+  
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-
-    // Calculate password strength
-    if (name === 'password') {
-      let strength = 0
-      if (value.length >= 8) strength++
-      if (value.match(/[a-z]+/)) strength++
-      if (value.match(/[A-Z]+/)) strength++
-      if (value.match(/[0-9]+/)) strength++
-      if (value.match(/[^a-zA-Z0-9]+/)) strength++
-      setPasswordStrength(strength)
-    }
-  }
-
-  const getPasswordStrengthLabel = () => {
-    const labels = ['', 'Very Weak', 'Weak', 'Fair', 'Good', 'Strong']
-    const colors = ['', 'text-red-600', 'text-red-500', 'text-yellow-600', 'text-green-500', 'text-green-600']
-    return { label: labels[passwordStrength], color: colors[passwordStrength] }
-  }
-
-  const handleSignup = async (e: React.FormEvent) => {
+  async function handleSignup(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    setError(null)
+    setIsLoading(true)
+    setError('')
 
     // Validation
-    if (formData.password !== formData.confirmPassword) {
+    if (password !== confirmPassword) {
       setError('Passwords do not match')
+      setIsLoading(false)
       return
     }
 
-    if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters')
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters')
+      setIsLoading(false)
       return
     }
-
-    if (!acceptedTerms) {
-      setError('Please accept the Terms of Service')
-      return
-    }
-
-    setLoading(true)
 
     try {
-      const supabase = createClient()
-
-      // Sign up with Supabase Auth
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
+      // Step 1: Sign up with Supabase Auth
+      const { data: authData, error: signupError } = await supabase.auth.signUp({
+        email: email,
+        password: password,
         options: {
           data: {
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            phone: formData.phone,
-            marketing_emails: marketingEmails,
+            firstName: firstName,
+            lastName: lastName
           },
-          emailRedirectTo: `${window.location.origin}/api/auth/callback`,
-        },
+          emailRedirectTo: `${window.location.origin}/api/auth/callback`
+        }
       })
 
-      if (signUpError) {
-        throw signUpError
+      if (signupError) throw signupError
+
+      if (!authData.user) {
+        throw new Error('Signup failed - no user returned')
       }
 
-      if (data.user) {
-        // Success! Redirect to onboarding
-        router.push('/onboarding')
-        router.refresh()
+      console.log('✅ Auth user created:', authData.user.id)
+
+      // Step 2: Create author profile (trigger should handle this, but we'll ensure it exists)
+      try {
+        await createAuthorProfile({
+          auth_user_id: authData.user.id,
+          email: email,
+          first_name: firstName,
+          last_name: lastName
+        })
+        console.log('✅ Author profile created')
+      } catch (profileError: unknown) {
+        // Profile might already exist from trigger - that's okay
+        console.log('Author profile creation:', profileError)
       }
-    } catch (err) {
-      const error = err as Error
+
+      // Step 3: Store in localStorage for immediate access
+      localStorage.setItem('currentUserId', authData.user.id)
+      localStorage.setItem('currentUserEmail', email)
+      localStorage.setItem('currentUserFirstName', firstName)
+      localStorage.setItem('currentUserLastName', lastName)
+
+      console.log('✅ Redirecting to onboarding...')
+
+      // Step 4: Redirect to onboarding
+      router.push(
+        `/onboarding?userId=${authData.user.id}&firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&email=${encodeURIComponent(email)}`
+      )
+
+    } catch (error: unknown) {
       console.error('Signup error:', error)
-      setError(error.message || 'Failed to create account. Please try again.')
+      if (error instanceof Error) {
+        setError(error.message)
+      } else {
+        setError('An error occurred during signup')
+      }
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
-  const strengthInfo = getPasswordStrengthLabel()
-
   return (
-    <AuthFormWrapper
-      title="Create Your Author Account"
-      subtitle="Set up your professional author portal to begin your manuscript transformation journey"
-      badge="🎉 WELCOME TO YOUR AUTHOR PORTAL"
-      footerText="Already have an account?"
-      footerLink="/login"
-      footerLinkText="Sign in here"
-    >
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-sm text-red-600">{error}</p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center p-6">
+      <div className="bg-white rounded-3xl shadow-2xl p-10 w-full max-w-md">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Create Account</h1>
+          <p className="text-gray-600">Join AuthorsLab.ai and start your writing journey</p>
         </div>
-      )}
 
-      <form onSubmit={handleSignup} className="space-y-5">
-        <div className="grid grid-cols-2 gap-4">
+        {error && (
+          <div className="bg-red-50 border-2 border-red-500 text-red-900 px-4 py-3 rounded-xl mb-6">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSignup} className="space-y-5">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700 mb-2">
+                First Name
+              </label>
+              <input
+                type="text"
+                id="firstName"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition-all"
+                placeholder="John"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="lastName" className="block text-sm font-semibold text-gray-700 mb-2">
+                Last Name
+              </label>
+              <input
+                type="text"
+                id="lastName"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                required
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition-all"
+                placeholder="Doe"
+              />
+            </div>
+          </div>
+
           <div>
-            <Label htmlFor="firstName">First Name</Label>
-            <Input
-              id="firstName"
-              name="firstName"
-              type="text"
-              value={formData.firstName}
-              onChange={handleChange}
+            <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+              Email
+            </label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
-              className="mt-2"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition-all"
+              placeholder="you@example.com"
             />
           </div>
+
           <div>
-            <Label htmlFor="lastName">Last Name</Label>
-            <Input
-              id="lastName"
-              name="lastName"
-              type="text"
-              value={formData.lastName}
-              onChange={handleChange}
-              required
-              className="mt-2"
-            />
-          </div>
-        </div>
-
-        <div>
-          <Label htmlFor="email">Email Address</Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            className="mt-2"
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="phone">Phone Number (Optional)</Label>
-          <Input
-            id="phone"
-            name="phone"
-            type="tel"
-            value={formData.phone}
-            onChange={handleChange}
-            className="mt-2"
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="password">Create Password</Label>
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            minLength={8}
-            className="mt-2"
-          />
-          {formData.password && (
-            <p className={`mt-1 text-sm ${strengthInfo.color}`}>
-              Password strength: {strengthInfo.label}
-            </p>
-          )}
-        </div>
-
-        <div>
-          <Label htmlFor="confirmPassword">Confirm Password</Label>
-          <Input
-            id="confirmPassword"
-            name="confirmPassword"
-            type="password"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
-            className="mt-2"
-          />
-        </div>
-
-        <div className="space-y-3">
-          <div className="flex items-start gap-3">
-            <input
-              id="terms"
-              type="checkbox"
-              checked={acceptedTerms}
-              onChange={(e) => setAcceptedTerms(e.target.checked)}
-              required
-              className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-900 focus:ring-blue-900"
-            />
-            <label htmlFor="terms" className="text-sm text-gray-600">
-              I agree to the{' '}
-              <a href="/terms" className="text-blue-900 hover:underline">
-                Terms of Service
-              </a>{' '}
-              and{' '}
-              <a href="/privacy" className="text-blue-900 hover:underline">
-                Privacy Policy
-              </a>
+            <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+              Password
             </label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition-all"
+              placeholder="••••••••"
+            />
           </div>
 
-          <div className="flex items-start gap-3">
-            <input
-              id="marketing"
-              type="checkbox"
-              checked={marketingEmails}
-              onChange={(e) => setMarketingEmails(e.target.checked)}
-              className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-900 focus:ring-blue-900"
-            />
-            <label htmlFor="marketing" className="text-sm text-gray-600">
-              I&apos;d like to receive updates about new features, writing tips, and publishing opportunities
+          <div>
+            <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-2">
+              Confirm Password
             </label>
+            <input
+              type="password"
+              id="confirmPassword"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              minLength={6}
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition-all"
+              placeholder="••••••••"
+            />
           </div>
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? 'Creating Account...' : 'Sign Up'}
+          </button>
+        </form>
+
+        <div className="mt-6 text-center">
+          <p className="text-gray-600">
+            Already have an account?{' '}
+            <Link href="/login" className="text-blue-600 font-semibold hover:text-blue-700">
+              Log In
+            </Link>
+          </p>
         </div>
 
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? 'Creating Account...' : 'Create My Author Portal'}
-        </Button>
-      </form>
-    </AuthFormWrapper>
+        <div className="mt-6 pt-6 border-t border-gray-200 text-center">
+          <Link href="/" className="text-gray-600 hover:text-gray-900 font-medium">
+            ← Back to Home
+          </Link>
+        </div>
+      </div>
+    </div>
   )
 }
