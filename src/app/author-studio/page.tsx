@@ -1,16 +1,47 @@
 'use client'
 
-import { Suspense, useState, useEffect, useRef } from 'react'
+import { Suspense, useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+
+// Type definitions
+interface Manuscript {
+  id: string
+  title: string
+  genre: string
+  content: string
+  wordCount: number
+  chapters: Chapter[]
+}
+
+interface Chapter {
+  number: number
+  title: string
+  content: string
+  wordCount: number
+  status?: 'draft' | 'edited' | 'approved'
+}
+
+interface ChatMessage {
+  sender: string
+  message: string
+}
+
+interface Scores {
+  structural: number
+  character: number
+  plot: number
+  pacing: number
+  thematic: number
+}
 
 function StudioContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   
   // Manuscript state
-  const [manuscript, setManuscript] = useState<any>(null)
-  const [chapters, setChapters] = useState<any[]>([])
+  const [manuscript, setManuscript] = useState<Manuscript | null>(null)
+  const [chapters, setChapters] = useState<Chapter[]>([])
   const [currentChapterIndex, setCurrentChapterIndex] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   
@@ -20,13 +51,13 @@ function StudioContent() {
   const [chapterStatus, setChapterStatus] = useState<'draft' | 'edited' | 'approved'>('draft')
   
   // Alex state
-  const [alexMessages, setAlexMessages] = useState<Array<{sender: string, message: string}>>([])
+  const [alexMessages, setAlexMessages] = useState<ChatMessage[]>([])
   const [alexThinking, setAlexThinking] = useState(false)
   const [thinkingMessage, setThinkingMessage] = useState('')
   const [chatInput, setChatInput] = useState('')
   
   // Analysis state
-  const [scores, setScores] = useState({
+  const [scores, setScores] = useState<Scores>({
     structural: 0,
     character: 0,
     plot: 0,
@@ -52,20 +83,8 @@ function StudioContent() {
     alexChat: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-chat'
   }
 
-  useEffect(() => {
-    initializeStudio()
-  }, [])
-
-  // FIXED: Update word count whenever editor content changes
-  useEffect(() => {
-    if (editorContent) {
-      const text = editorContent.replace(/<[^>]*>/g, '') // Strip HTML
-      const words = text.trim().split(/\s+/).filter(w => w.length > 0)
-      setWordCount(words.length)
-    }
-  }, [editorContent])
-
-  async function initializeStudio() {
+  // Initialize studio
+  const initializeStudio = useCallback(async () => {
     const userId = searchParams.get('userId') || localStorage.getItem('currentUserId')
     
     if (!userId) {
@@ -86,28 +105,39 @@ function StudioContent() {
       }
       
       // Fetch scores if analysis is complete
-      if (existing.manuscriptId) {
-        fetchScores(existing.manuscriptId)
+      if (existing.id) {
+        fetchScores(existing.id)
       }
     } else {
-      // Show upload interface
       setIsLoading(false)
     }
     
     // Initial Alex greeting
     addAlexMessage("Hi! I'm Alex, your developmental editing specialist. Upload your manuscript to get started, or ask me anything about the editing process!")
-  }
+  }, [searchParams, router])
 
-  async function checkForExistingManuscript(userId: string) {
-    // For now, return null to always show upload
+  useEffect(() => {
+    initializeStudio()
+  }, [initializeStudio])
+
+  // Update word count when content changes
+  useEffect(() => {
+    if (editorContent) {
+      const text = editorContent.replace(/<[^>]*>/g, '')
+      const words = text.trim().split(/\s+/).filter(w => w.length > 0)
+      setWordCount(words.length)
+    }
+  }, [editorContent])
+
+  async function checkForExistingManuscript(_userId: string): Promise<Manuscript | null> {
     // TODO: Add API call to check for existing manuscripts
     return null
   }
 
-  // FIXED: File upload with proper chapter parsing
+  // File upload handler
   async function handleFileUpload(file: File, bookTitle: string, genre: string) {
     if (!file || !bookTitle || !genre) {
-      alert('Please provide title, genre, and file')
+      alert('Please fill in all fields')
       return
     }
 
@@ -155,7 +185,7 @@ function StudioContent() {
 
       setThinkingMessage('Analyzing chapters with AI...')
 
-      // FIXED: Parse chapters with better detection
+      // Parse chapters
       const parseResponse = await fetch(WEBHOOKS.parseChapters, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -165,13 +195,13 @@ function StudioContent() {
         })
       })
 
-      let parsedChapters = []
+      let parsedChapters: Chapter[] = []
       if (parseResponse.ok) {
         const parseResult = await parseResponse.json()
         parsedChapters = parseResult.chapters || []
       }
 
-      // FIXED: Extract actual chapter content from text
+      // Extract actual chapter content
       const chaptersWithContent = await extractChapterContent(text, parsedChapters)
 
       setManuscript({
@@ -195,18 +225,19 @@ function StudioContent() {
 
       // Trigger developmental analysis
       setTimeout(() => {
-        triggerDevelopmentalAnalysis(manuscriptId, text, bookTitle, genre, words)
+        triggerDevelopmentalAnalysis(manuscriptId, text)
       }, 2000)
 
-    } catch (error: any) {
+    } catch (error) {
       console.error('Upload error:', error)
       setAlexThinking(false)
-      addAlexMessage(`❌ Error: ${error.message}`)
+      const errorMessage = error instanceof Error ? error.message : 'Upload failed'
+      addAlexMessage(`❌ Error: ${errorMessage}`)
     }
   }
 
-  // FIXED: Extract chapter content properly
-  async function extractChapterContent(fullText: string, chapterTitles: any[]) {
+  // Extract chapter content
+  async function extractChapterContent(fullText: string, chapterTitles: Chapter[]): Promise<Chapter[]> {
     console.log('Extracting content for', chapterTitles.length, 'chapters')
     
     return chapterTitles.map((chapter, index) => {
@@ -217,9 +248,9 @@ function StudioContent() {
       )
       
       const match = fullText.match(chapterRegex)
-      let chapterStart = match ? match.index || 0 : 0
+      const chapterStart = match ? match.index || 0 : 0
       
-      // Find chapter end (start of next chapter or end of text)
+      // Find chapter end
       let chapterEnd = fullText.length
       if (index < chapterTitles.length - 1) {
         const nextChapter = chapterTitles[index + 1]
@@ -235,7 +266,7 @@ function StudioContent() {
       
       // Extract and clean content
       let content = fullText.substring(chapterStart, chapterEnd)
-      content = content.replace(chapterRegex, '').trim() // Remove title
+      content = content.replace(chapterRegex, '').trim()
       content = cleanChapterContent(content)
       
       console.log(`Chapter ${chapter.number}: ${content.length} characters`)
@@ -249,33 +280,26 @@ function StudioContent() {
     })
   }
 
-  function cleanChapterContent(content: string) {
+  function cleanChapterContent(content: string): string {
     return content
       .replace(/©.*?All rights reserved\.?/gi, '')
       .replace(/Copyright.*?\d{4}[^.]*\./gi, '')
-      .replace(/^\s*\d+\s*$/gm, '') // Remove page numbers
+      .replace(/^\s*\d+\s*$/gm, '')
       .replace(/\r\n/g, '\n')
       .replace(/[ \t]+/g, ' ')
       .replace(/\n{3,}/g, '\n\n')
       .trim()
   }
 
-  // Text extraction functions
-  async function extractTextFromDocx(file: File): Promise<string> {
-    // For now, return placeholder - in production use mammoth
-    return new Promise((resolve) => {
-      const reader = new FileReader()
-      reader.onload = () => {
-        // This is simplified - you'd use mammoth.js here
-        resolve('[DOCX content would be extracted here]')
-      }
-      reader.readAsArrayBuffer(file)
-    })
+  // Text extraction (simplified - would use libraries in production)
+  async function extractTextFromDocx(_file: File): Promise<string> {
+    // TODO: Use mammoth.js for actual DOCX extraction
+    return '[DOCX content would be extracted here with mammoth.js]'
   }
 
-  async function extractTextFromPdf(file: File): Promise<string> {
-    // For now, return placeholder - in production use PDF.js
-    return '[PDF content would be extracted here]'
+  async function extractTextFromPdf(_file: File): Promise<string> {
+    // TODO: Use PDF.js for actual PDF extraction
+    return '[PDF content would be extracted here with PDF.js]'
   }
 
   // Load chapter into editor
@@ -285,7 +309,7 @@ function StudioContent() {
     const chapter = chapters[index]
     setCurrentChapterIndex(index)
     
-    // FIXED: Convert plain text to HTML paragraphs
+    // Convert plain text to HTML paragraphs
     let content = chapter.content || ''
     if (!content.includes('<p>')) {
       const paragraphs = content
@@ -300,21 +324,15 @@ function StudioContent() {
     setChapterStatus(chapter.status || 'draft')
   }
 
-  // Trigger comprehensive developmental analysis
-  async function triggerDevelopmentalAnalysis(
-    manuscriptId: string,
-    text: string,
-    title: string,
-    genre: string,
-    words: number
-  ) {
+  // Trigger comprehensive analysis
+  async function triggerDevelopmentalAnalysis(manuscriptId: string, text: string) {
     setAlexThinking(true)
     setThinkingMessage('Performing comprehensive developmental analysis (30-60 seconds)...')
     setScoresVisible(true)
 
     try {
       // Run all 5 dimension analyses in parallel
-      const analyses = await Promise.all([
+      await Promise.all([
         analyzeDimension('structural', WEBHOOKS.alexStructure, text, manuscriptId),
         analyzeDimension('character', WEBHOOKS.alexCharacter, text, manuscriptId),
         analyzeDimension('plot', WEBHOOKS.alexPlot, text, manuscriptId),
@@ -326,8 +344,8 @@ function StudioContent() {
       setAnalysisComplete(true)
 
       addAlexMessage(
-        `✅ Analysis complete! I've evaluated all five developmental dimensions. ` +
-        `Click any score in the sidebar to see detailed insights and recommendations.`
+        '✅ Analysis complete! I\'ve evaluated all five developmental dimensions. ' +
+        'Click any score in the sidebar to see detailed insights and recommendations.'
       )
 
     } catch (error) {
@@ -361,8 +379,7 @@ function StudioContent() {
 
       return { name, score, feedback: result.feedback || result.analysis || '' }
 
-    } catch (error) {
-      console.error(`${name} analysis error:`, error)
+    } catch (_error) {
       setScores(prev => ({ ...prev, [name]: 7 }))
       return { name, score: 7, feedback: '' }
     }
@@ -382,8 +399,8 @@ function StudioContent() {
         })
         setScoresVisible(true)
       }
-    } catch (error) {
-      console.error('Error fetching scores:', error)
+    } catch (_error) {
+      console.error('Error fetching scores')
     }
   }
 
@@ -422,7 +439,7 @@ function StudioContent() {
       setAlexThinking(false)
       addAlexMessage(result.response || result.message || 'Let me help you with that.')
 
-    } catch (error) {
+    } catch (_error) {
       setAlexThinking(false)
       addAlexMessage('I\'m having trouble connecting. Let me help based on what I see in your manuscript.')
     }
@@ -453,7 +470,7 @@ function StudioContent() {
     )
   }
 
-  // Upload state (no manuscript yet)
+  // Upload state
   if (!manuscript) {
     return <UploadInterface onUpload={handleFileUpload} />
   }
@@ -523,7 +540,7 @@ function StudioContent() {
             {/* Scores */}
             {scoresVisible && (
               <div className="space-y-3">
-                {Object.entries(scores).map(([key, value]) => (
+                {(Object.entries(scores) as [keyof Scores, number][]).map(([key, value]) => (
                   <div key={key} className="flex items-center gap-3 text-sm">
                     <span className="w-20 font-semibold text-gray-700 capitalize">{key}:</span>
                     <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -688,7 +705,7 @@ function UploadInterface({ onUpload }: { onUpload: (file: File, title: string, g
       <div className="max-w-2xl w-full bg-white rounded-3xl p-12 shadow-2xl">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-green-700 mb-4">Welcome to Your Writing Studio!</h1>
-          <p className="text-xl text-gray-700">I'm Alex, your developmental editing specialist. Let's get started!</p>
+          <p className="text-xl text-gray-700">I&apos;m Alex, your developmental editing specialist. Let&apos;s get started!</p>
         </div>
 
         <div className="space-y-6">
