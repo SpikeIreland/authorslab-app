@@ -33,7 +33,7 @@ export default function Home() {
             </div>
             {/* Mobile menu button - can add hamburger menu later */}
             <Link href="/signup" className="md:hidden">
-              <Button size="sm">Get Started</Button>
+              <Button className="text-sm px-4 py-2">Get Started</Button>
             </Link>
           </div>
         </div>
