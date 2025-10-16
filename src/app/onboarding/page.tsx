@@ -74,12 +74,55 @@ function OnboardingContent() {
                 reader.onerror = () => reject(new Error('Failed to read text file'))
                 reader.readAsText(file)
             })
-        } else if (fileName.endsWith('.docx')) {
-            // For DOCX files, we'll use the fallback for now
-            // In production, you'd want to use a library like mammoth
-            throw new Error('DOCX processing requires server-side handling')
+        } else if (fileName.endsWith('.docx') || fileName.endsWith('.doc')) {
+            // Extract text from DOCX using mammoth
+            try {
+                const mammoth = await import('mammoth')
+                const arrayBuffer = await file.arrayBuffer()
+                const result = await mammoth.extractRawText({ arrayBuffer })
+
+                if (!result.value || result.value.length < 100) {
+                    throw new Error('Could not extract sufficient text from document')
+                }
+
+                return result.value
+            } catch (error) {
+                console.error('DOCX extraction error:', error)
+                throw new Error('Failed to extract text from Word document. Please ensure the file is not corrupted.')
+            }
+        } else if (fileName.endsWith('.pdf')) {
+            // Extract text from PDF using PDF.js
+            try {
+                const pdfjsLib = await import('pdfjs-dist')
+
+                // Set worker source
+                pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+
+                const arrayBuffer = await file.arrayBuffer()
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+                let fullText = ''
+
+                // Extract text from each page
+                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                    const page = await pdf.getPage(pageNum)
+                    const textContent = await page.getTextContent()
+                    const pageText = textContent.items
+                        .map((item: any) => item.str)
+                        .join(' ')
+                    fullText += pageText + '\n\n'
+                }
+
+                if (!fullText || fullText.length < 100) {
+                    throw new Error('Could not extract sufficient text from PDF')
+                }
+
+                return fullText
+            } catch (error) {
+                console.error('PDF extraction error:', error)
+                throw new Error('Failed to extract text from PDF. Please ensure the file is not password-protected or corrupted.')
+            }
         } else {
-            throw new Error('Unsupported file format')
+            throw new Error('Unsupported file format. Please upload PDF, DOCX, DOC, or TXT.')
         }
     }
 
@@ -403,7 +446,7 @@ function OnboardingContent() {
                                 <input
                                     type="file"
                                     id="fileInput"
-                                    accept=".docx,.txt"
+                                    accept=".pdf,.docx,.doc,.txt"
                                     onChange={handleFileChange}
                                     className="hidden"
                                 />
