@@ -3,663 +3,362 @@ import { Button } from '@/components/ui/button'
 
 export default function Home() {
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-blue-900 via-purple-900 to-blue-900 py-20 md:py-32">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }} />
+    <div className="min-h-screen bg-white">
+      {/* Navigation */}
+      <nav className="border-b border-gray-200 bg-white/95 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-blue-900 to-blue-700 bg-clip-text text-transparent">
+              📚 AuthorLab.ai
+            </Link>
+            <div className="hidden md:flex items-center gap-6">
+              <Link href="/how-it-works" className="text-gray-700 hover:text-blue-900 font-semibold transition-colors">
+                How It Works
+              </Link>
+              <Link href="/pricing" className="text-gray-700 hover:text-blue-900 font-semibold transition-colors">
+                Pricing
+              </Link>
+              <Link href="/editors" className="text-gray-700 hover:text-blue-900 font-semibold transition-colors">
+                Our Editors
+              </Link>
+              <Link href="/faq" className="text-gray-700 hover:text-blue-900 font-semibold transition-colors">
+                FAQ
+              </Link>
+              <Link href="/login" className="text-gray-700 hover:text-blue-900 font-semibold transition-colors">
+                Sign In
+              </Link>
+              <Link href="/signup">
+                <Button>Get Started</Button>
+              </Link>
+            </div>
+            {/* Mobile menu button - can add hamburger menu later */}
+            <Link href="/signup" className="md:hidden">
+              <Button size="sm">Get Started</Button>
+            </Link>
+          </div>
         </div>
+      </nav>
 
-        <div className="container relative z-10 mx-auto px-4">
-          <div className="max-width-5xl mx-auto">
-            {/* Badge */}
-            <div className="mb-8 text-center">
-              <span className="inline-block rounded-full border-2 border-yellow-400 bg-yellow-400/20 px-6 py-2 text-sm font-bold text-yellow-300">
-                ✨ AI-Powered Author Services
-              </span>
+      {/* Hero Section */}
+      <div className="container mx-auto px-4 py-20">
+        <div className="max-w-4xl mx-auto text-center">
+          {/* Badge */}
+          <div className="inline-block mb-6">
+            <span className="px-4 py-2 bg-gradient-to-r from-yellow-400/20 to-yellow-200/20 border-2 border-yellow-400 text-yellow-700 rounded-full text-sm font-bold">
+              ✍️ Professional AI-Powered Writing Studio
+            </span>
+          </div>
+
+          {/* Main Heading */}
+          <h1 className="text-5xl md:text-7xl font-extrabold text-gray-900 mb-6 leading-tight">
+            Write With Your
+            <span className="block bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
+              AI Partner
+            </span>
+          </h1>
+
+          {/* Subtitle */}
+          <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
+            Experience the future of writing: get professional AI analysis that transforms how you see your manuscript, with insights that make your story stronger.
+          </p>
+
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+            <Link href="/signup">
+              <Button className="text-lg px-8 py-6 shadow-2xl hover:shadow-3xl transition-all">
+                Get Started Free
+              </Button>
+            </Link>
+            <Link href="/how-it-works">
+              <Button variant="outline" className="text-lg px-8 py-6 border-2">
+                See How It Works
+              </Button>
+            </Link>
+          </div>
+
+          {/* Trust Badges */}
+          <div className="flex flex-wrap justify-center gap-8 text-gray-600">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">⚡</span>
+              <span>Real-time feedback</span>
             </div>
-
-            {/* Main Heading */}
-            <h1 className="mb-6 text-center text-5xl font-extrabold leading-tight text-white md:text-7xl">
-              Transform Your Manuscript with
-              <span className="mt-2 block bg-gradient-to-r from-yellow-400 to-yellow-200 bg-clip-text text-transparent">
-                Professional AI Editors
-              </span>
-            </h1>
-
-            {/* Subtitle */}
-            <p className="mx-auto mb-12 max-w-3xl text-center text-xl leading-relaxed text-blue-100 md:text-2xl">
-              Meet Alex, Sam, and Jordan - your AI editing team who work together to transform your manuscript through developmental editing, line polishing, and final copyediting.
-            </p>
-
-            {/* CTA Buttons */}
-            <div className="mb-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Link href="/free-analysis">
-                <Button className="px-8 py-6 text-lg shadow-2xl">
-                  Get Free Manuscript Analysis
-                </Button>
-              </Link>
-              <Link href="/how-it-works">
-                <Button variant="outline" className="border-white/30 bg-white/10 px-8 py-6 text-lg text-white hover:bg-white/20">
-                  See How It Works
-                </Button>
-              </Link>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">🎯</span>
+              <span>Professional quality</span>
             </div>
-
-            {/* Trust Badges */}
-            <div className="flex flex-wrap justify-center gap-8 text-blue-200">
-              <div className="flex items-center gap-2">
-                <span>⚡</span>
-                <span>4-Phase Editing Process</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span>🤖</span>
-                <span>3 AI Editing Specialists</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span>🔒</span>
-                <span>100% Confidential</span>
-              </div>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">🔒</span>
+              <span>Your work stays private</span>
             </div>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* How It Works - Simple 3 Steps */}
-      <section className="bg-white py-20">
+      {/* How It Works - Quick Overview */}
+      <div className="bg-gradient-to-br from-blue-50 to-purple-50 py-20">
         <div className="container mx-auto px-4">
-          <div className="mx-auto max-w-4xl text-center">
-            <h2 className="mb-4 text-4xl font-bold text-gray-900">
-              How It Works
-            </h2>
-            <p className="mb-16 text-xl text-gray-600">
-              From manuscript to published book in three simple steps
-            </p>
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                Your Complete Writing Journey
+              </h2>
+              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                Four collaborative phases that transform your manuscript from first draft to published book
+              </p>
+            </div>
 
-            <div className="grid gap-12 md:grid-cols-3">
-              {/* Step 1 */}
-              <div className="relative">
-                <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-3xl font-bold text-white shadow-lg mx-auto">
+            <div className="grid md:grid-cols-4 gap-8">
+              {/* Phase 1 */}
+              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border-t-4 border-green-500">
+                <div className="w-16 h-16 bg-green-500 text-white rounded-full flex items-center justify-center text-2xl font-bold mb-4 mx-auto">
                   1
                 </div>
-                <h3 className="mb-3 text-xl font-bold text-gray-900">
-                  Upload Your Manuscript
-                </h3>
-                <p className="text-gray-600">
-                  Submit your manuscript and get a free AI analysis within minutes. See exactly what Alex, Sam, and Jordan can do for your story.
-                </p>
-              </div>
-
-              {/* Step 2 */}
-              <div className="relative">
-                <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-purple-600 text-3xl font-bold text-white shadow-lg mx-auto">
-                  2
+                <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">Developmental</h3>
+                <p className="text-gray-600 text-center text-sm mb-4">Story structure & character development</p>
+                <div className="text-center">
+                  <span className="text-2xl">🎯</span>
+                  <p className="text-xs text-gray-500 mt-2">Meet Alex</p>
                 </div>
-                <h3 className="mb-3 text-xl font-bold text-gray-900">
-                  Work With Your AI Team
-                </h3>
-                <p className="text-gray-600">
-                  Alex strengthens your story structure, Sam polishes your prose, and Jordan ensures technical perfection through our 4-phase process.
-                </p>
-              </div>
-
-              {/* Step 3 */}
-              <div className="relative">
-                <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-green-500 to-green-600 text-3xl font-bold text-white shadow-lg mx-auto">
-                  3
-                </div>
-                <h3 className="mb-3 text-xl font-bold text-gray-900">
-                  Publish Your Book
-                </h3>
-                <p className="text-gray-600">
-                  Get your manuscript publication-ready with formatting, cover design guidance, and launch strategy - all included in our complete package.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Meet Your AI Editing Team */}
-      <section className="bg-gradient-to-br from-gray-50 to-gray-100 py-20">
-        <div className="container mx-auto px-4">
-          <div className="mx-auto max-w-6xl">
-            <div className="mb-16 text-center">
-              <h2 className="mb-4 text-4xl font-bold text-gray-900">
-                Meet Your AI Editing Team
-              </h2>
-              <p className="text-xl text-gray-600">
-                Three specialized AI editors, each with their own personality and expertise
-              </p>
-            </div>
-
-            <div className="grid gap-8 md:grid-cols-3">
-              {/* Alex */}
-              <div className="group rounded-2xl bg-white p-8 shadow-lg transition-all hover:-translate-y-2 hover:shadow-2xl">
-                <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-green-600 text-5xl mx-auto">
-                  ✨
-                </div>
-                <h3 className="mb-2 text-center text-2xl font-bold text-gray-900">
-                  Alex
-                </h3>
-                <p className="mb-4 text-center font-semibold text-green-600">
-                  The Creative Catalyst
-                </p>
-                <p className="mb-4 text-center text-gray-600">
-                  Developmental Editor
-                </p>
-                <p className="mb-6 text-gray-700">
-                  Alex is enthusiastic and emotionally intelligent, helping you strengthen story structure, character arcs, and thematic depth. Loves celebrating creative breakthroughs!
-                </p>
-                <div className="rounded-lg bg-green-50 p-4">
-                  <p className="text-sm italic text-green-800">
-                    &quot;I love how your protagonist evolves here! This emotional beat is powerful.&quot;
-                  </p>
-                </div>
-              </div>
-
-              {/* Sam */}
-              <div className="group rounded-2xl bg-white p-8 shadow-lg transition-all hover:-translate-y-2 hover:shadow-2xl">
-                <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-purple-400 to-purple-600 text-5xl mx-auto">
-                  ✏️
-                </div>
-                <h3 className="mb-2 text-center text-2xl font-bold text-gray-900">
-                  Sam
-                </h3>
-                <p className="mb-4 text-center font-semibold text-purple-600">
-                  The Precision Perfectionist
-                </p>
-                <p className="mb-4 text-center text-gray-600">
-                  Line Editor
-                </p>
-                <p className="mb-6 text-gray-700">
-                  Sam is thoughtful and meticulous, refining prose flow, sentence structure, and readability. Ensures every word serves your story with precision and clarity.
-                </p>
-                <div className="rounded-lg bg-purple-50 p-4">
-                  <p className="text-sm italic text-purple-800">
-                    &quot;This sentence could flow more smoothly. What if we restructured it like this?&quot;
-                  </p>
-                </div>
-              </div>
-
-              {/* Jordan */}
-              <div className="group rounded-2xl bg-white p-8 shadow-lg transition-all hover:-translate-y-2 hover:shadow-2xl">
-                <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-blue-600 text-5xl mx-auto">
-                  🔍
-                </div>
-                <h3 className="mb-2 text-center text-2xl font-bold text-gray-900">
-                  Jordan
-                </h3>
-                <p className="mb-4 text-center font-semibold text-blue-600">
-                  The Detail Guardian
-                </p>
-                <p className="mb-4 text-center text-gray-600">
-                  Copy Editor
-                </p>
-                <p className="mb-6 text-gray-700">
-                  Jordan is sharp-eyed and systematic, catching grammar, consistency issues, and technical errors. Nothing escapes their attention to detail!
-                </p>
-                <div className="rounded-lg bg-blue-50 p-4">
-                  <p className="text-sm italic text-blue-800">
-                    &quot;I&apos;ve spotted a few consistency issues we should address in chapter three.&quot;
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-12 text-center">
-              <Link href="/meet-the-team">
-                <Button variant="outline" className="px-8 py-4">
-                  Learn More About Your AI Team
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 4-Phase Journey */}
-      <section className="bg-white py-20">
-        <div className="container mx-auto px-4">
-          <div className="mx-auto max-w-6xl">
-            <div className="mb-16 text-center">
-              <h2 className="mb-4 text-4xl font-bold text-gray-900">
-                The Complete 4-Phase Journey
-              </h2>
-              <p className="text-xl text-gray-600">
-                From raw manuscript to published book - all in one complete package
-              </p>
-            </div>
-
-            <div className="grid gap-8 md:grid-cols-2">
-              {/* Phase 1 */}
-              <div className="rounded-2xl border-l-8 border-green-500 bg-gradient-to-br from-green-50 to-white p-8 shadow-lg">
-                <div className="mb-4 flex items-center gap-4">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-500 text-2xl font-bold text-white">
-                    1
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900">
-                      Developmental Editing
-                    </h3>
-                    <p className="text-green-600 font-semibold">With Alex</p>
-                  </div>
-                </div>
-                <p className="mb-4 text-gray-700">
-                  Strengthen story structure, character development, plot coherence, and thematic depth.
-                </p>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li className="flex items-start gap-2">
-                    <span className="text-green-500">✓</span>
-                    <span>Story structure analysis</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-green-500">✓</span>
-                    <span>Character arc development</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-green-500">✓</span>
-                    <span>Plot coherence & pacing</span>
-                  </li>
-                </ul>
               </div>
 
               {/* Phase 2 */}
-              <div className="rounded-2xl border-l-8 border-purple-500 bg-gradient-to-br from-purple-50 to-white p-8 shadow-lg">
-                <div className="mb-4 flex items-center gap-4">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-purple-500 text-2xl font-bold text-white">
-                    2
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900">
-                      Line Editing
-                    </h3>
-                    <p className="text-purple-600 font-semibold">With Sam</p>
-                  </div>
+              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border-t-4 border-purple-500">
+                <div className="w-16 h-16 bg-purple-500 text-white rounded-full flex items-center justify-center text-2xl font-bold mb-4 mx-auto">
+                  2
                 </div>
-                <p className="mb-4 text-gray-700">
-                  Polish prose, refine sentence structure, and enhance readability throughout your manuscript.
-                </p>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li className="flex items-start gap-2">
-                    <span className="text-purple-500">✓</span>
-                    <span>Prose flow optimization</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-purple-500">✓</span>
-                    <span>Sentence clarity & structure</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-purple-500">✓</span>
-                    <span>Style consistency</span>
-                  </li>
-                </ul>
+                <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">Line Editing</h3>
+                <p className="text-gray-600 text-center text-sm mb-4">Prose polish & sentence flow</p>
+                <div className="text-center">
+                  <span className="text-2xl">✨</span>
+                  <p className="text-xs text-gray-500 mt-2">Meet Sam</p>
+                </div>
               </div>
 
               {/* Phase 3 */}
-              <div className="rounded-2xl border-l-8 border-blue-500 bg-gradient-to-br from-blue-50 to-white p-8 shadow-lg">
-                <div className="mb-4 flex items-center gap-4">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-500 text-2xl font-bold text-white">
-                    3
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900">
-                      Copy Editing
-                    </h3>
-                    <p className="text-blue-600 font-semibold">With Jordan</p>
-                  </div>
+              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border-t-4 border-red-500">
+                <div className="w-16 h-16 bg-red-500 text-white rounded-full flex items-center justify-center text-2xl font-bold mb-4 mx-auto">
+                  3
                 </div>
-                <p className="mb-4 text-gray-700">
-                  Perfect grammar, punctuation, consistency, and technical accuracy for publication.
-                </p>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-500">✓</span>
-                    <span>Grammar & punctuation</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-500">✓</span>
-                    <span>Consistency checking</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-500">✓</span>
-                    <span>Technical accuracy</span>
-                  </li>
-                </ul>
+                <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">Copy Editing</h3>
+                <p className="text-gray-600 text-center text-sm mb-4">Grammar & technical accuracy</p>
+                <div className="text-center">
+                  <span className="text-2xl">🔍</span>
+                  <p className="text-xs text-gray-500 mt-2">Meet Jordan</p>
+                </div>
               </div>
 
               {/* Phase 4 */}
-              <div className="rounded-2xl border-l-8 border-yellow-500 bg-gradient-to-br from-yellow-50 to-white p-8 shadow-lg">
-                <div className="mb-4 flex items-center gap-4">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-yellow-500 text-2xl font-bold text-white">
-                    4
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900">
-                      Publishing Prep
-                    </h3>
-                    <p className="text-yellow-600 font-semibold">Complete Team</p>
-                  </div>
+              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border-t-4 border-yellow-500">
+                <div className="w-16 h-16 bg-yellow-500 text-white rounded-full flex items-center justify-center text-2xl font-bold mb-4 mx-auto">
+                  4
                 </div>
-                <p className="mb-4 text-gray-700">
-                  Format for publication, design guidance, and launch strategy to get your book into readers&apos; hands.
-                </p>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li className="flex items-start gap-2">
-                    <span className="text-yellow-500">✓</span>
-                    <span>Professional formatting</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-yellow-500">✓</span>
-                    <span>Cover design guidance</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-yellow-500">✓</span>
-                    <span>Launch strategy</span>
-                  </li>
-                </ul>
+                <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">Publishing</h3>
+                <p className="text-gray-600 text-center text-sm mb-4">Format & launch preparation</p>
+                <div className="text-center">
+                  <span className="text-2xl">🚀</span>
+                  <p className="text-xs text-gray-500 mt-2">Your Book</p>
+                </div>
               </div>
+            </div>
+
+            <div className="text-center mt-12">
+              <Link href="/how-it-works">
+                <Button variant="outline" className="text-base px-6 py-6">
+                  Learn More About Our Process
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Pricing */}
-      <section className="bg-gradient-to-br from-gray-50 to-gray-100 py-20">
-        <div className="container mx-auto px-4">
-          <div className="mx-auto max-w-5xl">
-            <div className="mb-16 text-center">
-              <h2 className="mb-4 text-4xl font-bold text-gray-900">
-                Simple, Transparent Pricing
-              </h2>
-              <p className="text-xl text-gray-600">
-                Start with a free analysis, then choose the package that fits your goals
+      {/* Features Section */}
+      <div className="container mx-auto px-4 py-20">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-4xl font-bold text-center text-gray-900 mb-16">
+            Everything You Need to Write Better
+          </h2>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Feature 1 */}
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-8 border border-blue-200 hover:shadow-xl transition-shadow">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center text-3xl mb-6">
+                ✍️
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Real-Time Writing Partner</h3>
+              <p className="text-gray-700">
+                Select any text and get instant feedback on dialogue, pacing, character development, and story structure as you write.
               </p>
             </div>
 
-            <div className="grid gap-8 md:grid-cols-2">
+            {/* Feature 2 */}
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-8 border border-purple-200 hover:shadow-xl transition-shadow">
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center text-3xl mb-6">
+                🤖
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Context-Aware AI</h3>
+              <p className="text-gray-700">
+                AI understands your entire manuscript, character arcs, and plot threads to give relevant, story-specific advice.
+              </p>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-8 border border-green-200 hover:shadow-xl transition-shadow">
+              <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center text-3xl mb-6">
+                🛡️
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Secure & Private</h3>
+              <p className="text-gray-700">
+                Your manuscripts are protected with enterprise-grade security. Your creative work stays completely confidential.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Pricing Preview */}
+      <div className="bg-gray-50 py-20">
+        <div className="container mx-auto px-4">
+          <div className="max-w-5xl mx-auto text-center">
+            <h2 className="text-4xl font-bold text-gray-900 mb-6">
+              Simple, Transparent Pricing
+            </h2>
+            <p className="text-xl text-gray-600 mb-12">
+              Start free or jump straight into your complete writing journey
+            </p>
+
+            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
               {/* Free Analysis */}
-              <div className="rounded-2xl bg-white p-8 shadow-lg border-2 border-gray-200">
-                <div className="mb-4">
-                  <span className="rounded-full bg-blue-100 px-4 py-1 text-sm font-semibold text-blue-700">
-                    Try It Free
-                  </span>
-                </div>
-                <h3 className="mb-2 text-3xl font-bold text-gray-900">
-                  Free Analysis
-                </h3>
-                <div className="mb-6">
-                  <span className="text-5xl font-bold text-gray-900">$0</span>
-                </div>
-                <p className="mb-6 text-gray-600">
-                  Get a comprehensive AI analysis of your manuscript to see what Alex, Sam, and Jordan can do for your story.
-                </p>
-                <ul className="mb-8 space-y-3">
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-500">✓</span>
-                    <span className="text-gray-700">Complete manuscript analysis</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-500">✓</span>
-                    <span className="text-gray-700">Developmental insights</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-500">✓</span>
-                    <span className="text-gray-700">Detailed PDF report</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-500">✓</span>
-                    <span className="text-gray-700">No credit card required</span>
-                  </li>
-                </ul>
+              <div className="bg-white rounded-2xl p-8 shadow-lg border-2 border-gray-200">
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Free Analysis</h3>
+                <div className="text-5xl font-bold text-gray-900 mb-4">$0</div>
+                <p className="text-gray-600 mb-6">Professional AI feedback report</p>
                 <Link href="/free-analysis">
-                  <Button variant="outline" className="w-full py-6 text-lg">
+                  <Button variant="outline" className="w-full py-6">
                     Get Free Analysis
                   </Button>
                 </Link>
               </div>
 
-              {/* Complete Package */}
-              <div className="relative rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 p-8 shadow-2xl text-white">
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-yellow-400 px-6 py-2 text-sm font-bold text-gray-900">
-                  ⭐ Most Popular
-                </div>
-                <div className="mb-4">
-                  <span className="rounded-full bg-white/20 px-4 py-1 text-sm font-semibold">
-                    Complete Package
+              {/* Author Package */}
+              <div className="bg-gradient-to-br from-blue-900 to-purple-900 rounded-2xl p-8 shadow-2xl border-2 border-yellow-400 relative">
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                  <span className="bg-yellow-400 text-gray-900 px-4 py-2 rounded-full text-sm font-bold">
+                    MOST POPULAR
                   </span>
                 </div>
-                <h3 className="mb-2 text-3xl font-bold">
-                  Author Studio
-                </h3>
-                <div className="mb-6">
-                  <span className="text-5xl font-bold">$399</span>
-                  <span className="ml-2 text-lg opacity-90">one-time</span>
-                </div>
-                <p className="mb-6 opacity-95">
-                  Complete 4-phase editing journey from raw manuscript to published book with Alex, Sam, and Jordan.
-                </p>
-                <ul className="mb-8 space-y-3">
-                  <li className="flex items-start gap-2">
-                    <span className="text-yellow-300">✓</span>
-                    <span>All 4 editing phases included</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-yellow-300">✓</span>
-                    <span>Work with Alex, Sam & Jordan</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-yellow-300">✓</span>
-                    <span>Interactive editing workspace</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-yellow-300">✓</span>
-                    <span>Publishing preparation</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-yellow-300">✓</span>
-                    <span>Launch strategy guidance</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-yellow-300">✓</span>
-                    <span>Priority support</span>
-                  </li>
-                </ul>
+                <h3 className="text-2xl font-bold text-white mb-2 mt-4">Complete Package</h3>
+                <div className="text-5xl font-bold text-white mb-4">$399</div>
+                <p className="text-blue-100 mb-6">From first draft to published book</p>
                 <Link href="/signup">
-                  <Button className="w-full bg-yellow-400 py-6 text-lg text-gray-900 hover:bg-yellow-300">
+                  <Button className="w-full py-6 bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 hover:from-yellow-500 hover:to-yellow-600">
                     Start Your Journey
                   </Button>
                 </Link>
               </div>
             </div>
 
-            <div className="mt-12 text-center">
-              <Link href="/pricing" className="text-blue-600 hover:underline font-semibold">
-                View detailed pricing breakdown →
+            <div className="mt-12">
+              <Link href="/pricing" className="text-blue-600 hover:underline font-semibold text-lg">
+                See Full Pricing Details →
               </Link>
             </div>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Testimonials */}
-      <section className="bg-white py-20">
-        <div className="container mx-auto px-4">
-          <div className="mx-auto max-w-6xl">
-            <div className="mb-16 text-center">
-              <h2 className="mb-4 text-4xl font-bold text-gray-900">
-                What Authors Are Saying
-              </h2>
-              <p className="text-xl text-gray-600">
-                Join hundreds of authors who&apos;ve transformed their manuscripts
-              </p>
+      {/* Meet the Editors Preview */}
+      <div className="container mx-auto px-4 py-20">
+        <div className="max-w-5xl mx-auto text-center">
+          <h2 className="text-4xl font-bold text-gray-900 mb-6">
+            Meet Your AI Editorial Team
+          </h2>
+          <p className="text-xl text-gray-600 mb-12">
+            Three specialists, each expert in their craft
+          </p>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-5xl mx-auto mb-4">
+                🎯
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Alex</h3>
+              <p className="text-gray-600 mb-2">Developmental Editor</p>
+              <p className="text-sm text-gray-500">Story structure & character development</p>
             </div>
 
-            <div className="grid gap-8 md:grid-cols-3">
-              {/* Testimonial 1 */}
-              <div className="rounded-2xl bg-gray-50 p-8 shadow-lg">
-                <div className="mb-4 flex gap-1 text-yellow-400">
-                  ⭐⭐⭐⭐⭐
-                </div>
-                <p className="mb-6 text-gray-700 italic">
-                  &quot;Alex helped me see plot holes I didn&apos;t even know existed. The developmental editing phase completely transformed my story structure.&quot;
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-full bg-blue-200 flex items-center justify-center text-xl font-bold text-blue-700">
-                    SK
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">Sarah K.</p>
-                    <p className="text-sm text-gray-600">Fantasy Author</p>
-                  </div>
-                </div>
+            <div className="text-center">
+              <div className="w-24 h-24 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-5xl mx-auto mb-4">
+                ✨
               </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Sam</h3>
+              <p className="text-gray-600 mb-2">Line Editor</p>
+              <p className="text-sm text-gray-500">Prose polish & style refinement</p>
+            </div>
 
-              {/* Testimonial 2 */}
-              <div className="rounded-2xl bg-gray-50 p-8 shadow-lg">
-                <div className="mb-4 flex gap-1 text-yellow-400">
-                  ⭐⭐⭐⭐⭐
-                </div>
-                <p className="mb-6 text-gray-700 italic">
-                  &quot;Sam&apos;s line editing was incredible. Every sentence flows better now. The precision and attention to prose quality is exactly what I needed.&quot;
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-full bg-purple-200 flex items-center justify-center text-xl font-bold text-purple-700">
-                    MT
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">Michael T.</p>
-                    <p className="text-sm text-gray-600">Literary Fiction</p>
-                  </div>
-                </div>
+            <div className="text-center">
+              <div className="w-24 h-24 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center text-5xl mx-auto mb-4">
+                🔍
               </div>
-
-              {/* Testimonial 3 */}
-              <div className="rounded-2xl bg-gray-50 p-8 shadow-lg">
-                <div className="mb-4 flex gap-1 text-yellow-400">
-                  ⭐⭐⭐⭐⭐
-                </div>
-                <p className="mb-6 text-gray-700 italic">
-                  &quot;Jordan caught so many consistency issues I would have missed. Having all three editors work on my manuscript was worth every penny.&quot;
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-full bg-green-200 flex items-center justify-center text-xl font-bold text-green-700">
-                    JL
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">Jennifer L.</p>
-                    <p className="text-sm text-gray-600">Mystery Thriller</p>
-                  </div>
-                </div>
-              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Jordan</h3>
+              <p className="text-gray-600 mb-2">Copy Editor</p>
+              <p className="text-sm text-gray-500">Grammar & technical accuracy</p>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* FAQ */}
-      <section className="bg-gradient-to-br from-gray-50 to-gray-100 py-20">
-        <div className="container mx-auto px-4">
-          <div className="mx-auto max-w-3xl">
-            <div className="mb-16 text-center">
-              <h2 className="mb-4 text-4xl font-bold text-gray-900">
-                Frequently Asked Questions
-              </h2>
-            </div>
-
-            <div className="space-y-6">
-              <details className="group rounded-xl bg-white p-6 shadow-lg">
-                <summary className="cursor-pointer text-lg font-semibold text-gray-900 list-none flex justify-between items-center">
-                  How is this different from traditional editing services?
-                  <span className="text-2xl group-open:rotate-45 transition-transform">+</span>
-                </summary>
-                <p className="mt-4 text-gray-700">
-                  Traditional editing services provide static reports. With AuthorLab.ai, you work interactively with Alex, Sam, and Jordan through our editing workspace. Make changes in real-time, ask questions, and get immediate feedback throughout the entire process.
-                </p>
-              </details>
-
-              <details className="group rounded-xl bg-white p-6 shadow-lg">
-                <summary className="cursor-pointer text-lg font-semibold text-gray-900 list-none flex justify-between items-center">
-                  How long does the complete process take?
-                  <span className="text-2xl group-open:rotate-45 transition-transform">+</span>
-                </summary>
-                <p className="mt-4 text-gray-700">
-                  The timeline depends on your manuscript length and how quickly you implement feedback. Most authors complete all 4 phases in 4-8 weeks. You control the pace - work as fast or as slow as you need.
-                </p>
-              </details>
-
-              <details className="group rounded-xl bg-white p-6 shadow-lg">
-                <summary className="cursor-pointer text-lg font-semibold text-gray-900 list-none flex justify-between items-center">
-                  What makes Alex, Sam, and Jordan different?
-                  <span className="text-2xl group-open:rotate-45 transition-transform">+</span>
-                </summary>
-                <p className="mt-4 text-gray-700">
-                  Each AI editor has distinct expertise and personality. Alex focuses on creative story development, Sam refines prose and flow, and Jordan ensures technical perfection. Working with all three gives you comprehensive editing coverage.
-                </p>
-              </details>
-
-              <details className="group rounded-xl bg-white p-6 shadow-lg">
-                <summary className="cursor-pointer text-lg font-semibold text-gray-900 list-none flex justify-between items-center">
-                  Is my manuscript kept confidential?
-                  <span className="text-2xl group-open:rotate-45 transition-transform">+</span>
-                </summary>
-                <p className="mt-4 text-gray-700">
-                  Absolutely. Your manuscript is 100% confidential and secure. We use enterprise-grade encryption, and your work is never shared or used for any purpose other than providing you with editing services.
-                </p>
-              </details>
-
-              <details className="group rounded-xl bg-white p-6 shadow-lg">
-                <summary className="cursor-pointer text-lg font-semibold text-gray-900 list-none flex justify-between items-center">
-                  What if I&apos;m not satisfied?
-                  <span className="text-2xl group-open:rotate-45 transition-transform">+</span>
-                </summary>
-                <p className="mt-4 text-gray-700">
-                  We offer a 30-day satisfaction guarantee. If you&apos;re not happy with the quality of editing in the first phase, we&apos;ll refund your investment. Try our free analysis first to see the quality of AI feedback.
-                </p>
-              </details>
-
-              <details className="group rounded-xl bg-white p-6 shadow-lg">
-                <summary className="cursor-pointer text-lg font-semibold text-gray-900 list-none flex justify-between items-center">
-                  Do you offer payment plans?
-                  <span className="text-2xl group-open:rotate-45 transition-transform">+</span>
-                </summary>
-                <p className="mt-4 text-gray-700">
-                  Currently, the $399 Author Studio package is a one-time payment. We&apos;re working on payment plan options - contact us if you&apos;d like to be notified when they&apos;re available.
-                </p>
-              </details>
-            </div>
+          <div className="mt-12">
+            <Link href="/editors">
+              <Button variant="outline" className="px-8 py-6">
+                Meet the Full Team
+              </Button>
+            </Link>
           </div>
         </div>
-      </section>
+      </div>
 
       {/* Final CTA */}
-      <section className="bg-gradient-to-br from-blue-900 via-purple-900 to-blue-900 py-20 text-white">
-        <div className="container mx-auto px-4">
-          <div className="mx-auto max-w-3xl text-center">
-            <h2 className="mb-6 text-4xl font-bold md:text-5xl">
-              Ready to Transform Your Manuscript?
+      <div className="bg-gradient-to-br from-blue-900 to-purple-900 py-20">
+        <div className="container mx-auto px-4 text-center">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              Ready to Transform Your Writing?
             </h2>
-            <p className="mb-10 text-xl opacity-95">
-              Start with a free analysis or dive straight into the complete editing journey with Alex, Sam, and Jordan.
+            <p className="text-xl text-blue-100 mb-8">
+              Join the future of collaborative writing. Experience what it&apos;s like to have a professional editor, writing coach, and creative partner available 24/7.
             </p>
-            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <div className="flex gap-4 justify-center flex-wrap">
               <Link href="/free-analysis">
-                <Button className="px-8 py-6 text-lg shadow-2xl">
+                <Button variant="outline" className="text-lg px-8 py-6 bg-white/10 border-white/30 text-white hover:bg-white/20">
                   Get Free Analysis
                 </Button>
               </Link>
               <Link href="/signup">
-                <Button variant="outline" className="border-white/30 bg-white/10 px-8 py-6 text-lg text-white hover:bg-white/20">
-                  Start Full Journey - $399
+                <Button className="text-lg px-8 py-6">
+                  Start Complete Journey - $399
                 </Button>
               </Link>
             </div>
+
+            {/* Quick Links */}
+            <div className="mt-12 pt-8 border-t border-white/20">
+              <div className="flex flex-wrap justify-center gap-6 text-sm">
+                <Link href="/how-it-works" className="text-blue-200 hover:text-white transition-colors">
+                  How It Works
+                </Link>
+                <Link href="/pricing" className="text-blue-200 hover:text-white transition-colors">
+                  Pricing
+                </Link>
+                <Link href="/editors" className="text-blue-200 hover:text-white transition-colors">
+                  Our Editors
+                </Link>
+                <Link href="/faq" className="text-blue-200 hover:text-white transition-colors">
+                  FAQ
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
-      </section>
+      </div>
     </div>
   )
 }
