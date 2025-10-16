@@ -271,7 +271,7 @@ export default function FAQPage() {
               Still Have Questions?
             </h2>
             <p className="text-xl text-gray-600 mb-8">
-              Can&apos;t find what you&apos;re looking for? We&apos;re here to help!
+              Cannot find what you are looking for? We are here to help!
             </p>
 
             <div className="grid md:grid-cols-2 gap-6">
@@ -281,12 +281,9 @@ export default function FAQPage() {
                 <p className="text-gray-600 mb-4">
                   Get detailed answers to your questions via email.
                 </p>
-                
-                  href="mailto:support@authorlab.ai"
-                  className="text-blue-600 hover:underline font-semibold"
-                >
+                <div className="text-blue-600 hover:underline font-semibold">
                   support@authorslab.ai
-                </a>
+                </div>
               </div>
 
               <div className="bg-white rounded-xl p-8 shadow-md border border-gray-200">
