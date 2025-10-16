@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect, FormEvent, ChangeEvent, DragEvent } from 'react'
+import { Suspense, useState, useEffect, FormEvent, ChangeEvent, DragEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
-export default function OnboardingPage() {
+function OnboardingContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   
@@ -128,21 +128,24 @@ export default function OnboardingPage() {
       })
 
       let wordCountResult
+      let finalWordCount = 0
       try {
         wordCountResult = await wordCountResponse.json()
-        setWordCount(wordCountResult.wordCount || countWords(text))
+        finalWordCount = wordCountResult.wordCount || countWords(text)
       } catch (e) {
-        setWordCount(countWords(text))
+        finalWordCount = countWords(text)
       }
+
+      setWordCount(finalWordCount)
 
       // Store in session
       sessionStorage.setItem('manuscriptContent', text)
-      sessionStorage.setItem('uploadedWordCount', wordCount.toString())
+      sessionStorage.setItem('uploadedWordCount', finalWordCount.toString())
       sessionStorage.setItem('manuscriptId', manuscriptId)
       sessionStorage.setItem('userId', userId)
 
       setUploadStatus('success')
-      setStatusMessage(`✅ Perfect! Your manuscript has been analyzed. ${wordCount.toLocaleString()} words ready for your AI specialists!`)
+      setStatusMessage(`✅ Perfect! Your manuscript has been analyzed. ${finalWordCount.toLocaleString()} words ready for your AI specialists!`)
       setIsProcessing(false)
 
     } catch (error) {
@@ -508,5 +511,17 @@ export default function OnboardingPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function OnboardingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
+        <div className="text-white text-2xl">Loading...</div>
+      </div>
+    }>
+      <OnboardingContent />
+    </Suspense>
   )
 }
