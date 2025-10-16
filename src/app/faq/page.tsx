@@ -285,7 +285,7 @@ export default function FAQPage() {
                   href="mailto:support@authorlab.ai"
                   className="text-blue-600 hover:underline font-semibold"
                 >
-                  support@authorlab.ai
+                  support@authorslab.ai
                 </a>
               </div>
 
