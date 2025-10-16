@@ -12,7 +12,7 @@ export default function HowItWorksPage() {
               📚 AuthorsLab.ai
             </Link>
             <div className="flex items-center gap-6">
-              <Link href="/how-it-works" className="text-gray-700 hover:text-blue-900 font-semibold">
+              <Link href="/how-it-works" className="text-blue-900 font-semibold border-b-2 border-blue-900">
                 How It Works
               </Link>
               <Link href="/pricing" className="text-gray-700 hover:text-blue-900 font-semibold">
