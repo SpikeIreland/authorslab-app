@@ -1,8 +1,9 @@
 'use client'
 
-import { createManuscript, createChapter, updateAuthorProfile } from '@/lib/supabase/queries'
 import { Suspense, useState, useEffect, FormEvent, ChangeEvent, DragEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { createManuscript, updateAuthorProfile } from '@/lib/supabase/queries'
+import type { AuthorProfile } from '@/lib/supabase/queries'
 
 function OnboardingContent() {
     const router = useRouter()
@@ -232,28 +233,21 @@ function OnboardingContent() {
 
             console.log('✅ Manuscript created:', manuscript.id)
 
-            // Step 2: Create chapters in Supabase
-            if (chapters && chapters.length > 0) {
-                console.log('📚 Creating chapters in Supabase...')
-                for (const chapter of chapters) {
-                    await createChapter({
-                        manuscript_id: manuscript.id,
-                        chapter_number: chapter.number,
-                        title: chapter.title,
-                        content: chapter.content,
-                        word_count: chapter.wordCount || 0
-                    })
-                }
-                console.log('✅ Chapters created')
-            }
+            // Step 2: Store session data
+            sessionStorage.setItem('onboardingComplete', 'true')
+            sessionStorage.setItem('manuscriptTitle', manuscriptTitle)
+            sessionStorage.setItem('manuscriptGenre', genre)
+            sessionStorage.setItem('manuscriptId', manuscript.id)
 
             // Step 3: Mark onboarding as complete
             await updateAuthorProfile(userId, {
                 onboarding_complete: true
-            })
+            } as Partial<AuthorProfile>)
 
-            // Step 4: Also send to n8n webhook for workflow processing
+            // Step 4: Trigger n8n workflows for chapter parsing and analysis
             console.log('🔄 Triggering n8n workflows...')
+
+            // Send to onboarding webhook
             const webhookData = {
                 accountData: { email, firstName, lastName },
                 userId: userId,
@@ -284,15 +278,9 @@ function OnboardingContent() {
                 body: JSON.stringify(webhookData)
             })
 
-            console.log('✅ n8n workflows triggered')
+            console.log('✅ Onboarding webhook triggered')
 
-            // Step 5: Store session data
-            sessionStorage.setItem('onboardingComplete', 'true')
-            sessionStorage.setItem('manuscriptTitle', manuscriptTitle)
-            sessionStorage.setItem('manuscriptGenre', genre)
-            sessionStorage.setItem('manuscriptId', manuscript.id)
-
-            // Step 6: Trigger chapter parsing webhook
+            // Trigger chapter parsing (this will create chapters in Supabase via n8n)
             console.log('📚 Triggering chapter parsing...')
             fetch('https://spikeislandstudios.app.n8n.cloud/webhook/parse-chapters', {
                 method: 'POST',
@@ -304,12 +292,15 @@ function OnboardingContent() {
                     hasPrologue: hasPrologue,
                     hasEpilogue: hasEpilogue
                 })
-            }).catch(err => console.error('Chapter parsing error:', err))
+            }).then(() => {
+                console.log('✅ Chapter parsing triggered')
+            }).catch(err => console.error('⚠️ Chapter parsing error:', err))
 
-            // Step 7: Redirect to author studio
+            // Step 5: Redirect to author studio
+            console.log('✅ Redirecting to author studio...')
             setTimeout(() => {
                 router.push(`/author-studio?userId=${userId}&manuscriptId=${manuscript.id}`)
-            }, 1000)
+            }, 1500)
 
         } catch (error) {
             console.error('❌ Onboarding error:', error)
@@ -376,9 +367,9 @@ function OnboardingContent() {
                                 onDrop={handleDrop}
                                 onClick={() => document.getElementById('fileInput')?.click()}
                                 className={`border-4 border-dashed rounded-3xl p-12 text-center transition-all cursor-pointer ${dragOver ? 'border-blue-600 bg-blue-50' :
-                                        uploadStatus === 'processing' ? 'border-yellow-500 bg-yellow-50 animate-pulse' :
-                                            uploadStatus === 'success' ? 'border-green-500 bg-green-50' :
-                                                'border-gray-300 bg-gray-50 hover:border-blue-400 hover:bg-blue-50/50'
+                                    uploadStatus === 'processing' ? 'border-yellow-500 bg-yellow-50 animate-pulse' :
+                                        uploadStatus === 'success' ? 'border-green-500 bg-green-50' :
+                                            'border-gray-300 bg-gray-50 hover:border-blue-400 hover:bg-blue-50/50'
                                     }`}
                             >
                                 <div className="text-6xl mb-5">
@@ -433,9 +424,9 @@ function OnboardingContent() {
                             {/* Status Message */}
                             {statusMessage && (
                                 <div className={`mt-6 p-5 rounded-xl text-center font-medium ${uploadStatus === 'processing' ? 'bg-yellow-50 text-yellow-900 border-2 border-yellow-500' :
-                                        uploadStatus === 'success' ? 'bg-green-50 text-green-900 border-2 border-green-500' :
-                                            uploadStatus === 'error' ? 'bg-red-50 text-red-900 border-2 border-red-500' :
-                                                ''
+                                    uploadStatus === 'success' ? 'bg-green-50 text-green-900 border-2 border-green-500' :
+                                        uploadStatus === 'error' ? 'bg-red-50 text-red-900 border-2 border-red-500' :
+                                            ''
                                     }`}>
                                     {statusMessage}
                                 </div>
