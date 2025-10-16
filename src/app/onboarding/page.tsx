@@ -100,9 +100,18 @@ function OnboardingContent() {
                 for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
                     const page = await pdf.getPage(pageNum)
                     const textContent = await page.getTextContent()
+
+                    // Handle both TextItem and TextMarkedContent types
                     const pageText = textContent.items
-                        .map((item: { str: string }) => item.str)
+                        .map((item) => {
+                            // Type guard: check if item has 'str' property (TextItem)
+                            if ('str' in item) {
+                                return item.str
+                            }
+                            return '' // TextMarkedContent doesn't have str
+                        })
                         .join(' ')
+
                     fullText += pageText + '\n\n'
                 }
 
