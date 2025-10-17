@@ -25,7 +25,6 @@ export default function SignupPage() {
     setIsLoading(true)
     setError('')
 
-    // Validation
     if (password !== confirmPassword) {
       setError('Passwords do not match')
       setIsLoading(false)
@@ -39,6 +38,8 @@ export default function SignupPage() {
     }
 
     try {
+      console.log('🚀 Starting signup process...')
+
       // Step 1: Sign up with Supabase Auth
       const { data: authData, error: signupError } = await supabase.auth.signUp({
         email: email,
@@ -53,66 +54,65 @@ export default function SignupPage() {
       })
 
       if (signupError) throw signupError
-
-      if (!authData.user) {
-        throw new Error('Signup failed - no user returned')
-      }
+      if (!authData.user) throw new Error('Signup failed - no user returned')
 
       console.log('✅ Auth user created:', authData.user.id)
 
-      // Step 2: Wait for trigger to create profile
-      await new Promise(resolve => setTimeout(resolve, 2000)) // Increase wait time
+      // Step 2: Wait for trigger to create profile (increased wait time)
+      console.log('⏳ Waiting for profile creation...')
+      await new Promise(resolve => setTimeout(resolve, 3000))
 
-      // Step 3: Get the profile ID from Supabase
+      // Step 3: Query profile directly using Supabase admin query
+      let profileId = null
+
       try {
-        // Query by auth_user_id to get the profile
-        const { data: profiles, error: profileError } = await supabase
+        const { data: profiles, error: fetchError } = await supabase
           .from('author_profiles')
-          .select('id, auth_user_id')
+          .select('id, auth_user_id, email')
           .eq('auth_user_id', authData.user.id)
-          .single()
+          .maybeSingle() // Use maybeSingle instead of single to avoid errors if no rows
 
-        if (profileError) throw profileError
+        console.log('Profile query result:', profiles, fetchError)
 
-        if (profiles) {
-          console.log('✅ Author profile found:', profiles.id)
-          localStorage.setItem('authorProfileId', profiles.id)
+        if (profiles && profiles.id) {
+          profileId = profiles.id
+          console.log('✅ Profile found:', profileId)
+        } else {
+          console.log('⚠️ Profile not found, will be created later')
         }
-      } catch (profileError) {
-        console.log('Profile fetch error:', profileError)
-
-        // Fallback: try to create profile manually
-        try {
-          const newProfile = await createAuthorProfile({
-            auth_user_id: authData.user.id,
-            email: email,
-            first_name: firstName,
-            last_name: lastName
-          })
-          console.log('✅ Author profile created manually:', newProfile.id)
-          localStorage.setItem('authorProfileId', newProfile.id)
-        } catch (createError) {
-          console.error('Could not create profile:', createError)
-          // Continue anyway - we'll handle missing profile in onboarding
-        }
+      } catch (queryError) {
+        console.log('Profile query error:', queryError)
+        // Continue without profile ID - onboarding can handle this
       }
 
-      // Step 4: Store in localStorage
+      // Step 4: Store user data in localStorage
       localStorage.setItem('currentUserId', authData.user.id)
       localStorage.setItem('currentUserEmail', email)
       localStorage.setItem('currentUserFirstName', firstName)
       localStorage.setItem('currentUserLastName', lastName)
 
-      console.log('✅ Redirecting to onboarding...')
+      if (profileId) {
+        localStorage.setItem('authorProfileId', profileId)
+      }
 
-      // Step 5: Redirect with profileId in URL
-      const profileId = localStorage.getItem('authorProfileId')
-      router.push(
-        `/onboarding?userId=${authData.user.id}&authorProfileId=${profileId || ''}&firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&email=${encodeURIComponent(email)}`
-      )
+      console.log('✅ Stored in localStorage:', {
+        userId: authData.user.id,
+        profileId: profileId || 'none',
+        email,
+        firstName,
+        lastName
+      })
+
+      // Step 5: Redirect to onboarding
+      const redirectUrl = profileId
+        ? `/onboarding?userId=${authData.user.id}&authorProfileId=${profileId}&firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&email=${encodeURIComponent(email)}`
+        : `/onboarding?userId=${authData.user.id}&firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&email=${encodeURIComponent(email)}`
+
+      console.log('✅ Redirecting to:', redirectUrl)
+      router.push(redirectUrl)
 
     } catch (error: unknown) {
-      console.error('Signup error:', error)
+      console.error('❌ Signup error:', error)
       if (error instanceof Error) {
         setError(error.message)
       } else {

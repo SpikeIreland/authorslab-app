@@ -42,18 +42,51 @@ function OnboardingContent() {
     }, [loadAuthorName])
 
     useEffect(() => {
-        // Get authorProfileId from URL or localStorage
-        const profileIdFromUrl = searchParams.get('authorProfileId')
-        const profileIdFromStorage = localStorage.getItem('authorProfileId')
+        const fetchProfileId = async () => {
+            // Try URL first
+            let profileId = searchParams.get('authorProfileId')
 
-        const profileId = profileIdFromUrl || profileIdFromStorage
+            // Then try localStorage
+            if (!profileId) {
+                profileId = localStorage.getItem('authorProfileId')
+            }
 
-        if (profileId) {
-            localStorage.setItem('authorProfileId', profileId)
-            console.log('✅ authorProfileId set:', profileId)
-        } else {
-            console.warn('⚠️ No authorProfileId found in URL or localStorage')
+            // If still missing, query Supabase
+            if (!profileId) {
+                const userId = searchParams.get('userId') || localStorage.getItem('currentUserId')
+
+                if (userId) {
+                    console.log('⚠️ No profileId found, querying Supabase for user:', userId)
+
+                    try {
+                        const { createClient } = await import('@/lib/supabase/client')
+                        const supabase = createClient()
+
+                        const { data: profile } = await supabase
+                            .from('author_profiles')
+                            .select('id')
+                            .eq('auth_user_id', userId)
+                            .maybeSingle()
+
+                        if (profile && profile.id) {
+                            profileId = profile.id
+                            console.log('✅ Found profile from Supabase:', profileId)
+                        }
+                    } catch (error) {
+                        console.error('Error fetching profile:', error)
+                    }
+                }
+            }
+
+            if (profileId) {
+                localStorage.setItem('authorProfileId', profileId)
+                console.log('✅ authorProfileId set:', profileId)
+            } else {
+                console.warn('⚠️ Still no authorProfileId - form submission will fail')
+            }
         }
+
+        fetchProfileId()
     }, [searchParams])
 
     const generateManuscriptId = () => {
