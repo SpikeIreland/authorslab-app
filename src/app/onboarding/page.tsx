@@ -240,6 +240,8 @@ function OnboardingContent() {
     }
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+        console.log('=== FORM SUBMIT START ===')
+        e.preventDefault()
 
         const formData = new FormData(e.currentTarget)
         const userId = searchParams.get('userId') || localStorage.getItem('currentUserId')
@@ -248,8 +250,37 @@ function OnboardingContent() {
         const firstName = searchParams.get('firstName') || localStorage.getItem('currentUserFirstName')
         const lastName = searchParams.get('lastName') || localStorage.getItem('currentUserLastName')
 
-        if (!userId || !authorProfileId) {
+        console.log('Form state:', {
+            hasFile: !!file,
+            fileName: file?.name,
+            wordCount,
+            textLength: extractedText?.length,
+            userId,
+            authorProfileId,
+            email
+        })
+
+        if (!userId) {
+            console.error('❌ No userId found!')
             setStatusMessage('❌ Error: User not identified. Please log in again.')
+            return
+        }
+
+        if (!authorProfileId) {
+            console.error('❌ No authorProfileId found!')
+            setStatusMessage('❌ Error: Profile not found. Please try logging out and back in.')
+            return
+        }
+
+        if (!file) {
+            console.error('❌ No file uploaded!')
+            setStatusMessage('❌ Error: Please upload a manuscript first.')
+            return
+        }
+
+        if (!extractedText) {
+            console.error('❌ No text extracted!')
+            setStatusMessage('❌ Error: Could not read manuscript content.')
             return
         }
 
@@ -259,7 +290,22 @@ function OnboardingContent() {
         const manuscriptTitle = formData.get('manuscriptTitle') as string
         const genre = formData.get('genre') as string
 
+        console.log('Form values:', {
+            manuscriptTitle,
+            genre,
+            chapterCount,
+            hasPrologue,
+            hasEpilogue
+        })
+
+        if (!manuscriptTitle || !genre) {
+            console.error('❌ Missing required fields!')
+            setStatusMessage('❌ Error: Please fill in all required fields.')
+            return
+        }
+
         setIsSubmitting(true)
+        console.log('🚀 Starting manuscript creation...')
 
         try {
             // Step 1: Create manuscript in Supabase
@@ -285,14 +331,16 @@ function OnboardingContent() {
             sessionStorage.setItem('manuscriptId', manuscript.id)
 
             // Step 3: Mark onboarding as complete
+            console.log('📝 Updating author profile...')
             await updateAuthorProfile(userId, {
                 onboarding_complete: true
             } as Partial<AuthorProfile>)
 
-            // Step 4: Trigger n8n workflows for chapter parsing and analysis
+            console.log('✅ Profile updated')
+
+            // Step 4: Trigger n8n workflows
             console.log('🔄 Triggering n8n workflows...')
 
-            // Send to onboarding webhook
             const webhookData = {
                 accountData: { email, firstName, lastName },
                 userId: userId,
@@ -317,15 +365,15 @@ function OnboardingContent() {
                 timestamp: new Date().toISOString()
             }
 
-            await fetch(ONBOARDING_WEBHOOK, {
+            const webhookResponse = await fetch(ONBOARDING_WEBHOOK, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(webhookData)
             })
 
-            console.log('✅ Onboarding webhook triggered')
+            console.log('Webhook response:', webhookResponse.status)
 
-            // Trigger chapter parsing (this will create chapters in Supabase via n8n)
+            // Trigger chapter parsing
             console.log('📚 Triggering chapter parsing...')
             fetch('https://spikeislandstudios.app.n8n.cloud/webhook/parse-chapters', {
                 method: 'POST',
@@ -337,23 +385,25 @@ function OnboardingContent() {
                     hasPrologue: hasPrologue,
                     hasEpilogue: hasEpilogue
                 })
-            }).then(() => {
-                console.log('✅ Chapter parsing triggered')
             }).catch(err => console.error('⚠️ Chapter parsing error:', err))
 
             // Step 5: Redirect to author studio
             console.log('✅ Redirecting to author studio...')
+            console.log('Redirect URL:', `/author-studio?userId=${userId}&manuscriptId=${manuscript.id}`)
+
             setTimeout(() => {
                 router.push(`/author-studio?userId=${userId}&manuscriptId=${manuscript.id}`)
             }, 1500)
 
         } catch (error) {
-            console.error('❌ Onboarding error:', error)
+            console.error('❌ SUBMISSION ERROR:', error)
             setIsSubmitting(false)
             const errorMessage = error instanceof Error ? error.message : 'Onboarding failed'
             setStatusMessage(`❌ Error: ${errorMessage}`)
             setUploadStatus('error')
         }
+
+        console.log('=== FORM SUBMIT END ===')
     }
 
     const isFormValid = file && wordCount > 0
