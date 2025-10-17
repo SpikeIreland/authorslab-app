@@ -78,152 +78,80 @@ function OnboardingContent() {
     const extractTextFromFile = async (file: File): Promise<string> => {
         const fileName = file.name.toLowerCase()
 
-        if (fileName.endsWith('.txt')) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader()
-                reader.onload = (e) => resolve(e.target?.result as string || '')
-                reader.onerror = () => reject(new Error('Failed to read text file'))
-                reader.readAsText(file)
+        if (!fileName.endsWith('.pdf')) {
+            throw new Error('Only PDF files are supported at this time. Please convert your manuscript to PDF.')
+        }
+
+        // Send PDF to word count webhook
+        try {
+            const formData = new FormData()
+            formData.append('file', file)
+            formData.append('fileName', file.name)
+            formData.append('fileSize', file.size.toString())
+
+            setStatusMessage('📄 Analyzing PDF...')
+
+            const response = await fetch(WORD_COUNT_WEBHOOK, {
+                method: 'POST',
+                body: formData
             })
-        } else if (fileName.endsWith('.docx') || fileName.endsWith('.doc')) {
-            // Extract text from DOCX using mammoth
-            try {
-                const mammoth = await import('mammoth')
-                const arrayBuffer = await file.arrayBuffer()
-                const result = await mammoth.extractRawText({ arrayBuffer })
 
-                if (!result.value || result.value.length < 100) {
-                    throw new Error('Could not extract sufficient text from document')
-                }
-
-                return result.value
-            } catch (error) {
-                console.error('DOCX extraction error:', error)
-                throw new Error('Failed to extract text from Word document. Please ensure the file is not corrupted.')
+            if (!response.ok) {
+                throw new Error(`PDF processing failed: ${response.status}`)
             }
-        } else if (fileName.endsWith('.pdf')) {
-            // Extract text from PDF using PDF.js
-            try {
-                const pdfjsLib = await import('pdfjs-dist')
 
-                pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+            const result = await response.json()
 
-                const arrayBuffer = await file.arrayBuffer()
-                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
-                let fullText = ''
+            // Extract the text and word count from response
+            const extractedText = result.text || result.extractedText || result.manuscriptText || ''
+            const calculatedWordCount = result.wordCount || result.word_count || 0
 
-                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                    const page = await pdf.getPage(pageNum)
-                    const textContent = await page.getTextContent()
-
-                    // Handle both TextItem and TextMarkedContent types
-                    const pageText = textContent.items
-                        .map((item) => {
-                            // Type guard: check if item has 'str' property (TextItem)
-                            if ('str' in item) {
-                                return item.str
-                            }
-                            return '' // TextMarkedContent doesn't have str
-                        })
-                        .join(' ')
-
-                    fullText += pageText + '\n\n'
-                }
-
-                if (!fullText || fullText.length < 100) {
-                    throw new Error('Could not extract sufficient text from PDF')
-                }
-
-                return fullText
-            } catch (error) {
-                console.error('PDF extraction error:', error)
-                throw new Error('Failed to extract text from PDF. Please ensure the file is not password-protected or corrupted.')
+            if (!extractedText || extractedText.length < 100) {
+                throw new Error('Could not extract text from PDF. Please ensure the file is not password-protected.')
             }
-        } else {
-            throw new Error('Unsupported file format. Please upload PDF, DOCX, DOC, or TXT.')
+
+            // Set word count from the webhook response
+            setWordCount(calculatedWordCount)
+            console.log('✅ PDF processed:', calculatedWordCount, 'words')
+
+            return extractedText
+
+        } catch (error) {
+            console.error('PDF extraction error:', error)
+            throw new Error('Failed to process PDF. Please ensure the file is not password-protected or corrupted.')
         }
     }
 
     const handleFileSelection = async (selectedFile: File) => {
         setFile(selectedFile)
         setUploadStatus('processing')
-        setStatusMessage('📖 Reading your manuscript...')
+        setStatusMessage('📖 Processing your PDF manuscript...')
         setIsProcessing(true)
 
         const userId = searchParams.get('userId') || localStorage.getItem('currentUserId')
 
         if (!userId) {
             setUploadStatus('error')
-            setStatusMessage('Error: User not identified. Please log in again.')
+            setStatusMessage('❌ Error: User not identified. Please log in again.')
             setIsProcessing(false)
             return
         }
 
         try {
-            // Extract text
-            setStatusMessage('🔍 Analyzing your text...')
+            // Extract text - this calls pdf-word-count webhook
             const text = await extractTextFromFile(selectedFile)
             setExtractedText(text)
 
-            if (!text || text.length < 100) {
-                throw new Error('Could not extract readable text from the file')
-            }
-
-            // Send to word count workflow
-            const textPayload = {
-                manuscriptText: text,
-                fileName: selectedFile.name,
-                manuscriptId: manuscriptId,
-                fileSize: selectedFile.size,
-                fileType: selectedFile.type,
-                phaseType: 'developmental_editing',
-                textLength: text.length,
-                userId: userId,
-                author_id: userId,
-                manuscriptTitle: 'Processing',
-                genre: 'fiction'
-            }
-
-            const wordCountResponse = await fetch(WORD_COUNT_WEBHOOK, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(textPayload)
-            })
-
-            let wordCountResult
-            let finalWordCount = 0
-            try {
-                wordCountResult = await wordCountResponse.json()
-                finalWordCount = wordCountResult.wordCount || countWords(text)
-            } catch (e) {
-                finalWordCount = countWords(text)
-            }
-
-            setWordCount(finalWordCount)
-
-            // Store in session
-            sessionStorage.setItem('manuscriptContent', text)
-            sessionStorage.setItem('uploadedWordCount', finalWordCount.toString())
-            sessionStorage.setItem('manuscriptId', manuscriptId)
-            sessionStorage.setItem('userId', userId)
-
             setUploadStatus('success')
-            setStatusMessage(`✅ Perfect! Your manuscript has been analyzed. ${finalWordCount.toLocaleString()} words ready for your AI specialists!`)
-            setIsProcessing(false)
+            setStatusMessage(`✅ Manuscript processed: ${wordCount.toLocaleString()} words`)
 
         } catch (error) {
             console.error('File processing error:', error)
-
-            // Fallback to estimation
-            const estimated = estimateWordCount(selectedFile)
-            setWordCount(estimated)
-            setUploadStatus('success')
-            setStatusMessage(`✅ Great! Your manuscript is ready. Your AI specialists are excited to work with you!`)
+            setUploadStatus('error')
+            const errorMessage = error instanceof Error ? error.message : 'File processing failed'
+            setStatusMessage(`❌ ${errorMessage}`)
+        } finally {
             setIsProcessing(false)
-
-            sessionStorage.setItem('manuscriptContent', `[File: ${selectedFile.name}]\n\nYour manuscript content will be processed when you enter the writing studio.`)
-            sessionStorage.setItem('uploadedWordCount', estimated.toString())
-            sessionStorage.setItem('manuscriptId', manuscriptId)
         }
     }
 
@@ -255,8 +183,8 @@ function OnboardingContent() {
     }
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-        console.log('=== FORM SUBMIT START ===')
         e.preventDefault()
+        console.log('=== FORM SUBMIT START ===')
 
         const formData = new FormData(e.currentTarget)
         const userId = searchParams.get('userId') || localStorage.getItem('currentUserId')
@@ -265,37 +193,16 @@ function OnboardingContent() {
         const firstName = searchParams.get('firstName') || localStorage.getItem('currentUserFirstName')
         const lastName = searchParams.get('lastName') || localStorage.getItem('currentUserLastName')
 
-        console.log('Form state:', {
+        console.log('Submit validation:', {
             hasFile: !!file,
-            fileName: file?.name,
+            hasText: !!extractedText,
             wordCount,
-            textLength: extractedText?.length,
             userId,
-            authorProfileId,
-            email
+            authorProfileId
         })
 
-        if (!userId) {
-            console.error('❌ No userId found!')
-            setStatusMessage('❌ Error: User not identified. Please log in again.')
-            return
-        }
-
-        if (!authorProfileId) {
-            console.error('❌ No authorProfileId found!')
-            setStatusMessage('❌ Error: Profile not found. Please try logging out and back in.')
-            return
-        }
-
-        if (!file) {
-            console.error('❌ No file uploaded!')
-            setStatusMessage('❌ Error: Please upload a manuscript first.')
-            return
-        }
-
-        if (!extractedText) {
-            console.error('❌ No text extracted!')
-            setStatusMessage('❌ Error: Could not read manuscript content.')
+        if (!userId || !authorProfileId || !file || !extractedText) {
+            setStatusMessage('❌ Missing required information. Please ensure you uploaded a manuscript.')
             return
         }
 
@@ -305,120 +212,99 @@ function OnboardingContent() {
         const manuscriptTitle = formData.get('manuscriptTitle') as string
         const genre = formData.get('genre') as string
 
-        console.log('Form values:', {
-            manuscriptTitle,
-            genre,
-            chapterCount,
-            hasPrologue,
-            hasEpilogue
-        })
-
         if (!manuscriptTitle || !genre) {
-            console.error('❌ Missing required fields!')
-            setStatusMessage('❌ Error: Please fill in all required fields.')
+            setStatusMessage('❌ Please fill in all required fields.')
             return
         }
 
         setIsSubmitting(true)
-        console.log('🚀 Starting manuscript creation...')
+        console.log('🚀 Submitting to onboarding webhook...')
 
         try {
-            // Step 1: Create manuscript in Supabase
-            console.log('📝 Creating manuscript in Supabase...')
-            const manuscript = await createManuscript({
-                author_id: authorProfileId,
-                title: manuscriptTitle,
-                genre: genre,
-                current_word_count: wordCount,
-                full_text: extractedText,
-                total_chapters: chapterCount,
-                expected_chapters: chapterCount,
-                has_prologue: hasPrologue,
-                has_epilogue: hasEpilogue
-            })
+            // Generate a manuscript ID if we don't have one
+            if (!manuscriptId) {
+                generateManuscriptId()
+            }
 
-            console.log('✅ Manuscript created:', manuscript.id)
+            const finalManuscriptId = manuscriptId || `ms-${Date.now()}`
 
-            // Step 2: Store session data
-            sessionStorage.setItem('onboardingComplete', 'true')
-            sessionStorage.setItem('manuscriptTitle', manuscriptTitle)
-            sessionStorage.setItem('manuscriptGenre', genre)
-            sessionStorage.setItem('manuscriptId', manuscript.id)
-
-            // Step 3: Mark onboarding as complete
-            console.log('📝 Updating author profile...')
-            await updateAuthorProfile(userId, {
-                onboarding_complete: true
-            } as Partial<AuthorProfile>)
-
-            console.log('✅ Profile updated')
-
-            // Step 4: Trigger n8n workflows
-            console.log('🔄 Triggering n8n workflows...')
-
-            const webhookData = {
-                accountData: { email, firstName, lastName },
+            // Prepare the payload for onboarding webhook
+            const onboardingPayload = {
+                // User info
                 userId: userId,
                 author_id: authorProfileId,
+                authorEmail: email,
+                firstName: firstName,
+                lastName: lastName,
+
+                // Manuscript info
+                manuscriptId: finalManuscriptId,
                 manuscriptTitle: manuscriptTitle,
+                bookTitle: manuscriptTitle,
                 genre: genre,
-                bookGenre: genre,
+
+                // Content
+                manuscriptText: extractedText,
+                manuscriptContent: extractedText,
+                wordCount: wordCount,
+
+                // Chapter info
                 chapterCount: chapterCount,
                 expectedChapters: chapterCount,
                 hasPrologue: hasPrologue,
                 hasEpilogue: hasEpilogue,
-                writingExperience: 'some-experience',
-                publishingGoal: 'improve-writing',
-                fileName: file?.name || '',
-                fileSize: file?.size || 0,
-                fileType: file?.type || '',
-                wordCount: wordCount,
-                manuscriptId: manuscript.id,
-                manuscriptContent: extractedText,
-                manuscriptText: extractedText,
+
+                // File info
+                fileName: file.name,
+                fileSize: file.size,
+                fileType: file.type,
+
+                // Metadata
                 onboardingCompleted: true,
                 timestamp: new Date().toISOString()
             }
 
-            const webhookResponse = await fetch(ONBOARDING_WEBHOOK, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(webhookData)
+            console.log('Sending to onboarding webhook:', {
+                manuscriptTitle,
+                wordCount,
+                manuscriptId: finalManuscriptId
             })
 
-            console.log('Webhook response:', webhookResponse.status)
-
-            // Trigger chapter parsing
-            console.log('📚 Triggering chapter parsing...')
-            fetch('https://spikeislandstudios.app.n8n.cloud/webhook/parse-chapters', {
+            // Send to onboarding webhook
+            const response = await fetch(ONBOARDING_WEBHOOK, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    manuscriptId: manuscript.id,
-                    manuscriptText: extractedText,
-                    expectedChapters: chapterCount,
-                    hasPrologue: hasPrologue,
-                    hasEpilogue: hasEpilogue
-                })
-            }).catch(err => console.error('⚠️ Chapter parsing error:', err))
+                body: JSON.stringify(onboardingPayload)
+            })
 
-            // Step 5: Redirect to author studio
+            if (!response.ok) {
+                throw new Error(`Onboarding webhook failed: ${response.status}`)
+            }
+
+            const result = await response.json()
+            console.log('✅ Onboarding webhook response:', result)
+
+            // Get manuscript ID from response if provided
+            const savedManuscriptId = result.manuscriptId || result.manuscript_id || finalManuscriptId
+
+            // Store in session/local storage
+            sessionStorage.setItem('onboardingComplete', 'true')
+            sessionStorage.setItem('manuscriptId', savedManuscriptId)
+            localStorage.setItem('currentManuscriptId', savedManuscriptId)
+
+            // Redirect to author studio
             console.log('✅ Redirecting to author studio...')
-            console.log('Redirect URL:', `/author-studio?userId=${userId}&manuscriptId=${manuscript.id}`)
-
             setTimeout(() => {
-                router.push(`/author-studio?userId=${userId}&manuscriptId=${manuscript.id}`)
-            }, 1500)
+                router.push(`/author-studio?userId=${userId}&manuscriptId=${savedManuscriptId}`)
+            }, 2000)
 
         } catch (error) {
             console.error('❌ SUBMISSION ERROR:', error)
             setIsSubmitting(false)
-            const errorMessage = error instanceof Error ? error.message : 'Onboarding failed'
+            const errorMessage = error instanceof Error ? error.message : 'Submission failed'
             setStatusMessage(`❌ Error: ${errorMessage}`)
             setUploadStatus('error')
         }
-
-        console.log('=== FORM SUBMIT END ===')
     }
 
     const isFormValid = file && wordCount > 0
