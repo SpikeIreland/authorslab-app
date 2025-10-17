@@ -282,12 +282,10 @@ function OnboardingContent() {
         console.log('🚀 Submitting to onboarding webhook...')
 
         try {
-            // Generate a manuscript ID if we don't have one
-            if (!manuscriptId) {
-                generateManuscriptId()
-            }
+            // Use the manuscript ID from word count, or generate a new UUID
+            const finalManuscriptId = manuscriptId || crypto.randomUUID()
 
-            const finalManuscriptId = manuscriptId || `ms-${Date.now()}`
+            console.log('Using manuscript ID:', finalManuscriptId)
 
             // Prepare the payload for onboarding webhook
             const onboardingPayload = {
