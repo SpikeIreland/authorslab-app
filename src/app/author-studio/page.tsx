@@ -404,7 +404,7 @@ function StudioContent() {
             Manuscript Not Found
           </h3>
           <p className="text-gray-600 mb-6">
-            We couldn't load your manuscript. Please try uploading again.
+            Unable to load your manuscript. Please try uploading again.
           </p>
           <button
             onClick={() => router.push('/onboarding')}
