@@ -20,7 +20,7 @@ function OnboardingContent() {
     const [statusMessage, setStatusMessage] = useState('')
     const [dragOver, setDragOver] = useState(false)
 
-    const WORD_COUNT_WEBHOOK = 'https://spikeislandstudios.app.n8n.cloud/webhook/portal-word-count'
+    const WORD_COUNT_WEBHOOK = 'https://spikeislandstudios.app.n8n.cloud/webhook/pdf-word-count'
     const ONBOARDING_WEBHOOK = 'https://spikeislandstudios.app.n8n.cloud/webhook/onboarding'
 
     const loadAuthorName = useCallback(() => {
