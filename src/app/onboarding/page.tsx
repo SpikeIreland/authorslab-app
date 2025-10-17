@@ -191,19 +191,20 @@ function OnboardingContent() {
                 body: JSON.stringify(wordCountPayload)
             })
 
+            let finalWordCount = 0
+
             if (!wordCountResponse.ok) {
                 console.warn('Word count webhook failed, calculating locally')
-                const localWordCount = countWords(extractedText)
-                setWordCount(localWordCount)
+                finalWordCount = countWords(extractedText)
             } else {
                 const wordCountResult = await wordCountResponse.json()
-                const calculatedWordCount = wordCountResult.wordCount || countWords(extractedText)
-                setWordCount(calculatedWordCount)
-                console.log('✅ Word count:', calculatedWordCount)
+                finalWordCount = wordCountResult.wordCount || countWords(extractedText)
+                console.log('✅ Word count received:', finalWordCount)
             }
 
+            setWordCount(finalWordCount)
             setUploadStatus('success')
-            setStatusMessage(`✅ Manuscript processed: ${wordCount.toLocaleString()} words`)
+            setStatusMessage(`✅ Manuscript processed: ${finalWordCount.toLocaleString()} words`)
 
         } catch (error) {
             console.error('File processing error:', error)
