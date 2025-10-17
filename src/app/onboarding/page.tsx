@@ -51,29 +51,37 @@ function OnboardingContent() {
                 profileId = localStorage.getItem('authorProfileId')
             }
 
-            // If still missing, query Supabase
+            // If still missing, query Supabase with retries
             if (!profileId) {
                 const userId = searchParams.get('userId') || localStorage.getItem('currentUserId')
 
                 if (userId) {
                     console.log('⚠️ No profileId found, querying Supabase for user:', userId)
 
-                    try {
-                        const { createClient } = await import('@/lib/supabase/client')
-                        const supabase = createClient()
+                    const { createClient } = await import('@/lib/supabase/client')
+                    const supabase = createClient()
 
-                        const { data: profile } = await supabase
-                            .from('author_profiles')
-                            .select('id')
-                            .eq('auth_user_id', userId)
-                            .maybeSingle()
+                    // Retry up to 3 times
+                    for (let attempt = 1; attempt <= 3; attempt++) {
+                        try {
+                            await new Promise(resolve => setTimeout(resolve, attempt * 1000))
 
-                        if (profile && profile.id) {
-                            profileId = profile.id
-                            console.log('✅ Found profile from Supabase:', profileId)
+                            const { data: profile } = await supabase
+                                .from('author_profiles')
+                                .select('id')
+                                .eq('auth_user_id', userId)
+                                .maybeSingle()
+
+                            if (profile && profile.id) {
+                                profileId = profile.id
+                                console.log(`✅ Found profile on attempt ${attempt}:`, profileId)
+                                break
+                            } else {
+                                console.log(`⏳ Attempt ${attempt}: Profile not found yet`)
+                            }
+                        } catch (error) {
+                            console.error(`Attempt ${attempt} error:`, error)
                         }
-                    } catch (error) {
-                        console.error('Error fetching profile:', error)
                     }
                 }
             }
@@ -82,7 +90,7 @@ function OnboardingContent() {
                 localStorage.setItem('authorProfileId', profileId)
                 console.log('✅ authorProfileId set:', profileId)
             } else {
-                console.warn('⚠️ Still no authorProfileId - form submission will fail')
+                console.error('❌ Could not find authorProfileId after all retries')
             }
         }
 

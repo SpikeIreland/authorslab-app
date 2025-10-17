@@ -58,34 +58,45 @@ export default function SignupPage() {
 
       console.log('✅ Auth user created:', authData.user.id)
 
-      // Step 2: Wait for trigger to create profile (increased wait time)
-      console.log('⏳ Waiting for profile creation...')
-      await new Promise(resolve => setTimeout(resolve, 3000))
-
-      // Step 3: Query profile directly using Supabase admin query
+      // Step 2: Wait and retry fetching profile (with exponential backoff)
       let profileId = null
+      const maxRetries = 5
 
-      try {
-        const { data: profiles, error: fetchError } = await supabase
-          .from('author_profiles')
-          .select('id, auth_user_id, email')
-          .eq('auth_user_id', authData.user.id)
-          .maybeSingle() // Use maybeSingle instead of single to avoid errors if no rows
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        console.log(`🔍 Attempt ${attempt}/${maxRetries} to fetch profile...`)
 
-        console.log('Profile query result:', profiles, fetchError)
+        // Wait before each attempt (increasing wait time)
+        await new Promise(resolve => setTimeout(resolve, attempt * 1000))
 
-        if (profiles && profiles.id) {
-          profileId = profiles.id
-          console.log('✅ Profile found:', profileId)
-        } else {
-          console.log('⚠️ Profile not found, will be created later')
+        try {
+          const { data: profile, error: fetchError } = await supabase
+            .from('author_profiles')
+            .select('id, auth_user_id')
+            .eq('auth_user_id', authData.user.id)
+            .maybeSingle()
+
+          if (fetchError) {
+            console.log('Query error:', fetchError)
+            continue
+          }
+
+          if (profile && profile.id) {
+            profileId = profile.id
+            console.log('✅ Profile found on attempt', attempt, ':', profileId)
+            break
+          } else {
+            console.log(`⏳ Profile not found yet (attempt ${attempt})`)
+          }
+        } catch (queryError) {
+          console.log('Query exception:', queryError)
         }
-      } catch (queryError) {
-        console.log('Profile query error:', queryError)
-        // Continue without profile ID - onboarding can handle this
       }
 
-      // Step 4: Store user data in localStorage
+      if (!profileId) {
+        console.warn('⚠️ Profile not found after all retries, continuing anyway')
+      }
+
+      // Step 3: Store user data in localStorage
       localStorage.setItem('currentUserId', authData.user.id)
       localStorage.setItem('currentUserEmail', email)
       localStorage.setItem('currentUserFirstName', firstName)
@@ -93,17 +104,10 @@ export default function SignupPage() {
 
       if (profileId) {
         localStorage.setItem('authorProfileId', profileId)
+        console.log('✅ Stored authorProfileId:', profileId)
       }
 
-      console.log('✅ Stored in localStorage:', {
-        userId: authData.user.id,
-        profileId: profileId || 'none',
-        email,
-        firstName,
-        lastName
-      })
-
-      // Step 5: Redirect to onboarding
+      // Step 4: Redirect to onboarding
       const redirectUrl = profileId
         ? `/onboarding?userId=${authData.user.id}&authorProfileId=${profileId}&firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&email=${encodeURIComponent(email)}`
         : `/onboarding?userId=${authData.user.id}&firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&email=${encodeURIComponent(email)}`
