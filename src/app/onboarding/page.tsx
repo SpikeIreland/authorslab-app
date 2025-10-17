@@ -41,6 +41,21 @@ function OnboardingContent() {
         loadAuthorName()
     }, [loadAuthorName])
 
+    useEffect(() => {
+        // Get authorProfileId from URL or localStorage
+        const profileIdFromUrl = searchParams.get('authorProfileId')
+        const profileIdFromStorage = localStorage.getItem('authorProfileId')
+
+        const profileId = profileIdFromUrl || profileIdFromStorage
+
+        if (profileId) {
+            localStorage.setItem('authorProfileId', profileId)
+            console.log('✅ authorProfileId set:', profileId)
+        } else {
+            console.warn('⚠️ No authorProfileId found in URL or localStorage')
+        }
+    }, [searchParams])
+
     const generateManuscriptId = () => {
         const id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
             const r = Math.random() * 16 | 0

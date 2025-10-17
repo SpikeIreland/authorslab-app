@@ -60,18 +60,28 @@ export default function SignupPage() {
 
       console.log('✅ Auth user created:', authData.user.id)
 
-      // Step 2: Wait a moment for the trigger to create the profile
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Step 2: Wait for trigger to create profile
+      await new Promise(resolve => setTimeout(resolve, 2000)) // Increase wait time
 
-      // Step 3: Try to get the profile (trigger should have created it)
+      // Step 3: Get the profile ID from Supabase
       try {
-        const profile = await getAuthorProfile(authData.user.id)
-        console.log('✅ Author profile exists:', profile.id)
-        localStorage.setItem('authorProfileId', profile.id)
-      } catch (profileError) {
-        console.log('Profile not found by trigger, creating manually...')
+        // Query by auth_user_id to get the profile
+        const { data: profiles, error: profileError } = await supabase
+          .from('author_profiles')
+          .select('id, auth_user_id')
+          .eq('auth_user_id', authData.user.id)
+          .single()
 
-        // If trigger failed, create it manually
+        if (profileError) throw profileError
+
+        if (profiles) {
+          console.log('✅ Author profile found:', profiles.id)
+          localStorage.setItem('authorProfileId', profiles.id)
+        }
+      } catch (profileError) {
+        console.log('Profile fetch error:', profileError)
+
+        // Fallback: try to create profile manually
         try {
           const newProfile = await createAuthorProfile({
             auth_user_id: authData.user.id,
@@ -83,11 +93,11 @@ export default function SignupPage() {
           localStorage.setItem('authorProfileId', newProfile.id)
         } catch (createError) {
           console.error('Could not create profile:', createError)
-          // Continue anyway - profile might exist but we can't read it yet
+          // Continue anyway - we'll handle missing profile in onboarding
         }
       }
 
-      // Step 4: Store in localStorage for immediate access
+      // Step 4: Store in localStorage
       localStorage.setItem('currentUserId', authData.user.id)
       localStorage.setItem('currentUserEmail', email)
       localStorage.setItem('currentUserFirstName', firstName)
@@ -95,9 +105,10 @@ export default function SignupPage() {
 
       console.log('✅ Redirecting to onboarding...')
 
-      // Step 5: Redirect to onboarding
+      // Step 5: Redirect with profileId in URL
+      const profileId = localStorage.getItem('authorProfileId')
       router.push(
-        `/onboarding?userId=${authData.user.id}&firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&email=${encodeURIComponent(email)}`
+        `/onboarding?userId=${authData.user.id}&authorProfileId=${profileId || ''}&firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&email=${encodeURIComponent(email)}`
       )
 
     } catch (error: unknown) {
