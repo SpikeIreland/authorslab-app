@@ -176,7 +176,6 @@ function OnboardingContent() {
                 manuscriptText: extractedText,
                 fileName: selectedFile.name,
                 fileSize: selectedFile.size,
-                manuscriptId: manuscriptId || crypto.randomUUID(),
                 phaseType: 'developmental_editing',
                 userId: userId,
                 author_id: authorProfileId,
@@ -297,15 +296,15 @@ function OnboardingContent() {
                 lastName: lastName,
 
                 // Manuscript info
-                manuscriptId: finalManuscriptId,
+                manuscriptId: crypto.randomUUID(),  // Generate fresh UUID here
                 manuscriptTitle: manuscriptTitle,
                 bookTitle: manuscriptTitle,
                 genre: genre,
 
-                // Content
+                // Content (from word count)
                 manuscriptText: extractedText,
                 manuscriptContent: extractedText,
-                wordCount: wordCount,
+                wordCount: wordCount,  // This came from word-count response
 
                 // Chapter info
                 chapterCount: chapterCount,
