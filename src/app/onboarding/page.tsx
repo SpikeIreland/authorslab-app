@@ -98,12 +98,10 @@ function OnboardingContent() {
     }, [searchParams])
 
     const generateManuscriptId = () => {
-        const id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            const r = Math.random() * 16 | 0
-            const v = c == 'x' ? r : (r & 0x3 | 0x8)
-            return v.toString(16)
-        })
-        setManuscriptId(id)
+        // Generate a proper UUID v4
+        const uuid = crypto.randomUUID()
+        setManuscriptId(uuid)
+        return uuid
     }
 
     const countWords = (text: string): number => {
@@ -123,45 +121,9 @@ function OnboardingContent() {
             throw new Error('Only PDF files are supported at this time. Please convert your manuscript to PDF.')
         }
 
-        // Send PDF to word count webhook
-        try {
-            const formData = new FormData()
-            formData.append('file', file)
-            formData.append('fileName', file.name)
-            formData.append('fileSize', file.size.toString())
-
-            setStatusMessage('📄 Analyzing PDF...')
-
-            const response = await fetch(WORD_COUNT_WEBHOOK, {
-                method: 'POST',
-                body: formData
-            })
-
-            if (!response.ok) {
-                throw new Error(`PDF processing failed: ${response.status}`)
-            }
-
-            const result = await response.json()
-
-            // Extract the text and word count from response
-            const extractedText = result.text || result.extractedText || result.manuscriptText || ''
-            const calculatedWordCount = result.wordCount || result.word_count || 0
-
-            if (!extractedText || extractedText.length < 100) {
-                throw new Error('Could not extract text from PDF. Please ensure the file is not password-protected.')
-            }
-
-            // Set word count from the webhook response
-            setWordCount(calculatedWordCount)
-            console.log('✅ PDF processed:', calculatedWordCount, 'words')
-
-            return extractedText
-
-        } catch (error) {
-            console.error('PDF extraction error:', error)
-            throw new Error('Failed to process PDF. Please ensure the file is not password-protected or corrupted.')
-        }
-    }
+        // Validation only - actual extraction happens in handleFileSelection
+        return ''
+    }ß
 
     const handleFileSelection = async (selectedFile: File) => {
         setFile(selectedFile)
@@ -214,10 +176,14 @@ function OnboardingContent() {
                 manuscriptText: extractedText,
                 fileName: selectedFile.name,
                 fileSize: selectedFile.size,
-                manuscriptId: manuscriptId || `temp-${Date.now()}`,
+                manuscriptId: manuscriptId || crypto.randomUUID(),
                 phaseType: 'developmental_editing',
                 userId: userId,
-                author_id: authorProfileId
+                author_id: authorProfileId,
+                auth_user_id: userId,  // Add this - Supabase Auth UUID
+                authorEmail: searchParams.get('email') || localStorage.getItem('currentUserEmail'),
+                firstName: searchParams.get('firstName') || localStorage.getItem('currentUserFirstName'),
+                lastName: searchParams.get('lastName') || localStorage.getItem('currentUserLastName')
             }
 
             const wordCountResponse = await fetch(WORD_COUNT_WEBHOOK, {
