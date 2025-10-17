@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { Suspense, useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
 // Type definitions
@@ -11,16 +12,18 @@ interface Manuscript {
   id: string
   title: string
   genre: string
-  content: string
-  wordCount: number
-  chapters: Chapter[]
+  current_word_count: number
+  total_chapters: number
+  status: string
+  full_text?: string
 }
 
 interface Chapter {
-  number: number
+  id: string
+  chapter_number: number
   title: string
-  content: string
-  wordCount: number
+  content?: string
+  created_at: string
   status?: 'draft' | 'edited' | 'approved'
 }
 
@@ -46,6 +49,7 @@ function StudioContent() {
   const [chapters, setChapters] = useState<Chapter[]>([])
   const [currentChapterIndex, setCurrentChapterIndex] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
+  const [loadingMessage, setLoadingMessage] = useState('Loading your studio...')
   
   // Editor state
   const [editorContent, setEditorContent] = useState('')
@@ -73,8 +77,6 @@ function StudioContent() {
 
   // Webhooks
   const WEBHOOKS = {
-    storeManu: 'https://spikeislandstudios.app.n8n.cloud/webhook/store-manuscript-simple',
-    parseChapters: 'https://spikeislandstudios.app.n8n.cloud/webhook/parse-chapters-simple',
     alexDev: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-developmental',
     alexStructure: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-check-structure',
     alexCharacter: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-check-character',
@@ -85,38 +87,112 @@ function StudioContent() {
     alexChat: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-chat'
   }
 
-  // Initialize studio
+  // Initialize studio - Load from Supabase
   const initializeStudio = useCallback(async () => {
-    const userId = searchParams.get('userId') || localStorage.getItem('currentUserId')
+    const manuscriptId = searchParams.get('manuscriptId')
+    const userId = searchParams.get('userId')
     
+    if (!manuscriptId) {
+      console.error('No manuscript ID provided')
+      router.push('/onboarding')
+      return
+    }
+
     if (!userId) {
+      console.error('No user ID provided')
       router.push('/login')
       return
     }
 
-    // Check for existing manuscript
-    const existing = await checkForExistingManuscript(userId)
-    
-    if (existing) {
-      setManuscript(existing)
-      setChapters(existing.chapters || [])
-      setIsLoading(false)
-      
-      if (existing.chapters && existing.chapters.length > 0) {
-        loadChapter(0)
+    try {
+      setLoadingMessage('Loading manuscript from database...')
+      const supabase = createClient()
+
+      // Load manuscript details
+      const { data: manuscriptData, error: manuscriptError } = await supabase
+        .from('manuscripts')
+        .select('id, title, genre, current_word_count, total_chapters, status, full_text')
+        .eq('id', manuscriptId)
+        .single()
+
+      if (manuscriptError) {
+        console.error('Manuscript error:', manuscriptError)
+        throw new Error('Failed to load manuscript')
       }
-      
-      // Fetch scores if analysis is complete
-      if (existing.id) {
-        fetchScores(existing.id)
+
+      console.log('Loaded manuscript:', manuscriptData)
+      setManuscript(manuscriptData)
+
+      setLoadingMessage('Loading chapters...')
+
+      // Load chapters
+      const { data: chaptersData, error: chaptersError } = await supabase
+        .from('chapters')
+        .select('id, chapter_number, title, content, created_at')
+        .eq('manuscript_id', manuscriptId)
+        .order('chapter_number', { ascending: true })
+
+      if (chaptersError) {
+        console.error('Chapters error:', chaptersError)
+        throw new Error('Failed to load chapters')
       }
-    } else {
+
+      console.log('Loaded chapters:', chaptersData?.length || 0)
+
+      if (chaptersData && chaptersData.length > 0) {
+        setChapters(chaptersData)
+        setIsLoading(false)
+        
+        // Load first chapter into editor
+        loadChapter(0, chaptersData)
+        
+        // Alex greeting
+        addAlexMessage(
+          `Hi! I'm Alex, your developmental editing specialist. I can see you've uploaded "${manuscriptData.title}" with ${chaptersData.length} chapters. ` +
+          `Let me know when you're ready to begin the comprehensive analysis, or feel free to ask me anything about your manuscript!`
+        )
+      } else {
+        // Chapters still being parsed
+        setLoadingMessage('Parsing chapters... This usually takes 1-2 minutes.')
+        
+        // Poll for chapters
+        setTimeout(() => {
+          pollForChapters(manuscriptId)
+        }, 3000)
+      }
+
+    } catch (error) {
+      console.error('Studio initialization error:', error)
       setIsLoading(false)
+      addAlexMessage(`❌ Error loading your manuscript: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
-    
-    // Initial Alex greeting
-    addAlexMessage("Hi! I'm Alex, your developmental editing specialist. Upload your manuscript to get started, or ask me anything about the editing process!")
   }, [searchParams, router])
+
+  // Poll for chapters if they're still being parsed
+  async function pollForChapters(manuscriptId: string) {
+    const supabase = createClient()
+    
+    const { data: chaptersData } = await supabase
+      .from('chapters')
+      .select('id, chapter_number, title, content, created_at')
+      .eq('manuscript_id', manuscriptId)
+      .order('chapter_number', { ascending: true })
+
+    if (chaptersData && chaptersData.length > 0) {
+      console.log('Chapters now available:', chaptersData.length)
+      setChapters(chaptersData)
+      setIsLoading(false)
+      loadChapter(0, chaptersData)
+      
+      addAlexMessage(
+        `Great! I've finished parsing your manuscript into ${chaptersData.length} chapters. ` +
+        `Ready to begin developmental editing?`
+      )
+    } else {
+      // Keep polling
+      setTimeout(() => pollForChapters(manuscriptId), 3000)
+    }
+  }
 
   useEffect(() => {
     initializeStudio()
@@ -131,188 +207,16 @@ function StudioContent() {
     }
   }, [editorContent])
 
-  async function checkForExistingManuscript(_userId: string): Promise<Manuscript | null> {
-    // TODO: Add API call to check for existing manuscripts
-    return null
-  }
-
-  // File upload handler
-  async function handleFileUpload(file: File, bookTitle: string, genre: string) {
-    if (!file || !bookTitle || !genre) {
-      alert('Please fill in all fields')
-      return
-    }
-
-    setAlexThinking(true)
-    setThinkingMessage('Reading your manuscript...')
-
-    try {
-      // Extract text
-      let text = ''
-      if (file.name.endsWith('.docx')) {
-        text = await extractTextFromDocx(file)
-      } else if (file.name.endsWith('.pdf')) {
-        text = await extractTextFromPdf(file)
-      } else {
-        throw new Error('Please upload DOCX or PDF')
-      }
-
-      if (!text || text.length < 100) {
-        throw new Error('Could not extract text from file')
-      }
-
-      const userId = searchParams.get('userId') || localStorage.getItem('currentUserId')
-      const words = text.trim().split(/\s+/).length
-
-      setThinkingMessage('Saving manuscript...')
-
-      // Store manuscript
-      const storeResponse = await fetch(WEBHOOKS.storeManu, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          authorId: userId,
-          fileName: file.name,
-          bookTitle: bookTitle,
-          genre: genre,
-          text: text,
-          wordCount: words
-        })
-      })
-
-      if (!storeResponse.ok) throw new Error('Failed to save manuscript')
-
-      const storeResult = await storeResponse.json()
-      const manuscriptId = storeResult.manuscriptId
-
-      setThinkingMessage('Analyzing chapters with AI...')
-
-      // Parse chapters
-      const parseResponse = await fetch(WEBHOOKS.parseChapters, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: text,
-          manuscriptId: manuscriptId
-        })
-      })
-
-      let parsedChapters: Chapter[] = []
-      if (parseResponse.ok) {
-        const parseResult = await parseResponse.json()
-        parsedChapters = parseResult.chapters || []
-      }
-
-      // Extract actual chapter content
-      const chaptersWithContent = await extractChapterContent(text, parsedChapters)
-
-      setManuscript({
-        id: manuscriptId,
-        title: bookTitle,
-        genre: genre,
-        content: text,
-        wordCount: words,
-        chapters: chaptersWithContent
-      })
-
-      setChapters(chaptersWithContent)
-      setAlexThinking(false)
-
-      addAlexMessage(`Great! I've loaded "${bookTitle}" with ${words.toLocaleString()} words and ${chaptersWithContent.length} chapters. Let me start the comprehensive analysis...`)
-
-      // Load first chapter
-      if (chaptersWithContent.length > 0) {
-        loadChapter(0)
-      }
-
-      // Trigger developmental analysis
-      setTimeout(() => {
-        triggerDevelopmentalAnalysis(manuscriptId, text)
-      }, 2000)
-
-    } catch (error) {
-      console.error('Upload error:', error)
-      setAlexThinking(false)
-      const errorMessage = error instanceof Error ? error.message : 'Upload failed'
-      addAlexMessage(`❌ Error: ${errorMessage}`)
-    }
-  }
-
-  // Extract chapter content
-  async function extractChapterContent(fullText: string, chapterTitles: Chapter[]): Promise<Chapter[]> {
-    console.log('Extracting content for', chapterTitles.length, 'chapters')
-    
-    return chapterTitles.map((chapter, index) => {
-      // Find chapter start
-      const chapterRegex = new RegExp(
-        `(Chapter\\s+${chapter.number}[^\\n]*|${chapter.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`,
-        'i'
-      )
-      
-      const match = fullText.match(chapterRegex)
-      const chapterStart = match ? match.index || 0 : 0
-      
-      // Find chapter end
-      let chapterEnd = fullText.length
-      if (index < chapterTitles.length - 1) {
-        const nextChapter = chapterTitles[index + 1]
-        const nextRegex = new RegExp(
-          `(Chapter\\s+${nextChapter.number}\\b|${nextChapter.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`,
-          'i'
-        )
-        const nextMatch = fullText.substring(chapterStart + 100).match(nextRegex)
-        if (nextMatch && nextMatch.index !== undefined) {
-          chapterEnd = chapterStart + 100 + nextMatch.index
-        }
-      }
-      
-      // Extract and clean content
-      let content = fullText.substring(chapterStart, chapterEnd)
-      content = content.replace(chapterRegex, '').trim()
-      content = cleanChapterContent(content)
-      
-      console.log(`Chapter ${chapter.number}: ${content.length} characters`)
-      
-      return {
-        number: chapter.number,
-        title: chapter.title,
-        content: content,
-        wordCount: content.split(/\s+/).length
-      }
-    })
-  }
-
-  function cleanChapterContent(content: string): string {
-    return content
-      .replace(/©.*?All rights reserved\.?/gi, '')
-      .replace(/Copyright.*?\d{4}[^.]*\./gi, '')
-      .replace(/^\s*\d+\s*$/gm, '')
-      .replace(/\r\n/g, '\n')
-      .replace(/[ \t]+/g, ' ')
-      .replace(/\n{3,}/g, '\n\n')
-      .trim()
-  }
-
-  // Text extraction (simplified - would use libraries in production)
-  async function extractTextFromDocx(_file: File): Promise<string> {
-    // TODO: Use mammoth.js for actual DOCX extraction
-    return '[DOCX content would be extracted here with mammoth.js]'
-  }
-
-  async function extractTextFromPdf(_file: File): Promise<string> {
-    // TODO: Use PDF.js for actual PDF extraction
-    return '[PDF content would be extracted here with PDF.js]'
-  }
-
   // Load chapter into editor
-  function loadChapter(index: number) {
-    if (index < 0 || index >= chapters.length) return
+  function loadChapter(index: number, chaptersArray?: Chapter[]) {
+    const chaptersList = chaptersArray || chapters
+    if (index < 0 || index >= chaptersList.length) return
     
-    const chapter = chapters[index]
+    const chapter = chaptersList[index]
     setCurrentChapterIndex(index)
     
     // Convert plain text to HTML paragraphs
-    let content = chapter.content || ''
+    let content = chapter.content || 'This chapter content is being loaded...'
     if (!content.includes('<p>')) {
       const paragraphs = content
         .split(/\n\n+/)
@@ -327,7 +231,12 @@ function StudioContent() {
   }
 
   // Trigger comprehensive analysis
-  async function triggerDevelopmentalAnalysis(manuscriptId: string, text: string) {
+  async function triggerDevelopmentalAnalysis() {
+    if (!manuscript?.full_text) {
+      addAlexMessage('I need the full manuscript text to perform the analysis. Let me try to load it...')
+      return
+    }
+
     setAlexThinking(true)
     setThinkingMessage('Performing comprehensive developmental analysis (30-60 seconds)...')
     setScoresVisible(true)
@@ -335,11 +244,11 @@ function StudioContent() {
     try {
       // Run all 5 dimension analyses in parallel
       await Promise.all([
-        analyzeDimension('structural', WEBHOOKS.alexStructure, text, manuscriptId),
-        analyzeDimension('character', WEBHOOKS.alexCharacter, text, manuscriptId),
-        analyzeDimension('plot', WEBHOOKS.alexPlot, text, manuscriptId),
-        analyzeDimension('pacing', WEBHOOKS.alexPacing, text, manuscriptId),
-        analyzeDimension('thematic', WEBHOOKS.alexThemes, text, manuscriptId)
+        analyzeDimension('structural', WEBHOOKS.alexStructure, manuscript.full_text, manuscript.id),
+        analyzeDimension('character', WEBHOOKS.alexCharacter, manuscript.full_text, manuscript.id),
+        analyzeDimension('plot', WEBHOOKS.alexPlot, manuscript.full_text, manuscript.id),
+        analyzeDimension('pacing', WEBHOOKS.alexPacing, manuscript.full_text, manuscript.id),
+        analyzeDimension('thematic', WEBHOOKS.alexThemes, manuscript.full_text, manuscript.id)
       ])
 
       setAlexThinking(false)
@@ -367,7 +276,7 @@ function StudioContent() {
           manuscriptId: manuscriptId,
           bookTitle: manuscript?.title || 'Manuscript',
           genre: manuscript?.genre || 'Fiction',
-          wordCount: manuscript?.wordCount || 0
+          wordCount: manuscript?.current_word_count || 0
         })
       })
 
@@ -381,7 +290,8 @@ function StudioContent() {
 
       return { name, score, feedback: result.feedback || result.analysis || '' }
 
-    } catch (_error) {
+    } catch (error) {
+      console.error(`Error analyzing ${name}:`, error)
       setScores(prev => ({ ...prev, [name]: 7 }))
       return { name, score: 7, feedback: '' }
     }
@@ -401,8 +311,8 @@ function StudioContent() {
         })
         setScoresVisible(true)
       }
-    } catch (_error) {
-      console.error('Error fetching scores')
+    } catch (error) {
+      console.error('Error fetching scores:', error)
     }
   }
 
@@ -417,6 +327,14 @@ function StudioContent() {
     const userMessage = chatInput
     setAlexMessages(prev => [...prev, { sender: 'You', message: userMessage }])
     setChatInput('')
+
+    // Check for analysis trigger
+    if (userMessage.toLowerCase().includes('begin') || 
+        userMessage.toLowerCase().includes('start analysis') ||
+        userMessage.toLowerCase().includes('analyze')) {
+      triggerDevelopmentalAnalysis()
+      return
+    }
 
     setAlexThinking(true)
     setThinkingMessage('Thinking...')
@@ -441,7 +359,8 @@ function StudioContent() {
       setAlexThinking(false)
       addAlexMessage(result.response || result.message || 'Let me help you with that.')
 
-    } catch (_error) {
+    } catch (error) {
+      console.error('Chat error:', error)
       setAlexThinking(false)
       addAlexMessage('I\'m having trouble connecting. Let me help based on what I see in your manuscript.')
     }
@@ -463,18 +382,39 @@ function StudioContent() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your studio...</p>
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center">
+        <div className="bg-white rounded-2xl p-12 text-center max-w-md shadow-2xl">
+          <div className="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+          <h3 className="text-2xl font-bold text-gray-900 mb-3">
+            Setting Up Your Studio
+          </h3>
+          <p className="text-gray-600">{loadingMessage}</p>
         </div>
       </div>
     )
   }
 
-  // Upload state
+  // Error state - no manuscript found
   if (!manuscript) {
-    return <UploadInterface onUpload={handleFileUpload} />
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl p-12 text-center max-w-md shadow-2xl">
+          <div className="text-6xl mb-4">❌</div>
+          <h3 className="text-2xl font-bold text-gray-900 mb-3">
+            Manuscript Not Found
+          </h3>
+          <p className="text-gray-600 mb-6">
+            We couldn't load your manuscript. Please try uploading again.
+          </p>
+          <button
+            onClick={() => router.push('/onboarding')}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
+          >
+            Return to Onboarding
+          </button>
+        </div>
+      </div>
+    )
   }
 
   // Main studio interface
@@ -520,7 +460,7 @@ function StudioContent() {
         <div className="bg-gray-50 border-r-2 border-gray-200 overflow-y-auto p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-2">{manuscript.title}</h2>
           <p className="text-gray-600 mb-6">
-            {manuscript.wordCount?.toLocaleString() || 0} words • {chapters.length} chapters
+            {manuscript.current_word_count?.toLocaleString() || 0} words • {chapters.length} chapters
           </p>
 
           {/* Analysis Overview */}
@@ -538,6 +478,16 @@ function StudioContent() {
                 </div>
               </div>
             </div>
+
+            {/* Begin Analysis Button */}
+            {!analysisComplete && !alexThinking && (
+              <button
+                onClick={triggerDevelopmentalAnalysis}
+                className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3 rounded-lg font-semibold hover:from-green-600 hover:to-green-700 transition-all mb-4"
+              >
+                🚀 Begin Analysis
+              </button>
+            )}
 
             {/* Scores */}
             {scoresVisible && (
@@ -564,7 +514,7 @@ function StudioContent() {
             <div className="space-y-2">
               {chapters.map((chapter, index) => (
                 <div
-                  key={index}
+                  key={chapter.id}
                   onClick={() => loadChapter(index)}
                   className={`p-3 rounded-lg border cursor-pointer transition-all ${
                     index === currentChapterIndex
@@ -573,7 +523,7 @@ function StudioContent() {
                   }`}
                 >
                   <div className="font-semibold text-gray-900 text-sm">{chapter.title}</div>
-                  <div className="text-xs text-gray-600">{chapter.wordCount || 0} words</div>
+                  <div className="text-xs text-gray-600">Chapter {chapter.chapter_number}</div>
                 </div>
               ))}
             </div>
@@ -627,7 +577,7 @@ function StudioContent() {
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
-                placeholder="Ask Alex about this chapter..."
+                placeholder="Ask Alex about this chapter... (Try: 'begin analysis')"
                 className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500"
               />
               <button
@@ -688,108 +638,11 @@ function StudioContent() {
   )
 }
 
-// Upload interface component
-function UploadInterface({ onUpload }: { onUpload: (file: File, title: string, genre: string) => void }) {
-  const [title, setTitle] = useState('')
-  const [genre, setGenre] = useState('')
-  const [file, setFile] = useState<File | null>(null)
-
-  function handleSubmit() {
-    if (!file || !title || !genre) {
-      alert('Please fill in all fields')
-      return
-    }
-    onUpload(file, title, genre)
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 p-8 flex items-center justify-center">
-      <div className="max-w-2xl w-full bg-white rounded-3xl p-12 shadow-2xl">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-green-700 mb-4">Welcome to Your Writing Studio!</h1>
-          <p className="text-xl text-gray-700">I&apos;m Alex, your developmental editing specialist. Let&apos;s get started!</p>
-        </div>
-
-        <div className="space-y-6">
-          <div>
-            <label className="block font-semibold text-gray-800 mb-2">Book Title *</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter your book's title"
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-green-500 focus:outline-none"
-            />
-          </div>
-
-          <div>
-            <label className="block font-semibold text-gray-800 mb-2">Genre *</label>
-            <select
-              value={genre}
-              onChange={(e) => setGenre(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-green-500 focus:outline-none bg-white"
-            >
-              <option value="">Select a genre...</option>
-              <option value="Fiction">Fiction</option>
-              <option value="Literary Fiction">Literary Fiction</option>
-              <option value="Mystery">Mystery</option>
-              <option value="Thriller">Thriller</option>
-              <option value="Romance">Romance</option>
-              <option value="Science Fiction">Science Fiction</option>
-              <option value="Fantasy">Fantasy</option>
-              <option value="Historical Fiction">Historical Fiction</option>
-              <option value="Non-Fiction">Non-Fiction</option>
-              <option value="Memoir">Memoir</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block font-semibold text-gray-800 mb-2">Upload Manuscript *</label>
-            <div
-              onClick={() => document.getElementById('fileInput')?.click()}
-              className="border-4 border-dashed border-green-400 rounded-2xl p-12 text-center cursor-pointer hover:bg-green-50 transition-all"
-            >
-              {file ? (
-                <div>
-                  <div className="text-4xl mb-3">✅</div>
-                  <div className="font-semibold text-green-700">{file.name}</div>
-                  <div className="text-sm text-gray-600">Click to change file</div>
-                </div>
-              ) : (
-                <div>
-                  <div className="text-5xl mb-3">📚</div>
-                  <div className="font-semibold text-gray-900 mb-2">Click to Upload Your Manuscript</div>
-                  <div className="text-sm text-gray-600">PDF or DOCX • Numbered chapters work best</div>
-                </div>
-              )}
-            </div>
-            <input
-              id="fileInput"
-              type="file"
-              accept=".pdf,.docx"
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
-              className="hidden"
-            />
-          </div>
-
-          <button
-            onClick={handleSubmit}
-            disabled={!file || !title || !genre}
-            className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            🚀 Start Working with Alex
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export default function AuthorStudioPage() {
   return (
     <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-2xl">Loading studio...</div>
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center">
+        <div className="text-2xl font-semibold text-gray-700">Loading studio...</div>
       </div>
     }>
       <StudioContent />
