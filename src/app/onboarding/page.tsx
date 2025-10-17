@@ -170,8 +170,9 @@ function OnboardingContent() {
         setIsProcessing(true)
 
         const userId = searchParams.get('userId') || localStorage.getItem('currentUserId')
+        const authorProfileId = localStorage.getItem('authorProfileId')
 
-        if (!userId) {
+        if (!userId || !authorProfileId) {
             setUploadStatus('error')
             setStatusMessage('❌ Error: User not identified. Please log in again.')
             setIsProcessing(false)
@@ -179,9 +180,62 @@ function OnboardingContent() {
         }
 
         try {
-            // Extract text - this calls pdf-word-count webhook
-            const text = await extractTextFromFile(selectedFile)
-            setExtractedText(text)
+            // Step 1: Extract text from PDF using a dedicated extraction endpoint
+            setStatusMessage('📄 Extracting text from PDF...')
+
+            const extractFormData = new FormData()
+            extractFormData.append('file', selectedFile)
+            extractFormData.append('fileName', selectedFile.name)
+
+            // Call a simple PDF text extraction endpoint
+            const extractResponse = await fetch('https://spikeislandstudios.app.n8n.cloud/webhook/extract-pdf-text', {
+                method: 'POST',
+                body: extractFormData
+            })
+
+            if (!extractResponse.ok) {
+                throw new Error('Failed to extract text from PDF')
+            }
+
+            const extractResult = await extractResponse.json()
+            const extractedText = extractResult.text || extractResult.extractedText || ''
+
+            if (!extractedText || extractedText.length < 100) {
+                throw new Error('Could not extract sufficient text from PDF. Please ensure the file is not password-protected.')
+            }
+
+            setExtractedText(extractedText)
+            console.log('✅ Text extracted:', extractedText.length, 'characters')
+
+            // Step 2: Send extracted text to word count analysis
+            setStatusMessage('🔢 Analyzing word count...')
+
+            const wordCountPayload = {
+                manuscriptText: extractedText,
+                fileName: selectedFile.name,
+                fileSize: selectedFile.size,
+                manuscriptId: manuscriptId || `temp-${Date.now()}`,
+                phaseType: 'developmental_editing',
+                userId: userId,
+                author_id: authorProfileId
+            }
+
+            const wordCountResponse = await fetch(WORD_COUNT_WEBHOOK, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(wordCountPayload)
+            })
+
+            if (!wordCountResponse.ok) {
+                console.warn('Word count webhook failed, calculating locally')
+                const localWordCount = countWords(extractedText)
+                setWordCount(localWordCount)
+            } else {
+                const wordCountResult = await wordCountResponse.json()
+                const calculatedWordCount = wordCountResult.wordCount || countWords(extractedText)
+                setWordCount(calculatedWordCount)
+                console.log('✅ Word count:', calculatedWordCount)
+            }
 
             setUploadStatus('success')
             setStatusMessage(`✅ Manuscript processed: ${wordCount.toLocaleString()} words`)
