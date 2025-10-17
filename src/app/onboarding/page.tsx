@@ -123,7 +123,7 @@ function OnboardingContent() {
 
         // Validation only - actual extraction happens in handleFileSelection
         return ''
-    }ß
+    }
 
     const handleFileSelection = async (selectedFile: File) => {
         setFile(selectedFile)
