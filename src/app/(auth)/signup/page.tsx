@@ -6,7 +6,7 @@ import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { createAuthorProfile } from '@/lib/supabase/queries'
+import { createAuthorProfile, getAuthorProfile } from '@/lib/supabase/queries'
 
 export default function SignupPage() {
   const router = useRouter()
