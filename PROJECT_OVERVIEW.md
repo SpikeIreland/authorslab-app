@@ -367,7 +367,6 @@ CREATE TABLE user_progress (
 - [x] n8n workflow for free analysis
 - [x] n8n workflow for word count
 - [x] n8n workflow for onboarding
-- [x] AWS S3 storage setup
 
 ## 🎯 Next Steps
 
@@ -421,3 +420,47 @@ CREATE TABLE user_progress (
 
 **Last Updated:** October 16, 2025
 **Status:** Pre-launch development - Core pages complete, Studio in progress
+
+
+# AuthorsLab.ai - Current Status (Oct 18 2025)
+
+## ✅ Completed
+- User authentication (Supabase Auth + RLS policies)
+- Signup/Login flow with profile creation
+- Onboarding page with PDF upload
+- PDF text extraction workflow (extract-pdf-text)
+- Word count analysis workflow (pdf-word-count)
+- Manuscript creation in Supabase
+- Author profiles synced with auth
+
+## 🔧 Working Features
+- Signup → Onboarding → Upload PDF → Word count → Submit
+- All data stored in Supabase (author_profiles, manuscripts)
+- n8n workflows: extract-pdf-text, pdf-word-count, onboarding
+
+## 🚧 Next Steps (Author Studio Integration)
+- Fix author-studio page to load manuscripts from Supabase
+- Fix parse-chapters workflow (currently failing)
+- Display chapters in studio interface
+- Integrate Alex (developmental editing AI)
+- Add Sam & Jordan specialists
+- Connect analysis scores to UI
+
+## 🔑 Key Technical Details
+- PDF-only uploads (client sends text, not binary)
+- Word count: analytical only, no DB writes
+- Onboarding: creates manuscript with all metadata
+- UUIDs: crypto.randomUUID() for all IDs
+- RLS: Permissive for authenticated users
+
+## 📂 Database Schema
+- author_profiles (id, auth_user_id, email, first_name, last_name)
+- manuscripts (id, author_id, title, genre, full_text, word_count, etc.)
+- chapters (id, manuscript_id, chapter_number, title, content, status)
+- manuscript_scores (structural, character, plot, pacing, thematic)
+
+## 🔗 n8n Webhooks
+- extract-pdf-text: Extracts text from PDF binary
+- pdf-word-count: Analyzes text, returns word count
+- onboarding: Creates manuscript + author profile
+- parse-chapters: (needs fixing) Should parse chapters from text
