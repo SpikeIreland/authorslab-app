@@ -631,6 +631,7 @@ function OnboardingContent() {
     }
 
     export default function OnboardingPage() {
+
         return (
             <Suspense fallback={
                 <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
@@ -641,3 +642,4 @@ function OnboardingContent() {
             </Suspense>
         )
     }
+}
