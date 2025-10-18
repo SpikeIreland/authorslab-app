@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { Suspense, useState, useEffect, useCallback, FormEvent, ChangeEvent, DragEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createManuscript, updateAuthorProfile } from '@/lib/supabase/queries'
@@ -627,8 +629,6 @@ function OnboardingContent() {
             </div>
         )
     }
-
-    export const dynamic = 'force-dynamic'
 
     export default function OnboardingPage() {
         return (
