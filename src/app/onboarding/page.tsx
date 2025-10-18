@@ -21,7 +21,8 @@ function OnboardingContent() {
     const [uploadStatus, setUploadStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle')
     const [statusMessage, setStatusMessage] = useState('')
     const [dragOver, setDragOver] = useState(false)
-
+    const isFormValid = file && wordCount > 0
+    
     const WORD_COUNT_WEBHOOK = 'https://spikeislandstudios.app.n8n.cloud/webhook/pdf-word-count'
     const ONBOARDING_WEBHOOK = 'https://spikeislandstudios.app.n8n.cloud/webhook/onboarding'
 
@@ -402,7 +403,6 @@ function OnboardingContent() {
             setUploadStatus('error')
         }
 
-        const isFormValid = file && wordCount > 0
     }
 
     return (
