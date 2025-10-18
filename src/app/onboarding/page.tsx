@@ -378,11 +378,12 @@ function OnboardingContent() {
                 if (parseResponse.ok) {
                     const parseResult = await parseResponse.json()
                     console.log('✅ Chapters parsed:', parseResult.totalChapters || 'complete')
-                    setStatusMessage(`✅ Found ${parseResult.totalChapters || chapterCount} chapters! Entering your studio...`)
+                    setStatusMessage(`✅ Found ${parseResult.totalChapters || chapterCount} chapters! Preparing your studio...`)
                 } else {
                     console.warn('Chapter parsing had issues, but continuing...')
-                    setStatusMessage('✅ Manuscript uploaded! Entering your studio...')
+                    setStatusMessage('✅ Manuscript uploaded! Preparing your studio...')
                 }
+
             } catch (err) {
                 console.error('Chapter parsing failed:', err)
                 setStatusMessage('✅ Manuscript uploaded! Chapters will be processed in the studio...')
@@ -393,7 +394,8 @@ function OnboardingContent() {
             console.log('✅ Redirecting to author studio...')
             setTimeout(() => {
                 router.push(`/author-studio?userId=${userId}&manuscriptId=${savedManuscriptId}`)
-            }, 3000)
+            }, 15000)
+
 
         } catch (error) {
             console.error('❌ SUBMISSION ERROR:', error)
