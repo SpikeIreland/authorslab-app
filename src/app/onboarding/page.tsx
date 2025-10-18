@@ -22,7 +22,7 @@ function OnboardingContent() {
     const [statusMessage, setStatusMessage] = useState('')
     const [dragOver, setDragOver] = useState(false)
     const isFormValid = file && wordCount > 0
-    
+
     const WORD_COUNT_WEBHOOK = 'https://spikeislandstudios.app.n8n.cloud/webhook/pdf-word-count'
     const ONBOARDING_WEBHOOK = 'https://spikeislandstudios.app.n8n.cloud/webhook/onboarding'
 
@@ -393,7 +393,7 @@ function OnboardingContent() {
             console.log('✅ Redirecting to author studio...')
             setTimeout(() => {
                 router.push(`/author-studio?userId=${userId}&manuscriptId=${savedManuscriptId}`)
-            }, 1500)
+            }, 3000)
 
         } catch (error) {
             console.error('❌ SUBMISSION ERROR:', error)
