@@ -43,25 +43,25 @@ interface Scores {
 function StudioContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  
+
   // Manuscript state
   const [manuscript, setManuscript] = useState<Manuscript | null>(null)
   const [chapters, setChapters] = useState<Chapter[]>([])
   const [currentChapterIndex, setCurrentChapterIndex] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [loadingMessage, setLoadingMessage] = useState('Loading your studio...')
-  
+
   // Editor state
   const [editorContent, setEditorContent] = useState('')
   const [wordCount, setWordCount] = useState(0)
   const [chapterStatus, setChapterStatus] = useState<'draft' | 'edited' | 'approved'>('draft')
-  
+
   // Alex state
   const [alexMessages, setAlexMessages] = useState<ChatMessage[]>([])
   const [alexThinking, setAlexThinking] = useState(false)
   const [thinkingMessage, setThinkingMessage] = useState('')
   const [chatInput, setChatInput] = useState('')
-  
+
   // Analysis state
   const [scores, setScores] = useState<Scores>({
     structural: 0,
@@ -72,7 +72,7 @@ function StudioContent() {
   })
   const [scoresVisible, setScoresVisible] = useState(false)
   const [analysisComplete, setAnalysisComplete] = useState(false)
-  
+
   const editorRef = useRef<HTMLDivElement>(null)
 
   // Webhooks
@@ -91,7 +91,7 @@ function StudioContent() {
   const initializeStudio = useCallback(async () => {
     const manuscriptId = searchParams.get('manuscriptId')
     const userId = searchParams.get('userId')
-    
+
     if (!manuscriptId) {
       console.error('No manuscript ID provided')
       router.push('/onboarding')
@@ -125,16 +125,18 @@ function StudioContent() {
 
       setLoadingMessage('Loading chapters...')
 
-      // Load chapters
+      // Replace your chapter loading section in author-studio with this:
+
+      // Load chapters with better error handling
       const { data: chaptersData, error: chaptersError } = await supabase
         .from('chapters')
-        .select('id, chapter_number, title, content, created_at')
+        .select('*')  // Use wildcard to avoid column mismatch issues
         .eq('manuscript_id', manuscriptId)
         .order('chapter_number', { ascending: true })
 
       if (chaptersError) {
         console.error('Chapters error:', chaptersError)
-        throw new Error('Failed to load chapters')
+        console.warn('Query failed, will retry...')
       }
 
       console.log('Loaded chapters:', chaptersData?.length || 0)
@@ -142,22 +144,69 @@ function StudioContent() {
       if (chaptersData && chaptersData.length > 0) {
         setChapters(chaptersData)
         setIsLoading(false)
-        
+
         // Load first chapter into editor
         loadChapter(0, chaptersData)
-        
+
         // Alex greeting
         addAlexMessage(
           `Hi! I'm Alex, your developmental editing specialist. I can see you've uploaded "${manuscriptData.title}" with ${chaptersData.length} chapters. ` +
           `Let me know when you're ready to begin the comprehensive analysis, or feel free to ask me anything about your manuscript!`
         )
       } else {
-        // Chapters still being parsed
-        setLoadingMessage('Parsing chapters... This usually takes 1-2 minutes.')
-        
-        // Poll for chapters
-        setTimeout(() => {
-          pollForChapters(manuscriptId)
+        // Chapters still being parsed - show engaging messages
+        const pollingMessages = [
+          'Parsing chapters... Just a moment...',
+          'Analyzing chapter structure...',
+          'Almost there...',
+          'Finalizing chapter data...'
+        ]
+
+        let messageIndex = 0
+        setLoadingMessage(pollingMessages[0])
+
+        // Update message every 5 seconds
+        const messageInterval = setInterval(() => {
+          messageIndex = (messageIndex + 1) % pollingMessages.length
+          setLoadingMessage(pollingMessages[messageIndex])
+        }, 5000)
+
+        // Poll for chapters every 3 seconds, up to 15 times (45 seconds)
+        let pollCount = 0
+        const maxPolls = 15
+
+        const pollInterval = setInterval(async () => {
+          pollCount++
+          console.log(`Polling for chapters (${pollCount}/${maxPolls})...`)
+
+          const { data: retryChapters } = await supabase
+            .from('chapters')
+            .select('*')
+            .eq('manuscript_id', manuscriptId)
+            .order('chapter_number', { ascending: true })
+
+          if (retryChapters && retryChapters.length > 0) {
+            console.log('✅ Chapters now available:', retryChapters.length)
+            clearInterval(pollInterval)
+            clearInterval(messageInterval)
+            setChapters(retryChapters)
+            setIsLoading(false)
+            loadChapter(0, retryChapters)
+
+            addAlexMessage(
+              `Great! I've finished parsing your manuscript into ${retryChapters.length} chapters. ` +
+              `Ready to begin developmental editing?`
+            )
+          } else if (pollCount >= maxPolls) {
+            console.warn('⚠️ Chapters not found after polling')
+            clearInterval(pollInterval)
+            clearInterval(messageInterval)
+            setIsLoading(false)
+            addAlexMessage(
+              'Your manuscript was uploaded successfully, but chapter parsing is taking longer than expected. ' +
+              'Please refresh the page in a moment to see your chapters.'
+            )
+          }
         }, 3000)
       }
 
@@ -171,7 +220,7 @@ function StudioContent() {
   // Poll for chapters if they're still being parsed
   async function pollForChapters(manuscriptId: string) {
     const supabase = createClient()
-    
+
     const { data: chaptersData } = await supabase
       .from('chapters')
       .select('id, chapter_number, title, content, created_at')
@@ -183,7 +232,7 @@ function StudioContent() {
       setChapters(chaptersData)
       setIsLoading(false)
       loadChapter(0, chaptersData)
-      
+
       addAlexMessage(
         `Great! I've finished parsing your manuscript into ${chaptersData.length} chapters. ` +
         `Ready to begin developmental editing?`
@@ -211,10 +260,10 @@ function StudioContent() {
   function loadChapter(index: number, chaptersArray?: Chapter[]) {
     const chaptersList = chaptersArray || chapters
     if (index < 0 || index >= chaptersList.length) return
-    
+
     const chapter = chaptersList[index]
     setCurrentChapterIndex(index)
-    
+
     // Convert plain text to HTML paragraphs
     let content = chapter.content || 'This chapter content is being loaded...'
     if (!content.includes('<p>')) {
@@ -225,7 +274,7 @@ function StudioContent() {
         .join('\n')
       content = paragraphs
     }
-    
+
     setEditorContent(content)
     setChapterStatus(chapter.status || 'draft')
   }
@@ -329,9 +378,9 @@ function StudioContent() {
     setChatInput('')
 
     // Check for analysis trigger
-    if (userMessage.toLowerCase().includes('begin') || 
-        userMessage.toLowerCase().includes('start analysis') ||
-        userMessage.toLowerCase().includes('analyze')) {
+    if (userMessage.toLowerCase().includes('begin') ||
+      userMessage.toLowerCase().includes('start analysis') ||
+      userMessage.toLowerCase().includes('analyze')) {
       triggerDevelopmentalAnalysis()
       return
     }
@@ -373,7 +422,7 @@ function StudioContent() {
     setChapters(updatedChapters)
     setChapterStatus('approved')
     addAlexMessage(`✅ Chapter ${currentChapterIndex + 1} approved! Moving to the next one.`)
-    
+
     if (currentChapterIndex < chapters.length - 1) {
       setTimeout(() => loadChapter(currentChapterIndex + 1), 1000)
     }
@@ -438,13 +487,12 @@ function StudioContent() {
             Working with Alex
           </div>
         </div>
-        
+
         <div className="flex items-center gap-4">
-          <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold ${
-            alexThinking 
+          <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold ${alexThinking
               ? 'bg-yellow-50 border border-yellow-500 text-yellow-900'
               : 'bg-green-50 border border-green-500 text-green-900'
-          }`}>
+            }`}>
             <div className={`w-2 h-2 rounded-full ${alexThinking ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'}`}></div>
             {alexThinking ? 'Thinking...' : 'Alex is Online'}
           </div>
@@ -466,7 +514,7 @@ function StudioContent() {
           {/* Analysis Overview */}
           <div className="bg-white rounded-2xl p-5 mb-6 border border-gray-200">
             <h3 className="font-semibold text-gray-900 mb-4">Developmental Editing</h3>
-            
+
             <div className="flex items-start gap-3 p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-500 mb-4">
               <div className="w-11 h-11 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                 A
@@ -516,11 +564,10 @@ function StudioContent() {
                 <div
                   key={chapter.id}
                   onClick={() => loadChapter(index)}
-                  className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                    index === currentChapterIndex
+                  className={`p-3 rounded-lg border cursor-pointer transition-all ${index === currentChapterIndex
                       ? 'bg-green-50 border-green-500'
                       : 'bg-white border-gray-200 hover:border-green-300'
-                  }`}
+                    }`}
                 >
                   <div className="font-semibold text-gray-900 text-sm">{chapter.title}</div>
                   <div className="text-xs text-gray-600">Chapter {chapter.chapter_number}</div>
@@ -608,11 +655,10 @@ function StudioContent() {
             {alexMessages.map((msg, i) => (
               <div
                 key={i}
-                className={`p-4 rounded-xl ${
-                  msg.sender === 'Alex'
+                className={`p-4 rounded-xl ${msg.sender === 'Alex'
                     ? 'bg-white border border-gray-200'
                     : 'bg-green-50 border border-green-200 ml-8'
-                }`}
+                  }`}
               >
                 <div className="font-semibold text-sm mb-1 text-gray-700">{msg.sender}</div>
                 <div className="text-gray-900 whitespace-pre-wrap">{msg.message}</div>
