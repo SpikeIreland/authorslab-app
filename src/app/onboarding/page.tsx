@@ -340,22 +340,59 @@ function OnboardingContent() {
                 throw new Error(`Onboarding webhook failed: ${response.status}`)
             }
 
+            // Replace from "const result = await response.json()" onwards:
+
             const result = await response.json()
             console.log('✅ Onboarding webhook response:', result)
 
             // Get manuscript ID from response if provided
-            const savedManuscriptId = result.manuscriptId || result.manuscript_id || finalManuscriptId
+            const savedManuscriptId = result.manuscriptId || result.manuscript_id || manuscriptId
 
             // Store in session/local storage
             sessionStorage.setItem('onboardingComplete', 'true')
             sessionStorage.setItem('manuscriptId', savedManuscriptId)
+            sessionStorage.setItem('manuscriptTitle', submissionData.manuscriptTitle)
+            sessionStorage.setItem('manuscriptGenre', submissionData.genre)
+            sessionStorage.setItem('expectedChapters', chapterCount.toString())
+            sessionStorage.setItem('hasPrologue', hasPrologue.toString())
+            sessionStorage.setItem('hasEpilogue', hasEpilogue.toString())
             localStorage.setItem('currentManuscriptId', savedManuscriptId)
+
+            // Show parsing status
+            setStatusMessage('📖 Analyzing your manuscript chapters...')
+
+            // Trigger chapter parsing and WAIT for it
+            try {
+                const parseResponse = await fetch('https://spikeislandstudios.app.n8n.cloud/webhook/parse-chapters', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        manuscriptId: savedManuscriptId,
+                        expectedChapters: chapterCount,
+                        hasPrologue: hasPrologue,
+                        hasEpilogue: hasEpilogue
+                    })
+                })
+
+                if (parseResponse.ok) {
+                    const parseResult = await parseResponse.json()
+                    console.log('✅ Chapters parsed:', parseResult.totalChapters || 'complete')
+                    setStatusMessage(`✅ Found ${parseResult.totalChapters || chapterCount} chapters! Entering your studio...`)
+                } else {
+                    console.warn('Chapter parsing had issues, but continuing...')
+                    setStatusMessage('✅ Manuscript uploaded! Entering your studio...')
+                }
+            } catch (err) {
+                console.error('Chapter parsing failed:', err)
+                setStatusMessage('✅ Manuscript uploaded! Chapters will be processed in the studio...')
+                // Continue anyway - chapters can be parsed later
+            }
 
             // Redirect to author studio
             console.log('✅ Redirecting to author studio...')
             setTimeout(() => {
                 router.push(`/author-studio?userId=${userId}&manuscriptId=${savedManuscriptId}`)
-            }, 2000)
+            }, 1500)
 
         } catch (error) {
             console.error('❌ SUBMISSION ERROR:', error)
