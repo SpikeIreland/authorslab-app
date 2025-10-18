@@ -348,11 +348,15 @@ function OnboardingContent() {
             // Get manuscript ID from response if provided
             const savedManuscriptId = result.manuscriptId || result.manuscript_id || manuscriptId
 
+            // Get form values for storage
+            const manuscriptTitle = formData.get('manuscriptTitle') as string
+            const genre = formData.get('genre') as string
+
             // Store in session/local storage
             sessionStorage.setItem('onboardingComplete', 'true')
             sessionStorage.setItem('manuscriptId', savedManuscriptId)
-            sessionStorage.setItem('manuscriptTitle', submissionData.manuscriptTitle)
-            sessionStorage.setItem('manuscriptGenre', submissionData.genre)
+            sessionStorage.setItem('manuscriptTitle', manuscriptTitle)
+            sessionStorage.setItem('manuscriptGenre', genre)
             sessionStorage.setItem('expectedChapters', chapterCount.toString())
             sessionStorage.setItem('hasPrologue', hasPrologue.toString())
             sessionStorage.setItem('hasEpilogue', hasEpilogue.toString())
