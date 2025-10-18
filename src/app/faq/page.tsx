@@ -163,7 +163,7 @@ export default function FAQPage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-blue-900 to-blue-700 bg-clip-text text-transparent">
-              📚 AuthorLab.ai
+              📚 AuthorsLab.ai
             </Link>
             <div className="flex items-center gap-6">
               <Link href="/how-it-works" className="text-gray-700 hover:text-blue-900 font-semibold">
