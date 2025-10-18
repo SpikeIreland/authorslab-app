@@ -394,7 +394,7 @@ function OnboardingContent() {
             console.log('✅ Redirecting to author studio...')
             setTimeout(() => {
                 router.push(`/author-studio?userId=${userId}&manuscriptId=${savedManuscriptId}`)
-            }, 15000)
+            }, 40000)
 
 
         } catch (error) {
