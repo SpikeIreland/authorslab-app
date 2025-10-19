@@ -410,7 +410,7 @@ function OnboardingContent() {
             console.log('✅ Redirecting to author studio...')
             setTimeout(() => {
                 router.push(`/author-studio?userId=${userId}&manuscriptId=${savedManuscriptId}`)
-            }, 40000)
+            }, 30000)
 
         } catch (error) {
             console.error('❌ SUBMISSION ERROR:', error)
