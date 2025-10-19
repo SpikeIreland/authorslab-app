@@ -363,8 +363,9 @@ function OnboardingContent() {
             setStatusMessage('📖 Analyzing your manuscript chapters...')
 
             // Trigger chapter parsing and WAIT for it
-            // Trigger chapter parsing and WAIT for it
             try {
+                setStatusMessage('📖 Parsing your chapters...')
+
                 const parseResponse = await fetch('https://spikeislandstudios.app.n8n.cloud/webhook/parse-chapters', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -378,25 +379,39 @@ function OnboardingContent() {
 
                 if (parseResponse.ok) {
                     const parseResult = await parseResponse.json()
-                    console.log('✅ Chapters parsed:', parseResult.totalChapters || 'complete')
+                    console.log('✅ Parse webhook completed:', parseResult.totalChapters || 'complete')
 
-                    // Progressive loading messages to keep user engaged
-                    const messages = [
-                        { text: '📖 Analyzing manuscript structure...', delay: 0 },
-                        { text: '🔍 Identifying chapter boundaries...', delay: 3000 },
-                        { text: '📝 Counting chapters...', delay: 6000 },
-                        { text: '📚 Reading prologue and opening...', delay: 9000 },
-                        { text: '✨ Preparing your chapter list...', delay: 12000 },
-                        { text: '🎯 Almost ready...', delay: 15000 },
-                        { text: `✅ Found ${parseResult.totalChapters || chapterCount} chapters! Entering your studio...`, delay: 18000 }
-                    ]
+                    // NOW verify chapters are actually in the database
+                    setStatusMessage('🔍 Verifying chapters are ready...')
 
-                    // Show messages sequentially
-                    messages.forEach(({ text, delay }) => {
-                        setTimeout(() => {
-                            setStatusMessage(text)
-                        }, delay)
-                    })
+                    const { createClient } = await import('@/lib/supabase/client')
+                    const supabase = createClient()
+
+                    // Poll database until chapters appear (up to 10 seconds)
+                    let chaptersFound = false
+                    for (let attempt = 0; attempt < 10; attempt++) {
+                        await new Promise(resolve => setTimeout(resolve, 1000)) // Wait 1 second
+
+                        const { data: chapters, error } = await supabase
+                            .from('chapters')
+                            .select('id')
+                            .eq('manuscript_id', savedManuscriptId)
+
+                        if (chapters && chapters.length > 0) {
+                            console.log(`✅ Verified ${chapters.length} chapters in database`)
+                            setStatusMessage(`✅ Found ${chapters.length} chapters! Entering your studio...`)
+                            chaptersFound = true
+                            break
+                        }
+
+                        console.log(`⏳ Attempt ${attempt + 1}: Waiting for chapters...`)
+                    }
+
+                    if (!chaptersFound) {
+                        console.warn('⚠️ Chapters not found in database after 10 seconds')
+                        setStatusMessage('⚠️ Chapters are still processing. Redirecting anyway...')
+                    }
+
                 } else {
                     console.warn('Chapter parsing had issues, but continuing...')
                     setStatusMessage('✅ Manuscript uploaded! Preparing your studio...')
@@ -406,11 +421,11 @@ function OnboardingContent() {
                 setStatusMessage('✅ Manuscript uploaded! Chapters will be processed in the studio...')
             }
 
-            // Redirect after all messages (40 seconds total - adjust as needed)
+            // Redirect after verification
             console.log('✅ Redirecting to author studio...')
             setTimeout(() => {
                 router.push(`/author-studio?userId=${userId}&manuscriptId=${savedManuscriptId}`)
-            }, 30000)
+            }, 2000)
 
         } catch (error) {
             console.error('❌ SUBMISSION ERROR:', error)
