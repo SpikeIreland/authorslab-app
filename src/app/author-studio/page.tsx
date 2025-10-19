@@ -125,18 +125,24 @@ function StudioContent() {
 
       setLoadingMessage('Loading chapters...')
 
-      // Replace your chapter loading section in author-studio with this:
+      // Load chapters - use wildcard and add detailed logging
+      console.log('Querying chapters for manuscript_id:', manuscriptId)
 
-      // Load chapters with better error handling
       const { data: chaptersData, error: chaptersError } = await supabase
         .from('chapters')
-        .select('*')  // Use wildcard to avoid column mismatch issues
+        .select('*')  // Use wildcard to avoid column mismatch
         .eq('manuscript_id', manuscriptId)
         .order('chapter_number', { ascending: true })
 
+      console.log('Chapters query result:', {
+        data: chaptersData,
+        error: chaptersError,
+        count: chaptersData?.length || 0
+      })
+
       if (chaptersError) {
-        console.error('Chapters error:', chaptersError)
-        console.warn('Query failed, will retry...')
+        console.error('Chapters query error:', chaptersError)
+        // Don't throw - continue with polling
       }
 
       console.log('Loaded chapters:', chaptersData?.length || 0)
@@ -171,19 +177,25 @@ function StudioContent() {
           setLoadingMessage(pollingMessages[messageIndex])
         }, 5000)
 
-        // Poll for chapters every 3 seconds, up to 15 times (45 seconds)
+        // Poll for chapters every 3 seconds, up to 20 times (60 seconds)
         let pollCount = 0
-        const maxPolls = 15
+        const maxPolls = 20
 
         const pollInterval = setInterval(async () => {
           pollCount++
           console.log(`Polling for chapters (${pollCount}/${maxPolls})...`)
+          console.log(`Looking for manuscript_id: ${manuscriptId}`)
 
-          const { data: retryChapters } = await supabase
+          const { data: retryChapters, error: retryError } = await supabase
             .from('chapters')
             .select('*')
             .eq('manuscript_id', manuscriptId)
             .order('chapter_number', { ascending: true })
+
+          console.log(`Poll ${pollCount} result:`, {
+            found: retryChapters?.length || 0,
+            error: retryError
+          })
 
           if (retryChapters && retryChapters.length > 0) {
             console.log('✅ Chapters now available:', retryChapters.length)
@@ -199,11 +211,12 @@ function StudioContent() {
             )
           } else if (pollCount >= maxPolls) {
             console.warn('⚠️ Chapters not found after polling')
+            console.warn('Manuscript ID being queried:', manuscriptId)
             clearInterval(pollInterval)
             clearInterval(messageInterval)
             setIsLoading(false)
             addAlexMessage(
-              'Your manuscript was uploaded successfully, but chapter parsing is taking longer than expected. ' +
+              'Your manuscript was uploaded successfully, but chapters are still being processed. ' +
               'Please refresh the page in a moment to see your chapters.'
             )
           }
@@ -490,8 +503,8 @@ function StudioContent() {
 
         <div className="flex items-center gap-4">
           <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold ${alexThinking
-              ? 'bg-yellow-50 border border-yellow-500 text-yellow-900'
-              : 'bg-green-50 border border-green-500 text-green-900'
+            ? 'bg-yellow-50 border border-yellow-500 text-yellow-900'
+            : 'bg-green-50 border border-green-500 text-green-900'
             }`}>
             <div className={`w-2 h-2 rounded-full ${alexThinking ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'}`}></div>
             {alexThinking ? 'Thinking...' : 'Alex is Online'}
@@ -565,8 +578,8 @@ function StudioContent() {
                   key={chapter.id}
                   onClick={() => loadChapter(index)}
                   className={`p-3 rounded-lg border cursor-pointer transition-all ${index === currentChapterIndex
-                      ? 'bg-green-50 border-green-500'
-                      : 'bg-white border-gray-200 hover:border-green-300'
+                    ? 'bg-green-50 border-green-500'
+                    : 'bg-white border-gray-200 hover:border-green-300'
                     }`}
                 >
                   <div className="font-semibold text-gray-900 text-sm">{chapter.title}</div>
@@ -656,8 +669,8 @@ function StudioContent() {
               <div
                 key={i}
                 className={`p-4 rounded-xl ${msg.sender === 'Alex'
-                    ? 'bg-white border border-gray-200'
-                    : 'bg-green-50 border border-green-200 ml-8'
+                  ? 'bg-white border border-gray-200'
+                  : 'bg-green-50 border border-green-200 ml-8'
                   }`}
               >
                 <div className="font-semibold text-sm mb-1 text-gray-700">{msg.sender}</div>
