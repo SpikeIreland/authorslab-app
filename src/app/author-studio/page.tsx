@@ -544,8 +544,8 @@ function StudioContent() {
                 <div
                   key={chapter.id}
                   className={`p-3 rounded-lg border cursor-pointer transition-all ${index === currentChapterIndex
-                      ? 'bg-green-50 border-green-500 shadow-sm'
-                      : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm'
+                    ? 'bg-green-50 border-green-500 shadow-sm'
+                    : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm'
                     }`}
                 >
                   <div className="flex items-center justify-between">
@@ -603,8 +603,8 @@ function StudioContent() {
                 onClick={saveChanges}
                 disabled={!hasUnsavedChanges}
                 className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${hasUnsavedChanges
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
               >
                 <span>💾</span> Save
@@ -701,8 +701,8 @@ function StudioContent() {
               <div
                 key={i}
                 className={`p-4 rounded-xl ${msg.sender === 'Alex'
-                    ? 'bg-white border border-gray-200'
-                    : 'bg-green-50 border border-green-200 ml-8'
+                  ? 'bg-white border border-gray-200'
+                  : 'bg-green-50 border border-green-200 ml-8'
                   }`}
               >
                 <div className="font-semibold text-sm mb-1 text-gray-700">{msg.sender}</div>
@@ -773,7 +773,7 @@ function StudioContent() {
             />
           </div>
         </div>
-        </div>
+       </div>
   )
 }
 
