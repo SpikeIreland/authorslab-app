@@ -61,15 +61,29 @@ function StudioContent() {
 
   // Analysis state
   const [analysisComplete, setAnalysisComplete] = useState(false)
-  const [initialReport, setInitialReport] = useState<string | null>(null)
+  const [initialReportPdfUrl, setInitialReportPdfUrl] = useState<string | null>(null)
+  const [showReportPanel, setShowReportPanel] = useState(false)
 
+  // Refs
   const editorRef = useRef<HTMLDivElement>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const alexMessagesRef = useRef<HTMLDivElement>(null)
 
   // Webhooks
   const WEBHOOKS = {
     initialAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-initial-analysis',
     alexChat: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-chat'
   }
+
+  // Scroll to bottom function
+  function scrollToBottom() {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  // Auto-scroll when messages change
+  useEffect(() => {
+    scrollToBottom()
+  }, [alexMessages, alexThinking])
 
   // Initialize studio - Load from Supabase
   const initializeStudio = useCallback(async () => {
@@ -150,10 +164,10 @@ function StudioContent() {
           `🧹 Make sure you've removed page numbers, headers, and copyright text\n` +
           `📝 Edit any content that needs cleaning up in the main editor\n` +
           `💾 Click "Save" when you make changes\n\n` +
-          `Once you're happy with everything, just type "Yes" and I'll read your manuscript to get started!`
+          `Once you're happy with everything, just type **"Yes"** and I'll read your manuscript to get started!`
         )
       } else {
-        // Chapters still being parsed - show engaging messages
+        // Chapters still being parsed
         const pollingMessages = [
           'Parsing chapters... Just a moment...',
           'Analyzing chapter structure...',
@@ -164,13 +178,11 @@ function StudioContent() {
         let messageIndex = 0
         setLoadingMessage(pollingMessages[0])
 
-        // Update message every 5 seconds
         const messageInterval = setInterval(() => {
           messageIndex = (messageIndex + 1) % pollingMessages.length
           setLoadingMessage(pollingMessages[messageIndex])
         }, 5000)
 
-        // Poll for chapters every 3 seconds, up to 20 times
         let pollCount = 0
         const maxPolls = 20
 
@@ -178,7 +190,7 @@ function StudioContent() {
           pollCount++
           console.log(`Polling for chapters (${pollCount}/${maxPolls})...`)
 
-          const { data: retryChapters, error: retryError } = await supabase
+          const { data: retryChapters } = await supabase
             .from('chapters')
             .select('*')
             .eq('manuscript_id', manuscriptId)
@@ -244,7 +256,7 @@ function StudioContent() {
     content = content.replace(/^Chapter\s+\d+\s*-\s*[^\n]+\n*/i, '')
     
     // Remove copyright footer patterns
-    content = content.replace(/The Veil and the Flame\s*ã.*?\d+\s*$/gmi, '')
+    content = content.replace(/The Veil and the Flame\s*©.*?\d+\s*$/gmi, '')
     
     // Clean up extra whitespace
     content = content.trim()
@@ -327,7 +339,7 @@ function StudioContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           manuscriptId: manuscript?.id,
-          manuscriptText: manuscript?.full_text?.substring(0, 20000), // First 20k chars
+          manuscriptText: manuscript?.full_text,
           bookTitle: manuscript?.title,
           genre: manuscript?.genre,
           wordCount: manuscript?.current_word_count,
@@ -341,12 +353,13 @@ function StudioContent() {
       
       setAlexThinking(false)
       setAnalysisComplete(true)
-      setInitialReport(result.report)
+      setInitialReportPdfUrl(result.pdfUrl)
       
       addAlexMessage(
         `✅ I've finished reading your manuscript! Here are my initial impressions:\n\n` +
-        `${result.summary || result.feedback || "I can see you have a compelling story here. I'm ready to help you develop it further."}\n\n` +
-        `📊 I've created a detailed Initial Assessment Report that you can review anytime.\n\n` +
+        `${result.summary || result.feedback?.hook || "I can see you have a compelling story here. I'm ready to help you develop it further."}\n\n` +
+        `📊 Excitement Level: ${result.excitementStars || '⭐'.repeat(result.excitementLevel || 7)}\n\n` +
+        `📄 I've created a detailed Initial Assessment Report that you can review anytime by clicking the "View Report" button above.\n\n` +
         `Ready to dive deeper into Phase 1?`
       )
 
@@ -368,6 +381,9 @@ function StudioContent() {
     const userMessage = chatInput
     setAlexMessages(prev => [...prev, { sender: 'You', message: userMessage }])
     setChatInput('')
+    
+    // Scroll to bottom after adding user message
+    setTimeout(scrollToBottom, 100)
 
     // Check for "Yes" to trigger initial analysis
     if (userMessage.toLowerCase().includes('yes') && !analysisComplete) {
@@ -411,7 +427,6 @@ function StudioContent() {
     const supabase = createClient()
     
     try {
-      // Save as approved version
       const { error } = await supabase
         .from('chapters')
         .update({
@@ -430,7 +445,6 @@ function StudioContent() {
       
       addAlexMessage(`✅ Chapter ${currentChapterIndex + 1} approved! Great work.`)
 
-      // Move to next chapter if available
       if (currentChapterIndex < chapters.length - 1) {
         setTimeout(() => loadChapter(currentChapterIndex + 1), 1000)
       }
@@ -657,19 +671,34 @@ function StudioContent() {
 
         {/* RIGHT: Alex Panel */}
         <div className="bg-white flex flex-col overflow-hidden">
-          {/* Alex header */}
-          <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-5 flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl font-bold">
-              A
+          {/* Alex header with Report button */}
+          <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-5 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl font-bold">
+                A
+              </div>
+              <div>
+                <h3 className="text-xl font-bold">Alex</h3>
+                <p className="text-sm opacity-90">Developmental Specialist</p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-xl font-bold">Alex</h3>
-              <p className="text-sm opacity-90">Developmental Specialist</p>
-            </div>
+            
+            {/* Report Access Button */}
+            {initialReportPdfUrl && (
+              <button
+                onClick={() => setShowReportPanel(true)}
+                className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 text-sm backdrop-blur-sm"
+              >
+                <span>📄</span> View Report
+              </button>
+            )}
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-5 bg-gray-50 space-y-4">
+          <div 
+            ref={alexMessagesRef}
+            className="flex-1 overflow-y-auto p-5 bg-gray-50 space-y-4"
+          >
             {alexMessages.map((msg, i) => (
               <div
                 key={i}
@@ -696,9 +725,58 @@ function StudioContent() {
                 </div>
               </div>
             )}
+            
+            {/* Invisible div for scrolling to */}
+            <div ref={messagesEndRef} />
           </div>
         </div>
       </div>
+
+      {/* Report Overlay Panel */}
+      {showReportPanel && initialReportPdfUrl && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-8">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full h-[90vh] flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-green-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-bold">
+                  A
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">Alex's Initial Analysis</h3>
+                  <p className="text-sm text-gray-600">First Impressions Report</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                
+                  href={initialReportPdfUrl}
+                  download
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-all flex items-center gap-2"
+                >
+                  <span>⬇️</span> Download PDF
+                </a>
+                <button
+                  onClick={() => setShowReportPanel(false)}
+                  className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-300 transition-all"
+                >
+                  ✕ Close
+                </button>
+              </div>
+            </div>
+            
+            {/* PDF Viewer */}
+            <div className="flex-1 overflow-hidden">
+              <iframe
+                src={initialReportPdfUrl}
+                className="w-full h-full"
+                title="Alex's Initial Analysis Report"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
