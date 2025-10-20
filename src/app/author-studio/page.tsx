@@ -743,7 +743,7 @@ function StudioContent() {
                   A
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">Alex's Initial Analysis</h3>
+                  <h3 className="text-xl font-bold text-gray-900">Alex Initial Analysis</h3>
                   <p className="text-sm text-gray-600">First Impressions Report</p>
                 </div>
               </div>
