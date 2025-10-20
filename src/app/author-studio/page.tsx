@@ -774,8 +774,8 @@ function StudioContent() {
             </div>
           </div>
         </div>
-      )
-      }
+      )}
+      
 
       export default function AuthorStudioPage() {
   return (
