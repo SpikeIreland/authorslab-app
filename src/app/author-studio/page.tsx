@@ -746,12 +746,12 @@ function StudioContent() {
               </div>
               <div className="flex items-center gap-3">
 
-                <a href={initialReportPdfUrl}
+                href={initialReportPdfUrl}
                 download
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-all flex items-center gap-2"
-  >
+                >
                 <span>⬇️</span>
                 <span>Download PDF</span>
               </a>
@@ -763,28 +763,32 @@ function StudioContent() {
                 <span>Close</span>
               </button>
             </div>
+          </div>
 
-            {/* PDF Viewer */}
-            <div className="flex-1 overflow-hidden">
-              <iframe
-                src={initialReportPdfUrl}
-                className="w-full h-full"
-                title="Alex Initial Analysis Report"
-              />
-            </div>
+          {/* PDF Viewer */}
+          <div className="flex-1 overflow-hidden">
+            <iframe
+              src={initialReportPdfUrl}
+              className="w-full h-full"
+              title="Alex Initial Analysis Report"
+            />
           </div>
         </div>
-      )}
-      
-
-      export default function AuthorStudioPage() {
-  return (
-      <Suspense fallback={
-        <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center">
-          <div className="text-2xl font-semibold text-gray-700">Loading studio...</div>
         </div>
-      }>
-        <StudioContent />
-      </Suspense>
-      )
+  )
+}
+    </div >
+  )
+}
+
+export default function AuthorStudioPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center">
+        <div className="text-2xl font-semibold text-gray-700">Loading studio...</div>
+      </div>
+    }>
+      <StudioContent />
+    </Suspense>
+  )
 }
