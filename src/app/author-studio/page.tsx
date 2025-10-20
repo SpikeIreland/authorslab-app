@@ -746,7 +746,7 @@ function StudioContent() {
               </div>
               <div className="flex items-center gap-3">
 
-                href={initialReportPdfUrl}
+                <a href={initialReportPdfUrl}
                 download
                 target="_blank"
                 rel="noopener noreferrer"
