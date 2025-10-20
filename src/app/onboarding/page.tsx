@@ -504,21 +504,32 @@ function OnboardingContent() {
                                 <div className="text-gray-600 mb-6">
                                     {uploadStatus === 'success' && wordCount > 0
                                         ? `${wordCount.toLocaleString()} words ready for analysis`
-                                        : 'Upload your manuscript as Word (.docx) or Text (.txt)'}
+                                        : 'Upload your manuscript as pdf (.pdf))'}
                                 </div>
 
                                 {/* Formatting Tip */}
+                                {/* Manuscript Preparation Tips */}
                                 <div className="bg-blue-50 border border-blue-500 rounded-xl p-5 mb-6 text-left max-w-xl mx-auto">
                                     <div className="font-semibold text-blue-900 mb-2 text-center">
-                                        📝 Quick Formatting for Best Results
+                                        📝 Preparing Your Manuscript
                                     </div>
-                                    <div className="text-blue-800 text-sm space-y-1">
-                                        <p><strong>Format chapters as simple numbered lists:</strong></p>
-                                        <code className="block bg-white px-3 py-1 rounded my-1">1. Your Chapter Title</code>
-                                        <code className="block bg-white px-3 py-1 rounded my-1">2. Another Chapter Title</code>
-                                        <p className="text-xs mt-2 opacity-75">
-                                            Including &quot;0. Prologue&quot; helps us analyze your complete story structure.
-                                            This formatting is just for analysis - you can change it back for publishing.
+                                    <div className="text-blue-800 text-sm space-y-2">
+                                        <p><strong>✅ DO include:</strong></p>
+                                        <ul className="list-disc ml-5 space-y-1">
+                                            <li>Clear chapter markers (e.g., "Chapter 1 - Your Title")</li>
+                                            <li>Prologue and Epilogue if you have them</li>
+                                            <li>Your complete manuscript text</li>
+                                        </ul>
+
+                                        <p className="mt-3"><strong>❌ REMOVE before uploading:</strong></p>
+                                        <ul className="list-disc ml-5 space-y-1">
+                                            <li>Copyright notices and page numbers</li>
+                                            <li>Headers and footers with author name/title</li>
+                                            <li>Any repeated formatting elements on each page</li>
+                                        </ul>
+
+                                        <p className="text-xs mt-3 opacity-75 italic">
+                                            Clean manuscript text helps our AI focus on your story, not formatting artifacts.
                                         </p>
                                     </div>
                                 </div>
@@ -526,7 +537,7 @@ function OnboardingContent() {
                                 <input
                                     type="file"
                                     id="fileInput"
-                                    accept=".pdf,.docx,.doc,.txt"
+                                    accept=".pdf"
                                     onChange={handleFileChange}
                                     className="hidden"
                                 />

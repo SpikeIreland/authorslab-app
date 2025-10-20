@@ -284,6 +284,16 @@ function StudioContent() {
 
     // Convert plain text to HTML paragraphs
     let content = chapter.content || 'This chapter content is being loaded...'
+
+    // Remove the "Chapter X - Title" prefix from the beginning
+    content = content.replace(/^Chapter\s+\d+\s*-\s*[^\n]+\n*/i, '')
+
+    // Remove copyright footer patterns (e.g., "The Veil and the Flame ©Carl Lyons 2025 8")
+    content = content.replace(/The Veil and the Flame\s*ã.*?\d+\s*$/gmi, '')
+
+    // Clean up extra whitespace
+    content = content.trim()
+
     if (!content.includes('<p>')) {
       const paragraphs = content
         .split(/\n\n+/)
@@ -542,8 +552,8 @@ function StudioContent() {
                     key={chapter.id}
                     onClick={() => loadChapter(index)}
                     className={`p-3 rounded-lg border cursor-pointer transition-all ${index === currentChapterIndex
-                        ? 'bg-green-50 border-green-500 shadow-sm'
-                        : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm'
+                      ? 'bg-green-50 border-green-500 shadow-sm'
+                      : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm'
                       }`}
                   >
                     <div className="flex items-center justify-between">
@@ -559,8 +569,8 @@ function StudioContent() {
                       </div>
                       {chapter.status && (
                         <span className={`text-xs px-2 py-1 rounded ${chapter.status === 'approved' ? 'bg-green-100 text-green-700' :
-                            chapter.status === 'edited' ? 'bg-yellow-100 text-yellow-700' :
-                              'bg-gray-100 text-gray-600'
+                          chapter.status === 'edited' ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-gray-100 text-gray-600'
                           }`}>
                           {chapter.status}
                         </span>
@@ -652,8 +662,8 @@ function StudioContent() {
               <div
                 key={i}
                 className={`p-4 rounded-xl ${msg.sender === 'Alex'
-                    ? 'bg-white border border-gray-200'
-                    : 'bg-green-50 border border-green-200 ml-8'
+                  ? 'bg-white border border-gray-200'
+                  : 'bg-green-50 border border-green-200 ml-8'
                   }`}
               >
                 <div className="font-semibold text-sm mb-1 text-gray-700">{msg.sender}</div>
