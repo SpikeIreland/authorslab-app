@@ -507,7 +507,6 @@ function OnboardingContent() {
                                         : 'Upload your manuscript as pdf (.pdf))'}
                                 </div>
 
-                                {/* Formatting Tip */}
                                 {/* Manuscript Preparation Tips */}
                                 <div className="bg-blue-50 border border-blue-500 rounded-xl p-5 mb-6 text-left max-w-xl mx-auto">
                                     <div className="font-semibold text-blue-900 mb-2 text-center">
@@ -516,7 +515,7 @@ function OnboardingContent() {
                                     <div className="text-blue-800 text-sm space-y-2">
                                         <p><strong>✅ DO include:</strong></p>
                                         <ul className="list-disc ml-5 space-y-1">
-                                            <li>Clear chapter markers (e.g., "Chapter 1 - Your Title")</li>
+                                            <li>Clear chapter markers (e.g., &quot;Chapter 1 - Your Title&quot;)</li>
                                             <li>Prologue and Epilogue if you have them</li>
                                             <li>Your complete manuscript text</li>
                                         </ul>
