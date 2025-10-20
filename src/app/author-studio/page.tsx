@@ -251,16 +251,16 @@ function StudioContent() {
 
     // Convert plain text to HTML paragraphs and clean up
     let content = chapter.content || 'This chapter content is being loaded...'
-
+    
     // Remove "Chapter X - Title" prefix
     content = content.replace(/^Chapter\s+\d+\s*-\s*[^\n]+\n*/i, '')
-
+    
     // Remove copyright footer patterns
     content = content.replace(/The Veil and the Flame\s*©.*?\d+\s*$/gmi, '')
-
+    
     // Clean up extra whitespace
     content = content.trim()
-
+    
     if (!content.includes('<p>')) {
       const paragraphs = content
         .split(/\n\n+/)
@@ -293,7 +293,7 @@ function StudioContent() {
   // Save changes to Supabase
   async function saveChanges() {
     const supabase = createClient()
-
+    
     try {
       const { error } = await supabase
         .from('chapters')
@@ -302,9 +302,9 @@ function StudioContent() {
           content: editorContent
         })
         .eq('id', chapters[currentChapterIndex].id)
-
+      
       if (error) throw error
-
+      
       setHasUnsavedChanges(false)
       addAlexMessage('✅ Changes saved successfully!')
     } catch (error) {
@@ -316,7 +316,7 @@ function StudioContent() {
   // Trigger initial analysis
   async function triggerInitialAnalysis() {
     setAlexThinking(true)
-
+    
     const analysisSteps = [
       { message: '📖 Reading your manuscript...', delay: 0 },
       { message: '🎭 Understanding your characters...', delay: 3000 },
@@ -350,11 +350,11 @@ function StudioContent() {
       if (!response.ok) throw new Error('Analysis failed')
 
       const result = await response.json()
-
+      
       setAlexThinking(false)
       setAnalysisComplete(true)
       setInitialReportPdfUrl(result.pdfUrl)
-
+      
       addAlexMessage(
         `✅ I've finished reading your manuscript! Here are my initial impressions:\n\n` +
         `${result.summary || result.feedback?.hook || "I can see you have a compelling story here. I'm ready to help you develop it further."}\n\n` +
@@ -381,7 +381,7 @@ function StudioContent() {
     const userMessage = chatInput
     setAlexMessages(prev => [...prev, { sender: 'You', message: userMessage }])
     setChatInput('')
-
+    
     // Scroll to bottom after adding user message
     setTimeout(scrollToBottom, 100)
 
@@ -425,7 +425,7 @@ function StudioContent() {
   // Approve chapter
   async function approveChapter() {
     const supabase = createClient()
-
+    
     try {
       const { error } = await supabase
         .from('chapters')
@@ -434,15 +434,15 @@ function StudioContent() {
           content: editorContent
         })
         .eq('id', chapters[currentChapterIndex].id)
-
+      
       if (error) throw error
-
+      
       const updatedChapters = [...chapters]
       updatedChapters[currentChapterIndex].status = 'approved'
       setChapters(updatedChapters)
       setChapterStatus('approved')
       setHasUnsavedChanges(false)
-
+      
       addAlexMessage(`✅ Chapter ${currentChapterIndex + 1} approved! Great work.`)
 
       if (currentChapterIndex < chapters.length - 1) {
@@ -543,20 +543,21 @@ function StudioContent() {
               {chapters.map((chapter, index) => (
                 <div
                   key={chapter.id}
-                  className={`p-3 rounded-lg border cursor-pointer transition-all ${index === currentChapterIndex
-                    ? 'bg-green-50 border-green-500 shadow-sm'
-                    : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm'
-                    }`}
+                  className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                    index === currentChapterIndex
+                      ? 'bg-green-50 border-green-500 shadow-sm'
+                      : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm'
+                  }`}
                 >
                   <div className="flex items-center justify-between">
-                    <div
+                    <div 
                       className="flex items-center gap-2 flex-1"
                       onClick={() => loadChapter(index)}
                     >
                       <span className="text-xs font-semibold text-gray-500">
                         {chapter.chapter_number === 0 ? 'Prologue' :
-                          chapter.chapter_number === 999 ? 'Epilogue' :
-                            `Ch ${chapter.chapter_number}`}
+                         chapter.chapter_number === 999 ? 'Epilogue' :
+                         `Ch ${chapter.chapter_number}`}
                       </span>
                       {editingChapterId === chapter.id ? (
                         <input
@@ -602,10 +603,11 @@ function StudioContent() {
               <button
                 onClick={saveChanges}
                 disabled={!hasUnsavedChanges}
-                className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${hasUnsavedChanges
-                  ? 'bg-blue-600 text-white hover:bg-blue-700'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
+                className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${
+                  hasUnsavedChanges
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
               >
                 <span>💾</span> Save
               </button>
@@ -680,7 +682,7 @@ function StudioContent() {
                 <p className="text-sm opacity-90">Developmental Specialist</p>
               </div>
             </div>
-
+            
             {/* Report Access Button */}
             {initialReportPdfUrl && (
               <button
@@ -693,17 +695,18 @@ function StudioContent() {
           </div>
 
           {/* Messages */}
-          <div
+          <div 
             ref={alexMessagesRef}
             className="flex-1 overflow-y-auto p-5 bg-gray-50 space-y-4"
           >
             {alexMessages.map((msg, i) => (
               <div
                 key={i}
-                className={`p-4 rounded-xl ${msg.sender === 'Alex'
-                  ? 'bg-white border border-gray-200'
-                  : 'bg-green-50 border border-green-200 ml-8'
-                  }`}
+                className={`p-4 rounded-xl ${
+                  msg.sender === 'Alex'
+                    ? 'bg-white border border-gray-200'
+                    : 'bg-green-50 border border-green-200 ml-8'
+                }`}
               >
                 <div className="font-semibold text-sm mb-1 text-gray-700">{msg.sender}</div>
                 <div className="text-gray-900 whitespace-pre-wrap">{msg.message}</div>
@@ -722,7 +725,7 @@ function StudioContent() {
                 </div>
               </div>
             )}
-
+            
             {/* Invisible div for scrolling to */}
             <div ref={messagesEndRef} />
           </div>
@@ -740,44 +743,41 @@ function StudioContent() {
                   A
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">Alex Initial Analysis</h3>
+                  <h3 className="text-xl font-bold text-gray-900">Alex's Initial Analysis</h3>
                   <p className="text-sm text-gray-600">First Impressions Report</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-
-                <a href={initialReportPdfUrl}
-                download
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-all flex items-center gap-2"
+                
+                 <a href={initialReportPdfUrl}
+                  download
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-all flex items-center gap-2"
                 >
-                <span>⬇️</span>
-                <span>Download PDF</span>
-              </a>
-              <button
-                onClick={() => setShowReportPanel(false)}
-                className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-300 transition-all"
-              >
-                <span>✕</span>
-                <span>Close</span>
-              </button>
+                  <span>⬇️</span> Download PDF
+                </a>
+                <button
+                  onClick={() => setShowReportPanel(false)}
+                  className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-300 transition-all"
+                >
+                  ✕ Close
+                </button>
+              </div>
+            </div>
+            
+            {/* PDF Viewer */}
+            <div className="flex-1 overflow-hidden">
+              <iframe
+                src={initialReportPdfUrl}
+                className="w-full h-full"
+                title="Alex's Initial Analysis Report"
+              />
             </div>
           </div>
-
-          {/* PDF Viewer */}
-          <div className="flex-1 overflow-hidden">
-            <iframe
-              src={initialReportPdfUrl}
-              className="w-full h-full"
-              title="Alex Initial Analysis Report"
-            />
-          </div>
         </div>
-        </div>
-  )
-}
-    </div >
+      )}
+    </div>
   )
 }
 
