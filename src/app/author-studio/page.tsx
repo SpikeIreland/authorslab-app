@@ -123,7 +123,7 @@ function StudioContent() {
           status: 'analysis_running',
           analysis_started_at: new Date().toISOString()
         })
-        .eq('id', manuscriptId);
+        .eq('id', manuscript.id);
 
       if (error) {
         console.error('Error updating manuscript status:', error);
