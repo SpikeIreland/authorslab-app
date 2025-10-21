@@ -85,6 +85,45 @@ function StudioContent() {
     scrollToBottom()
   }, [alexMessages, alexThinking])
 
+  // Add this with your other functions (probably after useEffect hooks)
+  const triggerFullAnalysis = async () => {
+    try {
+      console.log('Triggering full manuscript analysis for:', manuscriptId);
+
+      const response = await fetch('https://your-n8n-instance.com/webhook/alex-full-manuscript-analysis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          manuscriptId: manuscriptId,
+          userId: user?.id
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Analysis trigger failed: ${response.status}`);
+      }
+
+      console.log('Full manuscript analysis triggered successfully');
+
+      // Update manuscript status in database to show analysis is running
+      const { error } = await supabase
+        .from('manuscripts')
+        .update({
+          status: 'analysis_running',
+          analysis_started_at: new Date().toISOString()
+        })
+        .eq('id', manuscriptId);
+
+      if (error) {
+        console.error('Error updating manuscript status:', error);
+      }
+
+    } catch (error) {
+      console.error('Error triggering full analysis:', error);
+      toast.error('Failed to start analysis. Please refresh and try again.');
+    }
+  };
+
   // Initialize studio - Load from Supabase
   const initializeStudio = useCallback(async () => {
     const manuscriptId = searchParams.get('manuscriptId')
@@ -241,6 +280,29 @@ function StudioContent() {
     }
   }, [editorContent])
 
+  // Add this useEffect with your other useEffect hooks
+  useEffect(() => {
+    // Check if we should auto-trigger the full analysis
+    const shouldTriggerAnalysis =
+      manuscript &&
+      manuscriptId &&
+      user?.id &&
+      manuscript.status === 'chapters_parsed' &&
+      !manuscript.full_analysis_completed_at &&
+      manuscript.status !== 'analysis_running';
+
+    if (shouldTriggerAnalysis) {
+      console.log('Auto-triggering full manuscript analysis...');
+
+      // Small delay to ensure everything is loaded
+      const timer = setTimeout(() => {
+        triggerFullAnalysis();
+      }, 2000); // 2 second delay
+
+      return () => clearTimeout(timer);
+    }
+  }, [manuscript, manuscriptId, user]);
+
   // Load chapter into editor
   function loadChapter(index: number, chaptersArray?: Chapter[]) {
     const chaptersList = chaptersArray || chapters
@@ -251,16 +313,16 @@ function StudioContent() {
 
     // Convert plain text to HTML paragraphs and clean up
     let content = chapter.content || 'This chapter content is being loaded...'
-    
+
     // Remove "Chapter X - Title" prefix
     content = content.replace(/^Chapter\s+\d+\s*-\s*[^\n]+\n*/i, '')
-    
+
     // Remove copyright footer patterns
     content = content.replace(/The Veil and the Flame\s*©.*?\d+\s*$/gmi, '')
-    
+
     // Clean up extra whitespace
     content = content.trim()
-    
+
     if (!content.includes('<p>')) {
       const paragraphs = content
         .split(/\n\n+/)
@@ -293,7 +355,7 @@ function StudioContent() {
   // Save changes to Supabase
   async function saveChanges() {
     const supabase = createClient()
-    
+
     try {
       const { error } = await supabase
         .from('chapters')
@@ -302,9 +364,9 @@ function StudioContent() {
           content: editorContent
         })
         .eq('id', chapters[currentChapterIndex].id)
-      
+
       if (error) throw error
-      
+
       setHasUnsavedChanges(false)
       addAlexMessage('✅ Changes saved successfully!')
     } catch (error) {
@@ -316,7 +378,7 @@ function StudioContent() {
   // Trigger initial analysis
   async function triggerInitialAnalysis() {
     setAlexThinking(true)
-    
+
     const analysisSteps = [
       { message: '📖 Reading your manuscript...', delay: 0 },
       { message: '🎭 Understanding your characters...', delay: 3000 },
@@ -350,11 +412,11 @@ function StudioContent() {
       if (!response.ok) throw new Error('Analysis failed')
 
       const result = await response.json()
-      
+
       setAlexThinking(false)
       setAnalysisComplete(true)
       setInitialReportPdfUrl(result.pdfUrl)
-      
+
       addAlexMessage(
         `✅ I've finished reading your manuscript! Here are my initial impressions:\n\n` +
         `${result.summary || result.feedback?.hook || "I can see you have a compelling story here. I'm ready to help you develop it further."}\n\n` +
@@ -381,7 +443,7 @@ function StudioContent() {
     const userMessage = chatInput
     setAlexMessages(prev => [...prev, { sender: 'You', message: userMessage }])
     setChatInput('')
-    
+
     // Scroll to bottom after adding user message
     setTimeout(scrollToBottom, 100)
 
@@ -425,7 +487,7 @@ function StudioContent() {
   // Approve chapter
   async function approveChapter() {
     const supabase = createClient()
-    
+
     try {
       const { error } = await supabase
         .from('chapters')
@@ -434,15 +496,15 @@ function StudioContent() {
           content: editorContent
         })
         .eq('id', chapters[currentChapterIndex].id)
-      
+
       if (error) throw error
-      
+
       const updatedChapters = [...chapters]
       updatedChapters[currentChapterIndex].status = 'approved'
       setChapters(updatedChapters)
       setChapterStatus('approved')
       setHasUnsavedChanges(false)
-      
+
       addAlexMessage(`✅ Chapter ${currentChapterIndex + 1} approved! Great work.`)
 
       if (currentChapterIndex < chapters.length - 1) {
@@ -528,6 +590,37 @@ function StudioContent() {
         </div>
       </header>
 
+      {/* Add this near the top of your main content, maybe after the header */}
+      {manuscript?.status === 'analysis_running' && !manuscript?.full_analysis_completed_at && (
+        <Alert className="mb-4 border-green-200 bg-green-50">
+          <BookOpen className="h-4 w-4 text-green-600" />
+          <AlertTitle className="text-green-800">Analysis in Progress</AlertTitle>
+          <AlertDescription className="text-green-700">
+            Alex is reading your entire manuscript and creating your developmental editing roadmap.
+            This takes about 6 minutes. You'll receive an email when complete, and you can continue
+            working on other things in the meantime.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Show when analysis is complete */}
+      {manuscript?.full_analysis_completed_at && (
+        <Alert className="mb-4 border-blue-200 bg-blue-50">
+          <CheckCircle className="h-4 w-4 text-blue-600" />
+          <AlertTitle className="text-blue-800">Analysis Complete!</AlertTitle>
+          <AlertDescription className="text-blue-700">
+            Your developmental editing roadmap has been emailed to you. Ready to start editing?
+            <Button
+              onClick={() => setCurrentEditingElement('structure')}
+              className="ml-2 h-8"
+              variant="outline"
+            >
+              Begin Structural Editing
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Main Layout: 3 columns */}
       <div className="flex-1 grid grid-cols-[320px_1fr_400px] overflow-hidden">
         {/* LEFT: Chapter Navigation */}
@@ -543,21 +636,20 @@ function StudioContent() {
               {chapters.map((chapter, index) => (
                 <div
                   key={chapter.id}
-                  className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                    index === currentChapterIndex
-                      ? 'bg-green-50 border-green-500 shadow-sm'
-                      : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm'
-                  }`}
+                  className={`p-3 rounded-lg border cursor-pointer transition-all ${index === currentChapterIndex
+                    ? 'bg-green-50 border-green-500 shadow-sm'
+                    : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm'
+                    }`}
                 >
                   <div className="flex items-center justify-between">
-                    <div 
+                    <div
                       className="flex items-center gap-2 flex-1"
                       onClick={() => loadChapter(index)}
                     >
                       <span className="text-xs font-semibold text-gray-500">
                         {chapter.chapter_number === 0 ? 'Prologue' :
-                         chapter.chapter_number === 999 ? 'Epilogue' :
-                         `Ch ${chapter.chapter_number}`}
+                          chapter.chapter_number === 999 ? 'Epilogue' :
+                            `Ch ${chapter.chapter_number}`}
                       </span>
                       {editingChapterId === chapter.id ? (
                         <input
@@ -603,11 +695,10 @@ function StudioContent() {
               <button
                 onClick={saveChanges}
                 disabled={!hasUnsavedChanges}
-                className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${
-                  hasUnsavedChanges
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
+                className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${hasUnsavedChanges
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
               >
                 <span>💾</span> Save
               </button>
@@ -682,7 +773,7 @@ function StudioContent() {
                 <p className="text-sm opacity-90">Developmental Specialist</p>
               </div>
             </div>
-            
+
             {/* Report Access Button */}
             {initialReportPdfUrl && (
               <button
@@ -695,18 +786,17 @@ function StudioContent() {
           </div>
 
           {/* Messages */}
-          <div 
+          <div
             ref={alexMessagesRef}
             className="flex-1 overflow-y-auto p-5 bg-gray-50 space-y-4"
           >
             {alexMessages.map((msg, i) => (
               <div
                 key={i}
-                className={`p-4 rounded-xl ${
-                  msg.sender === 'Alex'
-                    ? 'bg-white border border-gray-200'
-                    : 'bg-green-50 border border-green-200 ml-8'
-                }`}
+                className={`p-4 rounded-xl ${msg.sender === 'Alex'
+                  ? 'bg-white border border-gray-200'
+                  : 'bg-green-50 border border-green-200 ml-8'
+                  }`}
               >
                 <div className="font-semibold text-sm mb-1 text-gray-700">{msg.sender}</div>
                 <div className="text-gray-900 whitespace-pre-wrap">{msg.message}</div>
@@ -725,7 +815,7 @@ function StudioContent() {
                 </div>
               </div>
             )}
-            
+
             {/* Invisible div for scrolling to */}
             <div ref={messagesEndRef} />
           </div>
@@ -748,8 +838,8 @@ function StudioContent() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                
-                 <a href={initialReportPdfUrl}
+
+                <a href={initialReportPdfUrl}
                   download
                   target="_blank"
                   rel="noopener noreferrer"
@@ -765,7 +855,7 @@ function StudioContent() {
                 </button>
               </div>
             </div>
-            
+
             {/* PDF Viewer */}
             <div className="flex-1 overflow-hidden">
               <iframe
