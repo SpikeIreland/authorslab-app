@@ -301,8 +301,7 @@ function StudioContent() {
       manuscript.id &&
       searchParams.get('userId') &&
       manuscript.status === 'chapters_parsed' &&
-      !manuscript.full_analysis_completed_at &&
-      manuscript.status !== 'analysis_running';
+      !manuscript.full_analysis_completed_at;
 
     if (shouldTriggerAnalysis) {
       console.log('Auto-triggering full manuscript analysis...');
