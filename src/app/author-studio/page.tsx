@@ -769,7 +769,6 @@ function StudioContent() {
           </div>
         </div>
 
-// In the editor header section, add this button
         {chapterEditingStatus[chapters[currentChapterIndex]?.chapter_number] === 'not_started' && (
           <button
             onClick={() => analyzeChapter(chapters[currentChapterIndex].chapter_number)}
