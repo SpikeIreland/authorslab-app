@@ -20,6 +20,8 @@ interface Manuscript {
   total_chapters: number
   status: string
   full_text?: string
+  full_analysis_completed_at?: string
+  analysis_started_at?: string
 }
 
 interface Chapter {
