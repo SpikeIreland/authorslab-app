@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { BookOpen, CheckCircle } from 'lucide-react'
 
+// Add these component imports
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 
@@ -37,6 +38,8 @@ interface ChatMessage {
   sender: string
   message: string
 }
+
+type ChapterAnalysisStatus = 'pending' | 'analyzing' | 'complete'
 
 function StudioContent() {
   const router = useRouter()
@@ -70,6 +73,13 @@ function StudioContent() {
   const [initialReportPdfUrl, setInitialReportPdfUrl] = useState<string | null>(null)
   const [showReportPanel, setShowReportPanel] = useState(false)
 
+  // NEW: Chapter-by-chapter analysis state
+  const [chapterAnalysisStatus, setChapterAnalysisStatus] = useState<{
+    [chapterId: string]: ChapterAnalysisStatus
+  }>({})
+  const [fullAnalysisInProgress, setFullAnalysisInProgress] = useState(false)
+  const [pollingIntervalId, setPollingIntervalId] = useState<NodeJS.Timeout | null>(null)
+
   // Refs
   const editorRef = useRef<HTMLDivElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -78,6 +88,7 @@ function StudioContent() {
   // Webhooks
   const WEBHOOKS = {
     initialAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-initial-analysis',
+    chapterAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-chapter-analysis',
     alexChat: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-chat'
   }
 
@@ -91,51 +102,14 @@ function StudioContent() {
     scrollToBottom()
   }, [alexMessages, alexThinking])
 
-  // Add this with your other functions (probably after useEffect hooks)
-  const triggerFullAnalysis = async () => {
-    if (!manuscript?.id) {
-      console.error('No manuscript ID available for analysis');
-      return;
-    }
-
-    const supabase = createClient();
-
-    try {
-      console.log('Triggering full manuscript analysis for:', manuscript.id);
-
-      const response = await fetch('https://spikeislandstudios.app.n8n.cloud/webhook/alex-full-manuscript-analysis', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          manuscriptId: manuscript.id,
-          userId: searchParams.get('userId')
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Analysis trigger failed: ${response.status}`);
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => {
+      if (pollingIntervalId) {
+        clearInterval(pollingIntervalId)
       }
-
-      console.log('Full manuscript analysis triggered successfully');
-
-      // Update manuscript status in database to show analysis is running
-      const { error } = await supabase
-        .from('manuscripts')
-        .update({
-          status: 'analysis_running',
-          analysis_started_at: new Date().toISOString()
-        })
-        .eq('id', manuscript.id);
-
-      if (error) {
-        console.error('Error updating manuscript status:', error);
-      }
-
-    } catch (error) {
-      console.error('Error triggering full analysis:', error);
-      addAlexMessage('❌ Failed to start analysis. Please refresh and try again.');
     }
-  };
+  }, [pollingIntervalId])
 
   // Initialize studio - Load from Supabase
   const initializeStudio = useCallback(async () => {
@@ -161,7 +135,7 @@ function StudioContent() {
       // Load manuscript details
       const { data: manuscriptData, error: manuscriptError } = await supabase
         .from('manuscripts')
-        .select('id, title, genre, current_word_count, total_chapters, status, full_text')
+        .select('id, title, genre, current_word_count, total_chapters, status, full_text, full_analysis_completed_at, analysis_started_at')
         .eq('id', manuscriptId)
         .single()
 
@@ -198,12 +172,20 @@ function StudioContent() {
 
       if (chaptersData && chaptersData.length > 0) {
         setChapters(chaptersData)
+        
+        // Initialize chapter analysis status
+        const initialStatus: { [key: string]: ChapterAnalysisStatus } = {}
+        chaptersData.forEach(ch => {
+          initialStatus[ch.id] = 'pending'
+        })
+        setChapterAnalysisStatus(initialStatus)
+        
         setIsLoading(false)
 
         // Load first chapter into editor
         loadChapter(0, chaptersData)
 
-        // Alex's NEW greeting
+        // Alex's greeting
         addAlexMessage(
           `Welcome! I'm Alex, your developmental editor. I can see you've uploaded "${manuscriptData.title}" with ${chaptersData.length} chapters.\n\n` +
           `Before we dive in, let me explain how we'll work together:\n\n` +
@@ -253,6 +235,14 @@ function StudioContent() {
             clearInterval(pollInterval)
             clearInterval(messageInterval)
             setChapters(retryChapters)
+            
+            // Initialize chapter analysis status
+            const initialStatus: { [key: string]: ChapterAnalysisStatus } = {}
+            retryChapters.forEach(ch => {
+              initialStatus[ch.id] = 'pending'
+            })
+            setChapterAnalysisStatus(initialStatus)
+            
             setIsLoading(false)
             loadChapter(0, retryChapters)
 
@@ -292,28 +282,6 @@ function StudioContent() {
       setWordCount(words.length)
     }
   }, [editorContent])
-
-  // Add this useEffect with your other useEffect hooks
-  useEffect(() => {
-    // Check if we should auto-trigger the full analysis
-    const shouldTriggerAnalysis =
-      manuscript &&
-      manuscript.id &&
-      searchParams.get('userId') &&
-      manuscript.status === 'chapters_parsed' &&
-      !manuscript.full_analysis_completed_at;
-
-    if (shouldTriggerAnalysis) {
-      console.log('Auto-triggering full manuscript analysis...');
-
-      // Small delay to ensure everything is loaded
-      const timer = setTimeout(() => {
-        triggerFullAnalysis();
-      }, 2000); // 2 second delay
-
-      return () => clearTimeout(timer);
-    }
-  }, [manuscript, searchParams]);
 
   // Load chapter into editor
   function loadChapter(index: number, chaptersArray?: Chapter[]) {
@@ -387,7 +355,114 @@ function StudioContent() {
     }
   }
 
-  // Trigger initial analysis
+  // NEW: Start listening for chapter completion updates
+  const startListeningForChapterUpdates = useCallback(() => {
+    const supabase = createClient()
+    
+    const pollInterval = setInterval(async () => {
+      // Check database for chapter analysis completion
+      const { data: issues } = await supabase
+        .from('manuscript_issues')
+        .select('chapter_number, id')
+        .eq('manuscript_id', manuscript?.id)
+        .order('chapter_number')
+      
+      if (issues && issues.length > 0) {
+        // Track which chapters we've already notified about
+        const completedChapters = new Set<number>()
+        
+        issues.forEach(issue => {
+          if (!completedChapters.has(issue.chapter_number)) {
+            completedChapters.add(issue.chapter_number)
+          }
+        })
+        
+        // Update status for chapters with issues (means they're analyzed)
+        setChapterAnalysisStatus(prevStatus => {
+          const updatedStatus = { ...prevStatus }
+          let hasChanges = false
+          
+          chapters.forEach(chapter => {
+            if (completedChapters.has(chapter.chapter_number) && 
+                updatedStatus[chapter.id] !== 'complete') {
+              updatedStatus[chapter.id] = 'complete'
+              hasChanges = true
+              
+              // Only add message for newly completed chapters
+              if (prevStatus[chapter.id] !== 'complete') {
+                addAlexMessage(`✓ ${chapter.title} analysis complete`)
+              }
+            }
+          })
+          
+          return hasChanges ? updatedStatus : prevStatus
+        })
+        
+        // Check if all chapters are complete
+        const allComplete = chapters.every(ch => {
+          const chapter = issues.find(i => i.chapter_number === ch.chapter_number)
+          return chapter !== undefined
+        })
+        
+        if (allComplete && fullAnalysisInProgress) {
+          clearInterval(pollInterval)
+          setPollingIntervalId(null)
+          setFullAnalysisInProgress(false)
+          addAlexMessage('🎉 All chapters analyzed! I\'m ready to help you start editing. Let\'s begin with the Prologue!')
+        }
+      }
+    }, 3000) // Poll every 3 seconds
+    
+    setPollingIntervalId(pollInterval)
+  }, [manuscript?.id, chapters, fullAnalysisInProgress])
+
+  // NEW: Trigger chapter-by-chapter analysis
+  const triggerChapterByChapterAnalysis = async () => {
+    if (!manuscript?.id) {
+      console.error('No manuscript ID available for chapter analysis')
+      return
+    }
+
+    setFullAnalysisInProgress(true)
+    
+    // Set all chapters to 'analyzing' status
+    const analyzingStatus: { [key: string]: ChapterAnalysisStatus } = {}
+    chapters.forEach(ch => {
+      analyzingStatus[ch.id] = 'analyzing'
+    })
+    setChapterAnalysisStatus(analyzingStatus)
+    
+    addAlexMessage(
+      '📚 I\'m now analyzing each chapter in detail. You\'ll see progress indicators update as I work through them. This will take about 6 minutes total.'
+    )
+    
+    try {
+      const response = await fetch(WEBHOOKS.chapterAnalysis, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          manuscriptId: manuscript.id,
+          userId: searchParams.get('userId')
+        })
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Chapter analysis trigger failed: ${response.status}`)
+      }
+      
+      console.log('Chapter-by-chapter analysis triggered successfully')
+      
+      // Start polling for updates
+      startListeningForChapterUpdates()
+      
+    } catch (error) {
+      console.error('Error triggering chapter analysis:', error)
+      addAlexMessage('❌ Had trouble starting detailed analysis. Please refresh and try again.')
+      setFullAnalysisInProgress(false)
+    }
+  }
+
+  // Trigger initial analysis (quick feedback)
   async function triggerInitialAnalysis() {
     setAlexThinking(true)
 
@@ -430,11 +505,11 @@ function StudioContent() {
       setInitialReportPdfUrl(result.pdfUrl)
 
       addAlexMessage(
-        `✅ I've finished reading your manuscript! Here are my initial impressions:\n\n` +
+        `✅ I've finished my initial read! Here are my first impressions:\n\n` +
         `${result.summary || result.feedback?.hook || "I can see you have a compelling story here. I'm ready to help you develop it further."}\n\n` +
         `📊 Excitement Level: ${result.excitementStars || '⭐'.repeat(result.excitementLevel || 7)}\n\n` +
         `📄 I've created a detailed Initial Assessment Report that you can review anytime by clicking the "View Report" button above.\n\n` +
-        `Ready to dive deeper into Phase 1?`
+        `I'm preparing detailed notes for each chapter which may take a little while. In the meantime, let's get started with the Prologue!`
       )
 
     } catch (error) {
@@ -459,9 +534,14 @@ function StudioContent() {
     // Scroll to bottom after adding user message
     setTimeout(scrollToBottom, 100)
 
-    // Check for "Yes" to trigger initial analysis
+    // Check for "Yes" to trigger BOTH analyses
     if (userMessage.toLowerCase().includes('yes') && !analysisComplete) {
+      // Start quick initial analysis
       triggerInitialAnalysis()
+      
+      // Start full chapter-by-chapter analysis
+      triggerChapterByChapterAnalysis()
+      
       return
     }
 
@@ -589,51 +669,21 @@ function StudioContent() {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold ${alexThinking
-            ? 'bg-yellow-50 border border-yellow-500 text-yellow-900'
-            : 'bg-green-50 border border-green-500 text-green-900'
-            }`}>
-            <div className={`w-2 h-2 rounded-full ${alexThinking ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'}`}></div>
-            {alexThinking ? 'Thinking...' : 'Alex is Online'}
+          <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold ${
+            alexThinking || fullAnalysisInProgress
+              ? 'bg-yellow-50 border border-yellow-500 text-yellow-900'
+              : 'bg-green-50 border border-green-500 text-green-900'
+          }`}>
+            <div className={`w-2 h-2 rounded-full ${
+              alexThinking || fullAnalysisInProgress ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'
+            }`}></div>
+            {alexThinking ? 'Thinking...' : fullAnalysisInProgress ? 'Analyzing...' : 'Alex is Online'}
           </div>
           <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-semibold">
             A
           </div>
         </div>
       </header>
-
-      {/* Add this near the top of your main content, maybe after the header */}
-      {manuscript?.status === 'analysis_running' && !manuscript?.full_analysis_completed_at && (
-        <Alert className="mb-4 border-green-200 bg-green-50">
-          <BookOpen className="h-4 w-4 text-green-600" />
-          <AlertTitle className="text-green-800">Analysis in Progress</AlertTitle>
-          <AlertDescription className="text-green-700">
-            Alex is reading your entire manuscript and creating your developmental editing roadmap.
-            This takes about 6 minutes. You will receive an email when complete, and you can continue
-            working on other things in the meantime.
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Show when analysis is complete */}
-      {manuscript?.full_analysis_completed_at && (
-        <Alert className="mb-4 border-blue-200 bg-blue-50">
-          <CheckCircle className="h-4 w-4 text-blue-600" />
-          <AlertTitle className="text-blue-800">Analysis Complete!</AlertTitle>
-          <AlertDescription className="text-blue-700">
-            Your developmental editing roadmap has been emailed to you. Ready to start editing?
-            <Button
-              onClick={() => {
-                addAlexMessage('Great! Let\'s begin with structural editing. I\'ll guide you through each chapter.');
-              }}
-              className="ml-2 h-8"
-              variant="outline"
-            >
-              Begin Structural Editing
-            </Button>
-          </AlertDescription>
-        </Alert>
-      )}
 
       {/* Main Layout: 3 columns */}
       <div className="flex-1 grid grid-cols-[320px_1fr_400px] overflow-hidden">
@@ -650,16 +700,30 @@ function StudioContent() {
               {chapters.map((chapter, index) => (
                 <div
                   key={chapter.id}
-                  className={`p-3 rounded-lg border cursor-pointer transition-all ${index === currentChapterIndex
-                    ? 'bg-green-50 border-green-500 shadow-sm'
-                    : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm'
-                    }`}
+                  className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                    index === currentChapterIndex
+                      ? 'bg-green-50 border-green-500 shadow-sm'
+                      : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm'
+                  }`}
                 >
                   <div className="flex items-center justify-between">
                     <div
                       className="flex items-center gap-2 flex-1"
                       onClick={() => loadChapter(index)}
                     >
+                      {/* Chapter status indicator */}
+                      <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
+                        {chapterAnalysisStatus[chapter.id] === 'analyzing' && (
+                          <div className="w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+                        )}
+                        {chapterAnalysisStatus[chapter.id] === 'complete' && (
+                          <span className="text-green-600 text-lg">✓</span>
+                        )}
+                        {chapterAnalysisStatus[chapter.id] === 'pending' && (
+                          <span className="text-gray-300 text-lg">○</span>
+                        )}
+                      </div>
+                      
                       <span className="text-xs font-semibold text-gray-500">
                         {chapter.chapter_number === 0 ? 'Prologue' :
                           chapter.chapter_number === 999 ? 'Epilogue' :
@@ -709,10 +773,11 @@ function StudioContent() {
               <button
                 onClick={saveChanges}
                 disabled={!hasUnsavedChanges}
-                className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${hasUnsavedChanges
-                  ? 'bg-blue-600 text-white hover:bg-blue-700'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
+                className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${
+                  hasUnsavedChanges
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
               >
                 <span>💾</span> Save
               </button>
@@ -807,10 +872,11 @@ function StudioContent() {
             {alexMessages.map((msg, i) => (
               <div
                 key={i}
-                className={`p-4 rounded-xl ${msg.sender === 'Alex'
-                  ? 'bg-white border border-gray-200'
-                  : 'bg-green-50 border border-green-200 ml-8'
-                  }`}
+                className={`p-4 rounded-xl ${
+                  msg.sender === 'Alex'
+                    ? 'bg-white border border-gray-200'
+                    : 'bg-green-50 border border-green-200 ml-8'
+                }`}
               >
                 <div className="font-semibold text-sm mb-1 text-gray-700">{msg.sender}</div>
                 <div className="text-gray-900 whitespace-pre-wrap">{msg.message}</div>
@@ -852,8 +918,8 @@ function StudioContent() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-
-                <a href={initialReportPdfUrl}
+                
+                  <a href={initialReportPdfUrl}
                   download
                   target="_blank"
                   rel="noopener noreferrer"
