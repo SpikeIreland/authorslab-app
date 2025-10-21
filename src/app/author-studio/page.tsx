@@ -39,7 +39,7 @@ interface ChatMessage {
   message: string
 }
 
-type ChapterAnalysisStatus = 'pending' | 'analyzing' | 'complete'
+type ChapterEditingStatus = 'not_started' | 'analyzing' | 'ready'
 
 function StudioContent() {
   const router = useRouter()
@@ -70,17 +70,15 @@ function StudioContent() {
 
   // Analysis state
   const [analysisComplete, setAnalysisComplete] = useState(false)
-  const [initialReportPdfUrl, setInitialReportPdfUrl] = useState<string | null>(null)
+  const [fullReportPdfUrl, setFullReportPdfUrl] = useState<string | null>(null)
   const [showReportPanel, setShowReportPanel] = useState(false)
 
-  // NEW: Chapter-by-chapter analysis state
-  const [chapterAnalysisStatus, setChapterAnalysisStatus] = useState<{
-    [chapterId: string]: ChapterAnalysisStatus
-  }>({})
-  const [fullAnalysisInProgress, setFullAnalysisInProgress] = useState(false)
-  const [pollingIntervalId, setPollingIntervalId] = useState<NodeJS.Timeout | null>(null)
+  // NEW: Chapter editing status state
   const [chapterEditingStatus, setChapterEditingStatus] = useState<{
-    [chapterNumber: number]: 'not_started' | 'analyzing' | 'ready'
+    [chapterNumber: number]: ChapterEditingStatus
+  }>({})
+  const [chapterIssueCount, setChapterIssueCount] = useState<{
+    [chapterNumber: number]: number
   }>({})
 
   // Refs
@@ -90,8 +88,8 @@ function StudioContent() {
 
   // Webhooks
   const WEBHOOKS = {
-    initialAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-initial-analysis',
-    chapterAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-chapter-analysis',
+    fullAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-full-manuscript-analysis',
+    chapterAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-analyze-single-chapter',
     alexChat: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-chat'
   }
 
@@ -104,15 +102,6 @@ function StudioContent() {
   useEffect(() => {
     scrollToBottom()
   }, [alexMessages, alexThinking])
-
-  // Cleanup polling on unmount
-  useEffect(() => {
-    return () => {
-      if (pollingIntervalId) {
-        clearInterval(pollingIntervalId)
-      }
-    }
-  }, [pollingIntervalId])
 
   // Initialize studio - Load from Supabase
   const initializeStudio = useCallback(async () => {
@@ -153,19 +142,11 @@ function StudioContent() {
       setLoadingMessage('Loading chapters...')
 
       // Load chapters
-      console.log('Querying chapters for manuscript_id:', manuscriptId)
-
       const { data: chaptersData, error: chaptersError } = await supabase
         .from('chapters')
         .select('*')
         .eq('manuscript_id', manuscriptId)
         .order('chapter_number', { ascending: true })
-
-      console.log('Chapters query result:', {
-        data: chaptersData,
-        error: chaptersError,
-        count: chaptersData?.length || 0
-      })
 
       if (chaptersError) {
         console.error('Chapters query error:', chaptersError)
@@ -175,20 +156,20 @@ function StudioContent() {
 
       if (chaptersData && chaptersData.length > 0) {
         setChapters(chaptersData)
-
-        // Initialize chapter analysis status
-        const initialStatus: { [key: string]: ChapterAnalysisStatus } = {}
+        
+        // Initialize chapter editing status
+        const initialStatus: { [key: number]: ChapterEditingStatus } = {}
         chaptersData.forEach(ch => {
-          initialStatus[ch.id] = 'pending'
+          initialStatus[ch.chapter_number] = 'not_started'
         })
-        setChapterAnalysisStatus(initialStatus)
-
+        setChapterEditingStatus(initialStatus)
+        
         setIsLoading(false)
 
         // Load first chapter into editor
         loadChapter(0, chaptersData)
 
-        // Alex's greeting
+        // Alex's NEW greeting
         addAlexMessage(
           `Welcome! I'm Alex, your developmental editor. I can see you've uploaded "${manuscriptData.title}" with ${chaptersData.length} chapters.\n\n` +
           `Before we dive in, let me explain how we'll work together:\n\n` +
@@ -203,7 +184,6 @@ function StudioContent() {
           `💾 Click "Save" when you make changes\n\n` +
           `Once you're happy with everything, just type **"Yes"** and I'll read your manuscript!`
         )
-
       } else {
         // Chapters still being parsed
         const pollingMessages = [
@@ -239,20 +219,20 @@ function StudioContent() {
             clearInterval(pollInterval)
             clearInterval(messageInterval)
             setChapters(retryChapters)
-
-            // Initialize chapter analysis status
-            const initialStatus: { [key: string]: ChapterAnalysisStatus } = {}
+            
+            // Initialize chapter editing status
+            const initialStatus: { [key: number]: ChapterEditingStatus } = {}
             retryChapters.forEach(ch => {
-              initialStatus[ch.id] = 'pending'
+              initialStatus[ch.chapter_number] = 'not_started'
             })
-            setChapterAnalysisStatus(initialStatus)
-
+            setChapterEditingStatus(initialStatus)
+            
             setIsLoading(false)
             loadChapter(0, retryChapters)
 
             addAlexMessage(
               `Great! I've finished parsing your manuscript into ${retryChapters.length} chapters. ` +
-              `Ready to begin developmental editing?`
+              `Ready to begin?`
             )
           } else if (pollCount >= maxPolls) {
             console.warn('⚠️ Chapters not found after polling')
@@ -273,73 +253,6 @@ function StudioContent() {
       addAlexMessage(`❌ Error loading your manuscript: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }, [searchParams, router])
-
-  const analyzeChapter = async (chapterNumber: number) => {
-    if (!manuscript?.id) return
-
-    // Update status to analyzing
-    setChapterEditingStatus(prev => ({
-      ...prev,
-      [chapterNumber]: 'analyzing'
-    }))
-
-    addAlexMessage(`📖 Let me retrieve all my notes on ${chapters.find(ch => ch.chapter_number === chapterNumber)?.title}. This will just take a moment...`)
-
-    try {
-      const response = await fetch('https://spikeislandstudios.app.n8n.cloud/webhook/alex-analyze-single-chapter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          manuscriptId: manuscript.id,
-          chapterNumber: chapterNumber,
-          userId: searchParams.get('userId')
-        })
-      })
-
-      if (!response.ok) {
-        throw new Error('Chapter analysis failed')
-      }
-
-      // Poll for issues to appear
-      pollForChapterIssues(chapterNumber)
-
-    } catch (error) {
-      console.error('Error analyzing chapter:', error)
-      addAlexMessage('❌ Had trouble analyzing this chapter. Please try again.')
-      setChapterEditingStatus(prev => ({
-        ...prev,
-        [chapterNumber]: 'not_started'
-      }))
-    }
-  }
-
-  const pollForChapterIssues = async (chapterNumber: number) => {
-    const supabase = createClient()
-    let attempts = 0
-    const maxAttempts = 20 // 1 minute max
-
-    const pollInterval = setInterval(async () => {
-      attempts++
-
-      const { data: issues } = await supabase
-        .from('manuscript_issues')
-        .select('id')
-        .eq('manuscript_id', manuscript?.id)
-        .eq('chapter_number', chapterNumber)
-
-      if (issues && issues.length > 0) {
-        clearInterval(pollInterval)
-        setChapterEditingStatus(prev => ({
-          ...prev,
-          [chapterNumber]: 'ready'
-        }))
-        addAlexMessage(`✅ Perfect! I found ${issues.length} things we can work on together in this chapter. Let's dive in!`)
-      } else if (attempts >= maxAttempts) {
-        clearInterval(pollInterval)
-        addAlexMessage('⚠️ Analysis is taking longer than expected. It should be ready soon - try refreshing in a moment.')
-      }
-    }, 3000)
-  }
 
   useEffect(() => {
     initializeStudio()
@@ -426,167 +339,119 @@ function StudioContent() {
     }
   }
 
-  // NEW: Start listening for chapter completion updates
-  const startListeningForChapterUpdates = useCallback(() => {
-    const supabase = createClient()
-
-    const pollInterval = setInterval(async () => {
-      // Check database for chapter analysis completion
-      const { data: issues } = await supabase
-        .from('manuscript_issues')
-        .select('chapter_number, id')
-        .eq('manuscript_id', manuscript?.id)
-        .order('chapter_number')
-
-      if (issues && issues.length > 0) {
-        // Track which chapters we've already notified about
-        const completedChapters = new Set<number>()
-
-        issues.forEach(issue => {
-          if (!completedChapters.has(issue.chapter_number)) {
-            completedChapters.add(issue.chapter_number)
-          }
-        })
-
-        // Update status for chapters with issues (means they're analyzed)
-        setChapterAnalysisStatus(prevStatus => {
-          const updatedStatus = { ...prevStatus }
-          let hasChanges = false
-
-          chapters.forEach(chapter => {
-            if (completedChapters.has(chapter.chapter_number) &&
-              updatedStatus[chapter.id] !== 'complete') {
-              updatedStatus[chapter.id] = 'complete'
-              hasChanges = true
-
-              // Only add message for newly completed chapters
-              if (prevStatus[chapter.id] !== 'complete') {
-                addAlexMessage(`✓ ${chapter.title} analysis complete`)
-              }
-            }
-          })
-
-          return hasChanges ? updatedStatus : prevStatus
-        })
-
-        // Check if all chapters are complete
-        const allComplete = chapters.every(ch => {
-          const chapter = issues.find(i => i.chapter_number === ch.chapter_number)
-          return chapter !== undefined
-        })
-
-        if (allComplete && fullAnalysisInProgress) {
-          clearInterval(pollInterval)
-          setPollingIntervalId(null)
-          setFullAnalysisInProgress(false)
-          addAlexMessage('🎉 All chapters analyzed! I\'m ready to help you start editing. Let\'s begin with the Prologue!')
-        }
-      }
-    }, 3000) // Poll every 3 seconds
-
-    setPollingIntervalId(pollInterval)
-  }, [manuscript?.id, chapters, fullAnalysisInProgress])
-
-  // NEW: Trigger chapter-by-chapter analysis
-  const triggerChapterByChapterAnalysis = async () => {
-    if (!manuscript?.id) {
-      console.error('No manuscript ID available for chapter analysis')
-      return
-    }
-
-    setFullAnalysisInProgress(true)
-
-    // Set all chapters to 'analyzing' status
-    const analyzingStatus: { [key: string]: ChapterAnalysisStatus } = {}
-    chapters.forEach(ch => {
-      analyzingStatus[ch.id] = 'analyzing'
-    })
-    setChapterAnalysisStatus(analyzingStatus)
-
-    addAlexMessage(
-      '📚 I\'m now analyzing each chapter in detail. You\'ll see progress indicators update as I work through them. This will take about 6 minutes total.'
-    )
-
+  // NEW: Analyze single chapter on-demand
+  const analyzeChapter = async (chapterNumber: number) => {
+    if (!manuscript?.id) return
+    
+    const chapter = chapters.find(ch => ch.chapter_number === chapterNumber)
+    if (!chapter) return
+    
+    // Update status to analyzing
+    setChapterEditingStatus(prev => ({
+      ...prev,
+      [chapterNumber]: 'analyzing'
+    }))
+    
+    addAlexMessage(`📖 Let me retrieve all my notes on "${chapter.title}". This will just take a moment...`)
+    
     try {
       const response = await fetch(WEBHOOKS.chapterAnalysis, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           manuscriptId: manuscript.id,
+          chapterNumber: chapterNumber,
           userId: searchParams.get('userId')
         })
       })
-
+      
       if (!response.ok) {
-        throw new Error(`Chapter analysis trigger failed: ${response.status}`)
+        throw new Error('Chapter analysis failed')
       }
-
-      console.log('Chapter-by-chapter analysis triggered successfully')
-
-      // Start polling for updates
-      startListeningForChapterUpdates()
-
+      
+      // Poll for issues to appear
+      pollForChapterIssues(chapterNumber)
+      
     } catch (error) {
-      console.error('Error triggering chapter analysis:', error)
-      addAlexMessage('❌ Had trouble starting detailed analysis. Please refresh and try again.')
-      setFullAnalysisInProgress(false)
+      console.error('Error analyzing chapter:', error)
+      addAlexMessage('❌ Had trouble analyzing this chapter. Please try again.')
+      setChapterEditingStatus(prev => ({
+        ...prev,
+        [chapterNumber]: 'not_started'
+      }))
     }
   }
 
-  // Trigger initial analysis (quick feedback)
-  async function triggerInitialAnalysis() {
+  const pollForChapterIssues = async (chapterNumber: number) => {
+    const supabase = createClient()
+    let attempts = 0
+    const maxAttempts = 20 // 1 minute max
+    
+    const pollInterval = setInterval(async () => {
+      attempts++
+      
+      const { data: issues } = await supabase
+        .from('manuscript_issues')
+        .select('id')
+        .eq('manuscript_id', manuscript?.id)
+        .eq('chapter_number', chapterNumber)
+      
+      if (issues && issues.length > 0) {
+        clearInterval(pollInterval)
+        setChapterEditingStatus(prev => ({
+          ...prev,
+          [chapterNumber]: 'ready'
+        }))
+        setChapterIssueCount(prev => ({
+          ...prev,
+          [chapterNumber]: issues.length
+        }))
+        addAlexMessage(`✅ Perfect! I found ${issues.length} things we can work on together in this chapter. Let's dive in!`)
+      } else if (attempts >= maxAttempts) {
+        clearInterval(pollInterval)
+        addAlexMessage('⚠️ Analysis is taking longer than expected. It should be ready soon - try refreshing in a moment.')
+      }
+    }, 3000)
+  }
+
+  // NEW: Trigger full manuscript analysis (merged from initial)
+  const triggerFullAnalysis = async () => {
     setAlexThinking(true)
-
-    const analysisSteps = [
-      { message: '📖 Reading your manuscript...', delay: 0 },
-      { message: '🎭 Understanding your characters...', delay: 3000 },
-      { message: '📊 Assessing the pace...', delay: 6000 },
-      { message: '✨ Nice! I like what I see so far...', delay: 9000 },
-      { message: '🔍 Analyzing story structure...', delay: 12000 },
-      { message: '🎯 Identifying key strengths...', delay: 15000 },
-    ]
-
-    // Show progressive messages
-    analysisSteps.forEach(step => {
-      setTimeout(() => {
-        setThinkingMessage(step.message)
-      }, step.delay)
-    })
-
+    setThinkingMessage('📖 Reading your entire manuscript...')
+    
+    setTimeout(() => setThinkingMessage('🎭 Understanding your characters...'), 3000)
+    setTimeout(() => setThinkingMessage('📊 Analyzing story structure...'), 6000)
+    setTimeout(() => setThinkingMessage('✨ This is really compelling...'), 9000)
+    setTimeout(() => setThinkingMessage('🔍 Identifying strengths and opportunities...'), 12000)
+    
     try {
-      const response = await fetch(WEBHOOKS.initialAnalysis, {
+      const response = await fetch(WEBHOOKS.fullAnalysis, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           manuscriptId: manuscript?.id,
-          manuscriptText: manuscript?.full_text,
-          bookTitle: manuscript?.title,
-          genre: manuscript?.genre,
-          wordCount: manuscript?.current_word_count,
-          totalChapters: chapters.length
+          userId: searchParams.get('userId')
         })
       })
-
+      
       if (!response.ok) throw new Error('Analysis failed')
-
+      
       const result = await response.json()
-
+      
       setAlexThinking(false)
       setAnalysisComplete(true)
-      setInitialReportPdfUrl(result.pdfUrl)
-
+      setFullReportPdfUrl(result.pdfUrl)
+      
       addAlexMessage(
-        `✅ I've finished my initial read! Here are my first impressions:\n\n` +
-        `${result.summary || result.feedback?.hook || "I can see you have a compelling story here. I'm ready to help you develop it further."}\n\n` +
-        `📊 Excitement Level: ${result.excitementStars || '⭐'.repeat(result.excitementLevel || 7)}\n\n` +
-        `📄 I've created a detailed Initial Assessment Report that you can review anytime by clicking the "View Report" button above.\n\n` +
-        `I'm preparing detailed notes for each chapter which may take a little while. In the meantime, let's get started with the Prologue!`
+        `✅ I've finished reading your manuscript and I'm genuinely excited about what you've created here! I've sent you a comprehensive analysis report by email.\n\n` +
+        `You can review the full report using the "View Report" button above, or we can dive right in.\n\n` +
+        `**Ready to start editing?** Just click on any chapter and hit "Start Editing" when you're ready. I'll pull up my notes for that specific chapter and we'll work through it together.`
       )
-
+      
     } catch (error) {
       console.error('Analysis error:', error)
       setAlexThinking(false)
-      addAlexMessage('I had trouble completing the full analysis, but I can still help you. What would you like to focus on?')
+      addAlexMessage('I had trouble completing the analysis, but I can still help you. What would you like to focus on?')
     }
   }
 
@@ -605,45 +470,10 @@ function StudioContent() {
     // Scroll to bottom after adding user message
     setTimeout(scrollToBottom, 100)
 
-    // Check for "Yes" to trigger BOTH analyses
+    // Check for "Yes" to trigger FULL analysis only
     if (userMessage.toLowerCase().includes('yes') && !analysisComplete) {
       triggerFullAnalysis()
       return
-    }
-
-    const triggerFullAnalysis = async () => {
-      setAlexThinking(true)
-      setThinkingMessage('📖 Reading your entire manuscript...')
-
-      try {
-        const response = await fetch('https://spikeislandstudios.app.n8n.cloud/webhook/alex-full-manuscript-analysis', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            manuscriptId: manuscript?.id,
-            userId: searchParams.get('userId')
-          })
-        })
-
-        if (!response.ok) throw new Error('Analysis failed')
-
-        const result = await response.json()
-
-        setAlexThinking(false)
-        setAnalysisComplete(true)
-        setInitialReportPdfUrl(result.pdfUrl)
-
-        addAlexMessage(
-          `✅ I've finished reading your manuscript and I'm genuinely excited about what you've created here! I've sent you a comprehensive analysis report by email.\n\n` +
-          `You can review the full report using the "View Report" button above, or we can dive right in.\n\n` +
-          `**Ready to start editing?** Just click on any chapter and hit "Start Editing" when you're ready. I'll pull up my notes for that specific chapter and we'll work through it together.`
-        )
-
-      } catch (error) {
-        console.error('Analysis error:', error)
-        setAlexThinking(false)
-        addAlexMessage('I had trouble completing the analysis, but I can still help you. What would you like to focus on?')
-      }
     }
 
     setAlexThinking(true)
@@ -747,6 +577,11 @@ function StudioContent() {
     )
   }
 
+  // Get current chapter editing status and issue count
+  const currentChapter = chapters[currentChapterIndex]
+  const currentEditingStatus = currentChapter ? chapterEditingStatus[currentChapter.chapter_number] : 'not_started'
+  const currentIssueCount = currentChapter ? chapterIssueCount[currentChapter.chapter_number] || 0 : 0
+
   // Main studio interface
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-gray-50">
@@ -769,36 +604,16 @@ function StudioContent() {
           </div>
         </div>
 
-        {chapterEditingStatus[chapters[currentChapterIndex]?.chapter_number] === 'not_started' && (
-          <button
-            onClick={() => analyzeChapter(chapters[currentChapterIndex].chapter_number)}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all flex items-center gap-2"
-          >
-            <span>🚀</span> Start Editing This Chapter
-          </button>
-        )}
-
-        {chapterEditingStatus[chapters[currentChapterIndex]?.chapter_number] === 'analyzing' && (
-          <div className="bg-yellow-50 border border-yellow-200 px-4 py-2 rounded-lg flex items-center gap-2">
-            <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
-            <span className="text-yellow-700">Analyzing chapter...</span>
-          </div>
-        )}
-
-        {chapterEditingStatus[chapters[currentChapterIndex]?.chapter_number] === 'ready' && (
-          <div className="bg-green-50 border border-green-200 px-4 py-2 rounded-lg flex items-center gap-2">
-            <span className="text-green-700">✓ Ready to edit - {issueCount} notes available</span>
-          </div>
-        )}
-
         <div className="flex items-center gap-4">
-          <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold ${alexThinking || fullAnalysisInProgress
-            ? 'bg-yellow-50 border border-yellow-500 text-yellow-900'
-            : 'bg-green-50 border border-green-500 text-green-900'
-            }`}>
-            <div className={`w-2 h-2 rounded-full ${alexThinking || fullAnalysisInProgress ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'
-              }`}></div>
-            {alexThinking ? 'Thinking...' : fullAnalysisInProgress ? 'Analyzing...' : 'Alex is Online'}
+          <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold ${
+            alexThinking
+              ? 'bg-yellow-50 border border-yellow-500 text-yellow-900'
+              : 'bg-green-50 border border-green-500 text-green-900'
+          }`}>
+            <div className={`w-2 h-2 rounded-full ${
+              alexThinking ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'
+            }`}></div>
+            {alexThinking ? 'Thinking...' : 'Alex is Online'}
           </div>
           <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-semibold">
             A
@@ -821,10 +636,11 @@ function StudioContent() {
               {chapters.map((chapter, index) => (
                 <div
                   key={chapter.id}
-                  className={`p-3 rounded-lg border cursor-pointer transition-all ${index === currentChapterIndex
-                    ? 'bg-green-50 border-green-500 shadow-sm'
-                    : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm'
-                    }`}
+                  className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                    index === currentChapterIndex
+                      ? 'bg-green-50 border-green-500 shadow-sm'
+                      : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm'
+                  }`}
                 >
                   <div className="flex items-center justify-between">
                     <div
@@ -833,17 +649,17 @@ function StudioContent() {
                     >
                       {/* Chapter status indicator */}
                       <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
-                        {chapterAnalysisStatus[chapter.id] === 'analyzing' && (
+                        {chapterEditingStatus[chapter.chapter_number] === 'analyzing' && (
                           <div className="w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
                         )}
-                        {chapterAnalysisStatus[chapter.id] === 'complete' && (
+                        {chapterEditingStatus[chapter.chapter_number] === 'ready' && (
                           <span className="text-green-600 text-lg">✓</span>
                         )}
-                        {chapterAnalysisStatus[chapter.id] === 'pending' && (
+                        {chapterEditingStatus[chapter.chapter_number] === 'not_started' && (
                           <span className="text-gray-300 text-lg">○</span>
                         )}
                       </div>
-
+                      
                       <span className="text-xs font-semibold text-gray-500">
                         {chapter.chapter_number === 0 ? 'Prologue' :
                           chapter.chapter_number === 999 ? 'Epilogue' :
@@ -884,28 +700,55 @@ function StudioContent() {
 
         {/* CENTER: Editor */}
         <div className="bg-white flex flex-col overflow-hidden border-r-2 border-gray-200">
-          {/* Chapter header with Save and Approve buttons */}
+          {/* Chapter header with Start Editing / Save / Approve buttons */}
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
             <h3 className="text-lg font-bold text-green-700">
               {chapters[currentChapterIndex]?.title || 'Loading...'}
             </h3>
             <div className="flex gap-3">
-              <button
-                onClick={saveChanges}
-                disabled={!hasUnsavedChanges}
-                className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${hasUnsavedChanges
-                  ? 'bg-blue-600 text-white hover:bg-blue-700'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
-              >
-                <span>💾</span> Save
-              </button>
-              <button
-                onClick={approveChapter}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all flex items-center gap-2"
-              >
-                <span>✓</span> Approve Chapter
-              </button>
+              {/* Start Editing Button */}
+              {currentEditingStatus === 'not_started' && (
+                <button
+                  onClick={() => analyzeChapter(currentChapter.chapter_number)}
+                  className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all flex items-center gap-2"
+                >
+                  <span>🚀</span> Start Editing This Chapter
+                </button>
+              )}
+
+              {/* Analyzing Status */}
+              {currentEditingStatus === 'analyzing' && (
+                <div className="bg-yellow-50 border border-yellow-200 px-4 py-2 rounded-lg flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-yellow-700">Analyzing chapter...</span>
+                </div>
+              )}
+
+              {/* Ready to Edit Status + Save/Approve */}
+              {currentEditingStatus === 'ready' && (
+                <>
+                  <div className="bg-green-50 border border-green-200 px-4 py-2 rounded-lg flex items-center gap-2">
+                    <span className="text-green-700">✓ {currentIssueCount} notes available</span>
+                  </div>
+                  <button
+                    onClick={saveChanges}
+                    disabled={!hasUnsavedChanges}
+                    className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${
+                      hasUnsavedChanges
+                        ? 'bg-blue-600 text-white hover:bg-blue-700'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    <span>💾</span> Save
+                  </button>
+                  <button
+                    onClick={approveChapter}
+                    className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all flex items-center gap-2"
+                  >
+                    <span>✓</span> Approve Chapter
+                  </button>
+                </>
+              )}
             </div>
           </div>
 
@@ -973,7 +816,7 @@ function StudioContent() {
             </div>
 
             {/* Report Access Button */}
-            {initialReportPdfUrl && (
+            {fullReportPdfUrl && (
               <button
                 onClick={() => setShowReportPanel(true)}
                 className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 text-sm backdrop-blur-sm"
@@ -991,10 +834,11 @@ function StudioContent() {
             {alexMessages.map((msg, i) => (
               <div
                 key={i}
-                className={`p-4 rounded-xl ${msg.sender === 'Alex'
-                  ? 'bg-white border border-gray-200'
-                  : 'bg-green-50 border border-green-200 ml-8'
-                  }`}
+                className={`p-4 rounded-xl ${
+                  msg.sender === 'Alex'
+                    ? 'bg-white border border-gray-200'
+                    : 'bg-green-50 border border-green-200 ml-8'
+                }`}
               >
                 <div className="font-semibold text-sm mb-1 text-gray-700">{msg.sender}</div>
                 <div className="text-gray-900 whitespace-pre-wrap">{msg.message}</div>
@@ -1021,7 +865,7 @@ function StudioContent() {
       </div>
 
       {/* Report Overlay Panel */}
-      {showReportPanel && initialReportPdfUrl && (
+      {showReportPanel && fullReportPdfUrl && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-8">
           <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full h-[90vh] flex flex-col">
             {/* Header */}
@@ -1031,13 +875,13 @@ function StudioContent() {
                   A
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">Alex Initial Analysis</h3>
-                  <p className="text-sm text-gray-600">First Impressions Report</p>
+                  <h3 className="text-xl font-bold text-gray-900">Alex Comprehensive Analysis</h3>
+                  <p className="text-sm text-gray-600">Full Manuscript Report</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-
-                <a href={initialReportPdfUrl}
+                
+                 <a href={fullReportPdfUrl}
                   download
                   target="_blank"
                   rel="noopener noreferrer"
@@ -1057,9 +901,9 @@ function StudioContent() {
             {/* PDF Viewer */}
             <div className="flex-1 overflow-hidden">
               <iframe
-                src={initialReportPdfUrl}
+                src={fullReportPdfUrl}
                 className="w-full h-full"
-                title="Alex's Initial Analysis Report"
+                title="Alex's Comprehensive Analysis Report"
               />
             </div>
           </div>
