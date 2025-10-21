@@ -6,6 +6,11 @@ import { Suspense, useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import { BookOpen, CheckCircle } from 'lucide-react'
+import { toast } from 'sonner'
+
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
 
 // Type definitions
 interface Manuscript {
@@ -87,15 +92,22 @@ function StudioContent() {
 
   // Add this with your other functions (probably after useEffect hooks)
   const triggerFullAnalysis = async () => {
-    try {
-      console.log('Triggering full manuscript analysis for:', manuscriptId);
+    if (!manuscript?.id) {
+      console.error('No manuscript ID available for analysis');
+      return;
+    }
 
-      const response = await fetch('https://your-n8n-instance.com/webhook/alex-full-manuscript-analysis', {
+    const supabase = createClient();
+
+    try {
+      console.log('Triggering full manuscript analysis for:', manuscript.id);
+
+      const response = await fetch('https://spikeislandstudios.app.n8n.cloud/webhook/alex-full-manuscript-analysis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          manuscriptId: manuscriptId,
-          userId: user?.id
+          manuscriptId: manuscript.id,
+          userId: searchParams.get('userId')
         })
       });
 
@@ -285,8 +297,8 @@ function StudioContent() {
     // Check if we should auto-trigger the full analysis
     const shouldTriggerAnalysis =
       manuscript &&
-      manuscriptId &&
-      user?.id &&
+      manuscript.id &&
+      searchParams.get('userId') &&
       manuscript.status === 'chapters_parsed' &&
       !manuscript.full_analysis_completed_at &&
       manuscript.status !== 'analysis_running';
@@ -301,7 +313,7 @@ function StudioContent() {
 
       return () => clearTimeout(timer);
     }
-  }, [manuscript, manuscriptId, user]);
+  }, [manuscript, searchParams]);
 
   // Load chapter into editor
   function loadChapter(index: number, chaptersArray?: Chapter[]) {
@@ -597,7 +609,7 @@ function StudioContent() {
           <AlertTitle className="text-green-800">Analysis in Progress</AlertTitle>
           <AlertDescription className="text-green-700">
             Alex is reading your entire manuscript and creating your developmental editing roadmap.
-            This takes about 6 minutes. You'll receive an email when complete, and you can continue
+            This takes about 6 minutes. You will receive an email when complete, and you can continue
             working on other things in the meantime.
           </AlertDescription>
         </Alert>
@@ -611,7 +623,9 @@ function StudioContent() {
           <AlertDescription className="text-blue-700">
             Your developmental editing roadmap has been emailed to you. Ready to start editing?
             <Button
-              onClick={() => setCurrentEditingElement('structure')}
+              onClick={() => {
+                addAlexMessage('Great! Let\'s begin with structural editing. I\'ll guide you through each chapter.');
+              }}
               className="ml-2 h-8"
               variant="outline"
             >
