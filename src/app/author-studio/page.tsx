@@ -198,7 +198,7 @@ function StudioContent() {
           `🧹 Make sure you've removed page numbers, headers, and copyright text\n` +
           `📝 Edit any content that needs cleaning up in the main editor\n` +
           `💾 Click "Save" when you make changes\n\n` +
-          `Once you're happy with everything, just type **"Yes"** and I'll read your manuscript to get started!`
+          `Once you're happy with everything, just type "Yes" and I'll read your manuscript to get started!`
         )
       } else {
         // Chapters still being parsed
