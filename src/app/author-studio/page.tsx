@@ -7,7 +7,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { BookOpen, CheckCircle } from 'lucide-react'
-import { toast } from 'sonner'
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
@@ -132,7 +131,7 @@ function StudioContent() {
 
     } catch (error) {
       console.error('Error triggering full analysis:', error);
-      toast.error('Failed to start analysis. Please refresh and try again.');
+      addAlexMessage('❌ Failed to start analysis. Please refresh and try again.');
     }
   };
 
