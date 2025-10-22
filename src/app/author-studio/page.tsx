@@ -115,7 +115,7 @@ function StudioContent() {
   // Webhooks
   const WEBHOOKS = {
     fullAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-full-manuscript-analysis',
-    chapterAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-analyze-single-chapter',
+    chapterAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-chapter-analysis',
     alexChat: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-chat'
   }
 
@@ -583,7 +583,7 @@ function StudioContent() {
       console.error('Analysis error:', error)
       
       // Even on CORS error, the workflow might have completed
-      addAlexMessage('⏳ Analysis started! Checking completion status...')
+      addAlexMessage('⏳ This is looking GREAT! Let me just make some notes')
       pollForAnalysisCompletion()
     }
   }
