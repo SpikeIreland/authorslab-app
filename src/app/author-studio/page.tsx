@@ -172,15 +172,28 @@ function StudioContent() {
     const supabase = createClient()
 
     try {
-      const { error } = await supabase
-        .from('manuscript_issues')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
-        .eq('id', issueId)
+      console.log('Attempting to update issue:', issueId, 'to status:', newStatus)
 
-      if (error) throw error
+      const { data, error } = await supabase
+        .from('manuscript_issues')
+        .update({ status: newStatus })
+        .eq('id', issueId)
+        .select()
+
+      if (error) {
+        console.error('Supabase error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        })
+        throw error
+      }
+
+      console.log('Update successful:', data)
 
       // Refresh issues
-      loadChapterIssues(chapters[currentChapterIndex].chapter_number)
+      await loadChapterIssues(chapters[currentChapterIndex].chapter_number)
 
       addAlexMessage(`✓ Issue marked as ${newStatus.replace('_', ' ')}`)
 
@@ -793,8 +806,8 @@ function StudioContent() {
 
         <div className="flex items-center gap-4">
           <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold ${alexThinking
-              ? 'bg-yellow-50 border border-yellow-500 text-yellow-900'
-              : 'bg-green-50 border border-green-500 text-green-900'
+            ? 'bg-yellow-50 border border-yellow-500 text-yellow-900'
+            : 'bg-green-50 border border-green-500 text-green-900'
             }`}>
             <div className={`w-2 h-2 rounded-full ${alexThinking ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'
               }`}></div>
@@ -808,8 +821,8 @@ function StudioContent() {
 
       {/* Main Layout: Adjust columns based on panels open */}
       <div className={`flex-1 grid ${showIssuesPanel
-          ? 'grid-cols-[320px_1fr_400px_400px]'
-          : 'grid-cols-[320px_1fr_400px]'
+        ? 'grid-cols-[320px_1fr_400px_400px]'
+        : 'grid-cols-[320px_1fr_400px]'
         } overflow-hidden`}>
         {/* LEFT: Chapter Navigation */}
         <div className="bg-gray-50 border-r-2 border-gray-200 overflow-y-auto p-6">
@@ -830,10 +843,10 @@ function StudioContent() {
                     key={chapter.id}
                     onClick={() => !isLocked && loadChapter(index)}
                     className={`p-3 rounded-lg border transition-all min-h-[80px] ${isLocked
-                        ? 'bg-gray-50 border-gray-200 opacity-50 cursor-not-allowed'
-                        : index === currentChapterIndex
-                          ? 'bg-green-50 border-green-500 shadow-sm cursor-pointer'
-                          : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm cursor-pointer'
+                      ? 'bg-gray-50 border-gray-200 opacity-50 cursor-not-allowed'
+                      : index === currentChapterIndex
+                        ? 'bg-green-50 border-green-500 shadow-sm cursor-pointer'
+                        : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm cursor-pointer'
                       }`}
                   >
                     <div className="flex flex-col gap-2">
@@ -902,8 +915,8 @@ function StudioContent() {
                       <div className="flex items-center gap-1 pl-8">
                         {/* Developmental Editing */}
                         <div className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold ${editStatus === 'ready'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-gray-100 text-gray-400'
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-gray-100 text-gray-400'
                           }`} title="Developmental Editing">
                           D
                         </div>
@@ -940,8 +953,8 @@ function StudioContent() {
                   onClick={() => analyzeChapter(currentChapter.chapter_number)}
                   disabled={fullAnalysisInProgress || !analysisComplete}
                   className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${fullAnalysisInProgress || !analysisComplete
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
-                      : 'bg-green-600 text-white hover:bg-green-700'
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
+                    : 'bg-green-600 text-white hover:bg-green-700'
                     }`}
                   title={
                     fullAnalysisInProgress
@@ -969,8 +982,8 @@ function StudioContent() {
                 <button
                   onClick={() => setShowIssuesPanel(!showIssuesPanel)}
                   className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${showIssuesPanel
-                      ? 'bg-orange-600 text-white'
-                      : 'bg-orange-50 text-orange-700 border border-orange-300 hover:bg-orange-100'
+                    ? 'bg-orange-600 text-white'
+                    : 'bg-orange-50 text-orange-700 border border-orange-300 hover:bg-orange-100'
                     }`}
                 >
                   <span>📝</span>
@@ -983,8 +996,8 @@ function StudioContent() {
                 onClick={saveChanges}
                 disabled={!hasUnsavedChanges}
                 className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${hasUnsavedChanges
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
               >
                 <span>💾</span> Save
@@ -1119,25 +1132,25 @@ function StudioContent() {
                     key={issue.id}
                     onClick={() => setSelectedIssue(selectedIssue?.id === issue.id ? null : issue)}
                     className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${selectedIssue?.id === issue.id
-                        ? 'border-orange-500 bg-orange-50'
-                        : 'border-gray-200 bg-white hover:border-orange-300 hover:shadow-sm'
+                      ? 'border-orange-500 bg-orange-50'
+                      : 'border-gray-200 bg-white hover:border-orange-300 hover:shadow-sm'
                       }`}
                   >
                     {/* Issue Header */}
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <span className={`w-2 h-2 rounded-full ${issue.severity === 'major' ? 'bg-red-500' :
-                            issue.severity === 'moderate' ? 'bg-yellow-500' :
-                              'bg-blue-500'
+                          issue.severity === 'moderate' ? 'bg-yellow-500' :
+                            'bg-blue-500'
                           }`}></span>
                         <span className="text-xs font-semibold text-gray-500 uppercase">
                           {issue.element_type}
                         </span>
                       </div>
                       <span className={`text-xs px-2 py-1 rounded-full font-medium ${issue.status === 'resolved' ? 'bg-green-100 text-green-700' :
-                          issue.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
-                            issue.status === 'dismissed' ? 'bg-gray-100 text-gray-600' :
-                              'bg-orange-100 text-orange-700'
+                        issue.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+                          issue.status === 'dismissed' ? 'bg-gray-100 text-gray-600' :
+                            'bg-orange-100 text-orange-700'
                         }`}>
                         {issue.status === 'flagged' ? 'New' : issue.status.replace('_', ' ')}
                       </span>
@@ -1249,8 +1262,8 @@ function StudioContent() {
               <div
                 key={i}
                 className={`p-4 rounded-xl ${msg.sender === 'Alex'
-                    ? 'bg-white border border-gray-200'
-                    : 'bg-green-50 border border-green-200 ml-8'
+                  ? 'bg-white border border-gray-200'
+                  : 'bg-green-50 border border-green-200 ml-8'
                   }`}
               >
                 <div className="font-semibold text-sm mb-1 text-gray-700">{msg.sender}</div>
