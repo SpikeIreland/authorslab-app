@@ -507,8 +507,19 @@ function StudioContent() {
     // Scroll to bottom after adding user message
     setTimeout(scrollToBottom, 100)
 
-    // Check for "Yes" to trigger FULL analysis only
-    if (userMessage.toLowerCase().includes('yes') && !analysisComplete) {
+    // Check for "Yes" to trigger FULL analysis
+    if (userMessage.toLowerCase().includes('yes')) {
+      if (fullAnalysisInProgress) {
+        addAlexMessage("I'm already reading your manuscript! This will take about 3 minutes. I'll let you know as soon as I'm done. ⏳")
+        return
+      }
+
+      if (analysisComplete) {
+        addAlexMessage("I've already completed my full analysis! You can view the report using the button above, or start editing any chapter by clicking 'Start Editing'. 📖")
+        return
+      }
+
+      // All clear - trigger analysis
       triggerFullAnalysis()
       return
     }
@@ -790,8 +801,8 @@ function StudioContent() {
                   onClick={() => analyzeChapter(currentChapter.chapter_number)}
                   disabled={fullAnalysisInProgress || !analysisComplete}
                   className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${fullAnalysisInProgress || !analysisComplete
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
-                      : 'bg-green-600 text-white hover:bg-green-700'
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
+                    : 'bg-green-600 text-white hover:bg-green-700'
                     }`}
                   title={
                     fullAnalysisInProgress
