@@ -146,7 +146,7 @@ function StudioContent() {
   // Load chapter issues
   const loadChapterIssues = async (chapterNumber: number) => {
     const supabase = createClient()
-    
+
     try {
       const { data: issues, error } = await supabase
         .from('manuscript_issues')
@@ -155,12 +155,12 @@ function StudioContent() {
         .eq('chapter_number', chapterNumber)
         .order('severity', { ascending: false }) // Major issues first
         .order('created_at', { ascending: true })
-      
+
       if (error) throw error
-      
+
       setChapterIssues(issues || [])
       console.log(`Loaded ${issues?.length || 0} issues for chapter ${chapterNumber}`)
-      
+
     } catch (error) {
       console.error('Error loading issues:', error)
       setChapterIssues([])
@@ -170,20 +170,20 @@ function StudioContent() {
   // Update issue status
   const updateIssueStatus = async (issueId: string, newStatus: 'flagged' | 'in_progress' | 'resolved' | 'dismissed') => {
     const supabase = createClient()
-    
+
     try {
       const { error } = await supabase
         .from('manuscript_issues')
         .update({ status: newStatus, updated_at: new Date().toISOString() })
         .eq('id', issueId)
-      
+
       if (error) throw error
-      
+
       // Refresh issues
       loadChapterIssues(chapters[currentChapterIndex].chapter_number)
-      
+
       addAlexMessage(`✓ Issue marked as ${newStatus.replace('_', ' ')}`)
-      
+
     } catch (error) {
       console.error('Error updating issue:', error)
       addAlexMessage('❌ Error updating issue status')
@@ -254,14 +254,14 @@ function StudioContent() {
 
       if (chaptersData && chaptersData.length > 0) {
         setChapters(chaptersData)
-        
+
         // Initialize chapter editing status
         const initialStatus: { [key: number]: ChapterEditingStatus } = {}
         chaptersData.forEach(ch => {
           initialStatus[ch.chapter_number] = 'not_started'
         })
         setChapterEditingStatus(initialStatus)
-        
+
         setIsLoading(false)
 
         // Load first chapter into editor
@@ -317,14 +317,14 @@ function StudioContent() {
             clearInterval(pollInterval)
             clearInterval(messageInterval)
             setChapters(retryChapters)
-            
+
             // Initialize chapter editing status
             const initialStatus: { [key: number]: ChapterEditingStatus } = {}
             retryChapters.forEach(ch => {
               initialStatus[ch.chapter_number] = 'not_started'
             })
             setChapterEditingStatus(initialStatus)
-            
+
             setIsLoading(false)
             loadChapter(0, retryChapters)
 
@@ -396,7 +396,7 @@ function StudioContent() {
 
     setEditorContent(content)
     setChapterStatus(chapter.status || 'draft')
-    
+
     // Load issues for this chapter if analysis is ready
     const editStatus = chapterEditingStatus[chapter.chapter_number]
     if (editStatus === 'ready') {
@@ -404,7 +404,7 @@ function StudioContent() {
     } else {
       setChapterIssues([])
     }
-    
+
     // Check if this chapter is in the unsaved set
     const isChapterUnsaved = unsavedChapters.has(chapter.id)
     setHasUnsavedChanges(isChapterUnsaved)
@@ -422,10 +422,10 @@ function StudioContent() {
     setChapters(updatedChapters)
     setEditingChapterId(null)
     setHasUnsavedChanges(true)
-    
+
     // Mark as unsaved
     setUnsavedChapters(prev => new Set(prev).add(updatedChapters[index].id))
-    
+
     addAlexMessage(`✏️ Chapter title updated. Don't forget to click Save!`)
   }
 
@@ -445,14 +445,14 @@ function StudioContent() {
       if (error) throw error
 
       setHasUnsavedChanges(false)
-      
+
       // Remove from unsaved chapters set
       setUnsavedChapters(prev => {
         const newSet = new Set(prev)
         newSet.delete(chapters[currentChapterIndex].id)
         return newSet
       })
-      
+
       addAlexMessage('✅ Changes saved successfully!')
     } catch (error) {
       console.error('Save error:', error)
@@ -463,18 +463,18 @@ function StudioContent() {
   // Analyze single chapter on-demand
   const analyzeChapter = async (chapterNumber: number) => {
     if (!manuscript?.id) return
-    
+
     const chapter = chapters.find(ch => ch.chapter_number === chapterNumber)
     if (!chapter) return
-    
+
     // Update status to analyzing
     setChapterEditingStatus(prev => ({
       ...prev,
       [chapterNumber]: 'analyzing'
     }))
-    
+
     addAlexMessage(`📖 Let me retrieve all my notes on "${chapter.title}". This will just take a moment...`)
-    
+
     try {
       const response = await fetch(WEBHOOKS.chapterAnalysis, {
         method: 'POST',
@@ -485,14 +485,14 @@ function StudioContent() {
           userId: searchParams.get('userId')
         })
       })
-      
+
       if (!response.ok) {
         throw new Error('Chapter analysis failed')
       }
-      
+
       // Poll for issues to appear
       pollForChapterIssues(chapterNumber)
-      
+
     } catch (error) {
       console.error('Error analyzing chapter:', error)
       addAlexMessage('❌ Had trouble analyzing this chapter. Please try again.')
@@ -507,16 +507,16 @@ function StudioContent() {
     const supabase = createClient()
     let attempts = 0
     const maxAttempts = 20 // 1 minute max
-    
+
     const pollInterval = setInterval(async () => {
       attempts++
-      
+
       const { data: issues } = await supabase
         .from('manuscript_issues')
         .select('id')
         .eq('manuscript_id', manuscript?.id)
         .eq('chapter_number', chapterNumber)
-      
+
       if (issues && issues.length > 0) {
         clearInterval(pollInterval)
         setChapterEditingStatus(prev => ({
@@ -527,12 +527,12 @@ function StudioContent() {
           ...prev,
           [chapterNumber]: issues.length
         }))
-        
+
         // If this is the current chapter, load the issues
         if (chapters[currentChapterIndex]?.chapter_number === chapterNumber) {
           loadChapterIssues(chapterNumber)
         }
-        
+
         addAlexMessage(`✅ Perfect! I found ${issues.length} things we can work on together in this chapter. Let's dive in!`)
       } else if (attempts >= maxAttempts) {
         clearInterval(pollInterval)
@@ -546,17 +546,17 @@ function StudioContent() {
     setAlexThinking(true)
     setFullAnalysisInProgress(true)
     setThinkingMessage('📖 Reading your entire manuscript...')
-    
+
     setTimeout(() => setThinkingMessage('🎭 Understanding your characters...'), 3000)
     setTimeout(() => setThinkingMessage('📊 Analyzing story structure...'), 6000)
     setTimeout(() => setThinkingMessage('✨ This is really compelling...'), 9000)
     setTimeout(() => setThinkingMessage('🔍 Identifying strengths and opportunities...'), 12000)
     setTimeout(() => setThinkingMessage('📝 Creating your comprehensive report...'), 15000)
-    
+
     try {
       const response = await fetch(WEBHOOKS.fullAnalysis, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
@@ -565,7 +565,7 @@ function StudioContent() {
           userId: searchParams.get('userId')
         })
       })
-      
+
       // Even if CORS blocks the response, the workflow completed
       let result = null
       try {
@@ -573,15 +573,15 @@ function StudioContent() {
       } catch (jsonError) {
         console.log('Could not parse response (possibly CORS), but workflow may have completed')
       }
-      
+
       setAlexThinking(false)
-      
+
       // Poll database to check completion
       pollForAnalysisCompletion()
-      
+
     } catch (error) {
       console.error('Analysis error:', error)
-      
+
       // Even on CORS error, the workflow might have completed
       addAlexMessage('⏳ This is looking GREAT! Let me just make some notes')
       pollForAnalysisCompletion()
@@ -593,22 +593,22 @@ function StudioContent() {
     const supabase = createClient()
     let attempts = 0
     const maxAttempts = 60 // 3 minutes (every 3 seconds)
-    
+
     const pollInterval = setInterval(async () => {
       attempts++
-      
+
       const { data: manuscriptData } = await supabase
         .from('manuscripts')
         .select('full_analysis_completed_at')
         .eq('id', manuscript?.id)
         .single()
-      
+
       if (manuscriptData?.full_analysis_completed_at) {
         clearInterval(pollInterval)
         setAlexThinking(false)
         setFullAnalysisInProgress(false)
         setAnalysisComplete(true)
-        
+
         addAlexMessage(
           `✅ I've finished reading your manuscript and I'm genuinely excited about what you've created here! I've sent you a comprehensive analysis report by email.\n\n` +
           `You can review the full report in your email.\n\n` +
@@ -644,12 +644,12 @@ function StudioContent() {
         addAlexMessage("I'm already reading your manuscript! This will take about 3 minutes. I'll let you know as soon as I'm done. ⏳")
         return
       }
-      
+
       if (analysisComplete) {
         addAlexMessage("I've already completed my full analysis! You can view the report using the button above, or start editing any chapter by clicking 'Start Editing'. 📖")
         return
       }
-      
+
       // All clear - trigger analysis
       triggerFullAnalysis()
       return
@@ -667,8 +667,10 @@ function StudioContent() {
           context: {
             chapter: currentChapterIndex + 1,
             chapterTitle: chapters[currentChapterIndex]?.title,
+            chapterContent: editorContent, // ← ADD THIS LINE
             manuscriptTitle: manuscript?.title,
-            analysisComplete: analysisComplete
+            analysisComplete: analysisComplete,
+            currentChapterStatus: chapterStatus
           }
         })
       })
@@ -677,7 +679,7 @@ function StudioContent() {
 
       const result = await response.json()
       setAlexThinking(false)
-      addAlexMessage(result.response || result.message || 'Let me help you with that.')
+      addAlexMessage(result.response || result.message || result.alexResponse || result.text || 'Let me help you with that.')
 
     } catch (error) {
       console.error('Chat error:', error)
@@ -719,8 +721,8 @@ function StudioContent() {
   }
 
   // Get filtered issues
-  const filteredIssues = issueFilter === 'all' 
-    ? chapterIssues 
+  const filteredIssues = issueFilter === 'all'
+    ? chapterIssues
     : chapterIssues.filter(issue => issue.element_type === issueFilter)
 
   // Loading state
@@ -790,14 +792,12 @@ function StudioContent() {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold ${
-            alexThinking
+          <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold ${alexThinking
               ? 'bg-yellow-50 border border-yellow-500 text-yellow-900'
               : 'bg-green-50 border border-green-500 text-green-900'
-          }`}>
-            <div className={`w-2 h-2 rounded-full ${
-              alexThinking ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'
-            }`}></div>
+            }`}>
+            <div className={`w-2 h-2 rounded-full ${alexThinking ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'
+              }`}></div>
             {alexThinking ? 'Thinking...' : 'Alex is Online'}
           </div>
           <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-semibold">
@@ -807,11 +807,10 @@ function StudioContent() {
       </header>
 
       {/* Main Layout: Adjust columns based on panels open */}
-      <div className={`flex-1 grid ${
-        showIssuesPanel 
+      <div className={`flex-1 grid ${showIssuesPanel
           ? 'grid-cols-[320px_1fr_400px_400px]'
           : 'grid-cols-[320px_1fr_400px]'
-      } overflow-hidden`}>
+        } overflow-hidden`}>
         {/* LEFT: Chapter Navigation */}
         <div className="bg-gray-50 border-r-2 border-gray-200 overflow-y-auto p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-2">{manuscript.title}</h2>
@@ -825,18 +824,17 @@ function StudioContent() {
               {chapters.map((chapter, index) => {
                 const isUnsaved = unsavedChapters.has(chapter.id)
                 const editStatus = chapterEditingStatus[chapter.chapter_number]
-                
+
                 return (
                   <div
                     key={chapter.id}
                     onClick={() => !isLocked && loadChapter(index)}
-                    className={`p-3 rounded-lg border transition-all min-h-[80px] ${
-                      isLocked
+                    className={`p-3 rounded-lg border transition-all min-h-[80px] ${isLocked
                         ? 'bg-gray-50 border-gray-200 opacity-50 cursor-not-allowed'
                         : index === currentChapterIndex
                           ? 'bg-green-50 border-green-500 shadow-sm cursor-pointer'
                           : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm cursor-pointer'
-                    }`}
+                      }`}
                   >
                     <div className="flex flex-col gap-2">
                       {/* Top row: Status + Number + Title + Edit */}
@@ -853,21 +851,21 @@ function StudioContent() {
                             <span className="text-gray-300 text-lg">○</span>
                           )}
                         </div>
-                        
+
                         {/* Chapter number */}
                         <span className="text-xs font-semibold text-gray-500 flex-shrink-0 mt-1">
                           {chapter.chapter_number === 0 ? 'Pro' :
                             chapter.chapter_number === 999 ? 'Epi' :
-                            `Ch ${chapter.chapter_number}`}
+                              `Ch ${chapter.chapter_number}`}
                         </span>
-                        
+
                         {/* Unsaved indicator */}
                         {isUnsaved && (
                           <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse flex-shrink-0 mt-2" title="Unsaved changes"></div>
                         )}
-                        
+
                         {/* Chapter title - clickable area */}
-                        <div 
+                        <div
                           className="flex-1 min-w-0"
                         >
                           {editingChapterId === chapter.id ? (
@@ -887,7 +885,7 @@ function StudioContent() {
                             </span>
                           )}
                         </div>
-                        
+
                         {/* Edit title button */}
                         <button
                           onClick={(e) => {
@@ -899,23 +897,22 @@ function StudioContent() {
                           ✏️
                         </button>
                       </div>
-                      
+
                       {/* Bottom row: Editing stage indicators */}
                       <div className="flex items-center gap-1 pl-8">
                         {/* Developmental Editing */}
-                        <div className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold ${
-                          editStatus === 'ready' 
-                            ? 'bg-green-100 text-green-700' 
+                        <div className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold ${editStatus === 'ready'
+                            ? 'bg-green-100 text-green-700'
                             : 'bg-gray-100 text-gray-400'
-                        }`} title="Developmental Editing">
+                          }`} title="Developmental Editing">
                           D
                         </div>
-                        
+
                         {/* Copy Editing */}
                         <div className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold bg-gray-100 text-gray-300" title="Copy Editing (Coming Soon)">
                           C
                         </div>
-                        
+
                         {/* Line Editing */}
                         <div className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold bg-gray-100 text-gray-300" title="Line Editing (Coming Soon)">
                           L
@@ -942,20 +939,19 @@ function StudioContent() {
                 <button
                   onClick={() => analyzeChapter(currentChapter.chapter_number)}
                   disabled={fullAnalysisInProgress || !analysisComplete}
-                  className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${
-                    fullAnalysisInProgress || !analysisComplete
+                  className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${fullAnalysisInProgress || !analysisComplete
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
                       : 'bg-green-600 text-white hover:bg-green-700'
-                  }`}
+                    }`}
                   title={
-                    fullAnalysisInProgress 
-                      ? 'Please wait for Alex to finish reading the manuscript (approx. 3 minutes)' 
-                      : !analysisComplete 
-                        ? 'Please complete full analysis first by typing "Yes" to Alex' 
+                    fullAnalysisInProgress
+                      ? 'Please wait for Alex to finish reading the manuscript (approx. 3 minutes)'
+                      : !analysisComplete
+                        ? 'Please complete full analysis first by typing "Yes" to Alex'
                         : 'Start editing this chapter'
                   }
                 >
-                  <span>🚀</span> 
+                  <span>🚀</span>
                   {fullAnalysisInProgress ? 'Waiting for Full Analysis...' : 'Start Editing'}
                 </button>
               )}
@@ -972,13 +968,12 @@ function StudioContent() {
               {currentEditingStatus === 'ready' && (
                 <button
                   onClick={() => setShowIssuesPanel(!showIssuesPanel)}
-                  className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${
-                    showIssuesPanel
+                  className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${showIssuesPanel
                       ? 'bg-orange-600 text-white'
                       : 'bg-orange-50 text-orange-700 border border-orange-300 hover:bg-orange-100'
-                  }`}
+                    }`}
                 >
-                  <span>📝</span> 
+                  <span>📝</span>
                   Notes ({chapterIssues.length})
                 </button>
               )}
@@ -987,11 +982,10 @@ function StudioContent() {
               <button
                 onClick={saveChanges}
                 disabled={!hasUnsavedChanges}
-                className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${
-                  hasUnsavedChanges
+                className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${hasUnsavedChanges
                     ? 'bg-blue-600 text-white hover:bg-blue-700'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
+                  }`}
               >
                 <span>💾</span> Save
               </button>
@@ -1033,7 +1027,7 @@ function StudioContent() {
             onInput={(e) => {
               setEditorContent(e.currentTarget.innerHTML)
               setHasUnsavedChanges(true)
-              
+
               // Add to unsaved chapters set
               setUnsavedChapters(prev => new Set(prev).add(chapters[currentChapterIndex].id))
             }}
@@ -1079,35 +1073,31 @@ function StudioContent() {
 
             {/* Filter Tabs */}
             <div className="border-b border-gray-200 bg-gray-50 p-3 flex gap-2 overflow-x-auto">
-              <button 
+              <button
                 onClick={() => setIssueFilter('all')}
-                className={`px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap ${
-                  issueFilter === 'all' ? 'bg-white border border-gray-300' : 'hover:bg-gray-100 text-gray-600'
-                }`}
+                className={`px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap ${issueFilter === 'all' ? 'bg-white border border-gray-300' : 'hover:bg-gray-100 text-gray-600'
+                  }`}
               >
                 All ({chapterIssues.length})
               </button>
-              <button 
+              <button
                 onClick={() => setIssueFilter('character')}
-                className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap ${
-                  issueFilter === 'character' ? 'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
-                }`}
+                className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap ${issueFilter === 'character' ? 'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
+                  }`}
               >
                 Character ({chapterIssues.filter(i => i.element_type === 'character').length})
               </button>
-              <button 
+              <button
                 onClick={() => setIssueFilter('plot')}
-                className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap ${
-                  issueFilter === 'plot' ? 'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
-                }`}
+                className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap ${issueFilter === 'plot' ? 'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
+                  }`}
               >
                 Plot ({chapterIssues.filter(i => i.element_type === 'plot').length})
               </button>
-              <button 
+              <button
                 onClick={() => setIssueFilter('pacing')}
-                className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap ${
-                  issueFilter === 'pacing' ? 'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
-                }`}
+                className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap ${issueFilter === 'pacing' ? 'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
+                  }`}
               >
                 Pacing ({chapterIssues.filter(i => i.element_type === 'pacing').length})
               </button>
@@ -1128,30 +1118,27 @@ function StudioContent() {
                   <div
                     key={issue.id}
                     onClick={() => setSelectedIssue(selectedIssue?.id === issue.id ? null : issue)}
-                    className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                      selectedIssue?.id === issue.id
+                    className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${selectedIssue?.id === issue.id
                         ? 'border-orange-500 bg-orange-50'
                         : 'border-gray-200 bg-white hover:border-orange-300 hover:shadow-sm'
-                    }`}
+                      }`}
                   >
                     {/* Issue Header */}
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <span className={`w-2 h-2 rounded-full ${
-                          issue.severity === 'major' ? 'bg-red-500' :
-                          issue.severity === 'moderate' ? 'bg-yellow-500' :
-                          'bg-blue-500'
-                        }`}></span>
+                        <span className={`w-2 h-2 rounded-full ${issue.severity === 'major' ? 'bg-red-500' :
+                            issue.severity === 'moderate' ? 'bg-yellow-500' :
+                              'bg-blue-500'
+                          }`}></span>
                         <span className="text-xs font-semibold text-gray-500 uppercase">
                           {issue.element_type}
                         </span>
                       </div>
-                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                        issue.status === 'resolved' ? 'bg-green-100 text-green-700' :
-                        issue.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
-                        issue.status === 'dismissed' ? 'bg-gray-100 text-gray-600' :
-                        'bg-orange-100 text-orange-700'
-                      }`}>
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${issue.status === 'resolved' ? 'bg-green-100 text-green-700' :
+                          issue.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+                            issue.status === 'dismissed' ? 'bg-gray-100 text-gray-600' :
+                              'bg-orange-100 text-orange-700'
+                        }`}>
                         {issue.status === 'flagged' ? 'New' : issue.status.replace('_', ' ')}
                       </span>
                     </div>
@@ -1176,10 +1163,10 @@ function StudioContent() {
                           <br />
                           {issue.alex_suggestion}
                         </p>
-                        
+
                         {/* Action Buttons */}
                         <div className="flex gap-2">
-                          <button 
+                          <button
                             onClick={(e) => {
                               e.stopPropagation()
                               updateIssueStatus(issue.id, 'resolved')
@@ -1188,7 +1175,7 @@ function StudioContent() {
                           >
                             ✓ Resolved
                           </button>
-                          <button 
+                          <button
                             onClick={(e) => {
                               e.stopPropagation()
                               discussIssue(issue)
@@ -1197,7 +1184,7 @@ function StudioContent() {
                           >
                             💬 Discuss
                           </button>
-                          <button 
+                          <button
                             onClick={(e) => {
                               e.stopPropagation()
                               updateIssueStatus(issue.id, 'dismissed')
@@ -1261,11 +1248,10 @@ function StudioContent() {
             {alexMessages.map((msg, i) => (
               <div
                 key={i}
-                className={`p-4 rounded-xl ${
-                  msg.sender === 'Alex'
+                className={`p-4 rounded-xl ${msg.sender === 'Alex'
                     ? 'bg-white border border-gray-200'
                     : 'bg-green-50 border border-green-200 ml-8'
-                }`}
+                  }`}
               >
                 <div className="font-semibold text-sm mb-1 text-gray-700">{msg.sender}</div>
                 <div className="text-gray-900 whitespace-pre-wrap">{msg.message}</div>
@@ -1307,8 +1293,8 @@ function StudioContent() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                
-                  <a href={fullReportPdfUrl}
+
+                <a href={fullReportPdfUrl}
                   download
                   target="_blank"
                   rel="noopener noreferrer"
