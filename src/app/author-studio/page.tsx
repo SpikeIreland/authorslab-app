@@ -61,6 +61,7 @@ function StudioContent() {
   // Chapter editing state
   const [editingChapterId, setEditingChapterId] = useState<string | null>(null)
   const [editingChapterTitle, setEditingChapterTitle] = useState('')
+  const [unsavedChapters, setUnsavedChapters] = useState<Set<string>>(new Set())
 
   // Alex state
   const [alexMessages, setAlexMessages] = useState<ChatMessage[]>([])
@@ -89,7 +90,7 @@ function StudioContent() {
   // Webhooks
   const WEBHOOKS = {
     fullAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-full-manuscript-analysis',
-    chapterAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-analyze-single-chapter',
+    chapterAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-chapter-analysis',
     alexChat: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-chat'
   }
 
@@ -156,14 +157,14 @@ function StudioContent() {
 
       if (chaptersData && chaptersData.length > 0) {
         setChapters(chaptersData)
-        
+
         // Initialize chapter editing status
         const initialStatus: { [key: number]: ChapterEditingStatus } = {}
         chaptersData.forEach(ch => {
           initialStatus[ch.chapter_number] = 'not_started'
         })
         setChapterEditingStatus(initialStatus)
-        
+
         setIsLoading(false)
 
         // Load first chapter into editor
@@ -219,14 +220,14 @@ function StudioContent() {
             clearInterval(pollInterval)
             clearInterval(messageInterval)
             setChapters(retryChapters)
-            
+
             // Initialize chapter editing status
             const initialStatus: { [key: number]: ChapterEditingStatus } = {}
             retryChapters.forEach(ch => {
               initialStatus[ch.chapter_number] = 'not_started'
             })
             setChapterEditingStatus(initialStatus)
-            
+
             setIsLoading(false)
             loadChapter(0, retryChapters)
 
@@ -266,6 +267,19 @@ function StudioContent() {
       setWordCount(words.length)
     }
   }, [editorContent])
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (unsavedChapters.size > 0) {
+        e.preventDefault()
+        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?'
+        return e.returnValue
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [unsavedChapters])
 
   // Load chapter into editor
   function loadChapter(index: number, chaptersArray?: Chapter[]) {
@@ -332,6 +346,14 @@ function StudioContent() {
       if (error) throw error
 
       setHasUnsavedChanges(false)
+
+      // Remove from unsaved chapters set
+      setUnsavedChapters(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(chapters[currentChapterIndex].id)
+        return newSet
+      })
+
       addAlexMessage('✅ Changes saved successfully!')
     } catch (error) {
       console.error('Save error:', error)
@@ -342,18 +364,18 @@ function StudioContent() {
   // NEW: Analyze single chapter on-demand
   const analyzeChapter = async (chapterNumber: number) => {
     if (!manuscript?.id) return
-    
+
     const chapter = chapters.find(ch => ch.chapter_number === chapterNumber)
     if (!chapter) return
-    
+
     // Update status to analyzing
     setChapterEditingStatus(prev => ({
       ...prev,
       [chapterNumber]: 'analyzing'
     }))
-    
+
     addAlexMessage(`📖 Let me retrieve all my notes on "${chapter.title}". This will just take a moment...`)
-    
+
     try {
       const response = await fetch(WEBHOOKS.chapterAnalysis, {
         method: 'POST',
@@ -364,14 +386,14 @@ function StudioContent() {
           userId: searchParams.get('userId')
         })
       })
-      
+
       if (!response.ok) {
         throw new Error('Chapter analysis failed')
       }
-      
+
       // Poll for issues to appear
       pollForChapterIssues(chapterNumber)
-      
+
     } catch (error) {
       console.error('Error analyzing chapter:', error)
       addAlexMessage('❌ Had trouble analyzing this chapter. Please try again.')
@@ -386,16 +408,16 @@ function StudioContent() {
     const supabase = createClient()
     let attempts = 0
     const maxAttempts = 20 // 1 minute max
-    
+
     const pollInterval = setInterval(async () => {
       attempts++
-      
+
       const { data: issues } = await supabase
         .from('manuscript_issues')
         .select('id')
         .eq('manuscript_id', manuscript?.id)
         .eq('chapter_number', chapterNumber)
-      
+
       if (issues && issues.length > 0) {
         clearInterval(pollInterval)
         setChapterEditingStatus(prev => ({
@@ -418,12 +440,12 @@ function StudioContent() {
   const triggerFullAnalysis = async () => {
     setAlexThinking(true)
     setThinkingMessage('📖 Reading your entire manuscript...')
-    
+
     setTimeout(() => setThinkingMessage('🎭 Understanding your characters...'), 3000)
     setTimeout(() => setThinkingMessage('📊 Analyzing story structure...'), 6000)
     setTimeout(() => setThinkingMessage('✨ This is really compelling...'), 9000)
     setTimeout(() => setThinkingMessage('🔍 Identifying strengths and opportunities...'), 12000)
-    
+
     try {
       const response = await fetch(WEBHOOKS.fullAnalysis, {
         method: 'POST',
@@ -433,21 +455,21 @@ function StudioContent() {
           userId: searchParams.get('userId')
         })
       })
-      
+
       if (!response.ok) throw new Error('Analysis failed')
-      
+
       const result = await response.json()
-      
+
       setAlexThinking(false)
       setAnalysisComplete(true)
       setFullReportPdfUrl(result.pdfUrl)
-      
+
       addAlexMessage(
         `✅ I've finished reading your manuscript and I'm genuinely excited about what you've created here! I've sent you a comprehensive analysis report by email.\n\n` +
         `You can review the full report using the "View Report" button above, or we can dive right in.\n\n` +
         `**Ready to start editing?** Just click on any chapter and hit "Start Editing" when you're ready. I'll pull up my notes for that specific chapter and we'll work through it together.`
       )
-      
+
     } catch (error) {
       console.error('Analysis error:', error)
       setAlexThinking(false)
@@ -605,14 +627,12 @@ function StudioContent() {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold ${
-            alexThinking
-              ? 'bg-yellow-50 border border-yellow-500 text-yellow-900'
-              : 'bg-green-50 border border-green-500 text-green-900'
-          }`}>
-            <div className={`w-2 h-2 rounded-full ${
-              alexThinking ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'
-            }`}></div>
+          <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold ${alexThinking
+            ? 'bg-yellow-50 border border-yellow-500 text-yellow-900'
+            : 'bg-green-50 border border-green-500 text-green-900'
+            }`}>
+            <div className={`w-2 h-2 rounded-full ${alexThinking ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'
+              }`}></div>
             {alexThinking ? 'Thinking...' : 'Alex is Online'}
           </div>
           <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-semibold">
@@ -633,283 +653,326 @@ function StudioContent() {
           <div className="mb-6">
             <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">Chapters</h3>
             <div className="space-y-2">
-              {chapters.map((chapter, index) => (
-                <div
-                  key={chapter.id}
-                  className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                    index === currentChapterIndex
+              {chapters.map((chapter, index) => {
+                const isUnsaved = unsavedChapters.has(chapter.id)
+                const editStatus = chapterEditingStatus[chapter.chapter_number]
+
+                return (
+                  <div
+                    key={chapter.id}
+                    className={`p-3 rounded-lg border cursor-pointer transition-all ${index === currentChapterIndex
                       ? 'bg-green-50 border-green-500 shadow-sm'
                       : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div
-                      className="flex items-center gap-2 flex-1"
-                      onClick={() => loadChapter(index)}
-                    >
-                      {/* Chapter status indicator */}
-                      <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
-                        {chapterEditingStatus[chapter.chapter_number] === 'analyzing' && (
-                          <div className="w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
-                        )}
-                        {chapterEditingStatus[chapter.chapter_number] === 'ready' && (
-                          <span className="text-green-600 text-lg">✓</span>
-                        )}
-                        {chapterEditingStatus[chapter.chapter_number] === 'not_started' && (
-                          <span className="text-gray-300 text-lg">○</span>
-                        )}
-                      </div>
-                      
-                      <span className="text-xs font-semibold text-gray-500">
-                        {chapter.chapter_number === 0 ? 'Prologue' :
-                          chapter.chapter_number === 999 ? 'Epilogue' :
-                            `Ch ${chapter.chapter_number}`}
-                      </span>
-                      {editingChapterId === chapter.id ? (
-                        <input
-                          type="text"
-                          value={editingChapterTitle}
-                          onChange={(e) => setEditingChapterTitle(e.target.value)}
-                          onClick={(e) => e.stopPropagation()}
-                          onBlur={() => saveChapterTitle(index)}
-                          onKeyPress={(e) => e.key === 'Enter' && saveChapterTitle(index)}
-                          className="text-sm font-medium text-gray-900 border-b border-green-500 focus:outline-none flex-1"
-                          autoFocus
-                        />
-                      ) : (
-                        <span className="text-sm font-medium text-gray-900">
-                          {chapter.title}
+                      }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div
+                        className="flex items-center gap-2 flex-1"
+                        onClick={() => loadChapter(index)}
+                      >
+                        {/* Analysis status indicator */}
+                        <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
+                          {editStatus === 'analyzing' && (
+                            <div className="w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+                          )}
+                          {editStatus === 'ready' && (
+                            <span className="text-green-600 text-lg">✓</span>
+                          )}
+                          {editStatus === 'not_started' && (
+                            <span className="text-gray-300 text-lg">○</span>
+                          )}
+                        </div>
+
+                        {/* Chapter number */}
+                        <span className="text-xs font-semibold text-gray-500">
+                          {chapter.chapter_number === 0 ? 'Pro' :
+                            chapter.chapter_number === 999 ? 'Epi' :
+                              `${chapter.chapter_number}`}
                         </span>
-                      )}
+
+                        {/* Unsaved indicator - Blue dot */}
+                        {isUnsaved && (
+                          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" title="Unsaved changes"></div>
+                        )}
+
+                        {/* Chapter title */}
+                        {editingChapterId === chapter.id ? (
+                          <input
+                            type="text"
+                            value={editingChapterTitle}
+                            onChange={(e) => setEditingChapterTitle(e.target.value)}
+                            onClick={(e) => e.stopPropagation()}
+                            onBlur={() => saveChapterTitle(index)}
+                            onKeyPress={(e) => e.key === 'Enter' && saveChapterTitle(index)}
+                            className="text-sm font-medium text-gray-900 border-b border-green-500 focus:outline-none flex-1"
+                            autoFocus
+                          />
+                        ) : (
+                          <span className="text-sm font-medium text-gray-900 flex-1">
+                            {chapter.title}
+                          </span>
+                        )}
+
+                        {/* Editing stage indicators */}
+                        <div className="flex items-center gap-1">
+                          {/* Developmental Editing */}
+                          <div className={`w-5 h-5 rounded flex items-center justify-center text-xs font-bold ${editStatus === 'ready'
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-gray-100 text-gray-400'
+                            }`} title="Developmental Editing">
+                            D
+                          </div>
+
+                          {/* Copy Editing - Coming soon */}
+                          <div className="w-5 h-5 rounded flex items-center justify-center text-xs font-bold bg-gray-100 text-gray-300" title="Copy Editing (Coming Soon)">
+                            C
+                          </div>
+
+                          {/* Line Editing - Coming soon */}
+                          <div className="w-5 h-5 rounded flex items-center justify-center text-xs font-bold bg-gray-100 text-gray-300" title="Line Editing (Coming Soon)">
+                            L
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Edit title button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          startEditingTitle(chapter.id, chapter.title);
+                        }}
+                        className="text-gray-400 hover:text-green-600 text-xs ml-2"
+                      >
+                        ✏️
+                      </button>
                     </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        startEditingTitle(chapter.id, chapter.title);
-                      }}
-                      className="text-gray-400 hover:text-green-600 text-xs ml-2"
-                    >
-                      ✏️
-                    </button>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
-          </div>
-        </div>
-
-        {/* CENTER: Editor */}
-        <div className="bg-white flex flex-col overflow-hidden border-r-2 border-gray-200">
-          {/* Chapter header with Start Editing / Save / Approve buttons */}
-          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-            <h3 className="text-lg font-bold text-green-700">
-              {chapters[currentChapterIndex]?.title || 'Loading...'}
-            </h3>
-            <div className="flex gap-3">
-              {/* Start Editing Button */}
-              {currentEditingStatus === 'not_started' && (
-                <button
-                  onClick={() => analyzeChapter(currentChapter.chapter_number)}
-                  className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all flex items-center gap-2"
-                >
-                  <span>🚀</span> Start Editing This Chapter
-                </button>
-              )}
-
-              {/* Analyzing Status */}
-              {currentEditingStatus === 'analyzing' && (
-                <div className="bg-yellow-50 border border-yellow-200 px-4 py-2 rounded-lg flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
-                  <span className="text-yellow-700">Analyzing chapter...</span>
-                </div>
-              )}
-
-              {/* Ready to Edit Status + Save/Approve */}
-              {currentEditingStatus === 'ready' && (
-                <>
-                  <div className="bg-green-50 border border-green-200 px-4 py-2 rounded-lg flex items-center gap-2">
-                    <span className="text-green-700">✓ {currentIssueCount} notes available</span>
-                  </div>
-                  <button
-                    onClick={saveChanges}
-                    disabled={!hasUnsavedChanges}
-                    className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${
-                      hasUnsavedChanges
-                        ? 'bg-blue-600 text-white hover:bg-blue-700'
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    }`}
-                  >
-                    <span>💾</span> Save
-                  </button>
-                  <button
-                    onClick={approveChapter}
-                    className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all flex items-center gap-2"
-                  >
-                    <span>✓</span> Approve Chapter
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Toolbar */}
-          <div className="px-6 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 font-bold">B</button>
-              <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 italic">I</button>
-              <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 underline">U</button>
-            </div>
-            <div className="text-sm text-gray-600">
-              <span className="font-semibold">Words: {wordCount.toLocaleString()}</span>
-              <span className="mx-2">|</span>
-              <span className="capitalize">{chapterStatus}</span>
-              {hasUnsavedChanges && <span className="mx-2 text-blue-600">• Unsaved</span>}
-            </div>
-          </div>
-
-          {/* Editor */}
-          <div
-            ref={editorRef}
-            contentEditable
-            className="flex-1 p-8 overflow-y-auto focus:outline-none"
-            style={{ fontFamily: 'Georgia, serif', fontSize: '1.1rem', lineHeight: '1.8' }}
-            dangerouslySetInnerHTML={{ __html: editorContent }}
-            onInput={(e) => {
-              setEditorContent(e.currentTarget.innerHTML)
-              setHasUnsavedChanges(true)
-            }}
-          ></div>
-
-          {/* Chat input */}
-          <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
-            <div className="flex gap-3">
-              <input
-                type="text"
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
-                placeholder="Ask Alex anything..."
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500"
-              />
-              <button
-                onClick={sendChatMessage}
-                className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-all"
-              >
-                Send
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* RIGHT: Alex Panel */}
-        <div className="bg-white flex flex-col overflow-hidden">
-          {/* Alex header with Report button */}
-          <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-5 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl font-bold">
-                A
-              </div>
-              <div>
-                <h3 className="text-xl font-bold">Alex</h3>
-                <p className="text-sm opacity-90">Developmental Specialist</p>
-              </div>
-            </div>
-
-            {/* Report Access Button */}
-            {fullReportPdfUrl && (
-              <button
-                onClick={() => setShowReportPanel(true)}
-                className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 text-sm backdrop-blur-sm"
-              >
-                <span>📄</span> View Report
-              </button>
-            )}
-          </div>
-
-          {/* Messages */}
-          <div
-            ref={alexMessagesRef}
-            className="flex-1 overflow-y-auto p-5 bg-gray-50 space-y-4"
-          >
-            {alexMessages.map((msg, i) => (
-              <div
-                key={i}
-                className={`p-4 rounded-xl ${
-                  msg.sender === 'Alex'
-                    ? 'bg-white border border-gray-200'
-                    : 'bg-green-50 border border-green-200 ml-8'
-                }`}
-              >
-                <div className="font-semibold text-sm mb-1 text-gray-700">{msg.sender}</div>
-                <div className="text-gray-900 whitespace-pre-wrap">{msg.message}</div>
-              </div>
-            ))}
-
-            {alexThinking && (
-              <div className="bg-gray-100 border border-gray-300 p-4 rounded-xl animate-pulse">
-                <div className="flex items-center gap-2 text-gray-700">
-                  <span>{thinkingMessage}</span>
-                  <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Invisible div for scrolling to */}
-            <div ref={messagesEndRef} />
           </div>
         </div>
       </div>
 
-      {/* Report Overlay Panel */}
-      {showReportPanel && fullReportPdfUrl && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-8">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full h-[90vh] flex flex-col">
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-green-100">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-bold">
-                  A
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900">Alex Comprehensive Analysis</h3>
-                  <p className="text-sm text-gray-600">Full Manuscript Report</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                
-                 <a href={fullReportPdfUrl}
-                  download
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-all flex items-center gap-2"
-                >
-                  <span>⬇️</span> Download PDF
-                </a>
-                <button
-                  onClick={() => setShowReportPanel(false)}
-                  className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-300 transition-all"
-                >
-                  ✕ Close
-                </button>
-              </div>
-            </div>
+      {/* CENTER: Editor */}
+      <div className="bg-white flex flex-col overflow-hidden border-r-2 border-gray-200">
+        {/* Chapter header with Start Editing + Save + Approve buttons */}
+        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+          <h3 className="text-lg font-bold text-green-700">
+            {chapters[currentChapterIndex]?.title || 'Loading...'}
+          </h3>
+          <div className="flex gap-3">
+            {/* Start Editing Button - Only show if not started */}
+            {currentEditingStatus === 'not_started' && (
+              <button
+                onClick={() => analyzeChapter(currentChapter.chapter_number)}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all flex items-center gap-2"
+              >
+                <span>🚀</span> Start Editing
+              </button>
+            )}
 
-            {/* PDF Viewer */}
-            <div className="flex-1 overflow-hidden">
-              <iframe
-                src={fullReportPdfUrl}
-                className="w-full h-full"
-                title="Alex's Comprehensive Analysis Report"
-              />
-            </div>
+            {/* Analyzing Status */}
+            {currentEditingStatus === 'analyzing' && (
+              <div className="bg-yellow-50 border border-yellow-200 px-4 py-2 rounded-lg flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-yellow-700">Analyzing...</span>
+              </div>
+            )}
+
+            {/* Ready Status Badge */}
+            {currentEditingStatus === 'ready' && (
+              <div className="bg-green-50 border border-green-200 px-3 py-2 rounded-lg flex items-center gap-2">
+                <span className="text-green-700 text-sm">✓ {currentIssueCount} notes</span>
+              </div>
+            )}
+
+            {/* Save Button - Always visible */}
+            <button
+              onClick={saveChanges}
+              disabled={!hasUnsavedChanges}
+              className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${hasUnsavedChanges
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+            >
+              <span>💾</span> Save
+            </button>
+
+            {/* Approve Button - Only show when ready */}
+            {currentEditingStatus === 'ready' && (
+              <button
+                onClick={approveChapter}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all flex items-center gap-2"
+              >
+                <span>✓</span> Approve
+              </button>
+            )}
           </div>
         </div>
-      )}
+
+        {/* Toolbar */}
+        <div className="px-6 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 font-bold">B</button>
+            <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 italic">I</button>
+            <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 underline">U</button>
+          </div>
+          <div className="text-sm text-gray-600">
+            <span className="font-semibold">Words: {wordCount.toLocaleString()}</span>
+            <span className="mx-2">|</span>
+            <span className="capitalize">{chapterStatus}</span>
+            {hasUnsavedChanges && <span className="mx-2 text-blue-600">• Unsaved</span>}
+          </div>
+        </div>
+
+        {/* Editor */}
+        <div
+          ref={editorRef}
+          contentEditable
+          className="flex-1 p-8 overflow-y-auto focus:outline-none"
+          style={{ fontFamily: 'Georgia, serif', fontSize: '1.1rem', lineHeight: '1.8' }}
+          dangerouslySetInnerHTML={{ __html: editorContent }}
+          onInput={(e) => {
+            setEditorContent(e.currentTarget.innerHTML)
+            setHasUnsavedChanges(true)
+
+            // Add to unsaved chapters set
+            setUnsavedChapters(prev => new Set(prev).add(chapters[currentChapterIndex].id))
+          }}
+        ></div>
+
+        {/* Chat input */}
+        <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+          <div className="flex gap-3">
+            <input
+              type="text"
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
+              placeholder="Ask Alex anything..."
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500"
+            />
+            <button
+              onClick={sendChatMessage}
+              className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-all"
+            >
+              Send
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* RIGHT: Alex Panel */}
+      <div className="bg-white flex flex-col overflow-hidden">
+        {/* Alex header with Report button */}
+        <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-5 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl font-bold">
+              A
+            </div>
+            <div>
+              <h3 className="text-xl font-bold">Alex</h3>
+              <p className="text-sm opacity-90">Developmental Specialist</p>
+            </div>
+          </div>
+
+          {/* Report Access Button */}
+          {fullReportPdfUrl && (
+            <button
+              onClick={() => setShowReportPanel(true)}
+              className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 text-sm backdrop-blur-sm"
+            >
+              <span>📄</span> View Report
+            </button>
+          )}
+        </div>
+
+        {/* Messages */}
+        <div
+          ref={alexMessagesRef}
+          className="flex-1 overflow-y-auto p-5 bg-gray-50 space-y-4"
+        >
+          {alexMessages.map((msg, i) => (
+            <div
+              key={i}
+              className={`p-4 rounded-xl ${msg.sender === 'Alex'
+                ? 'bg-white border border-gray-200'
+                : 'bg-green-50 border border-green-200 ml-8'
+                }`}
+            >
+              <div className="font-semibold text-sm mb-1 text-gray-700">{msg.sender}</div>
+              <div className="text-gray-900 whitespace-pre-wrap">{msg.message}</div>
+            </div>
+          ))}
+
+          {alexThinking && (
+            <div className="bg-gray-100 border border-gray-300 p-4 rounded-xl animate-pulse">
+              <div className="flex items-center gap-2 text-gray-700">
+                <span>{thinkingMessage}</span>
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Invisible div for scrolling to */}
+          <div ref={messagesEndRef} />
+        </div>
+      </div>
     </div>
+
+      {/* Report Overlay Panel */ }
+  {
+    showReportPanel && fullReportPdfUrl && (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-8">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full h-[90vh] flex flex-col">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-green-100">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-bold">
+                A
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">Alex Comprehensive Analysis</h3>
+                <p className="text-sm text-gray-600">Full Manuscript Report</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+
+              <a href={fullReportPdfUrl}
+                download
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-all flex items-center gap-2"
+              >
+                <span>⬇️</span> Download PDF
+              </a>
+              <button
+                onClick={() => setShowReportPanel(false)}
+                className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-300 transition-all"
+              >
+                ✕ Close
+              </button>
+            </div>
+          </div>
+
+          {/* PDF Viewer */}
+          <div className="flex-1 overflow-hidden">
+            <iframe
+              src={fullReportPdfUrl}
+              className="w-full h-full"
+              title="Alex's Comprehensive Analysis Report"
+            />
+          </div>
+        </div>
+      </div>
+    )
+  }
+    </div >
   )
 }
 
