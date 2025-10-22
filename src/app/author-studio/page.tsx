@@ -447,10 +447,9 @@ function StudioContent() {
     }, 3000)
   }
 
-  // Trigger full manuscript analysis
   const triggerFullAnalysis = async () => {
     setAlexThinking(true)
-    setFullAnalysisInProgress(true) // NEW
+    setFullAnalysisInProgress(true)
     setThinkingMessage('📖 Reading your entire manuscript...')
 
     setTimeout(() => setThinkingMessage('🎭 Understanding your characters...'), 3000)
@@ -462,34 +461,75 @@ function StudioContent() {
     try {
       const response = await fetch(WEBHOOKS.fullAnalysis, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         body: JSON.stringify({
           manuscriptId: manuscript?.id,
           userId: searchParams.get('userId')
         })
       })
 
-      if (!response.ok) throw new Error('Analysis failed')
-
-      const result = await response.json()
+      // Even if CORS blocks the response, the workflow completed
+      // Check if we got a proper response
+      let result = null
+      try {
+        result = await response.json()
+      } catch (jsonError) {
+        console.log('Could not parse response (possibly CORS), but workflow may have completed')
+      }
 
       setAlexThinking(false)
-      setFullAnalysisInProgress(false) // NEW
+      setFullAnalysisInProgress(false)
       setAnalysisComplete(true)
-      setFullReportPdfUrl(result.pdfUrl)
 
-      addAlexMessage(
-        `✅ I've finished reading your manuscript and I'm genuinely excited about what you've created here! I've sent you a comprehensive analysis report by email.\n\n` +
-        `You can review the full report using the "View Report" button above.\n\n` +
-        `**Ready to start editing?** Now you can click on any chapter and hit "Start Editing." I'll pull up my specific notes for that chapter and we'll work through them together.`
-      )
+      // Poll for the analysis completion in database instead of relying on webhook response
+      pollForAnalysisCompletion()
 
     } catch (error) {
       console.error('Analysis error:', error)
-      setAlexThinking(false)
-      setFullAnalysisInProgress(false) // NEW
-      addAlexMessage('I had trouble completing the analysis. Please try again or contact support.')
+
+      // Even on CORS error, the workflow might have completed
+      // Poll to check if analysis actually finished
+      addAlexMessage('⏳ Analysis started! Checking completion status...')
+      pollForAnalysisCompletion()
     }
+  }
+
+  // Add this new function to poll database for completion
+  const pollForAnalysisCompletion = async () => {
+    const supabase = createClient()
+    let attempts = 0
+    const maxAttempts = 60 // 3 minutes (every 3 seconds)
+
+    const pollInterval = setInterval(async () => {
+      attempts++
+
+      const { data: manuscriptData } = await supabase
+        .from('manuscripts')
+        .select('full_analysis_completed_at')
+        .eq('id', manuscript?.id)
+        .single()
+
+      if (manuscriptData?.full_analysis_completed_at) {
+        clearInterval(pollInterval)
+        setAlexThinking(false)
+        setFullAnalysisInProgress(false)
+        setAnalysisComplete(true)
+
+        addAlexMessage(
+          `✅ I've finished reading your manuscript and I'm genuinely excited about what you've created here! I've sent you a comprehensive analysis report by email.\n\n` +
+          `You can review the full report in your email.\n\n` +
+          `**Ready to start editing?** Now you can click on any chapter and hit "Start Editing." I'll pull up my specific notes for that chapter and we'll work through them together.`
+        )
+      } else if (attempts >= maxAttempts) {
+        clearInterval(pollInterval)
+        setAlexThinking(false)
+        setFullAnalysisInProgress(false)
+        addAlexMessage('⚠️ Analysis is taking longer than expected. Please check your email or refresh the page in a few minutes.')
+      }
+    }, 3000)
   }
 
   // Alex chat
