@@ -671,15 +671,17 @@ function StudioContent() {
               {chapters.map((chapter, index) => {
                 const isUnsaved = unsavedChapters.has(chapter.id)
                 const editStatus = chapterEditingStatus[chapter.chapter_number]
+                const isLocked = fullAnalysisInProgress || !analysisComplete
 
                 return (
                   <div
                     key={chapter.id}
-                    className={`p-3 rounded-lg border transition-all min-h-[80px] ${fullAnalysisInProgress || !analysisComplete
-                        ? 'bg-gray-50 border-gray-200 opacity-50 cursor-not-allowed'
-                        : index === currentChapterIndex
-                          ? 'bg-green-50 border-green-500 shadow-sm cursor-pointer'
-                          : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm cursor-pointer'
+                    onClick={() => !isLocked && loadChapter(index)} // Only allow click if not locked
+                    className={`p-3 rounded-lg border transition-all min-h-[80px] ${isLocked
+                      ? 'bg-gray-50 border-gray-200 opacity-50 cursor-not-allowed'
+                      : index === currentChapterIndex
+                        ? 'bg-green-50 border-green-500 shadow-sm cursor-pointer'
+                        : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm cursor-pointer'
                       }`}
                   >
                     <div className="flex flex-col gap-2">
@@ -781,13 +783,26 @@ function StudioContent() {
               {chapters[currentChapterIndex]?.title || 'Loading...'}
             </h3>
             <div className="flex gap-3">
+
               {/* Start Editing Button - Only show if not started */}
               {currentEditingStatus === 'not_started' && (
                 <button
                   onClick={() => analyzeChapter(currentChapter.chapter_number)}
-                  className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all flex items-center gap-2"
+                  disabled={fullAnalysisInProgress || !analysisComplete}
+                  className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${fullAnalysisInProgress || !analysisComplete
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
+                      : 'bg-green-600 text-white hover:bg-green-700'
+                    }`}
+                  title={
+                    fullAnalysisInProgress
+                      ? 'Please wait for Alex to finish reading the manuscript (approx. 3 minutes)'
+                      : !analysisComplete
+                        ? 'Please complete full analysis first by typing "Yes" to Alex'
+                        : 'Start editing this chapter'
+                  }
                 >
-                  <span>🚀</span> Start Editing
+                  <span>🚀</span>
+                  {fullAnalysisInProgress ? 'Waiting for Full Analysis...' : 'Start Editing'}
                 </button>
               )}
 
