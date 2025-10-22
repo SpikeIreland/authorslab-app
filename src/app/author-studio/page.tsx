@@ -72,6 +72,7 @@ function StudioContent() {
   const [analysisComplete, setAnalysisComplete] = useState(false)
   const [fullReportPdfUrl, setFullReportPdfUrl] = useState<string | null>(null)
   const [showReportPanel, setShowReportPanel] = useState(false)
+  const [fullAnalysisInProgress, setFullAnalysisInProgress] = useState(false)
 
   // Chapter editing status state
   const [chapterEditingStatus, setChapterEditingStatus] = useState<{
@@ -449,12 +450,14 @@ function StudioContent() {
   // Trigger full manuscript analysis
   const triggerFullAnalysis = async () => {
     setAlexThinking(true)
+    setFullAnalysisInProgress(true) // NEW
     setThinkingMessage('📖 Reading your entire manuscript...')
 
     setTimeout(() => setThinkingMessage('🎭 Understanding your characters...'), 3000)
     setTimeout(() => setThinkingMessage('📊 Analyzing story structure...'), 6000)
     setTimeout(() => setThinkingMessage('✨ This is really compelling...'), 9000)
     setTimeout(() => setThinkingMessage('🔍 Identifying strengths and opportunities...'), 12000)
+    setTimeout(() => setThinkingMessage('📝 Creating your comprehensive report...'), 15000)
 
     try {
       const response = await fetch(WEBHOOKS.fullAnalysis, {
@@ -471,19 +474,21 @@ function StudioContent() {
       const result = await response.json()
 
       setAlexThinking(false)
+      setFullAnalysisInProgress(false) // NEW
       setAnalysisComplete(true)
       setFullReportPdfUrl(result.pdfUrl)
 
       addAlexMessage(
         `✅ I've finished reading your manuscript and I'm genuinely excited about what you've created here! I've sent you a comprehensive analysis report by email.\n\n` +
-        `You can review the full report using the "View Report" button above, or we can dive right in.\n\n` +
-        `**Ready to start editing?** Just click on any chapter and hit "Start Editing" when you're ready. I'll pull up my notes for that specific chapter and we'll work through it together.`
+        `You can review the full report using the "View Report" button above.\n\n` +
+        `**Ready to start editing?** Now you can click on any chapter and hit "Start Editing." I'll pull up my specific notes for that chapter and we'll work through them together.`
       )
 
     } catch (error) {
       console.error('Analysis error:', error)
       setAlexThinking(false)
-      addAlexMessage('I had trouble completing the analysis, but I can still help you. What would you like to focus on?')
+      setFullAnalysisInProgress(false) // NEW
+      addAlexMessage('I had trouble completing the analysis. Please try again or contact support.')
     }
   }
 
@@ -670,9 +675,11 @@ function StudioContent() {
                 return (
                   <div
                     key={chapter.id}
-                    className={`p-3 rounded-lg border cursor-pointer transition-all min-h-[80px] ${index === currentChapterIndex
-                      ? 'bg-green-50 border-green-500 shadow-sm'
-                      : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm'
+                    className={`p-3 rounded-lg border transition-all min-h-[80px] ${fullAnalysisInProgress || !analysisComplete
+                        ? 'bg-gray-50 border-gray-200 opacity-50 cursor-not-allowed'
+                        : index === currentChapterIndex
+                          ? 'bg-green-50 border-green-500 shadow-sm cursor-pointer'
+                          : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm cursor-pointer'
                       }`}
                   >
                     <div className="flex flex-col gap-2">
