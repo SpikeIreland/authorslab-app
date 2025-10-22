@@ -1,7 +1,7 @@
 # AuthorsLab.ai - Project Overview
 
 ## 🎯 Mission
-Transform manuscript editing from a passive service into an active AI-powered collaboration, guiding authors from first draft to published book through four specialized editing phases.
+Transform manuscript editing from a passive service into an active AI-powered collaboration, guiding authors from first draft to published book through specialized AI editing phases.
 
 ## 🏗️ System Architecture
 
@@ -10,26 +10,20 @@ Transform manuscript editing from a passive service into an active AI-powered co
 - **Framework:** Next.js 15 with App Router
 - **Styling:** Tailwind CSS v4
 - **Auth:** Supabase Authentication
-- **Payments:** Stripe
+- **Payments:** Stripe (planned)
 
 ### **Backend: n8n Workflows**
 - **Hosting:** n8n Cloud (spikeislandstudios.app.n8n.cloud)
 - **Purpose:** AI orchestration, manuscript processing, email delivery
 - **AI Engine:** Claude Sonnet 4 via Anthropic API
 
-### **Database: Supabase**
+### **Database & Storage: Supabase**
 - **User accounts** (via Supabase Auth)
-- **Manuscript metadata**
-- **Chapter data**
-- **Analysis results**
-- **User progress tracking**
-
-### **Storage: AWS S3**
-- **Bucket Structure:**
-  - `manuscript-submissions-phase1` - Developmental editing uploads
-  - `manuscript-submissions-phase2` - Line editing uploads
-  - `manuscript-submissions-phase3` - Copy editing uploads
-  - `manuscript-submissions-phase4` - Publishing prep uploads
+- **Manuscript metadata & full text storage**
+- **Chapter data with status tracking**
+- **Manuscript issues (flagged, resolved, dismissed)**
+- **Author profiles**
+- **PDF report storage** (via Supabase Storage)
 
 ---
 
@@ -40,31 +34,37 @@ Transform manuscript editing from a passive service into an active AI-powered co
 - **Workflow:** `free-manuscript-analysis`
 - **Delivers:** Comprehensive overview report (PDF) via email
 - **Purpose:** Lead generation, showcase AI capabilities
-- **Timeline:** 15 minutes
-- **Restrictions:** Overview only, no chapter-by-chapter detail
+- **Timeline:** ~3 minutes
+- **Status:** ✅ LIVE
 
-### 2. **Complete Author Package** ($399 one-time)
+### 2. **Complete Author Package - Phase 1** ($399 one-time)
 - **URL:** `/pricing` → `/signup` → `/onboarding` → `/author-studio`
-- **Workflows:** All 4 phases + chapter parsing + studio interactions
+- **Workflows:** Full manuscript analysis + chapter-by-chapter editing
 - **Delivers:** 
-  - Full 4-phase editing journey
+  - Comprehensive 5-dimensional manuscript analysis (PDF via email)
   - Real-time AI collaboration workspace
-  - Chapter-by-chapter feedback
-  - Publishing-ready manuscript
-- **Timeline:** 10-16 days
+  - Chapter-by-chapter developmental editing with Alex
+  - Actionable issue tracking and resolution
+- **Timeline:** Analysis: ~3 minutes | Editing: Author's pace
+- **Status:** ✅ PHASE 1 COMPLETE & LIVE
 - **Features:**
-  - Phase 1: Developmental Editing (Alex)
-  - Phase 2: Line Editing (Sam)
-  - Phase 3: Copy Editing (Jordan)
-  - Phase 4: Publishing Preparation
+  - ✅ Full manuscript analysis (Structure, Character, Plot, Pacing, Theme)
+  - ✅ PDF report generation and email delivery
+  - ✅ On-demand chapter analysis (triggered per chapter)
+  - ✅ Interactive issues panel with filtering
+  - ✅ Real-time chat with Alex
+  - ✅ Chapter status tracking (D/C/L indicators)
+  - ✅ Unsaved changes detection
+  - ✅ Issue resolution workflow (Resolve, Discuss, Dismiss)
 
-### 3. **Ghost Writer Package** ($2,499 - COMING SOON)
-- Complete book creation from concept to finished manuscript
-- Currently displayed as "Coming Soon" on pricing page
+### 3. **Additional Phases** (Coming Soon)
+- Phase 2: Line Editing with Sam
+- Phase 3: Copy Editing with Jordan  
+- Phase 4: Publishing Preparation
 
 ---
 
-## 🔄 User Journey Flow
+## 🔄 User Journey Flow (Phase 1)
 ```
 Landing Page (/)
     ↓
@@ -72,204 +72,245 @@ Landing Page (/)
     ↓
 Onboarding (/onboarding)
     ↓
-    • Upload manuscript (.docx/.txt)
+    • Upload manuscript (.docx/.pdf)
     • Extract text & analyze word count
     • Set chapter count, genre, title
-    • Submit to n8n onboarding workflow
+    • Submit → Creates manuscript in Supabase
+    • Chapters parsed and stored
     ↓
-Author Studio (/author-studio) ← **NEXT TO BUILD**
+Author Studio (/author-studio) ✅ LIVE
     ↓
-    • Interactive AI workspace
-    • Real-time collaboration with Alex, Sam, Jordan
-    • Chapter-by-chapter editing
-    • Progress tracking
-    • Phase completion workflow triggers
+    • User types "Yes" to trigger full analysis
+    • Alex reads entire manuscript (~3 min)
+    • Comprehensive PDF report emailed to author
+    ↓
+    • User clicks "Start Editing" on any chapter
+    • Alex analyzes specific chapter (~30 sec)
+    • Issues appear in interactive panel
+    ↓
+    • Work through issues with Alex
+    • Resolve, discuss, or dismiss each issue
+    • Save changes as you edit
+    • Approve chapter when complete
+    ↓
+Repeat for all chapters → Complete Phase 1
 ```
 
 ---
 
-## 🤖 The AI Editors
+## 🤖 The AI Editor (Phase 1)
 
-### **Alex - Developmental Editor** (Phase 1)
-- **Specialty:** Story structure, character arcs, plot development, pacing
-- **Focus:** Big picture narrative elements
+### **Alex - Developmental Editor**
+- **Specialty:** Story structure, character arcs, plot development, pacing, themes
+- **Analysis Dimensions:**
+  - 📐 **Structural Analysis** - Architecture, pacing patterns, chapter organization
+  - 🎭 **Character Analysis** - Arcs, voice, relationships, dialogue
+  - 📖 **Plot Analysis** - Progression, conflict, stakes, subplots
+  - ⚡ **Pacing Analysis** - Momentum, scene-level pacing, information reveal
+  - 🎨 **Thematic Analysis** - Core themes, symbolism, coherence
 - **Icon:** 🎯
 - **Color:** Green (#27ae60)
-
-### **Sam - Line Editor** (Phase 2)
-- **Specialty:** Prose flow, sentence structure, dialogue, voice
-- **Focus:** Sentence-level refinement
-- **Icon:** ✨
-- **Color:** Purple (#8e44ad)
-
-### **Jordan - Copy Editor** (Phase 3)
-- **Specialty:** Grammar, punctuation, consistency, accuracy
-- **Focus:** Technical polish
-- **Icon:** 🔍
-- **Color:** Red (#e74c3c)
-
-### **Publishing Team** (Phase 4)
-- **Specialty:** Formatting, cover guidance, platform setup, marketing materials
-- **Focus:** Launch preparation
-- **Icon:** 🚀
-- **Color:** Yellow (#f39c12)
+- **Status:** ✅ FULLY FUNCTIONAL
 
 ---
 
 ## 🛠️ Key n8n Workflows
 
-### **Active Workflows:**
+### **Active & Complete:**
 
-1. **`free-manuscript-analysis`**
+1. **`alex-full-manuscript-analysis`** ✅
+   - Webhook: `/webhook/alex-full-manuscript-analysis`
+   - Input: manuscriptId, userId
+   - Process: 
+     - Fetches manuscript + all chapters from Supabase
+     - Runs 5 parallel AI analyses (Structure, Character, Plot, Pacing, Theme)
+     - Synthesizes into comprehensive report
+     - Generates PDF with enthusiastic opening
+     - Emails PDF to author
+     - Marks analysis complete in database
+   - Output: Success response + PDF URL
+   - Timeline: ~3 minutes
+
+2. **`alex-chapter-analysis`** ✅
+   - Webhook: `/webhook/alex-analyze-single-chapter`
+   - Input: manuscriptId, chapterNumber, userId
+   - Process:
+     - Fetches specific chapter by number
+     - Runs 5 specialized AI analyses
+     - Extracts actionable issues (character, plot, pacing, structure, theme)
+     - Inserts issues into manuscript_issues table
+   - Output: Success when issues are ready
+   - Timeline: ~30 seconds
+
+3. **`alex-chat`** ✅
+   - Webhook: `/webhook/alex-chat`
+   - Input: message, context (chapter, manuscript, content)
+   - Process: Context-aware AI conversation
+   - Output: Alex's response + structured suggestions
+   - Timeline: Real-time
+
+4. **`onboarding`** ✅
+   - Webhook: `/webhook/onboarding`
+   - Input: Complete user + manuscript data
+   - Process: 
+     - Creates/updates author profile
+     - Creates manuscript record
+     - Parses chapters from full text
+     - Stores all chapters in database
+   - Output: Success + manuscriptId
+   - Timeline: ~30 seconds
+
+5. **`free-manuscript-analysis`** ✅
    - Webhook: `/webhook/free-manuscript-analysis`
    - Input: PDF file + author info
    - Process: Extract text → AI analysis → Generate PDF report
    - Output: Email delivery with PDF attachment
+   - Timeline: ~3 minutes
 
-2. **`manuscript-word-count`**
-   - Webhook: `/webhook/manuscript-word-count`
-   - Input: PDF/DOCX file OR text string
-   - Process: Extract text → count words
-   - Output: JSON with word count + validation
-   - Used by: Free analysis, onboarding, all phases
+6. **`pdf-word-count`** ✅
+   - Webhook: `/webhook/pdf-word-count`
+   - Input: PDF file as binary
+   - Process: Extract text → count words → validation
+   - Output: JSON with word count
+   - Used by: Free analysis, onboarding
 
-3. **`portal-word-count`**
-   - Webhook: `/webhook/portal-word-count`
-   - Input: Text string + manuscript metadata
-   - Process: Word counting for onboarding uploads
-   - Output: Word count + quality metrics
-
-4. **`onboarding`**
-   - Webhook: `/webhook/onboarding`
-   - Input: Complete user + manuscript data
-   - Process: Store in Supabase, trigger chapter parsing
-   - Output: Success + manuscriptId for studio redirect
-
-5. **`parse-chapters`**
-   - Webhook: `/webhook/parse-chapters`
-   - Input: Full manuscript text + chapter expectations
-   - Process: Split into chapters, store in database
-   - Output: Chapter structure for studio
-
-### **Future Workflows (To Build):**
-- Phase 1: Developmental editing
-- Phase 2: Line editing
-- Phase 3: Copy editing
-- Phase 4: Publishing preparation
-- Studio interactions (real-time AI chat)
 
 ---
 
-## 📁 Current File Structure
-```
-authorslab-ai/
-├── src/
-│   ├── app/
-│   │   ├── page.tsx                    # Home/Landing page
-│   │   ├── layout.tsx                  # Root layout
-│   │   ├── globals.css                 # Global styles
-│   │   ├── login/
-│   │   │   └── page.tsx               # Login page
-│   │   ├── signup/
-│   │   │   └── page.tsx               # Signup page
-│   │   ├── how-it-works/
-│   │   │   └── page.tsx               # How It Works page
-│   │   ├── pricing/
-│   │   │   └── page.tsx               # Pricing page
-│   │   ├── editors/
-│   │   │   └── page.tsx               # Meet the Editors page
-│   │   ├── faq/
-│   │   │   └── page.tsx               # FAQ page
-│   │   ├── free-analysis/
-│   │   │   └── page.tsx               # Free analysis landing + upload
-│   │   ├── onboarding/
-│   │   │   └── page.tsx               # Post-signup onboarding
-│   │   └── api/
-│   │       └── auth/
-│   │           ├── callback/
-│   │           │   └── route.ts       # Supabase auth callback
-│   │           └── signout/
-│   │               └── route.ts       # Sign out handler
-│   ├── components/
-│   │   └── ui/
-│   │       └── button.tsx             # Reusable button component
-│   └── lib/
-│       └── supabase/
-│           ├── client.ts              # Supabase client
-│           └── server.ts              # Supabase server utilities
-├── public/
-├── push.sh                            # Deployment script
-├── package.json
-├── next.config.ts
-├── tailwind.config.ts
-└── tsconfig.json
+## 💾 Database Schema (Supabase)
+
+### **Core Tables:**
+```sql
+-- Author profiles linked to Supabase Auth
+CREATE TABLE author_profiles (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id),
+  email TEXT NOT NULL,
+  first_name TEXT,
+  last_name TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Manuscripts with full text and analysis tracking
+CREATE TABLE manuscripts (
+  id UUID PRIMARY KEY,
+  author_id UUID REFERENCES author_profiles(id),
+  title TEXT NOT NULL,
+  genre TEXT,
+  full_text TEXT,
+  current_word_count INTEGER,
+  total_chapters INTEGER,
+  status TEXT,
+  full_analysis_completed_at TIMESTAMP,
+  analysis_started_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Individual chapters parsed from manuscript
+CREATE TABLE chapters (
+  id UUID PRIMARY KEY,
+  manuscript_id UUID REFERENCES manuscripts(id),
+  chapter_number INTEGER,
+  title TEXT,
+  content TEXT,
+  status TEXT, -- 'draft', 'edited', 'approved'
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Actionable issues found by AI analysis
+CREATE TABLE manuscript_issues (
+  id UUID PRIMARY KEY,
+  manuscript_id UUID REFERENCES manuscripts(id),
+  chapter_number INTEGER,
+  element_type TEXT, -- 'character', 'plot', 'pacing', 'structure', 'theme'
+  severity TEXT, -- 'minor', 'moderate', 'major'
+  issue_description TEXT,
+  alex_suggestion TEXT,
+  status TEXT, -- 'flagged', 'in_progress', 'resolved', 'dismissed'
+  location_in_text TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP
+);
 ```
 
 ---
 
-## 🎨 Design System
+## ✅ Phase 1 Completion Checklist
 
-### **Colors:**
-- Primary Blue: `#3b82f6` to `#1d4ed8`
-- Success Green: `#10b981` to `#059669`
-- Purple Gradient: `#667eea` to `#764ba2`
-- Yellow Accent: `#f1c40f` to `#f39c12`
+### **Frontend (Author Studio):**
+- [x] Three-column layout (chapters, editor, Alex panel)
+- [x] Chapter navigation with status indicators
+- [x] Real-time text editor with word count
+- [x] Save functionality with unsaved change tracking
+- [x] Chapter title editing
+- [x] Full analysis trigger ("Yes" command)
+- [x] Database polling for analysis completion
+- [x] "Start Editing" button per chapter
+- [x] On-demand chapter analysis
+- [x] Issues panel (sliding, filterable)
+- [x] Issue cards with expand/collapse
+- [x] Issue actions (Resolve, Discuss, Dismiss)
+- [x] Filter by issue type (all, character, plot, pacing, structure, theme)
+- [x] Stats footer (resolved vs remaining)
+- [x] Chat interface with Alex
+- [x] PDF report viewer
+- [x] Loading states and progress indicators
+- [x] Locked state during full analysis
+- [x] Editing phase indicators (D/C/L badges)
+- [x] Unsaved changes warning
+- [x] CORS handling and error recovery
 
-### **Typography:**
-- Headings: Bold, large sizes (text-4xl to text-6xl)
-- Body: text-base to text-xl
-- Font: System fonts (Inter, -apple-system)
+### **Backend (n8n Workflows):**
+- [x] Full manuscript analysis workflow
+- [x] 5-dimensional AI analysis (parallel execution)
+- [x] Final synthesis with enthusiastic opening
+- [x] PDF generation from analysis
+- [x] Email delivery with attachment
+- [x] Chapter-by-chapter analysis workflow
+- [x] Issue extraction and database insertion
+- [x] Robust JSON parsing with error handling
+- [x] Author email fetching from database
+- [x] Analysis completion tracking
+- [x] Real-time chat with context
+- [x] CORS headers configured
 
-### **Components:**
-- Rounded corners: rounded-xl to rounded-3xl
-- Shadows: shadow-lg to shadow-2xl
-- Gradients: Linear gradients for CTAs and hero sections
+### **Database:**
+- [x] RLS policies configured
+- [x] Manuscript and chapter tables
+- [x] Issues table with status tracking
+- [x] Author profiles linked to auth
+- [x] Indexes for performance
 
 ---
 
-## 🚀 Next: Author Studio Page
+## 🎯 Next Steps (Future Phases)
 
-### **Purpose:**
-The Author Studio is the core interactive workspace where authors collaborate with AI editors in real-time.
+### **Phase 2: Line Editing (Sam)**
+- [ ] Sam character and workflow
+- [ ] Prose-level feedback system
+- [ ] Sentence structure analysis
+- [ ] Dialogue refinement tools
 
-### **Key Features to Build:**
-1. **Chapter Navigation**
-   - Sidebar with all chapters
-   - Progress indicators
-   - Phase completion status
+### **Phase 3: Copy Editing (Jordan)**
+- [ ] Jordan character and workflow
+- [ ] Grammar and punctuation checking
+- [ ] Consistency analysis
+- [ ] Style guide enforcement
 
-2. **Interactive Editor**
-   - Text display with AI suggestions
-   - Highlight problematic sections
-   - Click-to-expand AI feedback
+### **Phase 4: Publishing Prep**
+- [ ] Formatting workflow
+- [ ] Cover design guidance
+- [ ] Platform setup assistance
+- [ ] Marketing materials generation
 
-3. **AI Chat Panel**
-   - Real-time conversation with Alex/Sam/Jordan
-   - Context-aware responses
-   - Manuscript-specific guidance
-
-4. **Phase Progress Tracking**
-   - Visual progress bars
-   - Completed vs remaining chapters
-   - Next steps guidance
-
-5. **Manuscript Actions**
-   - Download current version
-   - Export to various formats
-   - Move to next phase
-
-### **Technical Requirements:**
-- Real-time AI interactions via n8n webhooks
-- Context management (store conversation history)
-- Chapter state tracking
-- Phase transition logic
-- User session management
-
-### **n8n Integration:**
-- Studio chat workflow
-- Phase-specific analysis triggers
-- Progress update endpoints
-- Export/download generation
+### **Platform Enhancements:**
+- [ ] Stripe payment integration
+- [ ] Dashboard (manuscript list)
+- [ ] Progress analytics
+- [ ] Export functionality
+- [ ] Mobile responsiveness improvements
+- [ ] Admin panel
 
 ---
 
@@ -279,188 +320,77 @@ The Author Studio is the core interactive workspace where authors collaborate wi
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-# n8n Webhooks (public)
-# These are hardcoded in components but could be env vars:
-# - free-manuscript-analysis
-# - manuscript-word-count
-# - portal-word-count
+# n8n Webhooks (hardcoded in app)
+# - alex-full-manuscript-analysis
+# - alex-analyze-single-chapter
+# - alex-chat
 # - onboarding
-# - parse-chapters
+# - manuscript-word-count
+# - free-manuscript-analysis
 ```
 
 ---
 
-## 📊 Database Schema (Supabase)
+## 🆘 Recent Solutions & Fixes
 
-### **Tables to Create:**
-```sql
--- Users (handled by Supabase Auth)
+### **CORS Issues:**
+- Solution: Database polling for completion status
+- Frontend handles CORS gracefully, checks database instead of relying on webhook response
 
--- Manuscripts
-CREATE TABLE manuscripts (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID REFERENCES auth.users(id),
-  title TEXT NOT NULL,
-  genre TEXT,
-  word_count INTEGER,
-  chapter_count INTEGER,
-  has_prologue BOOLEAN DEFAULT FALSE,
-  has_epilogue BOOLEAN DEFAULT FALSE,
-  current_phase INTEGER DEFAULT 1,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
+### **Chapter 0 Issue:**
+- Problem: All issues assigned to prologue
+- Solution: Fixed Prepare Chapter Data to use `find()` by `chapter_number` instead of array index
 
--- Chapters
-CREATE TABLE chapters (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  manuscript_id UUID REFERENCES manuscripts(id),
-  chapter_number INTEGER,
-  title TEXT,
-  content TEXT,
-  word_count INTEGER,
-  phase_1_complete BOOLEAN DEFAULT FALSE,
-  phase_2_complete BOOLEAN DEFAULT FALSE,
-  phase_3_complete BOOLEAN DEFAULT FALSE,
-  phase_4_complete BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP DEFAULT NOW()
-);
+### **Unsaved Changes:**
+- Solution: Track Set of unsaved chapter IDs, persist across navigation, browser warning on exit
 
--- AI Feedback
-CREATE TABLE ai_feedback (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  chapter_id UUID REFERENCES chapters(id),
-  phase INTEGER,
-  editor_name TEXT, -- 'Alex', 'Sam', 'Jordan'
-  feedback_type TEXT, -- 'structural', 'character', 'prose', 'grammar'
-  feedback_content TEXT,
-  created_at TIMESTAMP DEFAULT NOW()
-);
+### **Issues Panel:**
+- Solution: Sliding panel with filtering, expand/collapse cards, action buttons
 
--- User Progress
-CREATE TABLE user_progress (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID REFERENCES auth.users(id),
-  manuscript_id UUID REFERENCES manuscripts(id),
-  phase INTEGER,
-  chapters_completed INTEGER DEFAULT 0,
-  total_chapters INTEGER,
-  phase_completed BOOLEAN DEFAULT FALSE,
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-```
+### **Analysis Workflow:**
+- Solution: Removed redundant loops, separated full analysis (strategic) from chapter analysis (tactical)
 
 ---
 
-## ✅ Completed So Far
-
-- [x] Landing page with navigation
-- [x] How It Works page (4-phase breakdown)
-- [x] Pricing page (comparison table)
-- [x] Meet the Editors page (Alex, Sam, Jordan)
-- [x] FAQ page (comprehensive Q&A)
-- [x] Free Analysis page (upload + processing)
-- [x] Login page (Supabase auth)
-- [x] Signup page (Supabase auth)
-- [x] Onboarding page (manuscript upload + setup)
-- [x] Navigation unified across all pages
-- [x] n8n workflow for free analysis
-- [x] n8n workflow for word count
-- [x] n8n workflow for onboarding
-
-## 🎯 Next Steps
-
-- [ ] Author Studio page (**PRIORITY**)
-- [ ] Dashboard (manuscript list, progress overview)
-- [ ] Phase 1 editing workflow
-- [ ] Phase 2 editing workflow
-- [ ] Phase 3 editing workflow
-- [ ] Phase 4 publishing workflow
-- [ ] Payment integration (Stripe)
-- [ ] Email notifications (phase completion)
-- [ ] Admin panel (user management)
+**Last Updated:** October 23, 2025  
+**Status:** Phase 1 Complete & Live - Author Studio fully functional  
+**Current Focus:** Testing and refinement before Phase 2 development
 
 ---
 
-## 🔗 Important URLs
+## 📊 Metrics & Performance
 
-- **Production:** https://authorslab.ai
-- **n8n:** https://spikeislandstudios.app.n8n.cloud
-- **Supabase:** [Your Supabase Dashboard]
-- **Vercel:** [Your Vercel Dashboard]
-- **GitHub:** [Your Repo]
-
----
-
-## 💡 Key Insights for Next Chat
-
-1. **Author Studio is the heart of the product** - This is where users spend most of their time
-2. **Each phase needs its own workflow** - 4 separate n8n workflows for editing
-3. **State management is critical** - Track which chapters are complete, which phase user is in
-4. **AI context is key** - Pass entire manuscript + current chapter + previous feedback for best results
-5. **The "collaborative" feeling matters** - Make it feel like working WITH an editor, not just getting reports
+- **Full Analysis:** ~3 minutes for entire manuscript
+- **Chapter Analysis:** ~30 seconds per chapter
+- **Chat Response:** Real-time (~2-3 seconds)
+- **PDF Generation:** Included in analysis time
+- **Email Delivery:** Immediate after PDF generation
 
 ---
 
-## 🆘 Common Issues & Solutions
+## 💡 Key Technical Decisions
 
-**Issue:** Build fails with "useSearchParams needs Suspense"
-**Solution:** Wrap component using useSearchParams in `<Suspense>` boundary
+1. **On-Demand Chapter Analysis:** Users trigger analysis per chapter, not all at once
+   - Faster UX (30 sec vs 20+ minutes)
+   - Lower API costs
+   - Progressive workflow feels more collaborative
 
-**Issue:** Tailwind styles not applying
-**Solution:** Check globals.css has `@import "tailwindcss";`
+2. **Database Polling vs Webhook Response:** Frontend polls database for completion
+   - Handles CORS issues gracefully
+   - More reliable than webhook responses
+   - Better user feedback
 
-**Issue:** Supabase auth not working
-**Solution:** Check environment variables, verify callback URL in Supabase dashboard
+3. **Two Analysis Types:** Strategic (full manuscript) vs Tactical (chapter-by-chapter)
+   - Full analysis = PDF report for big picture
+   - Chapter analysis = actionable issues for editing
+   - No redundancy, clear separation of concerns
 
-**Issue:** n8n webhook not receiving data
-**Solution:** Check CORS settings, verify webhook URL, check request payload format
+4. **Issue Status Workflow:** Flagged → In Progress → Resolved/Dismissed
+   - Simple but effective
+   - Tracks author progress
+   - Enables analytics (future feature)
 
----
-
-**Last Updated:** October 16, 2025
-**Status:** Pre-launch development - Core pages complete, Studio in progress
-
-
-# AuthorsLab.ai - Current Status (Oct 18 2025)
-
-## ✅ Completed
-- User authentication (Supabase Auth + RLS policies)
-- Signup/Login flow with profile creation
-- Onboarding page with PDF upload
-- PDF text extraction workflow (extract-pdf-text)
-- Word count analysis workflow (pdf-word-count)
-- Manuscript creation in Supabase
-- Author profiles synced with auth
-
-## 🔧 Working Features
-- Signup → Onboarding → Upload PDF → Word count → Submit
-- All data stored in Supabase (author_profiles, manuscripts)
-- n8n workflows: extract-pdf-text, pdf-word-count, onboarding
-
-## 🚧 Next Steps (Author Studio Integration)
-- Fix author-studio page to load manuscripts from Supabase
-- Fix parse-chapters workflow (currently failing)
-- Display chapters in studio interface
-- Integrate Alex (developmental editing AI)
-- Add Sam & Jordan specialists
-- Connect analysis scores to UI
-
-## 🔑 Key Technical Details
-- PDF-only uploads (client sends text, not binary)
-- Word count: analytical only, no DB writes
-- Onboarding: creates manuscript with all metadata
-- UUIDs: crypto.randomUUID() for all IDs
-- RLS: Permissive for authenticated users
-
-## 📂 Database Schema
-- author_profiles (id, auth_user_id, email, first_name, last_name)
-- manuscripts (id, author_id, title, genre, full_text, word_count, etc.)
-- chapters (id, manuscript_id, chapter_number, title, content, status)
-- manuscript_scores (structural, character, plot, pacing, thematic)
-
-## 🔗 n8n Webhooks
-- extract-pdf-text: Extracts text from PDF binary
-- pdf-word-count: Analyzes text, returns word count
-- onboarding: Creates manuscript + author profile
-- parse-chapters: (needs fixing) Should parse chapters from text
+5. **Alex Personality:** Warm, encouraging, specific
+   - Enthusiastic opening in reports
+   - Contextual chat responses
+   - Professional but friendly tone
