@@ -566,12 +566,15 @@ function StudioContent() {
       'Looking through my notes...',
       'Getting them organized...',
       'Adding a few other things...',
-      'Where\'s that bit gone...?',
+      'Where\'s that note gone...?',
+      '...',
       'Oh, Yes, there it is...',
       'Yep, Yep, Yep...',
       'I loved that bit!...',
       'Ha! Excellent!...',
       'Nice...',
+      'I better get a cup of tea for this one...',
+      '...',
       'Almost ready...'
     ]
 
@@ -644,7 +647,7 @@ function StudioContent() {
           loadChapterIssues(chapterNumber)
         }
 
-        addAlexMessage(`✅ Perfect! I found ${issues.length} things we can work on together in this chapter. Let's dive in!`)
+        addAlexMessage(`✅ Perfect! I found ${issues.length} things we can work on together in this chapter. Click on the 'Notes' button at the top and we can work our way through them`)
       } else if (attempts >= maxAttempts) {
         clearInterval(pollInterval)
         addAlexMessage('⚠️ Analysis is taking longer than expected. It should be ready soon - try refreshing in a moment.')
