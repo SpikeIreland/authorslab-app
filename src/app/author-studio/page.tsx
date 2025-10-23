@@ -204,9 +204,52 @@ function StudioContent() {
   }
 
   // Discuss issue with Alex
-  const discussIssue = (issue: ManuscriptIssue) => {
-    setChatInput(`Can you help me with this issue: "${issue.issue_description}"`)
-    addAlexMessage(`Let's talk about: "${issue.issue_description}"\n\n${issue.alex_suggestion}\n\nWhat specific aspect would you like to discuss?`)
+  const discussIssue = async (issue: ManuscriptIssue) => {
+    const userMessage = `Can you help me with this issue: "${issue.issue_description}"`
+
+    // Add user message to chat
+    setAlexMessages(prev => [...prev, { sender: 'You', message: userMessage }])
+
+    // Scroll to bottom after adding user message
+    setTimeout(scrollToBottom, 100)
+
+    // Show Alex is thinking
+    setAlexThinking(true)
+    setThinkingMessage('Thinking...')
+
+    try {
+      const response = await fetch(WEBHOOKS.alexChat, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: userMessage,
+          context: {
+            chapter: currentChapterIndex + 1,
+            chapterTitle: chapters[currentChapterIndex]?.title,
+            chapterContent: editorContent,
+            manuscriptTitle: manuscript?.title,
+            analysisComplete: analysisComplete,
+            currentChapterStatus: chapterStatus,
+            // Add the specific issue context
+            issueDescription: issue.issue_description,
+            alexSuggestion: issue.alex_suggestion,
+            issueType: issue.element_type,
+            issueSeverity: issue.severity
+          }
+        })
+      })
+
+      if (!response.ok) throw new Error('Chat failed')
+
+      const result = await response.json()
+      setAlexThinking(false)
+      addAlexMessage(result.response || result.message || result.alexResponse || result.text || 'Let me help you with that.')
+
+    } catch (error) {
+      console.error('Chat error:', error)
+      setAlexThinking(false)
+      addAlexMessage('I\'m having trouble connecting. Let me help based on what I see in your manuscript.')
+    }
   }
 
   // Initialize studio - Load from Supabase
