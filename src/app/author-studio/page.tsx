@@ -59,6 +59,7 @@ type ChapterEditingStatus = 'not_started' | 'analyzing' | 'ready'
 function StudioContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const [authorFirstName, setAuthorFirstName] = useState<string>('')
 
   // Manuscript state
   const [manuscript, setManuscript] = useState<Manuscript | null>(null)
@@ -326,7 +327,8 @@ function StudioContent() {
         loadChapter(0, chaptersData)
 
         // Get author's first name from localStorage
-        const authorFirstName = localStorage.getItem('currentUserFirstName') || 'there'
+        const firstName = localStorage.getItem('currentUserFirstName') || 'there'
+        setAuthorFirstName(firstName)
 
         // Alex's greeting - Different based on analysis status
         if (manuscriptData.full_analysis_completed_at) {
@@ -864,7 +866,7 @@ function StudioContent() {
           </Link>
           <div className="flex items-center gap-3 text-xl font-bold text-gray-900">
             <span>✍️</span>
-            Your Writing Studio
+            {authorFirstName ? `${authorFirstName}'s Writing Studio` : 'Your Writing Studio'}
           </div>
           <div className="flex items-center gap-3 bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-full font-semibold">
             <div className="w-6 h-6 bg-white/30 rounded-full flex items-center justify-center text-sm">A</div>
