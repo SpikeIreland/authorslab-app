@@ -721,15 +721,19 @@ function StudioContent() {
 
     setTimeout(scrollToBottom, 100)
 
-    // Check for "Yes" to trigger FULL analysis
-    if (userMessage.toLowerCase().includes('yes')) {
+    // Check for "read my manuscript" trigger
+    const analysisKeywords = ['read my manuscript', 'please read my manuscript', 'start reading']
+    const messageToCheck = userMessage.toLowerCase()
+    const shouldTriggerAnalysis = analysisKeywords.some(keyword => messageToCheck.includes(keyword))
+
+    if (shouldTriggerAnalysis) {
       if (fullAnalysisInProgress) {
-        addAlexMessage("I'm already reading your manuscript! This will take about 3 minutes. I'll let you know as soon as I'm done. ⏳")
+        addAlexMessage("I'm already reading it! Give me about 3 minutes to get through everything. I'll let you know as soon as I'm done. ⏳")
         return
       }
 
       if (analysisComplete) {
-        addAlexMessage("I've already completed my full analysis! You can view the report using the button above, or start editing any chapter by clicking 'Start Editing'. 📖")
+        addAlexMessage("I've already read your manuscript! You can view my full report using the button above, or jump into any chapter by clicking 'Start Editing'. 📖")
         return
       }
 
