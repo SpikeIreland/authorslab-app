@@ -566,6 +566,12 @@ function StudioContent() {
       'Looking through my notes...',
       'Getting them organized...',
       'Adding a few other things...',
+      'Where\'s that bit gone...?',
+      'Oh, Yes, there it is...',
+      'Yep, Yep, Yep...',
+      'I loved that bit!...',
+      'Ha! Excellent!...',
+      'Nice...',
       'Almost ready...'
     ]
 
