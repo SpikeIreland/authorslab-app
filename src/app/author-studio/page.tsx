@@ -1510,7 +1510,7 @@ function StudioContent() {
             📖 Please Read My Manuscript
           </button>
           <p className="text-xs text-gray-600 text-center mt-2">
-            This takes about 3 minutes. You'll get a comprehensive report by email.
+            This takes about 3 minutes. You&apos;ll get a comprehensive report by email.
           </p>
         </div>
       )}
