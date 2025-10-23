@@ -278,16 +278,35 @@ function StudioContent() {
       setLoadingMessage('Loading manuscript from database...')
       const supabase = createClient()
 
-      // Load manuscript details
-      const { data: manuscriptData, error: manuscriptError } = await supabase
-        .from('manuscripts')
-        .select('id, title, genre, current_word_count, total_chapters, status, full_text, full_analysis_completed_at, analysis_started_at')
-        .eq('id', manuscriptId)
-        .single()
+      // Poll for manuscript to exist (in case onboarding is still processing)
+      let manuscriptData = null
+      let pollAttempts = 0
+      const maxPollAttempts = 10 // 30 seconds max
 
-      if (manuscriptError) {
-        console.error('Manuscript error:', manuscriptError)
-        throw new Error('Failed to load manuscript')
+      while (!manuscriptData && pollAttempts < maxPollAttempts) {
+        const { data, error } = await supabase
+          .from('manuscripts')
+          .select('id, title, genre, current_word_count, total_chapters, status, full_text, full_analysis_completed_at, analysis_started_at')
+          .eq('id', manuscriptId)
+          .single()
+
+        if (data) {
+          manuscriptData = data
+          console.log('✅ Manuscript loaded:', manuscriptData)
+        } else if (error && error.code !== 'PGRST116') {
+          // PGRST116 = no rows, which is expected while polling
+          console.error('Manuscript error:', error)
+          throw new Error('Failed to load manuscript')
+        } else {
+          // Manuscript not ready yet, wait and try again
+          pollAttempts++
+          console.log(`⏳ Waiting for manuscript... (${pollAttempts}/${maxPollAttempts})`)
+          await new Promise(resolve => setTimeout(resolve, 3000))
+        }
+      }
+
+      if (!manuscriptData) {
+        throw new Error('Manuscript not found after polling')
       }
 
       console.log('Loaded manuscript:', manuscriptData)
