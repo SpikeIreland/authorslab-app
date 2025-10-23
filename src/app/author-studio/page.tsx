@@ -32,6 +32,7 @@ interface Chapter {
   content?: string
   created_at: string
   status?: 'draft' | 'edited' | 'approved'
+  word_count?: number  // Add this line
 }
 
 interface ChatMessage {
