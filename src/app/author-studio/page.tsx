@@ -325,21 +325,32 @@ function StudioContent() {
         // Load first chapter into editor
         loadChapter(0, chaptersData)
 
-        // Alex's greeting
-        addAlexMessage(
-          `Welcome! I'm Alex, your developmental editor. I can see you've uploaded "${manuscriptData.title}" with ${chaptersData.length} chapters.\n\n` +
-          `Before we dive in, let me explain how we'll work together:\n\n` +
-          `**Step 1: Manuscript Review**\n` +
-          `First, I'll read your entire manuscript and create a comprehensive analysis report. You'll receive this by email and can review it anytime.\n\n` +
-          `**Step 2: Chapter-by-Chapter Editing**\n` +
-          `Once you're ready to edit, just click on any chapter and hit "Start Editing." I'll pull up my specific notes for that chapter and we'll work through them together.\n\n` +
-          `**Before We Start:**\n` +
-          `✏️ Check that all chapter titles are correct (click the ✏️ icon to edit)\n` +
-          `🧹 Make sure you've removed page numbers, headers, and copyright text\n` +
-          `📝 Edit any content that needs cleaning up in the main editor\n` +
-          `💾 Click "Save" when you make changes\n\n` +
-          `Once you're happy with everything, just type **"Yes"** and I'll read your manuscript!`
-        )
+        // Get author's first name from localStorage
+        const authorFirstName = localStorage.getItem('currentUserFirstName') || 'there'
+
+        // Alex's greeting - Different based on analysis status
+        if (manuscriptData.full_analysis_completed_at) {
+          // Returning user - analysis already done
+          addAlexMessage(
+            `Hi ${authorFirstName}! Welcome back. What do you want to work on today? Click on any chapter and let's get started.`
+          )
+        } else {
+          // New user - needs initial instructions
+          addAlexMessage(
+            `Welcome! I'm Alex, your developmental editor. I can see you've uploaded "${manuscriptData.title}" with ${chaptersData.length} chapters.\n\n` +
+            `Before we dive in, let me explain how we'll work together:\n\n` +
+            `**Step 1: Manuscript Review**\n` +
+            `First, I'll read your entire manuscript and create a comprehensive analysis report. You'll receive this by email and can review it anytime.\n\n` +
+            `**Step 2: Chapter-by-Chapter Editing**\n` +
+            `Once you're ready to edit, just click on any chapter and hit "Start Editing." I'll pull up my specific notes for that chapter and we'll work through them together.\n\n` +
+            `**Before We Start:**\n` +
+            `✏️ Check that all chapter titles are correct (click the ✏️ icon to edit)\n` +
+            `🧹 Make sure you've removed page numbers, headers, and copyright text\n` +
+            `📝 Edit any content that needs cleaning up in the main editor\n` +
+            `💾 Click "Save" when you make changes\n\n` +
+            `Once you're happy with everything, just type **"Yes"** and I'll read your manuscript!`
+          )
+        }
       } else {
         // Chapters still being parsed
         const pollingMessages = [
