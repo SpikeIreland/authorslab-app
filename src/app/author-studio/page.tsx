@@ -581,7 +581,7 @@ function StudioContent() {
     const statusInterval = setInterval(() => {
       messageIndex = (messageIndex + 1) % statusMessages.length
       setAnalyzingMessage(statusMessages[messageIndex])
-    }, 3000)
+    }, 4000)
 
     try {
       const response = await fetch(WEBHOOKS.chapterAnalysis, {
