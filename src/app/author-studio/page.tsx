@@ -209,17 +209,13 @@ function StudioContent() {
     }
   }
 
-  // Discuss issue with Alex
   const discussIssue = async (issue: ManuscriptIssue) => {
     const userMessage = `Can you help me with this issue: "${issue.issue_description}"`
 
-    // Add user message to chat
     setAlexMessages(prev => [...prev, { sender: 'You', message: userMessage }])
 
-    // Scroll to bottom after adding user message
     setTimeout(scrollToBottom, 100)
 
-    // Show Alex is thinking
     setAlexThinking(true)
     setThinkingMessage('Thinking...')
 
@@ -229,6 +225,7 @@ function StudioContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: userMessage,
+          authorFirstName: localStorage.getItem('currentUserFirstName') || 'the author', // ADD THIS
           context: {
             chapter: currentChapterIndex + 1,
             chapterTitle: chapters[currentChapterIndex]?.title,
@@ -236,7 +233,6 @@ function StudioContent() {
             manuscriptTitle: manuscript?.title,
             analysisComplete: analysisComplete,
             currentChapterStatus: chapterStatus,
-            // Add the specific issue context
             issueDescription: issue.issue_description,
             alexSuggestion: issue.alex_suggestion,
             issueType: issue.element_type,
@@ -710,7 +706,6 @@ function StudioContent() {
     setAlexMessages(prev => [...prev, { sender: 'You', message: userMessage }])
     setChatInput('')
 
-    // Scroll to bottom after adding user message
     setTimeout(scrollToBottom, 100)
 
     // Check for "Yes" to trigger FULL analysis
@@ -725,7 +720,6 @@ function StudioContent() {
         return
       }
 
-      // All clear - trigger analysis
       triggerFullAnalysis()
       return
     }
@@ -739,10 +733,11 @@ function StudioContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: userMessage,
+          authorFirstName: localStorage.getItem('currentUserFirstName') || 'the author', // ADD THIS
           context: {
             chapter: currentChapterIndex + 1,
             chapterTitle: chapters[currentChapterIndex]?.title,
-            chapterContent: editorContent, // ← ADD THIS LINE
+            chapterContent: editorContent,
             manuscriptTitle: manuscript?.title,
             analysisComplete: analysisComplete,
             currentChapterStatus: chapterStatus
