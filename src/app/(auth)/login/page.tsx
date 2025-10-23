@@ -11,7 +11,7 @@ import { getAuthorProfile, getManuscriptsByAuthor } from '@/lib/supabase/queries
 export default function LoginPage() {
   const router = useRouter()
   const supabase = createClient()
-  
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -57,19 +57,19 @@ export default function LoginPage() {
         // User has manuscripts - go to studio
         const latestManuscript = manuscripts[0]
         console.log('✅ Redirecting to studio with manuscript:', latestManuscript.id)
-        
+
         router.push(
-          `/author-studio?userId=${authData.user.id}&manuscriptId=${latestManuscript.id}`
+          `/author-studio?userId=${authData.user.id}&authorProfileId=${profile.id}&manuscriptId=${latestManuscript.id}`
         )
       } else if (profile.onboarding_complete) {
         // Onboarding complete but no manuscript - go to studio (will show upload)
         console.log('✅ Redirecting to studio (no manuscript)')
-        router.push(`/author-studio?userId=${authData.user.id}`)
+        router.push(`/author-studio?userId=${authData.user.id}&authorProfileId=${profile.id}`)
       } else {
         // Not onboarded - go to onboarding
         console.log('✅ Redirecting to onboarding')
         router.push(
-          `/onboarding?userId=${authData.user.id}&firstName=${encodeURIComponent(profile.first_name || '')}&lastName=${encodeURIComponent(profile.last_name || '')}&email=${encodeURIComponent(profile.email)}`
+          `/onboarding?userId=${authData.user.id}&authorProfileId=${profile.id}&firstName=${encodeURIComponent(profile.first_name || '')}&lastName=${encodeURIComponent(profile.last_name || '')}&email=${encodeURIComponent(profile.email)}`
         )
       }
 

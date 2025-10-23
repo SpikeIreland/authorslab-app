@@ -257,10 +257,10 @@ function StudioContent() {
     }
   }
 
-  // Initialize studio - Load from Supabase
   const initializeStudio = useCallback(async () => {
     const manuscriptId = searchParams.get('manuscriptId')
     const userId = searchParams.get('userId')
+    const authorProfileId = searchParams.get('authorProfileId')
 
     if (!manuscriptId) {
       console.error('No manuscript ID provided')
@@ -268,8 +268,8 @@ function StudioContent() {
       return
     }
 
-    if (!userId) {
-      console.error('No user ID provided')
+    if (!userId || !authorProfileId) {
+      console.error('No user ID or author profile ID provided')
       router.push('/login')
       return
     }
@@ -278,12 +278,13 @@ function StudioContent() {
       setLoadingMessage('Loading manuscript from database...')
       const supabase = createClient()
 
-      // Load manuscript details
+      // Load manuscript details - verify it belongs to this author
       const { data: manuscriptData, error: manuscriptError } = await supabase
         .from('manuscripts')
         .select('id, title, genre, current_word_count, total_chapters, status, full_text, full_analysis_completed_at, analysis_started_at')
         .eq('id', manuscriptId)
-        .maybeSingle()  // Changed from .single()
+        .eq('author_id', authorProfileId)  // ADD THIS LINE
+        .maybeSingle()
 
       if (manuscriptError) {
         console.error('Manuscript error:', manuscriptError)
