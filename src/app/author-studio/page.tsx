@@ -940,27 +940,25 @@ function StudioContent() {
                             )}
 
                             {/* Chapter title - clickable area */}
-                            <div className="flex-1 min-w-0">
-                              {editingChapterId === chapter.id ? (
-                                <input
-                                  type="text"
-                                  value={editingChapterTitle}
-                                  onChange={(e) => setEditingChapterTitle(e.target.value)}
-                                  onBlur={() => saveChapterTitle(chapter.id)}
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter') saveChapterTitle(chapter.id)
-                                    if (e.key === 'Escape') setEditingChapterId(null)
-                                  }}
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="w-full px-2 py-1 text-sm font-semibold border border-green-500 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
-                                  autoFocus
-                                />
-                              ) : (
-                                <span className="text-sm font-semibold text-gray-900 line-clamp-2 break-words">
-                                  {chapter.title}
-                                </span>
-                              )}
-                            </div>
+                            {editingChapterId === chapter.id ? (
+                              <input
+                                type="text"
+                                value={editingChapterTitle}
+                                onChange={(e) => setEditingChapterTitle(e.target.value)}
+                                onBlur={() => saveChapterTitle(index)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') saveChapterTitle(index)
+                                  if (e.key === 'Escape') setEditingChapterId(null)
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                                className="w-full px-2 py-1 text-sm font-semibold border border-green-500 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                                autoFocus
+                              />
+                            ) : (
+                              <span className="text-sm font-semibold text-gray-900 line-clamp-2 break-words">
+                                {chapter.title}
+                              </span>
+                            )}
 
                             {/* Edit button */}
                             {!editingChapterId && index === currentChapterIndex && (
