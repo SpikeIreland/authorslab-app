@@ -82,6 +82,8 @@ function StudioContent() {
   const [unsavedChapterContent, setUnsavedChapterContent] = useState<{
     [chapterId: string]: string
   }>({})
+  // Add this with your other state declarations
+  const [analyzingMessage, setAnalyzingMessage] = useState<string>('Analyzing...')
 
   // Alex state
   const [alexMessages, setAlexMessages] = useState<ChatMessage[]>([])
@@ -561,16 +563,18 @@ function StudioContent() {
 
     // Cycle through status messages
     const statusMessages = [
-      'Looking through my notes',
-      'Getting them organized',
-      'Adding a few other things',
-      'Almost ready'
+      'Looking through my notes...',
+      'Getting them organized...',
+      'Adding a few other things...',
+      'Almost ready...'
     ]
 
     let messageIndex = 0
+    setAnalyzingMessage(statusMessages[0])
+
     const statusInterval = setInterval(() => {
       messageIndex = (messageIndex + 1) % statusMessages.length
-      // You could update a status display here if you want
+      setAnalyzingMessage(statusMessages[messageIndex])
     }, 3000)
 
     try {
@@ -1135,7 +1139,7 @@ function StudioContent() {
               {currentEditingStatus === 'analyzing' && (
                 <div className="bg-yellow-50 border border-yellow-200 px-4 py-2 rounded-lg flex items-center gap-2">
                   <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
-                  <span className="text-yellow-700">Analyzing...</span>
+                  <span className="text-yellow-700">{analyzingMessage}</span>
                 </div>
               )}
 
