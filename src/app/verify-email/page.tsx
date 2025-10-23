@@ -18,7 +18,7 @@ function VerifyEmailContent() {
         </h1>
         
         <p className="text-gray-600 mb-6">
-          We've sent a verification link to:
+          We\'ve sent a verification link to:
         </p>
         
         <p className="text-lg font-semibold text-blue-600 mb-8">
@@ -38,13 +38,13 @@ function VerifyEmailContent() {
             </li>
             <li className="flex items-start gap-2">
               <span className="font-bold text-blue-600">3.</span>
-              <span>You'll be redirected back to log in</span>
+              <span>You\'ll be redirected back to log in</span>
             </li>
           </ol>
         </div>
 
         <div className="text-sm text-gray-600">
-          <p className="mb-4">Didn't receive the email?</p>
+          <p className="mb-4">Didn\'t receive the email?</p>
           <Link 
             href="/signup" 
             className="text-blue-600 hover:text-blue-700 font-semibold"
