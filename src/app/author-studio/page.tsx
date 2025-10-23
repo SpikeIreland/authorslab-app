@@ -1500,6 +1500,21 @@ function StudioContent() {
         </div>
       </div>
 
+      {/* === ADD THE BUTTON HERE === */}
+      {!analysisComplete && !fullAnalysisInProgress && (
+        <div className="px-6 py-4 bg-green-50 border-t border-green-200">
+          <button
+            onClick={triggerFullAnalysis}
+            className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-4 rounded-lg font-bold text-lg hover:from-green-600 hover:to-green-700 transition-all shadow-md hover:shadow-lg"
+          >
+            📖 Please Read My Manuscript
+          </button>
+          <p className="text-xs text-gray-600 text-center mt-2">
+            This takes about 3 minutes. You'll get a comprehensive report by email.
+          </p>
+        </div>
+      )}
+
       {/* Report Overlay Panel */}
       {showReportPanel && fullReportPdfUrl && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-8">
