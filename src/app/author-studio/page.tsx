@@ -1218,36 +1218,58 @@ function StudioContent() {
               </button>
             </div>
 
-            {/* Filter Tabs */}
-            <div className="border-b border-gray-200 bg-gray-50 p-3 flex gap-2 overflow-x-auto">
-              <button
-                onClick={() => setIssueFilter('all')}
-                className={`px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap ${issueFilter === 'all' ? 'bg-white border border-gray-300' : 'hover:bg-gray-100 text-gray-600'
-                  }`}
-              >
-                All ({chapterIssues.length})
-              </button>
-              <button
-                onClick={() => setIssueFilter('character')}
-                className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap ${issueFilter === 'character' ? 'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
-                  }`}
-              >
-                Character ({chapterIssues.filter(i => i.element_type === 'character').length})
-              </button>
-              <button
-                onClick={() => setIssueFilter('plot')}
-                className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap ${issueFilter === 'plot' ? 'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
-                  }`}
-              >
-                Plot ({chapterIssues.filter(i => i.element_type === 'plot').length})
-              </button>
-              <button
-                onClick={() => setIssueFilter('pacing')}
-                className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap ${issueFilter === 'pacing' ? 'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
-                  }`}
-              >
-                Pacing ({chapterIssues.filter(i => i.element_type === 'pacing').length})
-              </button>
+            {/* Filter Tabs - Horizontal Scrollable */}
+            <div className="border-b border-gray-200 bg-gray-50 p-3 filter-tabs-scroll">
+              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                <button
+                  onClick={() => setIssueFilter('all')}
+                  className={`px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap flex-shrink-0 ${issueFilter === 'all' ?
+                    'bg-white border border-gray-300' : 'hover:bg-gray-100 text-gray-600'
+                    }`}
+                >
+                  All ({chapterIssues.length})
+                </button>
+                <button
+                  onClick={() => setIssueFilter('character')}
+                  className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'character' ?
+                    'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
+                    }`}
+                >
+                  Character ({chapterIssues.filter(i => i.element_type === 'character').length})
+                </button>
+                <button
+                  onClick={() => setIssueFilter('plot')}
+                  className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'plot' ?
+                    'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
+                    }`}
+                >
+                  Plot ({chapterIssues.filter(i => i.element_type === 'plot').length})
+                </button>
+                <button
+                  onClick={() => setIssueFilter('pacing')}
+                  className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'pacing' ?
+                    'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
+                    }`}
+                >
+                  Pacing ({chapterIssues.filter(i => i.element_type === 'pacing').length})
+                </button>
+                <button
+                  onClick={() => setIssueFilter('structure')}
+                  className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'structure' ?
+                    'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
+                    }`}
+                >
+                  Structure ({chapterIssues.filter(i => i.element_type === 'structure').length})
+                </button>
+                <button
+                  onClick={() => setIssueFilter('theme')}
+                  className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'theme' ?
+                    'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
+                    }`}
+                >
+                  Theme ({chapterIssues.filter(i => i.element_type === 'theme').length})
+                </button>
+              </div>
             </div>
 
             {/* Issues List */}

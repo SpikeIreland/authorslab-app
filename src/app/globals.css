@@ -1,1 +1,17 @@
 @import "tailwindcss";
+
+/* Horizontal scroll with fade indicators */
+.filter-tabs-scroll {
+  position: relative;
+}
+
+.filter-tabs-scroll::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 40px;
+  background: linear-gradient(to right, transparent, rgb(249, 250, 251));
+  pointer-events: none;
+}
