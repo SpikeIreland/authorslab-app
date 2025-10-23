@@ -721,19 +721,15 @@ function StudioContent() {
 
     setTimeout(scrollToBottom, 100)
 
-    // Check for "read my manuscript" trigger
-    const analysisKeywords = ['read my manuscript', 'please read my manuscript', 'start reading']
-    const messageToCheck = userMessage.toLowerCase()
-    const shouldTriggerAnalysis = analysisKeywords.some(keyword => messageToCheck.includes(keyword))
-
-    if (shouldTriggerAnalysis) {
+    // Check for "Yes" to trigger FULL analysis
+    if (userMessage.toLowerCase().includes('yes')) {
       if (fullAnalysisInProgress) {
-        addAlexMessage("I'm already reading it! Give me about 3 minutes to get through everything. I'll let you know as soon as I'm done. ⏳")
+        addAlexMessage("I'm already reading your manuscript! This will take about 3 minutes. I'll let you know as soon as I'm done. ⏳")
         return
       }
 
       if (analysisComplete) {
-        addAlexMessage("I've already read your manuscript! You can view my full report using the button above, or jump into any chapter by clicking 'Start Editing'. 📖")
+        addAlexMessage("I've already completed my full analysis! You can view the report using the button above, or start editing any chapter by clicking 'Start Editing'. 📖")
         return
       }
 
@@ -742,779 +738,776 @@ function StudioContent() {
       return
     }
 
-    triggerFullAnalysis()
-    return
-  }
+    setAlexThinking(true)
+    setThinkingMessage('Thinking...')
 
-  setAlexThinking(true)
-  setThinkingMessage('Thinking...')
-
-  try {
-    const response = await fetch(WEBHOOKS.alexChat, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: userMessage,
-        authorFirstName: localStorage.getItem('currentUserFirstName') || 'the author', // ADD THIS
-        context: {
-          chapter: currentChapterIndex + 1,
-          chapterTitle: chapters[currentChapterIndex]?.title,
-          chapterContent: editorContent,
-          manuscriptTitle: manuscript?.title,
-          analysisComplete: analysisComplete,
-          currentChapterStatus: chapterStatus
-        }
+    try {
+      const response = await fetch(WEBHOOKS.alexChat, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: userMessage,
+          authorFirstName: localStorage.getItem('currentUserFirstName') || 'the author', // ADD THIS
+          context: {
+            chapter: currentChapterIndex + 1,
+            chapterTitle: chapters[currentChapterIndex]?.title,
+            chapterContent: editorContent,
+            manuscriptTitle: manuscript?.title,
+            analysisComplete: analysisComplete,
+            currentChapterStatus: chapterStatus
+          }
+        })
       })
-    })
 
-    if (!response.ok) throw new Error('Chat failed')
+      if (!response.ok) throw new Error('Chat failed')
 
-    const result = await response.json()
-    setAlexThinking(false)
-    addAlexMessage(result.response || result.message || result.alexResponse || result.text || 'Let me help you with that.')
+      const result = await response.json()
+      setAlexThinking(false)
+      addAlexMessage(result.response || result.message || result.alexResponse || result.text || 'Let me help you with that.')
 
-  } catch (error) {
-    console.error('Chat error:', error)
-    setAlexThinking(false)
-    addAlexMessage('I\'m having trouble connecting. Let me help based on what I see in your manuscript.')
-  }
-}
-
-// Approve chapter
-async function approveChapter() {
-  const supabase = createClient()
-
-  try {
-    const { error } = await supabase
-      .from('chapters')
-      .update({
-        status: 'approved',
-        content: editorContent
-      })
-      .eq('id', chapters[currentChapterIndex].id)
-
-    if (error) throw error
-
-    const updatedChapters = [...chapters]
-    updatedChapters[currentChapterIndex].status = 'approved'
-    setChapters(updatedChapters)
-    setChapterStatus('approved')
-    setHasUnsavedChanges(false)
-
-    addAlexMessage(`✅ Chapter ${currentChapterIndex + 1} approved! Great work.`)
-
-    if (currentChapterIndex < chapters.length - 1) {
-      setTimeout(() => loadChapter(currentChapterIndex + 1), 1000)
+    } catch (error) {
+      console.error('Chat error:', error)
+      setAlexThinking(false)
+      addAlexMessage('I\'m having trouble connecting. Let me help based on what I see in your manuscript.')
     }
-  } catch (error) {
-    console.error('Approve error:', error)
-    addAlexMessage('❌ Error approving chapter. Please try again.')
   }
-}
 
-// Get filtered issues
-const filteredIssues = issueFilter === 'all'
-  ? chapterIssues
-  : chapterIssues.filter(issue => issue.element_type === issueFilter)
+  // Approve chapter
+  async function approveChapter() {
+    const supabase = createClient()
 
-// Loading state
-if (isLoading) {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center">
-      <div className="bg-white rounded-2xl p-12 text-center max-w-md shadow-2xl">
-        <div className="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-        <h3 className="text-2xl font-bold text-gray-900 mb-3">
-          Setting Up Your Studio
-        </h3>
-        <p className="text-gray-600">{loadingMessage}</p>
-      </div>
-    </div>
-  )
-}
+    try {
+      const { error } = await supabase
+        .from('chapters')
+        .update({
+          status: 'approved',
+          content: editorContent
+        })
+        .eq('id', chapters[currentChapterIndex].id)
 
-// Error state
-if (!manuscript) {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl p-12 text-center max-w-md shadow-2xl">
-        <div className="text-6xl mb-4">❌</div>
-        <h3 className="text-2xl font-bold text-gray-900 mb-3">
-          Manuscript Not Found
-        </h3>
-        <p className="text-gray-600 mb-6">
-          Unable to load your manuscript. Please try uploading again.
-        </p>
-        <button
-          onClick={() => router.push('/onboarding')}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
-        >
-          Return to Onboarding
-        </button>
-      </div>
-    </div>
-  )
-}
+      if (error) throw error
 
-// Get current chapter editing status and issue count
-const currentChapter = chapters[currentChapterIndex]
-const currentEditingStatus = currentChapter ? chapterEditingStatus[currentChapter.chapter_number] : 'not_started'
-const currentIssueCount = currentChapter ? chapterIssueCount[currentChapter.chapter_number] || 0 : 0
-const isLocked = fullAnalysisInProgress || !analysisComplete
+      const updatedChapters = [...chapters]
+      updatedChapters[currentChapterIndex].status = 'approved'
+      setChapters(updatedChapters)
+      setChapterStatus('approved')
+      setHasUnsavedChanges(false)
 
-// Main studio interface
-return (
-  <div className="h-screen flex flex-col overflow-hidden bg-gray-50">
-    {/* Header */}
-    <header className="bg-white border-b-2 border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm z-50">
-      <div className="flex items-center gap-6">
-        <Link
-          href="/"
-          className="bg-gray-700 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-800 transition-all"
-        >
-          🏠 Home
-        </Link>
-        <div className="flex items-center gap-3 text-xl font-bold text-gray-900">
-          <span>✍️</span>
-          {authorFirstName ? `${authorFirstName}'s Writing Studio` : 'Your Writing Studio'}
-        </div>
-        <div className="flex items-center gap-3 bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-full font-semibold">
-          <div className="w-6 h-6 bg-white/30 rounded-full flex items-center justify-center text-sm">A</div>
-          Working with Alex
+      addAlexMessage(`✅ Chapter ${currentChapterIndex + 1} approved! Great work.`)
+
+      if (currentChapterIndex < chapters.length - 1) {
+        setTimeout(() => loadChapter(currentChapterIndex + 1), 1000)
+      }
+    } catch (error) {
+      console.error('Approve error:', error)
+      addAlexMessage('❌ Error approving chapter. Please try again.')
+    }
+  }
+
+  // Get filtered issues
+  const filteredIssues = issueFilter === 'all'
+    ? chapterIssues
+    : chapterIssues.filter(issue => issue.element_type === issueFilter)
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center">
+        <div className="bg-white rounded-2xl p-12 text-center max-w-md shadow-2xl">
+          <div className="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+          <h3 className="text-2xl font-bold text-gray-900 mb-3">
+            Setting Up Your Studio
+          </h3>
+          <p className="text-gray-600">{loadingMessage}</p>
         </div>
       </div>
+    )
+  }
 
-      <div className="flex items-center gap-4">
-        <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold ${alexThinking
-          ? 'bg-yellow-50 border border-yellow-500 text-yellow-900'
-          : 'bg-green-50 border border-green-500 text-green-900'
+  // Error state
+  if (!manuscript) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl p-12 text-center max-w-md shadow-2xl">
+          <div className="text-6xl mb-4">❌</div>
+          <h3 className="text-2xl font-bold text-gray-900 mb-3">
+            Manuscript Not Found
+          </h3>
+          <p className="text-gray-600 mb-6">
+            Unable to load your manuscript. Please try uploading again.
+          </p>
+          <button
+            onClick={() => router.push('/onboarding')}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
+          >
+            Return to Onboarding
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Get current chapter editing status and issue count
+  const currentChapter = chapters[currentChapterIndex]
+  const currentEditingStatus = currentChapter ? chapterEditingStatus[currentChapter.chapter_number] : 'not_started'
+  const currentIssueCount = currentChapter ? chapterIssueCount[currentChapter.chapter_number] || 0 : 0
+  const isLocked = fullAnalysisInProgress || !analysisComplete
+
+  // Main studio interface
+  return (
+    <div className="h-screen flex flex-col overflow-hidden bg-gray-50">
+      {/* Header */}
+      <header className="bg-white border-b-2 border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm z-50">
+        <div className="flex items-center gap-6">
+          <Link
+            href="/"
+            className="bg-gray-700 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-800 transition-all"
+          >
+            🏠 Home
+          </Link>
+          <div className="flex items-center gap-3 text-xl font-bold text-gray-900">
+            <span>✍️</span>
+            {authorFirstName ? `${authorFirstName}'s Writing Studio` : 'Your Writing Studio'}
+          </div>
+          <div className="flex items-center gap-3 bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-full font-semibold">
+            <div className="w-6 h-6 bg-white/30 rounded-full flex items-center justify-center text-sm">A</div>
+            Working with Alex
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold ${alexThinking
+            ? 'bg-yellow-50 border border-yellow-500 text-yellow-900'
+            : 'bg-green-50 border border-green-500 text-green-900'
+            }`}>
+            <div className={`w-2 h-2 rounded-full ${alexThinking ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'
+              }`}></div>
+            {alexThinking ? 'Thinking...' : 'Alex is Online'}
+          </div>
+          <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-semibold">
+            A
+          </div>
+        </div>
+      </header>
+
+      {/* Main Layout: Adjust columns based on panels open */}
+      <div className={`flex-1 grid ${isChapterSidebarCollapsed
+        ? (showIssuesPanel ? 'grid-cols-[60px_1fr_400px_400px]' : 'grid-cols-[60px_1fr_400px]')
+        : (showIssuesPanel ? 'grid-cols-[320px_1fr_400px_400px]' : 'grid-cols-[320px_1fr_400px]')
+        } overflow-hidden`}>
+
+        {/* LEFT: Chapter Navigation - Collapsible */}
+        <div className={`bg-gray-50 border-r-2 border-gray-200 overflow-y-auto transition-all duration-300 ${isChapterSidebarCollapsed ? 'p-2' : 'p-6'
           }`}>
-          <div className={`w-2 h-2 rounded-full ${alexThinking ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'
-            }`}></div>
-          {alexThinking ? 'Thinking...' : 'Alex is Online'}
-        </div>
-        <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-semibold">
-          A
-        </div>
-      </div>
-    </header>
+          {/* Toggle Button */}
+          <button
+            onClick={() => setIsChapterSidebarCollapsed(!isChapterSidebarCollapsed)}
+            className="w-full mb-4 p-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 transition-all flex items-center justify-center"
+            title={isChapterSidebarCollapsed ? "Expand chapters" : "Collapse chapters"}
+          >
+            {isChapterSidebarCollapsed ? (
+              <span className="text-lg">→</span>
+            ) : (
+              <span className="text-lg">←</span>
+            )}
+          </button>
 
-    {/* Main Layout: Adjust columns based on panels open */}
-    <div className={`flex-1 grid ${isChapterSidebarCollapsed
-      ? (showIssuesPanel ? 'grid-cols-[60px_1fr_400px_400px]' : 'grid-cols-[60px_1fr_400px]')
-      : (showIssuesPanel ? 'grid-cols-[320px_1fr_400px_400px]' : 'grid-cols-[320px_1fr_400px]')
-      } overflow-hidden`}>
+          {!isChapterSidebarCollapsed ? (
+            // Full sidebar view
+            <>
+              <h2 className="text-xl font-bold text-gray-900 mb-2">{manuscript.title}</h2>
+              <p className="text-gray-600 mb-6">
+                {manuscript.current_word_count?.toLocaleString() || 0} words • {chapters.length} chapters
+              </p>
 
-      {/* LEFT: Chapter Navigation - Collapsible */}
-      <div className={`bg-gray-50 border-r-2 border-gray-200 overflow-y-auto transition-all duration-300 ${isChapterSidebarCollapsed ? 'p-2' : 'p-6'
-        }`}>
-        {/* Toggle Button */}
-        <button
-          onClick={() => setIsChapterSidebarCollapsed(!isChapterSidebarCollapsed)}
-          className="w-full mb-4 p-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 transition-all flex items-center justify-center"
-          title={isChapterSidebarCollapsed ? "Expand chapters" : "Collapse chapters"}
-        >
-          {isChapterSidebarCollapsed ? (
-            <span className="text-lg">→</span>
-          ) : (
-            <span className="text-lg">←</span>
-          )}
-        </button>
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">Chapters</h3>
+                <div className="space-y-2">
+                  {chapters.map((chapter, index) => {
+                    const isUnsaved = unsavedChapters.has(chapter.id)
+                    const editStatus = chapterEditingStatus[chapter.chapter_number]
 
-        {!isChapterSidebarCollapsed ? (
-          // Full sidebar view
-          <>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">{manuscript.title}</h2>
-            <p className="text-gray-600 mb-6">
-              {manuscript.current_word_count?.toLocaleString() || 0} words • {chapters.length} chapters
-            </p>
+                    return (
+                      <div
+                        key={chapter.id}
+                        onClick={() => !isLocked && loadChapter(index)}
+                        className={`p-3 rounded-lg border transition-all min-h-[80px] ${isLocked
+                          ? 'bg-gray-50 border-gray-200 opacity-50 cursor-not-allowed'
+                          : index === currentChapterIndex
+                            ? 'bg-green-50 border-green-500 shadow-sm cursor-pointer'
+                            : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm cursor-pointer'
+                          }`}
+                      >
+                        <div className="flex flex-col gap-2">
+                          {/* Top row: Status + Number + Title + Edit */}
+                          <div className="flex items-start gap-2">
+                            {/* Analysis status indicator */}
+                            <div className="w-5 h-5 flex items-center justify-center flex-shrink-0 mt-0.5">
+                              {editStatus === 'analyzing' && (
+                                <div className="w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+                              )}
+                              {editStatus === 'ready' && (
+                                <span className="text-green-600 text-lg">✓</span>
+                              )}
+                              {editStatus === 'not_started' && (
+                                <span className="text-gray-300 text-lg">○</span>
+                              )}
+                            </div>
 
-            <div className="mb-6">
-              <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">Chapters</h3>
-              <div className="space-y-2">
-                {chapters.map((chapter, index) => {
-                  const isUnsaved = unsavedChapters.has(chapter.id)
-                  const editStatus = chapterEditingStatus[chapter.chapter_number]
-
-                  return (
-                    <div
-                      key={chapter.id}
-                      onClick={() => !isLocked && loadChapter(index)}
-                      className={`p-3 rounded-lg border transition-all min-h-[80px] ${isLocked
-                        ? 'bg-gray-50 border-gray-200 opacity-50 cursor-not-allowed'
-                        : index === currentChapterIndex
-                          ? 'bg-green-50 border-green-500 shadow-sm cursor-pointer'
-                          : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm cursor-pointer'
-                        }`}
-                    >
-                      <div className="flex flex-col gap-2">
-                        {/* Top row: Status + Number + Title + Edit */}
-                        <div className="flex items-start gap-2">
-                          {/* Analysis status indicator */}
-                          <div className="w-5 h-5 flex items-center justify-center flex-shrink-0 mt-0.5">
-                            {editStatus === 'analyzing' && (
-                              <div className="w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
-                            )}
-                            {editStatus === 'ready' && (
-                              <span className="text-green-600 text-lg">✓</span>
-                            )}
-                            {editStatus === 'not_started' && (
-                              <span className="text-gray-300 text-lg">○</span>
-                            )}
-                          </div>
-
-                          {/* Chapter number */}
-                          <span className="text-xs font-semibold text-gray-500 flex-shrink-0 mt-1">
-                            {chapter.chapter_number === 0 ? 'Pro' :
-                              chapter.chapter_number === 999 ? 'Epi' :
-                                `Ch ${chapter.chapter_number}`}
-                          </span>
-
-                          {/* Unsaved indicator */}
-                          {isUnsaved && (
-                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse flex-shrink-0 mt-2" title="Unsaved changes"></div>
-                          )}
-
-                          {/* Chapter title - clickable area */}
-                          {editingChapterId === chapter.id ? (
-                            <input
-                              type="text"
-                              value={editingChapterTitle}
-                              onChange={(e) => setEditingChapterTitle(e.target.value)}
-                              onBlur={() => saveChapterTitle(index)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') saveChapterTitle(index)
-                                if (e.key === 'Escape') setEditingChapterId(null)
-                              }}
-                              onClick={(e) => e.stopPropagation()}
-                              className="w-full px-2 py-1 text-sm font-semibold border border-green-500 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
-                              autoFocus
-                            />
-                          ) : (
-                            <span className="text-sm font-semibold text-gray-900 line-clamp-2 break-words">
-                              {chapter.title}
+                            {/* Chapter number */}
+                            <span className="text-xs font-semibold text-gray-500 flex-shrink-0 mt-1">
+                              {chapter.chapter_number === 0 ? 'Pro' :
+                                chapter.chapter_number === 999 ? 'Epi' :
+                                  `Ch ${chapter.chapter_number}`}
                             </span>
-                          )}
 
-                          {/* Edit button */}
-                          {!editingChapterId && index === currentChapterIndex && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                setEditingChapterId(chapter.id)
-                                setEditingChapterTitle(chapter.title)
-                              }}
-                              className="text-gray-400 hover:text-gray-600 text-xs flex-shrink-0"
-                            >
-                              ✏️
-                            </button>
-                          )}
-                        </div>
+                            {/* Unsaved indicator */}
+                            {isUnsaved && (
+                              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse flex-shrink-0 mt-2" title="Unsaved changes"></div>
+                            )}
 
-                        {/* Bottom row: Editing stage indicators */}
-                        <div className="flex items-center gap-1 pl-8">
-                          {/* Developmental Editing */}
-                          <div className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold ${editStatus === 'ready'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-gray-100 text-gray-400'
-                            }`} title="Developmental Editing">
-                            D
+                            {/* Chapter title - clickable area */}
+                            {editingChapterId === chapter.id ? (
+                              <input
+                                type="text"
+                                value={editingChapterTitle}
+                                onChange={(e) => setEditingChapterTitle(e.target.value)}
+                                onBlur={() => saveChapterTitle(index)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') saveChapterTitle(index)
+                                  if (e.key === 'Escape') setEditingChapterId(null)
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                                className="w-full px-2 py-1 text-sm font-semibold border border-green-500 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                                autoFocus
+                              />
+                            ) : (
+                              <span className="text-sm font-semibold text-gray-900 line-clamp-2 break-words">
+                                {chapter.title}
+                              </span>
+                            )}
+
+                            {/* Edit button */}
+                            {!editingChapterId && index === currentChapterIndex && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setEditingChapterId(chapter.id)
+                                  setEditingChapterTitle(chapter.title)
+                                }}
+                                className="text-gray-400 hover:text-gray-600 text-xs flex-shrink-0"
+                              >
+                                ✏️
+                              </button>
+                            )}
                           </div>
 
-                          {/* Copy Editing */}
-                          <div className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold bg-gray-100 text-gray-300" title="Copy Editing (Coming Soon)">
-                            C
-                          </div>
+                          {/* Bottom row: Editing stage indicators */}
+                          <div className="flex items-center gap-1 pl-8">
+                            {/* Developmental Editing */}
+                            <div className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold ${editStatus === 'ready'
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-gray-100 text-gray-400'
+                              }`} title="Developmental Editing">
+                              D
+                            </div>
 
-                          {/* Line Editing */}
-                          <div className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold bg-gray-100 text-gray-300" title="Line Editing (Coming Soon)">
-                            L
+                            {/* Copy Editing */}
+                            <div className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold bg-gray-100 text-gray-300" title="Copy Editing (Coming Soon)">
+                              C
+                            </div>
+
+                            {/* Line Editing */}
+                            <div className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold bg-gray-100 text-gray-300" title="Line Editing (Coming Soon)">
+                              L
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  )
-                })}
+                    )
+                  })}
+                </div>
               </div>
-            </div>
-          </>
-        ) : (
-          // Collapsed sidebar view - just chapter numbers
-          <div className="space-y-2">
-            {chapters.map((chapter, index) => {
-              const isUnsaved = unsavedChapters.has(chapter.id)
-              const editStatus = chapterEditingStatus[chapter.chapter_number]
+            </>
+          ) : (
+            // Collapsed sidebar view - just chapter numbers
+            <div className="space-y-2">
+              {chapters.map((chapter, index) => {
+                const isUnsaved = unsavedChapters.has(chapter.id)
+                const editStatus = chapterEditingStatus[chapter.chapter_number]
 
-              return (
-                <button
-                  key={chapter.id}
-                  onClick={() => !isLocked && loadChapter(index)}
-                  disabled={isLocked}
-                  className={`w-full p-2 rounded-lg border transition-all relative ${isLocked
-                    ? 'bg-gray-50 border-gray-200 opacity-50 cursor-not-allowed'
-                    : index === currentChapterIndex
-                      ? 'bg-green-50 border-green-500 shadow-sm'
-                      : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm'
-                    }`}
-                  title={chapter.title}
-                >
-                  {/* Unsaved indicator */}
-                  {isUnsaved && (
-                    <div className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                  )}
+                return (
+                  <button
+                    key={chapter.id}
+                    onClick={() => !isLocked && loadChapter(index)}
+                    disabled={isLocked}
+                    className={`w-full p-2 rounded-lg border transition-all relative ${isLocked
+                      ? 'bg-gray-50 border-gray-200 opacity-50 cursor-not-allowed'
+                      : index === currentChapterIndex
+                        ? 'bg-green-50 border-green-500 shadow-sm'
+                        : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm'
+                      }`}
+                    title={chapter.title}
+                  >
+                    {/* Unsaved indicator */}
+                    {isUnsaved && (
+                      <div className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                    )}
 
-                  {/* Status indicator */}
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="w-4 h-4 flex items-center justify-center">
-                      {editStatus === 'analyzing' && (
-                        <div className="w-3 h-3 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
-                      )}
-                      {editStatus === 'ready' && (
-                        <span className="text-green-600 text-sm">✓</span>
-                      )}
-                      {editStatus === 'not_started' && (
-                        <span className="text-gray-300 text-sm">○</span>
-                      )}
-                    </div>
-                    <span className="text-xs font-bold text-gray-700">
-                      {chapter.chapter_number === 0 ? 'P' :
-                        chapter.chapter_number === 999 ? 'E' :
-                          chapter.chapter_number}
-                    </span>
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* CENTER: Editor */}
-      <div className="bg-white flex flex-col overflow-hidden border-r-2 border-gray-200">
-        {/* Chapter header with buttons */}
-        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-          <h3 className="text-lg font-bold text-green-700">
-            {chapters[currentChapterIndex]?.title || 'Loading...'}
-          </h3>
-          <div className="flex gap-3">
-            {/* Start Editing Button */}
-            {currentEditingStatus === 'not_started' && (
-              <button
-                onClick={() => analyzeChapter(currentChapter.chapter_number)}
-                disabled={fullAnalysisInProgress || !analysisComplete}
-                className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${fullAnalysisInProgress || !analysisComplete
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
-                  : 'bg-green-600 text-white hover:bg-green-700'
-                  }`}
-                title={
-                  fullAnalysisInProgress
-                    ? 'Please wait for Alex to finish reading the manuscript (approx. 3 minutes)'
-                    : !analysisComplete
-                      ? 'Please complete full analysis first by typing "Yes" to Alex'
-                      : 'Start editing this chapter'
-                }
-              >
-                <span>🚀</span>
-                {fullAnalysisInProgress ? 'Waiting for Full Analysis...' : 'Start Editing'}
-              </button>
-            )}
-
-            {/* Analyzing Status */}
-            {currentEditingStatus === 'analyzing' && (
-              <div className="bg-yellow-50 border border-yellow-200 px-4 py-2 rounded-lg flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
-                <span className="text-yellow-700">Analyzing...</span>
-              </div>
-            )}
-
-            {/* Notes Button */}
-            {currentEditingStatus === 'ready' && (
-              <button
-                onClick={() => setShowIssuesPanel(!showIssuesPanel)}
-                className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${showIssuesPanel
-                  ? 'bg-orange-600 text-white'
-                  : 'bg-orange-50 text-orange-700 border border-orange-300 hover:bg-orange-100'
-                  }`}
-              >
-                <span>📝</span>
-                Notes ({chapterIssues.length})
-              </button>
-            )}
-
-            {/* Save Button - Always visible */}
-            <button
-              onClick={saveChanges}
-              disabled={!hasUnsavedChanges}
-              className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${hasUnsavedChanges
-                ? 'bg-blue-600 text-white hover:bg-blue-700'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
-            >
-              <span>💾</span> Save
-            </button>
-
-            {/* Approve Button */}
-            {currentEditingStatus === 'ready' && (
-              <button
-                onClick={approveChapter}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all flex items-center gap-2"
-              >
-                <span>✓</span> Approve
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Toolbar */}
-        <div className="px-6 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 font-bold">B</button>
-            <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 italic">I</button>
-            <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 underline">U</button>
-          </div>
-          <div className="text-sm text-gray-600">
-            <span className="font-semibold">Words: {wordCount.toLocaleString()}</span>
-            <span className="mx-2">|</span>
-            <span className="capitalize">{chapterStatus}</span>
-            {hasUnsavedChanges && <span className="mx-2 text-blue-600">• Unsaved</span>}
-          </div>
-        </div>
-
-        {/* Editor */}
-        <div
-          ref={editorRef}
-          contentEditable
-          className="flex-1 p-8 overflow-y-auto focus:outline-none"
-          style={{ fontFamily: 'Georgia, serif', fontSize: '1.1rem', lineHeight: '1.8' }}
-          dangerouslySetInnerHTML={{ __html: editorContent }}
-          onInput={(e) => {
-            const newContent = e.currentTarget.innerHTML
-            setEditorContent(newContent)
-            setHasUnsavedChanges(true)
-
-            // Cache the unsaved content
-            setUnsavedChapterContent(prev => ({
-              ...prev,
-              [chapters[currentChapterIndex].id]: newContent
-            }))
-
-            // Add to unsaved chapters set
-            setUnsavedChapters(prev => new Set(prev).add(chapters[currentChapterIndex].id))
-          }}
-        ></div>
-
-        {/* Chat input */}
-        <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
-          <div className="flex gap-3">
-            <input
-              type="text"
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
-              placeholder="Ask Alex anything..."
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500"
-            />
-            <button
-              onClick={sendChatMessage}
-              className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-all"
-            >
-              Send
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Issues Panel - Slides in when open */}
-      {showIssuesPanel && currentEditingStatus === 'ready' && (
-        <div className="bg-white border-r-2 border-gray-200 flex flex-col overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-bold">Chapter Notes</h3>
-              <p className="text-sm opacity-90">{filteredIssues.length} items to review</p>
-            </div>
-            <button
-              onClick={() => setShowIssuesPanel(false)}
-              className="text-white hover:bg-white/20 rounded-lg p-2 transition-all"
-            >
-              ✕
-            </button>
-          </div>
-
-          {/* Filter Tabs - Horizontal Scrollable */}
-          <div className="border-b border-gray-200 bg-gray-50 p-3 filter-tabs-scroll">
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-              <button
-                onClick={() => setIssueFilter('all')}
-                className={`px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap flex-shrink-0 ${issueFilter === 'all' ?
-                  'bg-white border border-gray-300' : 'hover:bg-gray-100 text-gray-600'
-                  }`}
-              >
-                All ({chapterIssues.length})
-              </button>
-              <button
-                onClick={() => setIssueFilter('character')}
-                className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'character' ?
-                  'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
-                  }`}
-              >
-                Character ({chapterIssues.filter(i => i.element_type === 'character').length})
-              </button>
-              <button
-                onClick={() => setIssueFilter('plot')}
-                className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'plot' ?
-                  'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
-                  }`}
-              >
-                Plot ({chapterIssues.filter(i => i.element_type === 'plot').length})
-              </button>
-              <button
-                onClick={() => setIssueFilter('pacing')}
-                className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'pacing' ?
-                  'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
-                  }`}
-              >
-                Pacing ({chapterIssues.filter(i => i.element_type === 'pacing').length})
-              </button>
-              <button
-                onClick={() => setIssueFilter('structure')}
-                className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'structure' ?
-                  'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
-                  }`}
-              >
-                Structure ({chapterIssues.filter(i => i.element_type === 'structure').length})
-              </button>
-              <button
-                onClick={() => setIssueFilter('theme')}
-                className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'theme' ?
-                  'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
-                  }`}
-              >
-                Theme ({chapterIssues.filter(i => i.element_type === 'theme').length})
-              </button>
-            </div>
-          </div>
-
-          {/* Issues List */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {filteredIssues.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
-                <div className="text-4xl mb-3">✨</div>
-                <p className="font-medium">No issues found</p>
-                <p className="text-sm">
-                  {issueFilter === 'all' ? 'This chapter looks great!' : `No ${issueFilter} issues`}
-                </p>
-              </div>
-            ) : (
-              filteredIssues.map((issue) => (
-                <div
-                  key={issue.id}
-                  onClick={() => setSelectedIssue(selectedIssue?.id === issue.id ? null : issue)}
-                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${selectedIssue?.id === issue.id
-                    ? 'border-orange-500 bg-orange-50'
-                    : 'border-gray-200 bg-white hover:border-orange-300 hover:shadow-sm'
-                    }`}
-                >
-                  {/* Issue Header */}
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className={`w-2 h-2 rounded-full ${issue.severity === 'major' ? 'bg-red-500' :
-                        issue.severity === 'moderate' ? 'bg-yellow-500' :
-                          'bg-blue-500'
-                        }`}></span>
-                      <span className="text-xs font-semibold text-gray-500 uppercase">
-                        {issue.element_type}
+                    {/* Status indicator */}
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="w-4 h-4 flex items-center justify-center">
+                        {editStatus === 'analyzing' && (
+                          <div className="w-3 h-3 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+                        )}
+                        {editStatus === 'ready' && (
+                          <span className="text-green-600 text-sm">✓</span>
+                        )}
+                        {editStatus === 'not_started' && (
+                          <span className="text-gray-300 text-sm">○</span>
+                        )}
+                      </div>
+                      <span className="text-xs font-bold text-gray-700">
+                        {chapter.chapter_number === 0 ? 'P' :
+                          chapter.chapter_number === 999 ? 'E' :
+                            chapter.chapter_number}
                       </span>
                     </div>
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${issue.status === 'resolved' ? 'bg-green-100 text-green-700' :
-                      issue.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
-                        issue.status === 'dismissed' ? 'bg-gray-100 text-gray-600' :
-                          'bg-orange-100 text-orange-700'
-                      }`}>
-                      {issue.status === 'flagged' ? 'New' : issue.status.replace('_', ' ')}
-                    </span>
-                  </div>
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </div>
 
-                  {/* Issue Description */}
-                  <p className="text-sm text-gray-900 font-medium mb-2 line-clamp-2">
-                    {issue.issue_description}
+        {/* CENTER: Editor */}
+        <div className="bg-white flex flex-col overflow-hidden border-r-2 border-gray-200">
+          {/* Chapter header with buttons */}
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+            <h3 className="text-lg font-bold text-green-700">
+              {chapters[currentChapterIndex]?.title || 'Loading...'}
+            </h3>
+            <div className="flex gap-3">
+              {/* Start Editing Button */}
+              {currentEditingStatus === 'not_started' && (
+                <button
+                  onClick={() => analyzeChapter(currentChapter.chapter_number)}
+                  disabled={fullAnalysisInProgress || !analysisComplete}
+                  className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${fullAnalysisInProgress || !analysisComplete
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
+                    : 'bg-green-600 text-white hover:bg-green-700'
+                    }`}
+                  title={
+                    fullAnalysisInProgress
+                      ? 'Please wait for Alex to finish reading the manuscript (approx. 3 minutes)'
+                      : !analysisComplete
+                        ? 'Please complete full analysis first by typing "Yes" to Alex'
+                        : 'Start editing this chapter'
+                  }
+                >
+                  <span>🚀</span>
+                  {fullAnalysisInProgress ? 'Waiting for Full Analysis...' : 'Start Editing'}
+                </button>
+              )}
+
+              {/* Analyzing Status */}
+              {currentEditingStatus === 'analyzing' && (
+                <div className="bg-yellow-50 border border-yellow-200 px-4 py-2 rounded-lg flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-yellow-700">Analyzing...</span>
+                </div>
+              )}
+
+              {/* Notes Button */}
+              {currentEditingStatus === 'ready' && (
+                <button
+                  onClick={() => setShowIssuesPanel(!showIssuesPanel)}
+                  className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${showIssuesPanel
+                    ? 'bg-orange-600 text-white'
+                    : 'bg-orange-50 text-orange-700 border border-orange-300 hover:bg-orange-100'
+                    }`}
+                >
+                  <span>📝</span>
+                  Notes ({chapterIssues.length})
+                </button>
+              )}
+
+              {/* Save Button - Always visible */}
+              <button
+                onClick={saveChanges}
+                disabled={!hasUnsavedChanges}
+                className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${hasUnsavedChanges
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+              >
+                <span>💾</span> Save
+              </button>
+
+              {/* Approve Button */}
+              {currentEditingStatus === 'ready' && (
+                <button
+                  onClick={approveChapter}
+                  className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all flex items-center gap-2"
+                >
+                  <span>✓</span> Approve
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Toolbar */}
+          <div className="px-6 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 font-bold">B</button>
+              <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 italic">I</button>
+              <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 underline">U</button>
+            </div>
+            <div className="text-sm text-gray-600">
+              <span className="font-semibold">Words: {wordCount.toLocaleString()}</span>
+              <span className="mx-2">|</span>
+              <span className="capitalize">{chapterStatus}</span>
+              {hasUnsavedChanges && <span className="mx-2 text-blue-600">• Unsaved</span>}
+            </div>
+          </div>
+
+          {/* Editor */}
+          <div
+            ref={editorRef}
+            contentEditable
+            className="flex-1 p-8 overflow-y-auto focus:outline-none"
+            style={{ fontFamily: 'Georgia, serif', fontSize: '1.1rem', lineHeight: '1.8' }}
+            dangerouslySetInnerHTML={{ __html: editorContent }}
+            onInput={(e) => {
+              const newContent = e.currentTarget.innerHTML
+              setEditorContent(newContent)
+              setHasUnsavedChanges(true)
+
+              // Cache the unsaved content
+              setUnsavedChapterContent(prev => ({
+                ...prev,
+                [chapters[currentChapterIndex].id]: newContent
+              }))
+
+              // Add to unsaved chapters set
+              setUnsavedChapters(prev => new Set(prev).add(chapters[currentChapterIndex].id))
+            }}
+          ></div>
+
+
+          {/* Chat input */}
+          <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+            <div className="flex gap-3">
+              <input
+                type="text"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
+                placeholder="Ask Alex anything..."
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500"
+              />
+              <button
+                onClick={sendChatMessage}
+                className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-all"
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Issues Panel - Slides in when open */}
+        {showIssuesPanel && currentEditingStatus === 'ready' && (
+          <div className="bg-white border-r-2 border-gray-200 flex flex-col overflow-hidden">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold">Chapter Notes</h3>
+                <p className="text-sm opacity-90">{filteredIssues.length} items to review</p>
+              </div>
+              <button
+                onClick={() => setShowIssuesPanel(false)}
+                className="text-white hover:bg-white/20 rounded-lg p-2 transition-all"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Filter Tabs - Horizontal Scrollable */}
+            <div className="border-b border-gray-200 bg-gray-50 p-3 filter-tabs-scroll">
+              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                <button
+                  onClick={() => setIssueFilter('all')}
+                  className={`px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap flex-shrink-0 ${issueFilter === 'all' ?
+                    'bg-white border border-gray-300' : 'hover:bg-gray-100 text-gray-600'
+                    }`}
+                >
+                  All ({chapterIssues.length})
+                </button>
+                <button
+                  onClick={() => setIssueFilter('character')}
+                  className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'character' ?
+                    'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
+                    }`}
+                >
+                  Character ({chapterIssues.filter(i => i.element_type === 'character').length})
+                </button>
+                <button
+                  onClick={() => setIssueFilter('plot')}
+                  className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'plot' ?
+                    'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
+                    }`}
+                >
+                  Plot ({chapterIssues.filter(i => i.element_type === 'plot').length})
+                </button>
+                <button
+                  onClick={() => setIssueFilter('pacing')}
+                  className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'pacing' ?
+                    'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
+                    }`}
+                >
+                  Pacing ({chapterIssues.filter(i => i.element_type === 'pacing').length})
+                </button>
+                <button
+                  onClick={() => setIssueFilter('structure')}
+                  className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'structure' ?
+                    'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
+                    }`}
+                >
+                  Structure ({chapterIssues.filter(i => i.element_type === 'structure').length})
+                </button>
+                <button
+                  onClick={() => setIssueFilter('theme')}
+                  className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'theme' ?
+                    'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
+                    }`}
+                >
+                  Theme ({chapterIssues.filter(i => i.element_type === 'theme').length})
+                </button>
+              </div>
+            </div>
+
+            {/* Issues List */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {filteredIssues.length === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                  <div className="text-4xl mb-3">✨</div>
+                  <p className="font-medium">No issues found</p>
+                  <p className="text-sm">
+                    {issueFilter === 'all' ? 'This chapter looks great!' : `No ${issueFilter} issues`}
                   </p>
+                </div>
+              ) : (
+                filteredIssues.map((issue) => (
+                  <div
+                    key={issue.id}
+                    onClick={() => setSelectedIssue(selectedIssue?.id === issue.id ? null : issue)}
+                    className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${selectedIssue?.id === issue.id
+                      ? 'border-orange-500 bg-orange-50'
+                      : 'border-gray-200 bg-white hover:border-orange-300 hover:shadow-sm'
+                      }`}
+                  >
+                    {/* Issue Header */}
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-2 h-2 rounded-full ${issue.severity === 'major' ? 'bg-red-500' :
+                          issue.severity === 'moderate' ? 'bg-yellow-500' :
+                            'bg-blue-500'
+                          }`}></span>
+                        <span className="text-xs font-semibold text-gray-500 uppercase">
+                          {issue.element_type}
+                        </span>
+                      </div>
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${issue.status === 'resolved' ? 'bg-green-100 text-green-700' :
+                        issue.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+                          issue.status === 'dismissed' ? 'bg-gray-100 text-gray-600' :
+                            'bg-orange-100 text-orange-700'
+                        }`}>
+                        {issue.status === 'flagged' ? 'New' : issue.status.replace('_', ' ')}
+                      </span>
+                    </div>
 
-                  {/* Preview of suggestion */}
-                  {selectedIssue?.id !== issue.id && (
-                    <p className="text-xs text-gray-600 line-clamp-1">
-                      {issue.alex_suggestion}
+                    {/* Issue Description */}
+                    <p className="text-sm text-gray-900 font-medium mb-2 line-clamp-2">
+                      {issue.issue_description}
                     </p>
-                  )}
 
-                  {/* Expanded view when selected */}
-                  {selectedIssue?.id === issue.id && (
-                    <div className="mt-3 pt-3 border-t border-orange-200">
-                      <p className="text-sm text-gray-700 mb-3">
-                        <span className="font-semibold text-orange-700">Alex&apos;s Suggestion:</span>
-                        <br />
+                    {/* Preview of suggestion */}
+                    {selectedIssue?.id !== issue.id && (
+                      <p className="text-xs text-gray-600 line-clamp-1">
                         {issue.alex_suggestion}
                       </p>
+                    )}
 
-                      {/* Action Buttons */}
-                      <div className="flex gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            updateIssueStatus(issue.id, 'resolved')
-                          }}
-                          className="flex-1 bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-green-700 transition-all"
-                        >
-                          ✓ Resolved
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            discussIssue(issue)
-                          }}
-                          className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-all"
-                        >
-                          💬 Discuss
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            updateIssueStatus(issue.id, 'dismissed')
-                          }}
-                          className="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300 transition-all"
-                        >
-                          Dismiss
-                        </button>
+                    {/* Expanded view when selected */}
+                    {selectedIssue?.id === issue.id && (
+                      <div className="mt-3 pt-3 border-t border-orange-200">
+                        <p className="text-sm text-gray-700 mb-3">
+                          <span className="font-semibold text-orange-700">Alex&apos;s Suggestion:</span>
+                          <br />
+                          {issue.alex_suggestion}
+                        </p>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              updateIssueStatus(issue.id, 'resolved')
+                            }}
+                            className="flex-1 bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-green-700 transition-all"
+                          >
+                            ✓ Resolved
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              discussIssue(issue)
+                            }}
+                            className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-all"
+                          >
+                            💬 Discuss
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              updateIssueStatus(issue.id, 'dismissed')
+                            }}
+                            className="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300 transition-all"
+                          >
+                            Dismiss
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              ))
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Footer Stats */}
+            <div className="border-t border-gray-200 bg-gray-50 p-4">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">
+                  {chapterIssues.filter(i => i.status === 'resolved').length} resolved
+                </span>
+                <span className="text-gray-600">
+                  {chapterIssues.filter(i => i.status === 'flagged').length} remaining
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* RIGHT: Alex Panel */}
+        <div className="bg-white flex flex-col overflow-hidden">
+          {/* Alex header with Report button */}
+          <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-5 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl font-bold">
+                A
+              </div>
+              <div>
+                <h3 className="text-xl font-bold">Alex</h3>
+                <p className="text-sm opacity-90">Developmental Specialist</p>
+              </div>
+            </div>
+
+            {/* Report Access Button */}
+            {fullReportPdfUrl && (
+              <button
+                onClick={() => setShowReportPanel(true)}
+                className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 text-sm backdrop-blur-sm"
+              >
+                <span>📄</span> View Report
+              </button>
             )}
           </div>
 
-          {/* Footer Stats */}
-          <div className="border-t border-gray-200 bg-gray-50 p-4">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">
-                {chapterIssues.filter(i => i.status === 'resolved').length} resolved
-              </span>
-              <span className="text-gray-600">
-                {chapterIssues.filter(i => i.status === 'flagged').length} remaining
-              </span>
+          {/* Messages */}
+          <div
+            ref={alexMessagesRef}
+            className="flex-1 overflow-y-auto p-5 bg-gray-50 space-y-4"
+          >
+            {alexMessages.map((msg, i) => (
+              <div
+                key={i}
+                className={`p-4 rounded-xl ${msg.sender === 'Alex'
+                  ? 'bg-white border border-gray-200'
+                  : 'bg-green-50 border border-green-200 ml-8'
+                  }`}
+              >
+                <div className="font-semibold text-sm mb-1 text-gray-700">{msg.sender}</div>
+                <div className="text-gray-900 whitespace-pre-wrap">{msg.message}</div>
+              </div>
+            ))}
+
+            {alexThinking && (
+              <div className="bg-gray-100 border border-gray-300 p-4 rounded-xl animate-pulse">
+                <div className="flex items-center gap-2 text-gray-700">
+                  <span>{thinkingMessage}</span>
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Invisible div for scrolling to */}
+            <div ref={messagesEndRef} />
+          </div>
+        </div>
+      </div>
+
+      {/* Report Overlay Panel */}
+      {showReportPanel && fullReportPdfUrl && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-8">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full h-[90vh] flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-green-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-bold">
+                  A
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">Alex Comprehensive Analysis</h3>
+                  <p className="text-sm text-gray-600">Full Manuscript Report</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+
+                <a href={fullReportPdfUrl}
+                  download
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-all flex items-center gap-2"
+                >
+                  <span>⬇️</span> Download PDF
+                </a>
+                <button
+                  onClick={() => setShowReportPanel(false)}
+                  className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-300 transition-all"
+                >
+                  ✕ Close
+                </button>
+              </div>
+            </div>
+
+            {/* PDF Viewer */}
+            <div className="flex-1 overflow-hidden">
+              <iframe
+                src={fullReportPdfUrl}
+                className="w-full h-full"
+                title="Alex's Comprehensive Analysis Report"
+              />
             </div>
           </div>
         </div>
       )}
-
-      {/* RIGHT: Alex Panel */}
-      <div className="bg-white flex flex-col overflow-hidden">
-        {/* Alex header with Report button */}
-        <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-5 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl font-bold">
-              A
-            </div>
-            <div>
-              <h3 className="text-xl font-bold">Alex</h3>
-              <p className="text-sm opacity-90">Developmental Specialist</p>
-            </div>
-          </div>
-
-          {/* Report Access Button */}
-          {fullReportPdfUrl && (
-            <button
-              onClick={() => setShowReportPanel(true)}
-              className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 text-sm backdrop-blur-sm"
-            >
-              <span>📄</span> View Report
-            </button>
-          )}
-        </div>
-
-        {/* Messages */}
-        <div
-          ref={alexMessagesRef}
-          className="flex-1 overflow-y-auto p-5 bg-gray-50 space-y-4"
-        >
-          {alexMessages.map((msg, i) => (
-            <div
-              key={i}
-              className={`p-4 rounded-xl ${msg.sender === 'Alex'
-                ? 'bg-white border border-gray-200'
-                : 'bg-green-50 border border-green-200 ml-8'
-                }`}
-            >
-              <div className="font-semibold text-sm mb-1 text-gray-700">{msg.sender}</div>
-              <div className="text-gray-900 whitespace-pre-wrap">{msg.message}</div>
-            </div>
-          ))}
-
-          {alexThinking && (
-            <div className="bg-gray-100 border border-gray-300 p-4 rounded-xl animate-pulse">
-              <div className="flex items-center gap-2 text-gray-700">
-                <span>{thinkingMessage}</span>
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Invisible div for scrolling to */}
-          <div ref={messagesEndRef} />
-        </div>
-      </div>
     </div>
-
-    {/* Report Overlay Panel */}
-    {showReportPanel && fullReportPdfUrl && (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-8">
-        <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full h-[90vh] flex flex-col">
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-green-100">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-bold">
-                A
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-900">Alex Comprehensive Analysis</h3>
-                <p className="text-sm text-gray-600">Full Manuscript Report</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-
-              <a href={fullReportPdfUrl}
-                download
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-all flex items-center gap-2"
-              >
-                <span>⬇️</span> Download PDF
-              </a>
-              <button
-                onClick={() => setShowReportPanel(false)}
-                className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-300 transition-all"
-              >
-                ✕ Close
-              </button>
-            </div>
-          </div>
-
-          {/* PDF Viewer */}
-          <div className="flex-1 overflow-hidden">
-            <iframe
-              src={fullReportPdfUrl}
-              className="w-full h-full"
-              title="Alex's Comprehensive Analysis Report"
-            />
-          </div>
-        </div>
-      </div>
-    )}
-  </div>
-)
+  )
 }
 
 export default function AuthorStudioPage() {
