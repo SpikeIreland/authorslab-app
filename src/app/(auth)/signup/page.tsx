@@ -112,8 +112,10 @@ export default function SignupPage() {
         ? `/onboarding?userId=${authData.user.id}&authorProfileId=${profileId}&firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&email=${encodeURIComponent(email)}`
         : `/onboarding?userId=${authData.user.id}&firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&email=${encodeURIComponent(email)}`
 
-      console.log('✅ Redirecting to:', redirectUrl)
-      router.push(redirectUrl)
+      // In signup/page.tsx, replace the final redirect with:
+
+      console.log('✅ Signup successful, redirecting to verification page')
+      router.push(`/verify-email?email=${encodeURIComponent(email)}`)
 
     } catch (error: unknown) {
       console.error('❌ Signup error:', error)

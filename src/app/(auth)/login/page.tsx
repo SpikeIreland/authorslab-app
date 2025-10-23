@@ -2,15 +2,17 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, FormEvent } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, FormEvent, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { getAuthorProfile, getManuscriptsByAuthor } from '@/lib/supabase/queries'
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter()
   const supabase = createClient()
+  const searchParams = useSearchParams()
+  const verified = searchParams.get('verified')
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -93,6 +95,12 @@ export default function LoginPage() {
           <p className="text-gray-600">Log in to continue your writing journey</p>
         </div>
 
+        {verified && (
+          <div className="bg-green-50 border-2 border-green-500 text-green-900 px-4 py-3 rounded-xl mb-6">
+            ✅ Email verified! You can now log in.
+          </div>
+        )}
+
         {error && (
           <div className="bg-red-50 border-2 border-red-500 text-red-900 px-4 py-3 rounded-xl mb-6">
             {error}
@@ -165,5 +173,17 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   )
 }
