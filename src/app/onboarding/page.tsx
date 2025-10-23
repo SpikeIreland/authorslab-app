@@ -424,7 +424,7 @@ function OnboardingContent() {
             // Redirect after verification
             console.log('✅ Redirecting to author studio...')
             setTimeout(() => {
-                router.push(`/author-studio?userId=${userId}&manuscriptId=${savedManuscriptId}`)
+                router.push(`/author-studio?userId=${userId}&authorProfileId=${authorProfileId}&manuscriptId=${savedManuscriptId}`)
             }, 2000)
 
         } catch (error) {
