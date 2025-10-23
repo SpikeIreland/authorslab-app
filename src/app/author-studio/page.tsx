@@ -976,15 +976,24 @@ function StudioContent() {
                             )}
                           </div>
 
-                          {/* Bottom row: Word count + Status badges */}
-                          <div className="flex items-center justify-between gap-2 ml-7">
-                            <span className="text-xs text-gray-500">
-                              {chapter.word_count?.toLocaleString() || 0} words
-                            </span>
-                            <div className="flex gap-1">
-                              {chapter.status === 'draft' && <span className="text-xs px-2 py-0.5 bg-gray-200 text-gray-700 rounded font-semibold">D</span>}
-                              {(chapter.status === 'edited' || editStatus === 'ready') && <span className="text-xs px-2 py-0.5 bg-blue-200 text-blue-700 rounded font-semibold">E</span>}
-                              {chapter.status === 'approved' && <span className="text-xs px-2 py-0.5 bg-green-200 text-green-700 rounded font-semibold">A</span>}
+                          {/* Bottom row: Editing stage indicators */}
+                          <div className="flex items-center gap-1 pl-8">
+                            {/* Developmental Editing */}
+                            <div className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold ${editStatus === 'ready'
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-gray-100 text-gray-400'
+                              }`} title="Developmental Editing">
+                              D
+                            </div>
+
+                            {/* Copy Editing */}
+                            <div className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold bg-gray-100 text-gray-300" title="Copy Editing (Coming Soon)">
+                              C
+                            </div>
+
+                            {/* Line Editing */}
+                            <div className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold bg-gray-100 text-gray-300" title="Line Editing (Coming Soon)">
+                              L
                             </div>
                           </div>
                         </div>
