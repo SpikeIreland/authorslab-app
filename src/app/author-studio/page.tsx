@@ -65,6 +65,7 @@ function StudioContent() {
   const [currentChapterIndex, setCurrentChapterIndex] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [loadingMessage, setLoadingMessage] = useState('Loading your studio...')
+  const [isChapterSidebarCollapsed, setIsChapterSidebarCollapsed] = useState(false)
 
   // Editor state
   const [editorContent, setEditorContent] = useState('')
@@ -863,123 +864,186 @@ function StudioContent() {
       </header>
 
       {/* Main Layout: Adjust columns based on panels open */}
-      <div className={`flex-1 grid ${showIssuesPanel
-        ? 'grid-cols-[320px_1fr_400px_400px]'
-        : 'grid-cols-[320px_1fr_400px]'
+      <div className={`flex-1 grid ${isChapterSidebarCollapsed
+        ? (showIssuesPanel ? 'grid-cols-[60px_1fr_400px_400px]' : 'grid-cols-[60px_1fr_400px]')
+        : (showIssuesPanel ? 'grid-cols-[320px_1fr_400px_400px]' : 'grid-cols-[320px_1fr_400px]')
         } overflow-hidden`}>
-        {/* LEFT: Chapter Navigation */}
-        <div className="bg-gray-50 border-r-2 border-gray-200 overflow-y-auto p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-2">{manuscript.title}</h2>
-          <p className="text-gray-600 mb-6">
-            {manuscript.current_word_count?.toLocaleString() || 0} words • {chapters.length} chapters
-          </p>
 
-          <div className="mb-6">
-            <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">Chapters</h3>
+        {/* LEFT: Chapter Navigation - Collapsible */}
+        <div className={`bg-gray-50 border-r-2 border-gray-200 overflow-y-auto transition-all duration-300 ${isChapterSidebarCollapsed ? 'p-2' : 'p-6'
+          }`}>
+          {/* Toggle Button */}
+          <button
+            onClick={() => setIsChapterSidebarCollapsed(!isChapterSidebarCollapsed)}
+            className="w-full mb-4 p-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 transition-all flex items-center justify-center"
+            title={isChapterSidebarCollapsed ? "Expand chapters" : "Collapse chapters"}
+          >
+            {isChapterSidebarCollapsed ? (
+              <span className="text-lg">→</span>
+            ) : (
+              <span className="text-lg">←</span>
+            )}
+          </button>
+
+          {!isChapterSidebarCollapsed ? (
+            // Full sidebar view
+            <>
+              <h2 className="text-xl font-bold text-gray-900 mb-2">{manuscript.title}</h2>
+              <p className="text-gray-600 mb-6">
+                {manuscript.current_word_count?.toLocaleString() || 0} words • {chapters.length} chapters
+              </p>
+
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">Chapters</h3>
+                <div className="space-y-2">
+                  {chapters.map((chapter, index) => {
+                    const isUnsaved = unsavedChapters.has(chapter.id)
+                    const editStatus = chapterEditingStatus[chapter.chapter_number]
+
+                    return (
+                      <div
+                        key={chapter.id}
+                        onClick={() => !isLocked && loadChapter(index)}
+                        className={`p-3 rounded-lg border transition-all min-h-[80px] ${isLocked
+                          ? 'bg-gray-50 border-gray-200 opacity-50 cursor-not-allowed'
+                          : index === currentChapterIndex
+                            ? 'bg-green-50 border-green-500 shadow-sm cursor-pointer'
+                            : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm cursor-pointer'
+                          }`}
+                      >
+                        <div className="flex flex-col gap-2">
+                          {/* Top row: Status + Number + Title + Edit */}
+                          <div className="flex items-start gap-2">
+                            {/* Analysis status indicator */}
+                            <div className="w-5 h-5 flex items-center justify-center flex-shrink-0 mt-0.5">
+                              {editStatus === 'analyzing' && (
+                                <div className="w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+                              )}
+                              {editStatus === 'ready' && (
+                                <span className="text-green-600 text-lg">✓</span>
+                              )}
+                              {editStatus === 'not_started' && (
+                                <span className="text-gray-300 text-lg">○</span>
+                              )}
+                            </div>
+
+                            {/* Chapter number */}
+                            <span className="text-xs font-semibold text-gray-500 flex-shrink-0 mt-1">
+                              {chapter.chapter_number === 0 ? 'Pro' :
+                                chapter.chapter_number === 999 ? 'Epi' :
+                                  `Ch ${chapter.chapter_number}`}
+                            </span>
+
+                            {/* Unsaved indicator */}
+                            {isUnsaved && (
+                              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse flex-shrink-0 mt-2" title="Unsaved changes"></div>
+                            )}
+
+                            {/* Chapter title - clickable area */}
+                            <div className="flex-1 min-w-0">
+                              {editingChapterId === chapter.id ? (
+                                <input
+                                  type="text"
+                                  value={editingChapterTitle}
+                                  onChange={(e) => setEditingChapterTitle(e.target.value)}
+                                  onBlur={() => saveChapterTitle(chapter.id)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') saveChapterTitle(chapter.id)
+                                    if (e.key === 'Escape') setEditingChapterId(null)
+                                  }}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="w-full px-2 py-1 text-sm font-semibold border border-green-500 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                                  autoFocus
+                                />
+                              ) : (
+                                <span className="text-sm font-semibold text-gray-900 line-clamp-2 break-words">
+                                  {chapter.title}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Edit button */}
+                            {!editingChapterId && index === currentChapterIndex && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setEditingChapterId(chapter.id)
+                                  setEditingChapterTitle(chapter.title)
+                                }}
+                                className="text-gray-400 hover:text-gray-600 text-xs flex-shrink-0"
+                              >
+                                ✏️
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Bottom row: Word count + Status badges */}
+                          <div className="flex items-center justify-between gap-2 ml-7">
+                            <span className="text-xs text-gray-500">
+                              {chapter.word_count?.toLocaleString() || 0} words
+                            </span>
+                            <div className="flex gap-1">
+                              {chapter.status === 'draft' && <span className="text-xs px-2 py-0.5 bg-gray-200 text-gray-700 rounded font-semibold">D</span>}
+                              {(chapter.status === 'edited' || editStatus === 'ready') && <span className="text-xs px-2 py-0.5 bg-blue-200 text-blue-700 rounded font-semibold">E</span>}
+                              {chapter.status === 'approved' && <span className="text-xs px-2 py-0.5 bg-green-200 text-green-700 rounded font-semibold">A</span>}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </>
+          ) : (
+            // Collapsed sidebar view - just chapter numbers
             <div className="space-y-2">
               {chapters.map((chapter, index) => {
                 const isUnsaved = unsavedChapters.has(chapter.id)
                 const editStatus = chapterEditingStatus[chapter.chapter_number]
 
                 return (
-                  <div
+                  <button
                     key={chapter.id}
                     onClick={() => !isLocked && loadChapter(index)}
-                    className={`p-3 rounded-lg border transition-all min-h-[80px] ${isLocked
+                    disabled={isLocked}
+                    className={`w-full p-2 rounded-lg border transition-all relative ${isLocked
                       ? 'bg-gray-50 border-gray-200 opacity-50 cursor-not-allowed'
                       : index === currentChapterIndex
-                        ? 'bg-green-50 border-green-500 shadow-sm cursor-pointer'
-                        : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm cursor-pointer'
+                        ? 'bg-green-50 border-green-500 shadow-sm'
+                        : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm'
                       }`}
+                    title={chapter.title}
                   >
-                    <div className="flex flex-col gap-2">
-                      {/* Top row: Status + Number + Title + Edit */}
-                      <div className="flex items-start gap-2">
-                        {/* Analysis status indicator */}
-                        <div className="w-5 h-5 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          {editStatus === 'analyzing' && (
-                            <div className="w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
-                          )}
-                          {editStatus === 'ready' && (
-                            <span className="text-green-600 text-lg">✓</span>
-                          )}
-                          {editStatus === 'not_started' && (
-                            <span className="text-gray-300 text-lg">○</span>
-                          )}
-                        </div>
+                    {/* Unsaved indicator */}
+                    {isUnsaved && (
+                      <div className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                    )}
 
-                        {/* Chapter number */}
-                        <span className="text-xs font-semibold text-gray-500 flex-shrink-0 mt-1">
-                          {chapter.chapter_number === 0 ? 'Pro' :
-                            chapter.chapter_number === 999 ? 'Epi' :
-                              `Ch ${chapter.chapter_number}`}
-                        </span>
-
-                        {/* Unsaved indicator */}
-                        {isUnsaved && (
-                          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse flex-shrink-0 mt-2" title="Unsaved changes"></div>
+                    {/* Status indicator */}
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="w-4 h-4 flex items-center justify-center">
+                        {editStatus === 'analyzing' && (
+                          <div className="w-3 h-3 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
                         )}
-
-                        {/* Chapter title - clickable area */}
-                        <div
-                          className="flex-1 min-w-0"
-                        >
-                          {editingChapterId === chapter.id ? (
-                            <input
-                              type="text"
-                              value={editingChapterTitle}
-                              onChange={(e) => setEditingChapterTitle(e.target.value)}
-                              onClick={(e) => e.stopPropagation()}
-                              onBlur={() => saveChapterTitle(index)}
-                              onKeyPress={(e) => e.key === 'Enter' && saveChapterTitle(index)}
-                              className="text-sm font-medium text-gray-900 border-b border-green-500 focus:outline-none w-full"
-                              autoFocus
-                            />
-                          ) : (
-                            <span className="text-sm font-medium text-gray-900 line-clamp-2">
-                              {chapter.title}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Edit title button */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            startEditingTitle(chapter.id, chapter.title);
-                          }}
-                          className="text-gray-400 hover:text-green-600 text-xs flex-shrink-0"
-                        >
-                          ✏️
-                        </button>
+                        {editStatus === 'ready' && (
+                          <span className="text-green-600 text-sm">✓</span>
+                        )}
+                        {editStatus === 'not_started' && (
+                          <span className="text-gray-300 text-sm">○</span>
+                        )}
                       </div>
-
-                      {/* Bottom row: Editing stage indicators */}
-                      <div className="flex items-center gap-1 pl-8">
-                        {/* Developmental Editing */}
-                        <div className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold ${editStatus === 'ready'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-gray-100 text-gray-400'
-                          }`} title="Developmental Editing">
-                          D
-                        </div>
-
-                        {/* Copy Editing */}
-                        <div className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold bg-gray-100 text-gray-300" title="Copy Editing (Coming Soon)">
-                          C
-                        </div>
-
-                        {/* Line Editing */}
-                        <div className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold bg-gray-100 text-gray-300" title="Line Editing (Coming Soon)">
-                          L
-                        </div>
-                      </div>
+                      <span className="text-xs font-bold text-gray-700">
+                        {chapter.chapter_number === 0 ? 'P' :
+                          chapter.chapter_number === 999 ? 'E' :
+                            chapter.chapter_number}
+                      </span>
                     </div>
-                  </div>
+                  </button>
                 )
               })}
             </div>
-          </div>
+          )}
         </div>
 
         {/* CENTER: Editor */}
