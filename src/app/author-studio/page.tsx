@@ -77,6 +77,10 @@ function StudioContent() {
   // Chapter editing state
   const [editingChapterId, setEditingChapterId] = useState<string | null>(null)
   const [editingChapterTitle, setEditingChapterTitle] = useState('')
+  // Add this new state near the top with other state declarations
+  const [unsavedChapterContent, setUnsavedChapterContent] = useState<{
+    [chapterId: string]: string
+  }>({})
 
   // Alex state
   const [alexMessages, setAlexMessages] = useState<ChatMessage[]>([])
@@ -431,28 +435,35 @@ function StudioContent() {
     const chapter = chaptersList[index]
     setCurrentChapterIndex(index)
 
-    // Convert plain text to HTML paragraphs and clean up
-    let content = chapter.content || 'This chapter content is being loaded...'
+    // Check if there's unsaved content for this chapter
+    if (unsavedChapterContent[chapter.id]) {
+      // Load the unsaved content instead of database content
+      setEditorContent(unsavedChapterContent[chapter.id])
+    } else {
+      // Convert plain text to HTML paragraphs and clean up
+      let content = chapter.content || 'This chapter content is being loaded...'
 
-    // Remove "Chapter X - Title" prefix
-    content = content.replace(/^Chapter\s+\d+\s*-\s*[^\n]+\n*/i, '')
+      // Remove "Chapter X - Title" prefix
+      content = content.replace(/^Chapter\s+\d+\s*-\s*[^\n]+\n*/i, '')
 
-    // Remove copyright footer patterns
-    content = content.replace(/The Veil and the Flame\s*©.*?\d+\s*$/gmi, '')
+      // Remove copyright footer patterns
+      content = content.replace(/The Veil and the Flame\s*©.*?\d+\s*$/gmi, '')
 
-    // Clean up extra whitespace
-    content = content.trim()
+      // Clean up extra whitespace
+      content = content.trim()
 
-    if (!content.includes('<p>')) {
-      const paragraphs = content
-        .split(/\n\n+/)
-        .filter(p => p.trim())
-        .map(p => `<p>${p.trim()}</p>`)
-        .join('\n')
-      content = paragraphs
+      if (!content.includes('<p>')) {
+        const paragraphs = content
+          .split(/\n\n+/)
+          .filter(p => p.trim())
+          .map(p => `<p>${p.trim()}</p>`)
+          .join('\n')
+        content = paragraphs
+      }
+
+      setEditorContent(content)
     }
 
-    setEditorContent(content)
     setChapterStatus(chapter.status || 'draft')
 
     // Load issues for this chapter if analysis is ready
@@ -487,7 +498,6 @@ function StudioContent() {
     addAlexMessage(`✏️ Chapter title updated. Don't forget to click Save!`)
   }
 
-  // Save changes to Supabase
   async function saveChanges() {
     const supabase = createClient()
 
@@ -509,6 +519,13 @@ function StudioContent() {
         const newSet = new Set(prev)
         newSet.delete(chapters[currentChapterIndex].id)
         return newSet
+      })
+
+      // Clear the cached unsaved content
+      setUnsavedChapterContent(prev => {
+        const newCache = { ...prev }
+        delete newCache[chapters[currentChapterIndex].id]
+        return newCache
       })
 
       addAlexMessage('✅ Changes saved successfully!')
@@ -1153,8 +1170,15 @@ function StudioContent() {
             style={{ fontFamily: 'Georgia, serif', fontSize: '1.1rem', lineHeight: '1.8' }}
             dangerouslySetInnerHTML={{ __html: editorContent }}
             onInput={(e) => {
-              setEditorContent(e.currentTarget.innerHTML)
+              const newContent = e.currentTarget.innerHTML
+              setEditorContent(newContent)
               setHasUnsavedChanges(true)
+
+              // Cache the unsaved content
+              setUnsavedChapterContent(prev => ({
+                ...prev,
+                [chapters[currentChapterIndex].id]: newContent
+              }))
 
               // Add to unsaved chapters set
               setUnsavedChapters(prev => new Set(prev).add(chapters[currentChapterIndex].id))
