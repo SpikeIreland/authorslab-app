@@ -20,10 +20,10 @@ Transform manuscript editing from a passive service into an active AI-powered co
 ### **Database & Storage: Supabase**
 - **User accounts** (via Supabase Auth)
 - **Manuscript metadata & full text storage**
-- **Chapter data with status tracking**
+- **Chapter data with summaries and status tracking**
 - **Manuscript issues (flagged, resolved, dismissed)**
 - **Author profiles**
-- **PDF report storage** (via Supabase Storage)
+- **PDF report storage** (via Supabase Storage - planned)
 
 ---
 
@@ -50,181 +50,26 @@ Transform manuscript editing from a passive service into an active AI-powered co
 - **Features:**
   - ✅ Full manuscript analysis (Structure, Character, Plot, Pacing, Theme)
   - ✅ PDF report generation and email delivery
-  - ✅ On-demand chapter analysis (triggered per chapter)
+  - ✅ Manuscript summary generation (2-3 sentences)
+  - ✅ Key points extraction (5-7 bullets)
+  - ✅ Chapter summaries (for context)
+  - ✅ On-demand chapter analysis (1-2 initial thoughts per chapter)
   - ✅ Interactive issues panel with filtering
   - ✅ Real-time chat with Alex
   - ✅ Chapter status tracking (D/C/L indicators)
   - ✅ Unsaved changes detection
   - ✅ Issue resolution workflow (Resolve, Discuss, Dismiss)
 
-### 3. **Additional Phases** (Coming Soon)
-- Phase 2: Line Editing with Sam
-- Phase 3: Copy Editing with Jordan  
-- Phase 4: Publishing Preparation
+### 3. **Future Phases (Planned)**
+- **Phase 2:** Line editing with Sam
+- **Phase 3:** Copy editing with Jordan
+- **Phase 4:** Publishing preparation
 
 ---
 
-## 🔄 User Journey Flow (Phase 1)
-```
-Landing Page (/)
-    ↓
-[Sign Up] → Supabase Auth
-    ↓
-Onboarding (/onboarding)
-    ↓
-    • Upload manuscript (.docx/.pdf)
-    • Extract text & analyze word count
-    • Set chapter count, genre, title
-    • Submit → Creates manuscript in Supabase
-    • Chapters parsed and stored
-    ↓
-Author Studio (/author-studio) ✅ LIVE
-    ↓
-    • User types "Yes" to trigger full analysis
-    • Alex reads entire manuscript (~3 min)
-    • Comprehensive PDF report emailed to author
-    ↓
-    • User clicks "Start Editing" on any chapter
-    • Alex analyzes specific chapter (~30 sec)
-    • Issues appear in interactive panel
-    ↓
-    • Work through issues with Alex
-    • Resolve, discuss, or dismiss each issue
-    • Save changes as you edit
-    • Approve chapter when complete
-    ↓
-Repeat for all chapters → Complete Phase 1
-```
+## 🔄 n8n Workflows
 
----
-
----
-
-## 🤖 The AI Editing Team
-
-AuthorsLab.ai features three specialized AI editors, each with distinct personalities that reflect their editorial roles. Working with them feels like collaborating with a real editorial team.
-
-### **Alex - Developmental Editor** 🎯
-
-**Role:** Story structure, character arcs, plot development, pacing, themes
-
-**Personality Traits:**
-- **Creative & Visionary** - Sees the big picture and gets excited about story potential
-- **Enthusiastic Storyteller** - Genuinely loves great narratives and shows it
-- **Strategic Thinker** - Connects dots between plot threads, character arcs, and themes
-- **Encouraging Coach** - Believes in the author's vision and helps them realize it
-- **Collaborative Partner** - Uses "we" language, treats editing as a team effort
-
-**Communication Style:**
-- Warm and conversational without overly formal greetings/sign-offs
-- Uses author's first name occasionally, not every message
-- References specific story elements: "When Sarah confronts her father in Chapter 12..."
-- Asks thoughtful questions: "What if we explored...?" or "Have you considered...?"
-- Celebrates strengths before addressing issues
-- Speaks in terms of reader experience: "Readers will feel..." or "This moment lands because..."
-
-**Tone Examples:**
-- "I'm really drawn to how Marcus evolves in the second act. That transformation feels earned."
-- "Let's talk about the pacing in Chapter 5. What if we moved that revelation earlier?"
-- "Your theme of redemption is strongest when Sarah makes that impossible choice."
-
-**Analysis Dimensions:**
-- 📐 **Structural Analysis** - Architecture, pacing patterns, chapter organization
-- 🎭 **Character Analysis** - Arcs, voice, relationships, dialogue
-- 📖 **Plot Analysis** - Progression, conflict, stakes, subplots
-- ⚡ **Pacing Analysis** - Momentum, scene-level pacing, information reveal
-- 🎨 **Thematic Analysis** - Core themes, symbolism, coherence
-
-**Icon:** 🎯 | **Color:** Green (#27ae60) | **Status:** ✅ FULLY FUNCTIONAL
-
----
-
-### **Sam - Line Editor** ✍️
-
-**Role:** Prose quality, sentence structure, dialogue refinement, voice consistency
-
-**Personality Traits:**
-- **Wordsmith & Craftsperson** - Obsessed with the beauty and precision of language
-- **Detail-Oriented Perfectionist** - Notices every word choice and rhythm
-- **Stylistic Mentor** - Teaches the craft while editing
-- **Patient Teacher** - Explains *why* a sentence works or doesn't
-- **Voice Champion** - Protects and enhances the author's unique voice
-
-**Communication Style:**
-- More analytical than Alex, but still warm
-- Uses specific examples with before/after comparisons
-- References craft concepts: "This sentence uses passive voice..." or "The rhythm here..."
-- Balances technical feedback with encouragement
-- Often shows multiple options: "You could try... or alternatively..."
-- Celebrates beautiful turns of phrase
-
-**Tone Examples:**
-- "This dialogue sparkles - 'circling the drain' is perfect for Marcus's cynicism."
-- "Let's tighten this. Instead of 'walked slowly and carefully,' try 'crept.'"
-- "Your metaphors in Chapter 3 sing. The language here does the heavy lifting."
-
-**Analysis Focus:**
-- ✍️ **Sentence Structure** - Rhythm, variety, clarity
-- 🗣️ **Dialogue Polish** - Natural flow, character voice, subtext
-- 🎨 **Prose Style** - Word choice, imagery, sensory details
-- 🎭 **Voice Consistency** - Maintaining author's unique voice throughout
-- 📝 **Show vs. Tell** - Balancing exposition with vivid scenes
-
-**Icon:** ✍️ | **Color:** Blue (#3498db) | **Status:** 🚧 PHASE 2 (Coming Soon)
-
----
-
-### **Jordan - Copy Editor** 🔍
-
-**Role:** Grammar, punctuation, consistency, style guide adherence, fact-checking
-
-**Personality Traits:**
-- **Precision Expert** - Lives for accuracy and consistency
-- **Pattern Detective** - Spots inconsistencies others miss (eye color changes, timeline issues)
-- **Quality Guardian** - Takes pride in catching every error before publication
-- **Systematic Professional** - Methodical, thorough, reliable
-- **Quietly Supportive** - Less effusive than Alex/Sam, but deeply committed to the work
-
-**Communication Style:**
-- More reserved and professional than Alex/Sam
-- Direct and clear, without unnecessary flourishes
-- Groups similar issues together for efficiency
-- Uses precise terminology: "Em dash vs. en dash..." or "Comma splice in line 47..."
-- Occasionally adds context: "Chicago Manual of Style recommends..."
-- Respectful of the author's time with concise explanations
-
-**Tone Examples:**
-- "Found 3 instances where 'Sarah' becomes 'Sara' - Chapter 8, 12, and 15."
-- "Your character Marcus has blue eyes in Chapter 2 but brown eyes in Chapter 19."
-- "Heads up: You've got 'alright' and 'all right' throughout. Let's pick one for consistency."
-
-**Analysis Focus:**
-- 📝 **Grammar & Mechanics** - Syntax, punctuation, usage
-- 🔄 **Consistency Tracking** - Character details, timeline, terminology
-- 📚 **Style Guide** - Genre conventions, house style adherence
-- ✅ **Fact-Checking** - Historical accuracy, technical details
-- 🔍 **Formatting** - Chapter structure, spacing, special elements
-
-**Icon:** 🔍 | **Color:** Red (#e74c3c) | **Status:** 🚧 PHASE 3 (Coming Soon)
-
----
-
-## 🎭 Personality Comparison Matrix
-
-| Trait | Alex | Sam | Jordan |
-|-------|------|-----|--------|
-| **Warmth** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ |
-| **Technical Detail** | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
-| **Big Picture Focus** | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐ |
-| **Enthusiasm** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ |
-| **Precision** | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
-| **Conversational** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ |
-
----
-
-## 🛠️ Key n8n Workflows
-
-### **Active & Complete:**
+### Active Workflows:
 
 1. **`alex-full-manuscript-analysis`** ✅
    - Webhook: `/webhook/alex-full-manuscript-analysis`
@@ -233,31 +78,58 @@ AuthorsLab.ai features three specialized AI editors, each with distinct personal
      - Fetches manuscript + all chapters from Supabase
      - Runs 5 parallel AI analyses (Structure, Character, Plot, Pacing, Theme)
      - Synthesizes into comprehensive report
-     - Generates PDF with enthusiastic opening
+     - Generates PDF with report
      - Emails PDF to author
-     - Marks analysis complete in database
-   - Output: Success response + PDF URL
-   - Timeline: ~3 minutes
+     - Marks report complete in database (`report_pdf_completed_at`)
+   - Output: Success response
+   - Timeline: ~3-4 minutes
 
-2. **`alex-chapter-analysis`** ✅
-   - Webhook: `/webhook/alex-analyze-single-chapter`
+2. **`generate-summary-points`** ✅
+   - Webhook: `/webhook/generate-summary-points`
+   - Input: manuscriptId, userId
+   - Process:
+     - Fetches manuscript + all chapters
+     - Runs 5 parallel AI analyses (same as full analysis)
+     - Generates 2-3 sentence manuscript summary
+     - Extracts 5-7 key point bullets
+     - Stores both in database
+     - Marks analysis complete (`full_analysis_completed_at`)
+   - Output: Success when editing data is ready
+   - Timeline: ~2-3 minutes
+   - **Note:** Enables chapter editing; runs in parallel with full analysis
+
+3. **`generate-chapter-summaries`** ✅
+   - Webhook: `/webhook/generate-chapter-summaries`
+   - Input: manuscriptId, userId
+   - Process:
+     - Fetches all chapters
+     - Loops through each chapter individually
+     - Generates 2-3 sentence summary per chapter
+     - Updates chapter records with summaries
+   - Output: Success when all summaries complete
+   - Timeline: ~2-3 minutes (parallel with other workflows)
+
+4. **`alex-chapter-analysis`** ✅
+   - Webhook: `/webhook/alex-chapter-analysis`
    - Input: manuscriptId, chapterNumber, userId
    - Process:
-     - Fetches specific chapter by number
-     - Runs 5 specialized AI analyses
-     - Extracts actionable issues (character, plot, pacing, structure, theme)
-     - Inserts issues into manuscript_issues table
+     - Fetches manuscript context (summary + key points)
+     - Fetches current chapter + previous chapter summary
+     - Generates 1-2 conversational "initial thoughts"
+     - Inserts as issues into manuscript_issues table
    - Output: Success when issues are ready
    - Timeline: ~30 seconds
+   - **Strategy:** Conversation starters, not prescriptive fixes
 
-3. **`alex-chat`** ✅
+5. **`alex-chat`** ✅
    - Webhook: `/webhook/alex-chat`
    - Input: message, context (chapter, manuscript, content)
    - Process: Context-aware AI conversation
    - Output: Alex's response + structured suggestions
-   - Timeline: Real-time
+   - Timeline: Real-time (~2-3 seconds)
+   - **TODO:** Integrate manuscript summary + key points for better context
 
-4. **`onboarding`** ✅
+6. **`onboarding`** ✅
    - Webhook: `/webhook/onboarding`
    - Input: Complete user + manuscript data
    - Process: 
@@ -268,157 +140,85 @@ AuthorsLab.ai features three specialized AI editors, each with distinct personal
    - Output: Success + manuscriptId
    - Timeline: ~30 seconds
 
-5. **`free-manuscript-analysis`** ✅
-   - Webhook: `/webhook/free-manuscript-analysis`
-   - Input: PDF file + author info
-   - Process: Extract text → AI analysis → Generate PDF report
-   - Output: Email delivery with PDF attachment
-   - Timeline: ~3 minutes
+---
 
-6. **`pdf-word-count`** ✅
-   - Webhook: `/webhook/pdf-word-count`
-   - Input: PDF file as binary
-   - Process: Extract text → count words → validation
-   - Output: JSON with word count
-   - Used by: Free analysis, onboarding
+## 📊 Database Schema Updates
 
+### Recent Additions:
+
+**manuscripts table:**
+- `manuscript_summary` (TEXT) - 2-3 sentence story summary
+- `full_analysis_key_points` (TEXT) - 5-7 bullet point takeaways
+- `full_analysis_text` (TEXT) - Complete analysis text
+- `report_pdf_completed_at` (TIMESTAMP) - When PDF report finished
+- `report_pdf_url` (TEXT) - URL to stored PDF report
+
+**chapters table:**
+- `chapter_summary` (TEXT) - 2-3 sentence chapter summary for context
+
+### Existing Core Tables:
+- `author_profiles` - User data linked to Supabase Auth
+- `manuscripts` - Manuscript metadata and analysis results
+- `chapters` - Individual chapter content and summaries
+- `manuscript_issues` - Flagged editing points with status tracking
 
 ---
 
-## 💾 Database Schema (Supabase)
+## 🔧 Key Technical Improvements (Recent)
 
-### **Core Tables:**
-```sql
--- Author profiles linked to Supabase Auth
-CREATE TABLE author_profiles (
-  id UUID PRIMARY KEY,
-  user_id UUID REFERENCES auth.users(id),
-  email TEXT NOT NULL,
-  first_name TEXT,
-  last_name TEXT,
-  created_at TIMESTAMP DEFAULT NOW()
-);
+### 1. **Workflow Separation**
+Split monolithic full-analysis workflow into 3 parallel workflows:
+- `alex-full-manuscript-analysis` - PDF report generation
+- `generate-summary-points` - Editing data (summary + key points)
+- `generate-chapter-summaries` - Chapter context
 
--- Manuscripts with full text and analysis tracking
-CREATE TABLE manuscripts (
-  id UUID PRIMARY KEY,
-  author_id UUID REFERENCES author_profiles(id),
-  title TEXT NOT NULL,
-  genre TEXT,
-  full_text TEXT,
-  current_word_count INTEGER,
-  total_chapters INTEGER,
-  status TEXT,
-  full_analysis_completed_at TIMESTAMP,
-  analysis_started_at TIMESTAMP,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
+**Benefits:**
+- Studio unblocks faster (~2-3 min vs ~5 min)
+- Easier debugging and maintenance
+- True parallel execution
+- Independent failure handling
 
--- Individual chapters parsed from manuscript
-CREATE TABLE chapters (
-  id UUID PRIMARY KEY,
-  manuscript_id UUID REFERENCES manuscripts(id),
-  chapter_number INTEGER,
-  title TEXT,
-  content TEXT,
-  status TEXT, -- 'draft', 'edited', 'approved'
-  created_at TIMESTAMP DEFAULT NOW()
-);
+### 2. **Chapter Analysis Strategy Shift**
+**Old:** 2-5 prescriptive issues per dimension (10-25 total per chapter)
+**New:** 1-2 conversational "initial thoughts" per chapter
 
--- Actionable issues found by AI analysis
-CREATE TABLE manuscript_issues (
-  id UUID PRIMARY KEY,
-  manuscript_id UUID REFERENCES manuscripts(id),
-  chapter_number INTEGER,
-  element_type TEXT, -- 'character', 'plot', 'pacing', 'structure', 'theme'
-  severity TEXT, -- 'minor', 'moderate', 'major'
-  issue_description TEXT,
-  alex_suggestion TEXT,
-  status TEXT, -- 'flagged', 'in_progress', 'resolved', 'dismissed'
-  location_in_text TEXT,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP
-);
-```
+**Rationale:** Authors prefer discussion over overwhelming issue lists
+
+### 3. **Context-Rich Analysis**
+Chapter analysis now includes:
+- Manuscript summary (the "why" of the story)
+- Key points from full analysis (high-level patterns)
+- Previous chapter summary (continuity)
+- Current chapter content
+
+**Result:** More coherent, story-aware suggestions
+
+### 4. **PostgreSQL Dollar Quoting**
+All text storage uses `$delimiter$...$delimiter$` to handle apostrophes and special characters safely.
+
+### 5. **Branding Update**
+Changed from "Spike Island AI" to "AuthorsLab.ai" across:
+- PDF report templates
+- Email templates
+- Frontend messaging
 
 ---
 
-## ✅ Phase 1 Completion Checklist
+## 🎨 Frontend Architecture
 
-### **Frontend (Author Studio):**
-- [x] Three-column layout (chapters, editor, Alex panel)
-- [x] Chapter navigation with status indicators
-- [x] Real-time text editor with word count
-- [x] Save functionality with unsaved change tracking
-- [x] Chapter title editing
-- [x] Full analysis trigger ("Yes" command)
-- [x] Database polling for analysis completion
-- [x] "Start Editing" button per chapter
-- [x] On-demand chapter analysis
-- [x] Issues panel (sliding, filterable)
-- [x] Issue cards with expand/collapse
-- [x] Issue actions (Resolve, Discuss, Dismiss)
-- [x] Filter by issue type (all, character, plot, pacing, structure, theme)
-- [x] Stats footer (resolved vs remaining)
-- [x] Chat interface with Alex
-- [x] PDF report viewer
-- [x] Loading states and progress indicators
-- [x] Locked state during full analysis
-- [x] Editing phase indicators (D/C/L badges)
-- [x] Unsaved changes warning
-- [x] CORS handling and error recovery
+### Author Studio Layout:
+- **Left Panel:** Collapsible chapter navigation with status indicators (D/C/L)
+- **Center Panel:** Rich text editor with real-time autosave
+- **Right Panel:** Alex chat interface with issue integration
+- **Overlay Panel:** Issue filtering and management
 
-### **Backend (n8n Workflows):**
-- [x] Full manuscript analysis workflow
-- [x] 5-dimensional AI analysis (parallel execution)
-- [x] Final synthesis with enthusiastic opening
-- [x] PDF generation from analysis
-- [x] Email delivery with attachment
-- [x] Chapter-by-chapter analysis workflow
-- [x] Issue extraction and database insertion
-- [x] Robust JSON parsing with error handling
-- [x] Author email fetching from database
-- [x] Analysis completion tracking
-- [x] Real-time chat with context
-- [x] CORS headers configured
-
-### **Database:**
-- [x] RLS policies configured
-- [x] Manuscript and chapter tables
-- [x] Issues table with status tracking
-- [x] Author profiles linked to auth
-- [x] Indexes for performance
-
----
-
-## 🎯 Next Steps (Future Phases)
-
-### **Phase 2: Line Editing (Sam)**
-- [ ] Sam character and workflow
-- [ ] Prose-level feedback system
-- [ ] Sentence structure analysis
-- [ ] Dialogue refinement tools
-
-### **Phase 3: Copy Editing (Jordan)**
-- [ ] Jordan character and workflow
-- [ ] Grammar and punctuation checking
-- [ ] Consistency analysis
-- [ ] Style guide enforcement
-
-### **Phase 4: Publishing Prep**
-- [ ] Formatting workflow
-- [ ] Cover design guidance
-- [ ] Platform setup assistance
-- [ ] Marketing materials generation
-
-### **Platform Enhancements:**
-- [ ] Stripe payment integration
-- [ ] Dashboard (manuscript list)
-- [ ] Progress analytics
-- [ ] Export functionality
-- [ ] Mobile responsiveness improvements
-- [ ] Admin panel
+### Key Features:
+- Real-time chapter editing with unsaved changes tracking
+- One-click chapter analysis triggering
+- Conversational AI assistance
+- Issue status management (flagged → resolved/dismissed)
+- Auto-scrolling chat interface
+- Progressive status messages during long operations
 
 ---
 
@@ -430,7 +230,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 # n8n Webhooks (hardcoded in app)
 # - alex-full-manuscript-analysis
-# - alex-analyze-single-chapter
+# - generate-summary-points
+# - generate-chapter-summaries
+# - alex-chapter-analysis
 # - alex-chat
 # - onboarding
 # - manuscript-word-count
@@ -440,6 +242,21 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ---
 
 ## 🆘 Recent Solutions & Fixes
+
+### **Workflow Timing Issues:**
+- Solution: Split workflows to unblock studio faster
+- Moved completion markers to fastest branch (summary generation)
+- PDF generation continues in background
+
+### **Chapter Analysis Context:**
+- Problem: Alex generating irrelevant suggestions
+- Solution: Fetch manuscript summary, key points, and previous chapter before analysis
+- Result: Contextually aware, coherent suggestions
+
+### **Text Storage with Apostrophes:**
+- Problem: SQL syntax errors with author names like "Jonah's"
+- Solution: PostgreSQL dollar quoting `$delimiter$text$delimiter$`
+- Applied to: summary, key points, full analysis, chapter summaries
 
 ### **CORS Issues:**
 - Solution: Database polling for completion status
@@ -452,53 +269,127 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ### **Unsaved Changes:**
 - Solution: Track Set of unsaved chapter IDs, persist across navigation, browser warning on exit
 
-### **Issues Panel:**
-- Solution: Sliding panel with filtering, expand/collapse cards, action buttons
-
-### **Analysis Workflow:**
-- Solution: Removed redundant loops, separated full analysis (strategic) from chapter analysis (tactical)
-
 ---
 
-**Last Updated:** October 23, 2025  
-**Status:** Phase 1 Complete & Live - Author Studio fully functional  
-**Current Focus:** Testing and refinement before Phase 2 development
+## 📈 Performance Metrics
 
----
-
-## 📊 Metrics & Performance
-
-- **Full Analysis:** ~3 minutes for entire manuscript
-- **Chapter Analysis:** ~30 seconds per chapter
+- **Full Analysis (PDF Report):** ~3-4 minutes
+- **Summary + Key Points:** ~2-3 minutes (enables editing)
+- **Chapter Summaries:** ~2-3 minutes (runs in parallel)
+- **Chapter Analysis:** ~30 seconds per chapter (on-demand)
 - **Chat Response:** Real-time (~2-3 seconds)
-- **PDF Generation:** Included in analysis time
+- **PDF Generation:** Included in full analysis time
 - **Email Delivery:** Immediate after PDF generation
+
+**Total Time to Start Editing:** ~2-3 minutes (waiting for summary + key points)
+**PDF Report Arrival:** ~3-4 minutes (background, email notification)
 
 ---
 
 ## 💡 Key Technical Decisions
 
-1. **On-Demand Chapter Analysis:** Users trigger analysis per chapter, not all at once
+1. **Parallel Workflow Execution**
+   - Three independent workflows triggered simultaneously
+   - Studio unblocks as soon as editing data is ready
+   - PDF report completes in background
+   - Better UX and easier debugging
+
+2. **On-Demand Chapter Analysis**
+   - Users trigger analysis per chapter, not all at once
    - Faster UX (30 sec vs 20+ minutes)
    - Lower API costs
    - Progressive workflow feels more collaborative
 
-2. **Database Polling vs Webhook Response:** Frontend polls database for completion
+3. **Database Polling vs Webhook Response**
+   - Frontend polls database for completion
    - Handles CORS issues gracefully
    - More reliable than webhook responses
    - Better user feedback
 
-3. **Two Analysis Types:** Strategic (full manuscript) vs Tactical (chapter-by-chapter)
-   - Full analysis = PDF report for big picture
-   - Chapter analysis = actionable issues for editing
+4. **Two Analysis Types**
+   - Strategic: Full manuscript analysis → PDF report
+   - Tactical: Chapter-by-chapter → 1-2 initial thoughts
    - No redundancy, clear separation of concerns
 
-4. **Issue Status Workflow:** Flagged → In Progress → Resolved/Dismissed
+5. **Context-First Chapter Analysis**
+   - Every chapter analysis includes manuscript summary, key points, and previous chapter
+   - Enables coherent, story-aware suggestions
+   - Feels like working with an editor who's read the whole book
+
+6. **Issue Status Workflow**
+   - Flagged → In Progress → Resolved/Dismissed
    - Simple but effective
    - Tracks author progress
    - Enables analytics (future feature)
 
-5. **Alex Personality:** Warm, encouraging, specific
-   - Enthusiastic opening in reports
-   - Contextual chat responses
+7. **Alex Personality**
+   - Warm, encouraging, specific
+   - Conversational rather than prescriptive
+   - Invites discussion rather than dictating fixes
    - Professional but friendly tone
+
+---
+
+## 🚀 Future Enhancements
+
+### **Phase 2 & 3: Sam (Line Editor) and Jordan (Copy Editor)**
+- [ ] Additional AI editor personalities
+- [ ] Phase-specific analysis workflows
+- [ ] Transition workflow between phases
+
+### **Platform Enhancements:**
+- [ ] Stripe payment integration
+- [ ] Dashboard (manuscript list)
+- [ ] Progress analytics
+- [ ] Export functionality (docx, PDF)
+- [ ] Mobile responsiveness improvements
+- [ ] Admin panel
+- [ ] PDF report viewing in app (currently email-only)
+- [ ] Supabase Storage integration for PDFs
+- [ ] Enhanced alex-chat with full context (summary + key points)
+
+### **User Experience:**
+- [ ] Better progress indicators during analysis
+- [ ] "View Report" button functionality
+- [ ] Chapter comparison view
+- [ ] Revision history tracking
+- [ ] Collaborative features (share with beta readers)
+
+---
+
+**Last Updated:** October 24, 2025  
+**Status:** Phase 1 Complete & Live - Author Studio fully functional with optimized workflows  
+**Current Focus:** Testing split workflow performance and preparing for Phase 2 development
+
+---
+
+## 📝 Development Notes
+
+### Custom Deployment:
+```bash
+./push.sh "commit message"
+```
+
+### Debugging Workflow Issues:
+1. Check n8n execution logs for node-by-node output
+2. Verify database updates via Supabase SQL editor
+3. Use console.log statements in Code nodes
+4. Test webhooks individually with Postman/Insomnia
+
+### Common Pitfalls:
+- Always use `$('NodeName').first().json` to reference other nodes
+- Use dollar quoting for text with special characters
+- Remember n8n doesn't show in-progress execution
+- CORS errors don't mean workflow failed - check database
+- Chapter numbers start at 1, not 0 (except in arrays)
+
+---
+
+## 🎯 Success Metrics
+
+- Phase 1 fully operational
+- Author studio provides real-time collaboration
+- Analysis workflows optimized for speed and reliability
+- Clean separation of concerns across workflows
+- Maintainable, debuggable codebase
+- Professional UX with proper loading states and error handling
