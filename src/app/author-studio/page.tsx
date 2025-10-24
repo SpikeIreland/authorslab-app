@@ -214,7 +214,7 @@ function StudioContent() {
   }
 
   const discussIssue = async (issue: ManuscriptIssue) => {
-    const userMessage = `Can you help me with this issue: "${issue.issue_description}"`
+    const userMessage = `Discussion Note: "${issue.issue_description}"`
 
     setAlexMessages(prev => [...prev, { sender: 'You', message: userMessage }])
 
