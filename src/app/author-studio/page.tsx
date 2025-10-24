@@ -756,6 +756,11 @@ function StudioContent() {
         setFullAnalysisInProgress(false)
         setAnalysisComplete(true)
 
+        // Set the PDF URL if available
+        if (manuscriptData.report_pdf_url) {
+          setFullReportPdfUrl(manuscriptData.report_pdf_url)
+        }
+        
         addAlexMessage(
           `✅ I've finished reading your manuscript and I'm genuinely excited about what you've created here! I've sent you a comprehensive analysis report by email.\n\n` +
           `You can review the full report in your email.\n\n` +
