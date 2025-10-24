@@ -125,7 +125,8 @@ function StudioContent() {
   const WEBHOOKS = {
     fullAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-full-manuscript-analysis',
     chapterAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-chapter-analysis',
-    alexChat: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-chat'
+    alexChat: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-chat',
+    chapterSummaries: 'https://spikeislandstudios.app.n8n.cloud/webhook/generate-chapter-summaries'
   }
 
   // Scroll to bottom function
@@ -673,24 +674,51 @@ function StudioContent() {
     setTimeout(() => setThinkingMessage('📝 Almost done... pulling my thoughts together...'), 15000)
 
     try {
-      const response = await fetch(WEBHOOKS.fullAnalysis, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          manuscriptId: manuscript?.id,
-          userId: searchParams.get('userId')
-        })
-      })
+      // Trigger BOTH workflows simultaneously
+      const [analysisResponse, summariesResponse] = await Promise.all([
+        // Full analysis
+        fetch(WEBHOOKS.fullAnalysis, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            manuscriptId: manuscript?.id,
+            userId: searchParams.get('userId')
+          })
+        }),
 
-      // Even if CORS blocks the response, the workflow completed
-      let result = null
+        // Chapter summaries (runs in parallel)
+        fetch(WEBHOOKS.chapterSummaries, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            manuscriptId: manuscript?.id,
+            userId: searchParams.get('userId')
+          })
+        })
+      ])
+
+      // Try to parse responses (but don't fail if CORS blocks)
+      let analysisResult = null
+      let summariesResult = null
+
       try {
-        result = await response.json()
+        analysisResult = await analysisResponse.json()
+        console.log('✅ Full analysis response:', analysisResult)
       } catch (jsonError) {
-        console.log('Could not parse response (possibly CORS), but workflow may have completed')
+        console.log('Could not parse analysis response (possibly CORS), but workflow may have completed')
+      }
+
+      try {
+        summariesResult = await summariesResponse.json()
+        console.log('✅ Chapter summaries response:', summariesResult)
+      } catch (jsonError) {
+        console.log('Could not parse summaries response (possibly CORS), but workflow may have completed')
       }
 
       setAlexThinking(false)
@@ -701,7 +729,7 @@ function StudioContent() {
     } catch (error) {
       console.error('Analysis error:', error)
 
-      // Even on CORS error, the workflow might have completed
+      // Even on CORS error, the workflows might have completed
       addAlexMessage('⏳ This is looking GREAT! Let me just make some notes')
       pollForAnalysisCompletion()
     }
