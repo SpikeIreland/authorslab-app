@@ -774,7 +774,7 @@ function StudioContent() {
       }
     }, 3000)
   }
-  
+
   // Alex chat
   function addAlexMessage(message: string) {
     setAlexMessages(prev => [...prev, { sender: 'Alex', message }])
@@ -1415,7 +1415,7 @@ function StudioContent() {
                     {selectedIssue?.id === issue.id && (
                       <div className="mt-3 pt-3 border-t border-orange-200">
                         <p className="text-sm text-gray-700 mb-3">
-                          <span className="font-semibold text-orange-700">Alex&apos;s Suggestion:</span>
+                          <span className="font-semibold text-orange-700">For Discussion:</span>
                           <br />
                           {issue.alex_suggestion}
                         </p>
