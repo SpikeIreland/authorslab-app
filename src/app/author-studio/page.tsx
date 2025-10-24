@@ -760,9 +760,9 @@ function StudioContent() {
         if (manuscriptData.report_pdf_url) {
           setFullReportPdfUrl(manuscriptData.report_pdf_url)
         }
-        
+
         addAlexMessage(
-          `✅ I've finished reading your manuscript and I'm genuinely excited about what you've created here! I've sent you a comprehensive analysis report by email.\n\n` +
+          `✅ I've finished reading your manuscript and I'm genuinely excited about what you've created here! I will send you a comprehensive analysis report by email soon so keep your eye out for that.\n\n` +
           `You can review the full report in your email.\n\n` +
           `**Ready to start editing?** Now you can click on any chapter and hit "Start Editing." I'll pull up my specific notes for that chapter and we'll work through them together.`
         )
@@ -1171,7 +1171,7 @@ function StudioContent() {
                     }`}
                   title={
                     fullAnalysisInProgress
-                      ? 'Please wait for Alex to finish reading the manuscript (approx. 3 minutes)'
+                      ? 'Please wait for Alex to finish reading the manuscript (approx. 5 minutes)'
                       : !analysisComplete
                         ? 'Please complete full analysis first by typing "Yes" to Alex'
                         : 'Start editing this chapter'
@@ -1543,7 +1543,7 @@ function StudioContent() {
             📖 Please Read My Manuscript
           </button>
           <p className="text-xs text-gray-600 text-center mt-2">
-            This takes about 3 minutes. You&apos;ll get a comprehensive report by email.
+            This takes about 5 minutes and you&apos;ll get a comprehensive report by email.
           </p>
         </div>
       )}
