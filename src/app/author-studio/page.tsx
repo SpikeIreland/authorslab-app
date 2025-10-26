@@ -178,38 +178,24 @@ function StudioContent() {
   }
 
   // Update issue status
-  const updateIssueStatus = async (issueId: string, newStatus: 'flagged' | 'in_progress' | 'resolved' | 'dismissed') => {
+  async function updateIssueStatus(issueId: string, newStatus: 'flagged' | 'in_progress' | 'resolved' | 'dismissed') {
     const supabase = createClient()
 
     try {
-      console.log('Attempting to update issue:', issueId, 'to status:', newStatus)
-
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('manuscript_issues')
         .update({ status: newStatus })
         .eq('id', issueId)
-        .select()
 
-      if (error) {
-        console.error('Supabase error details:', {
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code
-        })
-        throw error
-      }
+      if (error) throw error
 
-      console.log('Update successful:', data)
-
-      // Refresh issues
+      // Reload issues to reflect changes
       await loadChapterIssues(chapters[currentChapterIndex].chapter_number)
 
-      addAlexMessage(`✓ Issue marked as ${newStatus.replace('_', ' ')}`)
+      // Remove the addAlexMessage line that was causing the error
 
     } catch (error) {
       console.error('Error updating issue:', error)
-      addAlexMessage('❌ Error updating issue status')
     }
   }
 
@@ -1445,15 +1431,6 @@ function StudioContent() {
                           <button
                             onClick={(e) => {
                               e.stopPropagation()
-                              updateIssueStatus(issue.id, 'resolved')
-                            }}
-                            className="flex-1 bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-green-700 transition-all"
-                          >
-                            ✓ Resolved
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
                               discussIssue(issue)
                             }}
                             className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-all"
@@ -1465,9 +1442,9 @@ function StudioContent() {
                               e.stopPropagation()
                               updateIssueStatus(issue.id, 'dismissed')
                             }}
-                            className="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300 transition-all"
+                            className="flex-1 bg-gray-600 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-gray-700 transition-all"
                           >
-                            Dismiss
+                            ✕ Dismiss
                           </button>
                         </div>
                       </div>
