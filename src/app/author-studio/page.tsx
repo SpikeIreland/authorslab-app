@@ -231,6 +231,7 @@ function StudioContent() {
           message: userMessage,
           authorFirstName: localStorage.getItem('currentUserFirstName') || 'the author', // ADD THIS
           context: {
+            manuscriptId: manuscript?.id, // ✅ ADD THIS LINE
             chapter: currentChapterIndex + 1,
             chapterTitle: chapters[currentChapterIndex]?.title,
             chapterContent: editorContent,
