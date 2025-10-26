@@ -177,6 +177,11 @@ function StudioContent() {
     }
   }
 
+  // Helper function to add Alex messages to chat
+  function addAlexMessage(message: string, sender: 'Alex' | 'user' = 'Alex') {
+    setAlexMessages(prev => [...prev, { sender: sender === 'user' ? 'You' : 'Alex', message }])
+  }
+
   // Update issue status
   async function updateIssueStatus(issueId: string, newStatus: 'flagged' | 'in_progress' | 'resolved' | 'dismissed') {
     const supabase = createClient()
