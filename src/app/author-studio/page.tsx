@@ -860,6 +860,7 @@ function StudioContent() {
     const supabase = createClient()
 
     try {
+      // Update the current chapter to approved
       const { error } = await supabase
         .from('chapters')
         .update({
@@ -870,20 +871,77 @@ function StudioContent() {
 
       if (error) throw error
 
+      // Update local state
       const updatedChapters = [...chapters]
       updatedChapters[currentChapterIndex].status = 'approved'
       setChapters(updatedChapters)
       setChapterStatus('approved')
       setHasUnsavedChanges(false)
 
+      // Remove from unsaved chapters set
+      setUnsavedChapters(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(chapters[currentChapterIndex].id)
+        return newSet
+      })
+
       addAlexMessage(`✅ Chapter ${currentChapterIndex + 1} approved! Great work.`)
 
-      if (currentChapterIndex < chapters.length - 1) {
+      // 🆕 CHECK IF ALL CHAPTERS ARE NOW APPROVED
+      const allChaptersApproved = updatedChapters.every(ch => ch.status === 'approved')
+
+      if (allChaptersApproved && manuscript?.id) {
+        // 🆕 All chapters approved - trigger Alex's sign-off
+        await handleDevelopmentalPhaseComplete(supabase, updatedChapters)
+      } else if (currentChapterIndex < chapters.length - 1) {
+        // Move to next chapter if not all approved yet
         setTimeout(() => loadChapter(currentChapterIndex + 1), 1000)
       }
     } catch (error) {
       console.error('Approve error:', error)
       addAlexMessage('❌ Error approving chapter. Please try again.')
+    }
+  }
+
+  // 🆕 NEW FUNCTION: Handle Phase 1 Completion
+  async function handleDevelopmentalPhaseComplete(supabase: any, approvedChapters: Chapter[]) {
+    try {
+      // Collate all approved chapters into a single developmental version
+      const developmentalVersion = approvedChapters
+        .map(ch => `# Chapter ${ch.chapter_number}: ${ch.title}\n\n${ch.content || ''}`)
+        .join('\n\n---\n\n')
+
+      // Update manuscript with phase completion data
+      const { error: updateError } = await supabase
+        .from('manuscripts')
+        .update({
+          developmental_phase_completed_at: new Date().toISOString(),
+          developmental_version: developmentalVersion,
+          developmental_version_created_at: new Date().toISOString(),
+          status: 'developmental_complete'
+        })
+        .eq('id', manuscript?.id)
+
+      if (updateError) throw updateError
+
+      // 🎉 Alex's ceremonial sign-off message
+      setTimeout(() => {
+        addAlexMessage(
+          `🎉 **Incredible work, ${authorFirstName}!**\n\n` +
+          `You've successfully approved all ${approvedChapters.length} chapters. Your story structure is solid, your character arcs are clear, and the pacing flows beautifully.\n\n` +
+          `I'm genuinely proud of what we've accomplished together. The foundations of your manuscript are now rock-solid.\n\n` +
+          `**What happens next?**\n` +
+          `You're ready for **Phase 2: Line Editing with Sam**. Sam will work at the sentence level, polishing your prose and making sure every word sings. While I focused on the *what* and *why* of your story, Sam focuses on the *how* - the craft of beautiful writing.\n\n` +
+          `Take a moment to celebrate this milestone. When you're ready to begin Phase 2, we'll introduce you to Sam!\n\n` +
+          `*— Alex, Your Developmental Editor* 👔`
+        )
+      }, 1500)
+
+      console.log('✅ Developmental phase complete - snapshot saved')
+
+    } catch (error) {
+      console.error('Error completing developmental phase:', error)
+      addAlexMessage('✅ All chapters approved! There was an issue saving the final version, but your work is safe.')
     }
   }
 
