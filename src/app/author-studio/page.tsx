@@ -926,16 +926,15 @@ function StudioContent() {
 
       if (updateError) throw updateError
 
-      // 🎉 Alex's ceremonial sign-off message
+      // Alex's ceremonial sign-off message
       setTimeout(() => {
         addAlexMessage(
           `🎉 **Incredible work, ${authorFirstName}!**\n\n` +
           `You've successfully approved all ${approvedChapters.length} chapters. Your story structure is solid, your character arcs are clear, and the pacing flows beautifully.\n\n` +
           `I'm genuinely proud of what we've accomplished together. The foundations of your manuscript are now rock-solid.\n\n` +
           `**What happens next?**\n` +
-          `You're ready for **Phase 2: Line Editing with Sam**. Sam will work at the sentence level, polishing your prose and making sure every word sings. While I focused on the *what* and *why* of your story, Sam focuses on the *how* - the craft of beautiful writing.\n\n` +
-          `Take a moment to celebrate this milestone. When you're ready to begin Phase 2, we'll introduce you to Sam!\n\n` +
-          `*— Alex, Your Developmental Editor* 👔`
+          `You're ready for **Phase 2: Line Editing with Sam**. Sam will work at the sentence level, polishing your prose and making sure every word sings.\n\n` +
+          `[Click here to meet Sam and begin Phase 2 →](/phase-transition?manuscriptId=${manuscript?.id})`
         )
       }, 1500)
 
