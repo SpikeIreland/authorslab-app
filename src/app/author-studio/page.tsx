@@ -797,10 +797,6 @@ function StudioContent() {
   }
 
   // Alex chat
-  function addAlexMessage(message: string) {
-    setAlexMessages(prev => [...prev, { sender: 'Alex', message }])
-  }
-
   async function sendChatMessage() {
     if (!chatInput.trim()) return
 
@@ -842,13 +838,15 @@ function StudioContent() {
           message: userMessage,
           authorFirstName: localStorage.getItem('currentUserFirstName') || 'the author',
           context: {
-            manuscriptId: manuscript?.id, // ✅ ADD THIS - enables workflow to fetch summary & key points
+            manuscriptId: manuscript?.id, // ✅ ADDED for consistency
             chapter: currentChapterIndex + 1,
             chapterTitle: chapters[currentChapterIndex]?.title,
             chapterContent: editorContent,
             manuscriptTitle: manuscript?.title,
             analysisComplete: analysisComplete,
             currentChapterStatus: chapterStatus
+            // Note: issueDescription, alexSuggestion, issueType, issueSeverity 
+            // are only sent by discussIssue when discussing a specific issue
           }
         })
       })
