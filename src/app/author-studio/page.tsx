@@ -887,12 +887,12 @@ function StudioContent() {
 
       addAlexMessage(`✅ Chapter ${currentChapterIndex + 1} approved! Great work.`)
 
-      // 🆕 CHECK IF ALL CHAPTERS ARE NOW APPROVED
+      // CHECK IF ALL CHAPTERS ARE NOW APPROVED
       const allChaptersApproved = updatedChapters.every(ch => ch.status === 'approved')
 
       if (allChaptersApproved && manuscript?.id) {
-        // 🆕 All chapters approved - trigger Alex's sign-off
-        await handleDevelopmentalPhaseComplete(supabase, updatedChapters)
+        // All chapters approved - trigger Alex's sign-off
+        await handleDevelopmentalPhaseComplete(updatedChapters)
       } else if (currentChapterIndex < chapters.length - 1) {
         // Move to next chapter if not all approved yet
         setTimeout(() => loadChapter(currentChapterIndex + 1), 1000)
@@ -903,8 +903,10 @@ function StudioContent() {
     }
   }
 
-  // 🆕 NEW FUNCTION: Handle Phase 1 Completion
-  async function handleDevelopmentalPhaseComplete(supabase: any, approvedChapters: Chapter[]) {
+  // NEW FUNCTION: Handle Phase 1 Completion
+  async function handleDevelopmentalPhaseComplete(approvedChapters: Chapter[]) {
+    const supabase = createClient()
+
     try {
       // Collate all approved chapters into a single developmental version
       const developmentalVersion = approvedChapters
