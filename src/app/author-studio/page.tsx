@@ -908,6 +908,8 @@ function StudioContent() {
     const supabase = createClient()
 
     try {
+      const currentChapter = chapters[currentChapterIndex]  // 🆕 Get the actual chapter object
+
       // Update the current chapter to approved
       const { error } = await supabase
         .from('chapters')
@@ -915,7 +917,7 @@ function StudioContent() {
           status: 'approved',
           content: editorContent
         })
-        .eq('id', chapters[currentChapterIndex].id)
+        .eq('id', currentChapter.id)  // 🆕 Use currentChapter.id
 
       if (error) throw error
 
@@ -929,11 +931,16 @@ function StudioContent() {
       // Remove from unsaved chapters set
       setUnsavedChapters(prev => {
         const newSet = new Set(prev)
-        newSet.delete(chapters[currentChapterIndex].id)
+        newSet.delete(currentChapter.id)  // 🆕 Use currentChapter.id
         return newSet
       })
 
-      addAlexMessage(`✅ Chapter ${currentChapterIndex + 1} approved! Great work.`)
+      // 🆕 FIX: Use actual chapter number and title
+      const chapterLabel = currentChapter.chapter_number === 0
+        ? 'Prologue'
+        : `Chapter ${currentChapter.chapter_number}`
+
+      addAlexMessage(`✅ ${chapterLabel} approved! Great work.`)
 
       // CHECK IF ALL CHAPTERS ARE NOW APPROVED
       const allChaptersApproved = updatedChapters.every(ch => ch.status === 'approved')
@@ -951,14 +958,18 @@ function StudioContent() {
     }
   }
 
-  // NEW FUNCTION: Handle Phase 1 Completion
   async function handleDevelopmentalPhaseComplete(approvedChapters: Chapter[]) {
     const supabase = createClient()
 
     try {
+      console.log('🎉 All chapters approved! Starting Phase 1 completion...', approvedChapters.length)
+
       // Collate all approved chapters into a single developmental version
       const developmentalVersion = approvedChapters
-        .map(ch => `# Chapter ${ch.chapter_number}: ${ch.title}\n\n${ch.content || ''}`)
+        .map(ch => {
+          const chapterLabel = ch.chapter_number === 0 ? 'Prologue' : `Chapter ${ch.chapter_number}`
+          return `# ${chapterLabel}: ${ch.title}\n\n${ch.content || ''}`
+        })
         .join('\n\n---\n\n')
 
       // Update manuscript with phase completion data
@@ -974,6 +985,12 @@ function StudioContent() {
 
       if (updateError) throw updateError
 
+      console.log('✅ Manuscript status updated to developmental_complete')
+
+      // Show banner immediately
+      setShowPhase2Banner(true)
+      console.log('✅ Phase 2 banner flag set to true')
+
       // Alex's ceremonial sign-off message
       setTimeout(() => {
         addAlexMessage(
@@ -981,8 +998,9 @@ function StudioContent() {
           `You've successfully approved all ${approvedChapters.length} chapters. Your story structure is solid, your character arcs are clear, and the pacing flows beautifully.\n\n` +
           `I'm genuinely proud of what we've accomplished together. The foundations of your manuscript are now rock-solid.\n\n` +
           `**What happens next?**\n` +
-          `You're ready for **Phase 2: Line Editing with Sam**. Sam will work at the sentence level, polishing your prose and making sure every word sings.\n\n` +
-          `[Click here to meet Sam and begin Phase 2 →](/phase-transition?manuscriptId=${manuscript?.id})`
+          `You're ready for **Phase 2: Line Editing with Sam**. Sam will work at the sentence level, polishing your prose and making sure every word sings. While I focused on the *what* and *why* of your story, Sam focuses on the *how* - the craft of beautiful writing.\n\n` +
+          `Take a moment to celebrate this milestone. Look at the top of your screen for the colorful banner to meet Sam and begin Phase 2!\n\n` +
+          `*— Alex, Your Developmental Editor* 👔`
         )
       }, 1500)
 
