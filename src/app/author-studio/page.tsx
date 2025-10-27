@@ -359,98 +359,120 @@ function StudioContent() {
         const firstName = localStorage.getItem('currentUserFirstName') || 'there'
         setAuthorFirstName(firstName)
 
-        // Alex's greeting - Different based on analysis status
-        if (manuscriptData.full_analysis_completed_at) {
-          // Returning user - analysis already done
+
+        // Get author's first name from localStorage
+        const firstName = localStorage.getItem('currentUserFirstName') || 'there'
+        setAuthorFirstName(firstName)
+
+        // 🆕 Phase-specific greetings
+        if (currentPhase === 2) {
+          // Sam's greeting for Phase 2
           addAlexMessage(
-            `Hi ${authorFirstName}! Welcome back. What do you want to work on today? Click on any chapter and let's get started.`
+            `Hey ${firstName}! I'm Sam, your line editor. ✨\n\n` +
+            `I've read the fantastic work you and Alex did together on "${manuscriptData.title}". The structure is solid—now let's make every sentence shine!\n\n` +
+            `**How We'll Work Together:**\n` +
+            `Click on any chapter to start refining your prose. We'll focus on:\n` +
+            `• **Word choice** - Finding the perfect word for maximum impact\n` +
+            `• **Rhythm & flow** - Making sentences smooth and natural\n` +
+            `• **Voice consistency** - Strengthening your unique style\n` +
+            `• **Dialogue** - Making conversations feel authentic\n` +
+            `• **Clarity** - Ensuring every sentence is crystal clear\n\n` +
+            `Unlike Alex who focused on story structure, I work at the sentence level. Every word matters.\n\n` +
+            `Ready to polish your prose? Click any chapter to begin! 📝`
           )
         } else {
-          // New user - needs initial instructions
-          addAlexMessage(
-            `Welcome! I'm Alex, your developmental editor. I can see you've uploaded "${manuscriptData.title}" with ${chaptersData.length} chapters.\n\n` +
-            `Before we dive in, let me explain how we'll work together:\n\n` +
-            `**Step 1: Manuscript Review**\n` +
-            `First, I'll read your entire manuscript and create a comprehensive analysis report. You'll receive this by email and can review it anytime.\n\n` +
-            `**Step 2: Chapter-by-Chapter Editing**\n` +
-            `Once you're ready to edit, just click on any chapter and hit "Start Editing." I'll pull up my specific notes for that chapter and we'll work through them together.\n\n` +
-            `**Before We Start:**\n` +
-            `✏️ Check that all chapter titles are correct (click the ✏️ icon to edit)\n` +
-            `🧹 Make sure you've removed page numbers, headers, and copyright text\n` +
-            `📝 Edit any content that needs cleaning up in the main editor\n` +
-            `💾 Click "Save" when you make changes\n\n` +
-            `Once you're happy with everything, just click the button below or type **"Please read my manuscript"** and I'll dive in!`
-          )
-        }
-      } else {
-        // Chapters still being parsed
-        const pollingMessages = [
-          'Parsing chapters... Just a moment...',
-          'Analyzing chapter structure...',
-          'Almost there...',
-          'Finalizing chapter data...'
-        ]
-
-        let messageIndex = 0
-        setLoadingMessage(pollingMessages[0])
-
-        const messageInterval = setInterval(() => {
-          messageIndex = (messageIndex + 1) % pollingMessages.length
-          setLoadingMessage(pollingMessages[messageIndex])
-        }, 5000)
-
-        let pollCount = 0
-        const maxPolls = 20
-
-        const pollInterval = setInterval(async () => {
-          pollCount++
-          console.log(`Polling for chapters (${pollCount}/${maxPolls})...`)
-
-          const { data: retryChapters } = await supabase
-            .from('chapters')
-            .select('*')
-            .eq('manuscript_id', manuscriptId)
-            .order('chapter_number', { ascending: true })
-
-          if (retryChapters && retryChapters.length > 0) {
-            console.log('✅ Chapters now available:', retryChapters.length)
-            clearInterval(pollInterval)
-            clearInterval(messageInterval)
-            setChapters(retryChapters)
-
-            // Initialize chapter editing status
-            const initialStatus: { [key: number]: ChapterEditingStatus } = {}
-            retryChapters.forEach(ch => {
-              initialStatus[ch.chapter_number] = 'not_started'
-            })
-            setChapterEditingStatus(initialStatus)
-
-            setIsLoading(false)
-            loadChapter(0, retryChapters)
-
+          // Alex's greeting - Different based on analysis status
+          if (manuscriptData.full_analysis_completed_at) {
+            // Returning user - analysis already done
             addAlexMessage(
-              `Great! I've finished parsing your manuscript into ${retryChapters.length} chapters. ` +
-              `Ready to begin?`
+              `Hi ${firstName}! Welcome back. What do you want to work on today? Click on any chapter and let's get started.`
             )
-          } else if (pollCount >= maxPolls) {
-            console.warn('⚠️ Chapters not found after polling')
-            clearInterval(pollInterval)
-            clearInterval(messageInterval)
-            setIsLoading(false)
+          } else {
+            // New user - needs initial instructions
             addAlexMessage(
-              'Your manuscript was uploaded successfully, but chapters are still being processed. ' +
-              'Please refresh the page in a moment to see your chapters.'
+              `Welcome! I'm Alex, your developmental editor. I can see you've uploaded "${manuscriptData.title}" with ${chaptersData.length} chapters.\n\n` +
+              `Before we dive in, let me explain how we'll work together:\n\n` +
+              `**Step 1: Manuscript Review**\n` +
+              `First, I'll read your entire manuscript and create a comprehensive analysis report. You'll receive this by email and can review it anytime.\n\n` +
+              `**Step 2: Chapter-by-Chapter Editing**\n` +
+              `Once you're ready to edit, just click on any chapter and hit "Start Editing." I'll pull up my specific notes for that chapter and we'll work through them together.\n\n` +
+              `**Before We Start:**\n` +
+              `✏️ Check that all chapter titles are correct (click the ✏️ icon to edit)\n` +
+              `🧹 Make sure you've removed page numbers, headers, and copyright text\n` +
+              `📝 Edit any content that needs cleaning up in the main editor\n` +
+              `💾 Click "Save" when you make changes\n\n` +
+              `Once you're happy with everything, just click the button below or type **"Please read my manuscript"** and I'll dive in!`
             )
           }
-        }, 3000)
-      }
+        } else {
+          // Chapters still being parsed
+          const pollingMessages = [
+            'Parsing chapters... Just a moment...',
+            'Analyzing chapter structure...',
+            'Almost there...',
+            'Finalizing chapter data...'
+          ]
 
-    } catch (error) {
-      console.error('Studio initialization error:', error)
-      setIsLoading(false)
-      addAlexMessage(`❌ Error loading your manuscript: ${error instanceof Error ? error.message : 'Unknown error'}`)
-    }
-  }, [searchParams, router])
+          let messageIndex = 0
+          setLoadingMessage(pollingMessages[0])
+
+          const messageInterval = setInterval(() => {
+            messageIndex = (messageIndex + 1) % pollingMessages.length
+            setLoadingMessage(pollingMessages[messageIndex])
+          }, 5000)
+
+          let pollCount = 0
+          const maxPolls = 20
+
+          const pollInterval = setInterval(async () => {
+            pollCount++
+            console.log(`Polling for chapters (${pollCount}/${maxPolls})...`)
+
+            const { data: retryChapters } = await supabase
+              .from('chapters')
+              .select('*')
+              .eq('manuscript_id', manuscriptId)
+              .order('chapter_number', { ascending: true })
+
+            if (retryChapters && retryChapters.length > 0) {
+              console.log('✅ Chapters now available:', retryChapters.length)
+              clearInterval(pollInterval)
+              clearInterval(messageInterval)
+              setChapters(retryChapters)
+
+              // Initialize chapter editing status
+              const initialStatus: { [key: number]: ChapterEditingStatus } = {}
+              retryChapters.forEach(ch => {
+                initialStatus[ch.chapter_number] = 'not_started'
+              })
+              setChapterEditingStatus(initialStatus)
+
+              setIsLoading(false)
+              loadChapter(0, retryChapters)
+
+              addAlexMessage(
+                `Great! I've finished parsing your manuscript into ${retryChapters.length} chapters. ` +
+                `Ready to begin?`
+              )
+            } else if (pollCount >= maxPolls) {
+              console.warn('⚠️ Chapters not found after polling')
+              clearInterval(pollInterval)
+              clearInterval(messageInterval)
+              setIsLoading(false)
+              addAlexMessage(
+                'Your manuscript was uploaded successfully, but chapters are still being processed. ' +
+                'Please refresh the page in a moment to see your chapters.'
+              )
+            }
+          }, 3000)
+        }
+
+      } catch (error) {
+        console.error('Studio initialization error:', error)
+        setIsLoading(false)
+        addAlexMessage(`❌ Error loading your manuscript: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
+    }, [searchParams, router])
 
   useEffect(() => {
     initializeStudio()
@@ -1618,8 +1640,8 @@ function StudioContent() {
         <div className="bg-white flex flex-col overflow-hidden">
           {/* Editor header with Report button */}
           <div className={`bg-gradient-to-r ${currentPhase === 2
-              ? 'from-purple-500 to-purple-600'
-              : 'from-green-500 to-green-600'
+            ? 'from-purple-500 to-purple-600'
+            : 'from-green-500 to-green-600'
             } text-white p-5 flex items-center justify-between`}>
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl font-bold">
