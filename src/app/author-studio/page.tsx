@@ -283,9 +283,9 @@ function StudioContent() {
       // Load manuscript details - verify it belongs to this author
       const { data: manuscriptData, error: manuscriptError } = await supabase
         .from('manuscripts')
-        .select('id, title, genre, current_word_count, total_chapters, status, full_text, full_analysis_completed_at, analysis_started_at')
+        .select('*')
         .eq('id', manuscriptId)
-        .eq('author_id', authorProfileId)  // ADD THIS LINE
+        .eq('author_id', authorProfileId)
         .maybeSingle()
 
       if (manuscriptError) {
@@ -296,8 +296,6 @@ function StudioContent() {
       if (!manuscriptData) {
         throw new Error('Manuscript not found')
       }
-
-      console.log('Loaded manuscript:', manuscriptData)
 
       setManuscript(manuscriptData)
 
