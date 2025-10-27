@@ -230,7 +230,8 @@ function StudioContent() {
   const discussIssue = async (issue: ManuscriptIssue) => {
     const userMessage = `Discussion Note: "${issue.issue_description}"`
 
-    setAlexMessages(prev => [...prev, { sender: 'You', message: userMessage }])
+    // Changed from 'You' to 'Discussion Point'
+    setAlexMessages(prev => [...prev, { sender: 'Discussion Point', message: userMessage }])
 
     setTimeout(scrollToBottom, 100)
 
@@ -243,9 +244,9 @@ function StudioContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: userMessage,
-          authorFirstName: localStorage.getItem('currentUserFirstName') || 'the author', // ADD THIS
+          authorFirstName: localStorage.getItem('currentUserFirstName') || 'the author',
           context: {
-            manuscriptId: manuscript?.id, // ✅ ADD THIS LINE
+            manuscriptId: manuscript?.id,
             chapter: currentChapterIndex + 1,
             chapterTitle: chapters[currentChapterIndex]?.title,
             chapterContent: editorContent,
