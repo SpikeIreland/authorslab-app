@@ -275,7 +275,7 @@ function StudioContent() {
       setLoadingMessage('Loading manuscript from database...')
       const supabase = createClient()
 
-      // 🆕 Get user from session instead of URL params
+      // Get user from session instead of URL params
       const { data: { user }, error: userError } = await supabase.auth.getUser()
 
       if (userError || !user) {
@@ -284,11 +284,13 @@ function StudioContent() {
         return
       }
 
+      console.log('✅ Authenticated user:', user.id)
+
       // Get author profile using the authenticated user ID
       const { data: authorProfile, error: profileError } = await supabase
         .from('author_profiles')
         .select('id')
-        .eq('id', user.id)  // 🆕 Changed from 'user_id' to 'id'
+        .eq('auth_user_id', user.id)  // 🆕 Changed to 'auth_user_id'
         .maybeSingle()
 
       console.log('Author profile query result:', { authorProfile, profileError })
