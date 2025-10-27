@@ -284,18 +284,28 @@ function StudioContent() {
         return
       }
 
-      // 🆕 Get author profile using the authenticated user ID
+      // Get author profile using the authenticated user ID
       const { data: authorProfile, error: profileError } = await supabase
         .from('author_profiles')
         .select('id')
         .eq('user_id', user.id)
-        .single()
+        .maybeSingle()
 
-      if (profileError || !authorProfile) {
-        console.error('Author profile not found:', profileError)
+      console.log('Author profile query result:', { authorProfile, profileError })
+
+      if (profileError) {
+        console.error('Author profile query error:', profileError)
         router.push('/onboarding')
         return
       }
+
+      if (!authorProfile) {
+        console.error('No author profile found for user:', user.id)
+        router.push('/onboarding')
+        return
+      }
+
+      console.log('✅ Author profile found:', authorProfile.id)
 
       const authorProfileId = authorProfile.id
 
