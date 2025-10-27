@@ -923,7 +923,7 @@ function StudioContent() {
       }, 30000) // 30 seconds in
 
       // Start polling
-      pollForSamReadCompletion()
+      pollForSamReadCompletion(manuscriptId)
 
     } catch (error) {
       console.error('Error triggering Sam read:', error)
@@ -1294,9 +1294,6 @@ function StudioContent() {
             : 'from-green-500 to-green-600'
             } rounded-full flex items-center justify-center text-white font-semibold`}>
             {currentPhase === 2 ? 'S' : 'A'}
-          </div>
-          <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-semibold">
-            A
           </div>
         </div>
       </header>
