@@ -15,7 +15,7 @@ function TransitionContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const manuscriptId = searchParams.get('manuscriptId')
-  
+
   const [manuscript, setManuscript] = useState<Manuscript | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isStartingPhase2, setIsStartingPhase2] = useState(false)
@@ -49,11 +49,19 @@ function TransitionContent() {
 
   async function beginPhase2() {
     if (!manuscriptId) return
-    
+
     setIsStartingPhase2(true)
     const supabase = createClient()
 
     try {
+      // Verify auth before proceeding
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        console.error('Not authenticated')
+        router.push('/login')
+        return
+      }
+
       // Update manuscript to Phase 2
       const { error } = await supabase
         .from('manuscripts')
@@ -124,7 +132,7 @@ function TransitionContent() {
                 <p className="text-green-600 font-semibold">Developmental Editor</p>
               </div>
             </div>
-            
+
             <div className="bg-green-50 rounded-xl p-6 mb-6">
               <p className="text-gray-800 leading-relaxed mb-4">
                 &ldquo;We&apos;ve done incredible work together. Your story structure is strong, your character arcs are clear, and the pacing flows beautifully.&rdquo;
@@ -165,7 +173,7 @@ function TransitionContent() {
                 <p className="text-purple-600 font-semibold">Line Editor</p>
               </div>
             </div>
-            
+
             <div className="bg-purple-50 rounded-xl p-6 mb-6">
               <p className="text-gray-800 leading-relaxed mb-4">
                 &ldquo;Hey! I&apos;ve read what you and Alex accomplished together—impressive work. Now let&apos;s make your prose sing.&rdquo;
@@ -199,7 +207,7 @@ function TransitionContent() {
         {/* What's Different in Phase 2 */}
         <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">What Changes in Phase 2?</h2>
-          
+
           <div className="grid md:grid-cols-3 gap-6">
             <div>
               <div className="text-3xl mb-3">🔍</div>
@@ -208,7 +216,7 @@ function TransitionContent() {
                 We zoom in from story structure to individual sentences and word choices.
               </p>
             </div>
-            
+
             <div>
               <div className="text-3xl mb-3">🎨</div>
               <h3 className="font-bold text-gray-900 mb-2">Prose Crafting</h3>
@@ -216,7 +224,7 @@ function TransitionContent() {
                 Sam helps you find the perfect word, smooth the rhythm, and strengthen your voice.
               </p>
             </div>
-            
+
             <div>
               <div className="text-3xl mb-3">⚡</div>
               <h3 className="font-bold text-gray-900 mb-2">Same Workspace</h3>
@@ -245,7 +253,7 @@ function TransitionContent() {
               </>
             )}
           </button>
-          
+
           <p className="text-gray-500 text-sm mt-4">
             You can always return to view your Phase 1 analysis
           </p>
