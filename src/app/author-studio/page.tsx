@@ -133,12 +133,19 @@ function StudioContent() {
   // Handover banner state
   const [showPhase2Banner, setShowPhase2Banner] = useState(false)
 
+  // Sam's Reading Status
+  const [samReadingInProgress, setSamReadingInProgress] = useState(false)
+
   const WEBHOOKS = {
-    fullAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-full-manuscript-analysis',
-    generateSummaryPoints: 'https://spikeislandstudios.app.n8n.cloud/webhook/generate-summary-points',
-    chapterAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-chapter-analysis',
     alexChat: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-chat',
-    chapterSummaries: 'https://spikeislandstudios.app.n8n.cloud/webhook/generate-chapter-summaries'
+    samChat: 'https://spikeislandstudios.app.n8n.cloud/webhook/sam-chat',
+    alexChapterAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-chapter-analysis',
+    samChapterAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/sam-chapter-analysis',
+    samFullManuscriptAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/sam-full-manuscript-analysis', // 🆕
+    fullAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-full-manuscript-analysis',
+    generateSummary: 'https://spikeislandstudios.app.n8n.cloud/webhook/generate-summary-points',
+    generateChapterSummaries: 'https://spikeislandstudios.app.n8n.cloud/webhook/generate-chapter-summaries',
+    onboarding: 'https://spikeislandstudios.app.n8n.cloud/webhook/onboarding'
   }
 
   // Scroll to bottom function
@@ -343,7 +350,22 @@ function StudioContent() {
         setCurrentPhase(2)
         setEditorName('Sam')
         setEditorColor('purple')
-        setShowPhase2Banner(false) // Hide banner if in Phase 2
+        setShowPhase2Banner(false)
+
+        // 🆕 Check if Sam needs to read the manuscript
+        if (manuscriptData.line_editing_started_at && !manuscriptData.line_editing_ready_at) {
+          // Sam has started but hasn't finished reading yet
+          console.log('Sam is reading... starting poll')
+          setSamReadingInProgress(true)
+          pollForSamReadCompletion()
+        } else if (!manuscriptData.line_editing_ready_at) {
+          // First time in Phase 2 - Sam hasn't read yet
+          console.log('First time in Phase 2 - triggering Sam read')
+          // Trigger read after a short delay to let the page settle
+          setTimeout(() => {
+            triggerSamInitialRead()
+          }, 1000)
+        }
       } else {
         setCurrentPhase(1)
         setEditorName('Alex')
@@ -391,20 +413,19 @@ function StudioContent() {
 
         // Phase-specific greetings
         if (currentPhase === 2) {
-          // Sam's greeting for Phase 2
-          addAlexMessage(
-            `Hey ${firstName}! I'm Sam, your line editor. ✨\n\n` +
-            `I've read the fantastic work you and Alex did together on "${manuscriptData.title}". The structure is solid—now let's make every sentence shine!\n\n` +
-            `**How We'll Work Together:**\n` +
-            `Click on any chapter to start refining your prose. We'll focus on:\n` +
-            `• **Word choice** - Finding the perfect word for maximum impact\n` +
-            `• **Rhythm & flow** - Making sentences smooth and natural\n` +
-            `• **Voice consistency** - Strengthening your unique style\n` +
-            `• **Dialogue** - Making conversations feel authentic\n` +
-            `• **Clarity** - Ensuring every sentence is crystal clear\n\n` +
-            `Unlike Alex who focused on story structure, I work at the sentence level. Every word matters.\n\n` +
-            `Ready to polish your prose? Click any chapter to begin! 📝`
-          )
+          // Check if Sam has already read
+          if (manuscriptData.line_editing_ready_at && manuscriptData.sam_initial_thoughts) {
+            // Sam already read - show his thoughts + ready message
+            addAlexMessage(manuscriptData.sam_initial_thoughts)
+
+            setTimeout(() => {
+              addAlexMessage(
+                `Welcome back! Ready to continue polishing?\n\n` +
+                `Click "Start Editing" on any chapter for my specific line-editing suggestions. Let's make your prose shine! ✨`
+              )
+            }, 1000)
+          }
+          // If not ready, the triggerSamInitialRead will handle the welcome
         } else {
           // Alex's greeting - Different based on analysis status
           if (manuscriptData.full_analysis_completed_at) {
@@ -825,6 +846,64 @@ function StudioContent() {
     }
   }
 
+  async function triggerSamInitialRead() {
+    if (!manuscript?.id) return
+
+    console.log('🆕 Triggering Sam initial read...')
+    setSamReadingInProgress(true)
+
+    addAlexMessage(
+      `Hey ${authorFirstName}! I'm Sam, your line editor. ✨\n\n` +
+      `I've already reviewed the fantastic structural work you and Alex accomplished together on "${manuscript.title}". Alex did incredible work on your story architecture—now let's make every sentence sing!\n\n` +
+      `${manuscript.genre ? manuscript.genre + ' novels' : 'Novels like yours'} need rich, immersive prose that transports readers. We're going to polish your language until it shimmers.\n\n` +
+      `Give me just a couple of minutes to read through your approved manuscript and I'll share my initial thoughts. In the meantime, feel free to look around! 📚`
+    )
+
+    const supabase = createClient()
+
+    try {
+      // Update manuscript status
+      await supabase
+        .from('manuscripts')
+        .update({
+          status: 'sam_reading'
+        })
+        .eq('id', manuscript.id)
+
+      // Fire webhook (ignore CORS)
+      fetch(WEBHOOKS.samFullManuscriptAnalysis, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          manuscriptId: manuscript.id,
+          userId: manuscript.author_id
+        })
+      }).catch(() => console.log('✅ Sam read webhook triggered (CORS expected)'))
+
+      // Add "reading" status message
+      setTimeout(() => {
+        addAlexMessage(
+          `📖 Reading through your manuscript now...\n\n` +
+          `I'm loving what I'm seeing so far. I'm paying special attention to:\n` +
+          `• Word choice and precision\n` +
+          `• Sentence flow and variety\n` +
+          `• Dialogue authenticity\n` +
+          `• Sensory immersion\n` +
+          `• Voice consistency\n\n` +
+          `Almost done! ⏳`
+        )
+      }, 30000) // 30 seconds in
+
+      // Start polling
+      pollForSamReadCompletion()
+
+    } catch (error) {
+      console.error('Error triggering Sam read:', error)
+      setSamReadingInProgress(false)
+      addAlexMessage('❌ There was an issue starting. Please refresh and try again.')
+    }
+  }
+
   // Poll database for analysis completion
   const pollForAnalysisCompletion = async () => {
     const supabase = createClient()
@@ -863,6 +942,55 @@ function StudioContent() {
         addAlexMessage('⚠️ Analysis is taking longer than expected. Please check your email or refresh the page in a few minutes.')
       }
     }, 3000)
+  }
+
+  async function pollForSamReadCompletion() {
+    const supabase = createClient()
+    let pollCount = 0
+    const maxPolls = 40 // 40 x 5 sec = 3.3 minutes max
+
+    const pollInterval = setInterval(async () => {
+      pollCount++
+      console.log(`Polling for Sam read completion (${pollCount}/${maxPolls})...`)
+
+      const { data: manuscriptData } = await supabase
+        .from('manuscripts')
+        .select('line_editing_ready_at, sam_initial_thoughts')
+        .eq('id', manuscript?.id)
+        .single()
+
+      if (manuscriptData?.line_editing_ready_at) {
+        console.log('✅ Sam finished reading!')
+        clearInterval(pollInterval)
+        setSamReadingInProgress(false)
+
+        // Display Sam's thoughts
+        if (manuscriptData.sam_initial_thoughts) {
+          setTimeout(() => {
+            addAlexMessage(manuscriptData.sam_initial_thoughts)
+
+            // Instructions
+            setTimeout(() => {
+              addAlexMessage(
+                `**Ready to dive in?**\n\n` +
+                `Click "Start Editing" on any chapter and I'll give you specific, line-by-line suggestions. ` +
+                `We'll work through this together, one chapter at a time.\n\n` +
+                `I'm genuinely excited about this manuscript. Let's make it shine! ✨`
+              )
+            }, 2000)
+          }, 1500)
+        }
+
+        return
+      }
+
+      if (pollCount >= maxPolls) {
+        console.log('⚠️ Polling timeout - Sam read took too long')
+        clearInterval(pollInterval)
+        setSamReadingInProgress(false)
+        addAlexMessage('⚠️ This is taking longer than expected. Please refresh the page in a moment.')
+      }
+    }, 5000) // Poll every 5 seconds
   }
 
   // Alex chat
