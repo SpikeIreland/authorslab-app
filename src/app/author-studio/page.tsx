@@ -936,7 +936,7 @@ function StudioContent() {
   const pollForAnalysisCompletion = async () => {
     const supabase = createClient()
     let attempts = 0
-    const maxAttempts = 60 // 3 minutes (every 3 seconds)
+    const maxAttempts = 140 // 7 minutes (140 x 3 sec = 420 sec)
 
     const pollInterval = setInterval(async () => {
       attempts++
