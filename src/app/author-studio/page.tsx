@@ -821,7 +821,7 @@ function StudioContent() {
         }),
 
         // Chapter summaries (for chapter analysis context)
-        fetch(WEBHOOKS.chapterSummaries, {
+        fetch(WEBHOOKS.generateChapterSummaries, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
