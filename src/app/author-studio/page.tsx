@@ -12,7 +12,6 @@ import { BookOpen, CheckCircle } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 
-// Type definitions
 interface Manuscript {
   id: string
   title: string
@@ -23,12 +22,15 @@ interface Manuscript {
   full_text?: string
   full_analysis_completed_at?: string
   analysis_started_at?: string
-  developmental_phase_completed_at?: string  // 🆕 Add this
-  line_editing_started_at?: string  // 🆕 Add this
-  developmental_version?: string  // 🆕 Add this
-  developmental_version_created_at?: string  // 🆕 Add this
+  developmental_phase_completed_at?: string
+  line_editing_started_at?: string
+  developmental_version?: string
+  developmental_version_created_at?: string
   manuscript_summary?: string
   full_analysis_key_points?: string
+  author_id: string  // 🆕 Add this
+  line_editing_ready_at?: string  // 🆕 Add this too while we're here
+  sam_initial_thoughts?: string  // 🆕 And this
 }
 
 interface Chapter {
