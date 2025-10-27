@@ -121,6 +121,9 @@ function StudioContent() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const alexMessagesRef = useRef<HTMLDivElement>(null)
 
+  // Handover banner state
+  const [showPhase2Banner, setShowPhase2Banner] = useState(false)
+
   const WEBHOOKS = {
     fullAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-full-manuscript-analysis',
     generateSummaryPoints: 'https://spikeislandstudios.app.n8n.cloud/webhook/generate-summary-points',
@@ -289,7 +292,13 @@ function StudioContent() {
       }
 
       console.log('Loaded manuscript:', manuscriptData)
+
       setManuscript(manuscriptData)
+
+      // 🆕 Check if Phase 1 is complete and Phase 2 hasn't started
+      if (manuscriptData.developmental_phase_completed_at && !manuscriptData.line_editing_started_at) {
+        setShowPhase2Banner(true)
+      }
 
       // Check if full analysis is already complete
       if (manuscriptData.full_analysis_completed_at) {
@@ -1032,6 +1041,42 @@ function StudioContent() {
         </div>
       </header>
 
+      {/* 🆕 Phase 2 Transition Banner */}
+      {
+        showPhase2Banner && (
+          <div className="bg-gradient-to-r from-green-500 via-purple-500 to-purple-600 text-white shadow-lg">
+            <div className="container mx-auto px-6 py-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="text-2xl">🎉</div>
+                  <div>
+                    <div className="font-bold text-base">Phase 1 Complete! Ready for Phase 2?</div>
+                    <div className="text-sm text-white/90">
+                      All chapters approved. Time to meet Sam and polish your prose!
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Link
+                    href={`/phase-transition?manuscriptId=${manuscript?.id}`}
+                    className="bg-white text-purple-600 px-6 py-2 rounded-lg font-bold hover:bg-gray-100 transition-colors shadow-md"
+                  >
+                    Meet Sam & Begin Phase 2 →
+                  </Link>
+                  <button
+                    onClick={() => setShowPhase2Banner(false)}
+                    className="text-white/80 hover:text-white text-2xl px-2 leading-none"
+                    title="Dismiss banner"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      }
+
       {/* Main Layout: Adjust columns based on panels open */}
       <div className={`flex-1 grid ${isChapterSidebarCollapsed
         ? (showIssuesPanel ? 'grid-cols-[60px_1fr_400px_400px]' : 'grid-cols-[60px_1fr_400px]')
@@ -1595,66 +1640,70 @@ function StudioContent() {
       </div>
 
       {/* === ADD THE BUTTON HERE === */}
-      {!analysisComplete && !fullAnalysisInProgress && (
-        <div className="px-6 py-4 bg-green-50 border-t border-green-200">
-          <button
-            onClick={triggerFullAnalysis}
-            className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-4 rounded-lg font-bold text-lg hover:from-green-600 hover:to-green-700 transition-all shadow-md hover:shadow-lg"
-          >
-            📖 Please Read My Manuscript
-          </button>
-          <p className="text-xs text-gray-600 text-center mt-2">
-            This takes about 5 minutes and you&apos;ll get a comprehensive report by email.
-          </p>
-        </div>
-      )}
+      {
+        !analysisComplete && !fullAnalysisInProgress && (
+          <div className="px-6 py-4 bg-green-50 border-t border-green-200">
+            <button
+              onClick={triggerFullAnalysis}
+              className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-4 rounded-lg font-bold text-lg hover:from-green-600 hover:to-green-700 transition-all shadow-md hover:shadow-lg"
+            >
+              📖 Please Read My Manuscript
+            </button>
+            <p className="text-xs text-gray-600 text-center mt-2">
+              This takes about 5 minutes and you&apos;ll get a comprehensive report by email.
+            </p>
+          </div>
+        )
+      }
 
       {/* Report Overlay Panel */}
-      {showReportPanel && fullReportPdfUrl && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-8">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full h-[90vh] flex flex-col">
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-green-100">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-bold">
-                  A
+      {
+        showReportPanel && fullReportPdfUrl && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-8">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full h-[90vh] flex flex-col">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-green-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-bold">
+                    A
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">Alex Comprehensive Analysis</h3>
+                    <p className="text-sm text-gray-600">Full Manuscript Report</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900">Alex Comprehensive Analysis</h3>
-                  <p className="text-sm text-gray-600">Full Manuscript Report</p>
+                <div className="flex items-center gap-3">
+
+                  <a href={fullReportPdfUrl}
+                    download
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-all flex items-center gap-2"
+                  >
+                    <span>⬇️</span> Download PDF
+                  </a>
+                  <button
+                    onClick={() => setShowReportPanel(false)}
+                    className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-300 transition-all"
+                  >
+                    ✕ Close
+                  </button>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
 
-                <a href={fullReportPdfUrl}
-                  download
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-all flex items-center gap-2"
-                >
-                  <span>⬇️</span> Download PDF
-                </a>
-                <button
-                  onClick={() => setShowReportPanel(false)}
-                  className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-300 transition-all"
-                >
-                  ✕ Close
-                </button>
+              {/* PDF Viewer */}
+              <div className="flex-1 overflow-hidden">
+                <iframe
+                  src={fullReportPdfUrl}
+                  className="w-full h-full"
+                  title="Alex's Comprehensive Analysis Report"
+                />
               </div>
-            </div>
-
-            {/* PDF Viewer */}
-            <div className="flex-1 overflow-hidden">
-              <iframe
-                src={fullReportPdfUrl}
-                className="w-full h-full"
-                title="Alex's Comprehensive Analysis Report"
-              />
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   )
 }
 
