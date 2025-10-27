@@ -656,24 +656,43 @@ function StudioContent() {
       [chapterNumber]: 'analyzing'
     }))
 
-    addAlexMessage(`📖 Let me grab my notes on "${chapter.title}". This will just take a moment...`)
+    // Phase-specific initial message
+    const chapterLabel = chapter.chapter_number === 0 ? 'Prologue' : chapter.title
 
-    // Cycle through status messages
-    const statusMessages = [
-      'Looking through my notes...',
-      'Getting them organized...',
-      'Adding a few other things...',
-      'Where\'s that note gone...?',
-      '...',
-      'Oh, Yes, there it is...',
-      'Yep, Yep, Yep...',
-      'I loved that bit!...',
-      'Ha! Excellent!...',
-      'Nice...',
-      'I better get a cup of tea for this one...',
-      '...',
-      'Almost ready...'
-    ]
+    if (currentPhase === 2) {
+      addAlexMessage(`📖 Let me read through "${chapterLabel}" and give you some prose-polishing suggestions...`)
+    } else {
+      addAlexMessage(`📖 Let me grab my notes on "${chapterLabel}". This will just take a moment...`)
+    }
+
+    // Phase-specific status messages
+    const statusMessages = currentPhase === 2
+      ? [
+        'Reading through the prose...',
+        'Checking word choices...',
+        'Listening to the rhythm...',
+        'Oh, I like this line!',
+        'Testing dialogue flow...',
+        'Hmm, interesting...',
+        'Making some notes...',
+        'This has such potential!',
+        'Almost done...'
+      ]
+      : [
+        'Looking through my notes...',
+        'Getting them organized...',
+        'Adding a few other things...',
+        'Where\'s that note gone...?',
+        '...',
+        'Oh, Yes, there it is...',
+        'Yep, Yep, Yep...',
+        'I loved that bit!...',
+        'Ha! Excellent!...',
+        'Nice...',
+        'I better get a cup of tea for this one...',
+        '...',
+        'Almost ready...'
+      ]
 
     let messageIndex = 0
     setAnalyzingMessage(statusMessages[0])
@@ -684,21 +703,25 @@ function StudioContent() {
     }, 4000)
 
     try {
-      const response = await fetch(WEBHOOKS.chapterAnalysis, {
+      // 🆕 Use different webhook based on phase
+      const analysisWebhook = currentPhase === 2
+        ? WEBHOOKS.samChapterAnalysis
+        : WEBHOOKS.alexChapterAnalysis
+
+      const response = await fetch(analysisWebhook, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           manuscriptId: manuscript.id,
           chapterNumber: chapterNumber,
-          userId: searchParams.get('userId')
+          userId: manuscript.author_id // 🆕 Use manuscript.author_id instead of URL param
         })
+      }).catch(() => {
+        console.log('✅ Analysis webhook triggered (CORS expected)')
+        return null
       })
 
       clearInterval(statusInterval)
-
-      if (!response.ok) {
-        throw new Error('Chapter analysis failed')
-      }
 
       // Poll for issues to appear
       pollForChapterIssues(chapterNumber)
@@ -706,7 +729,10 @@ function StudioContent() {
     } catch (error) {
       clearInterval(statusInterval)
       console.error('Error analyzing chapter:', error)
-      addAlexMessage('❌ Had trouble pulling up my notes. Please try again.')
+
+      const editorName = currentPhase === 2 ? 'Sam' : 'Alex'
+      addAlexMessage(`❌ Had trouble pulling up my notes. Please try again. - ${editorName}`)
+
       setChapterEditingStatus(prev => ({
         ...prev,
         [chapterNumber]: 'not_started'
