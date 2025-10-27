@@ -364,7 +364,7 @@ function StudioContent() {
         const firstName = localStorage.getItem('currentUserFirstName') || 'there'
         setAuthorFirstName(firstName)
 
-        // 🆕 Phase-specific greetings
+        // Phase-specific greetings
         if (currentPhase === 2) {
           // Sam's greeting for Phase 2
           addAlexMessage(
@@ -404,75 +404,77 @@ function StudioContent() {
               `Once you're happy with everything, just click the button below or type **"Please read my manuscript"** and I'll dive in!`
             )
           }
-        } else {
-          // Chapters still being parsed
-          const pollingMessages = [
-            'Parsing chapters... Just a moment...',
-            'Analyzing chapter structure...',
-            'Almost there...',
-            'Finalizing chapter data...'
-          ]
-
-          let messageIndex = 0
-          setLoadingMessage(pollingMessages[0])
-
-          const messageInterval = setInterval(() => {
-            messageIndex = (messageIndex + 1) % pollingMessages.length
-            setLoadingMessage(pollingMessages[messageIndex])
-          }, 5000)
-
-          let pollCount = 0
-          const maxPolls = 20
-
-          const pollInterval = setInterval(async () => {
-            pollCount++
-            console.log(`Polling for chapters (${pollCount}/${maxPolls})...`)
-
-            const { data: retryChapters } = await supabase
-              .from('chapters')
-              .select('*')
-              .eq('manuscript_id', manuscriptId)
-              .order('chapter_number', { ascending: true })
-
-            if (retryChapters && retryChapters.length > 0) {
-              console.log('✅ Chapters now available:', retryChapters.length)
-              clearInterval(pollInterval)
-              clearInterval(messageInterval)
-              setChapters(retryChapters)
-
-              // Initialize chapter editing status
-              const initialStatus: { [key: number]: ChapterEditingStatus } = {}
-              retryChapters.forEach(ch => {
-                initialStatus[ch.chapter_number] = 'not_started'
-              })
-              setChapterEditingStatus(initialStatus)
-
-              setIsLoading(false)
-              loadChapter(0, retryChapters)
-
-              addAlexMessage(
-                `Great! I've finished parsing your manuscript into ${retryChapters.length} chapters. ` +
-                `Ready to begin?`
-              )
-            } else if (pollCount >= maxPolls) {
-              console.warn('⚠️ Chapters not found after polling')
-              clearInterval(pollInterval)
-              clearInterval(messageInterval)
-              setIsLoading(false)
-              addAlexMessage(
-                'Your manuscript was uploaded successfully, but chapters are still being processed. ' +
-                'Please refresh the page in a moment to see your chapters.'
-              )
-            }
-          }, 3000)
         }
+      } else {
 
-      } catch (error) {
-        console.error('Studio initialization error:', error)
-        setIsLoading(false)
-        addAlexMessage(`❌ Error loading your manuscript: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        // Chapters still being parsed
+        const pollingMessages = [
+          'Parsing chapters... Just a moment...',
+          'Analyzing chapter structure...',
+          'Almost there...',
+          'Finalizing chapter data...'
+        ]
+
+        let messageIndex = 0
+        setLoadingMessage(pollingMessages[0])
+
+        const messageInterval = setInterval(() => {
+          messageIndex = (messageIndex + 1) % pollingMessages.length
+          setLoadingMessage(pollingMessages[messageIndex])
+        }, 5000)
+
+        let pollCount = 0
+        const maxPolls = 20
+
+        const pollInterval = setInterval(async () => {
+          pollCount++
+          console.log(`Polling for chapters (${pollCount}/${maxPolls})...`)
+
+          const { data: retryChapters } = await supabase
+            .from('chapters')
+            .select('*')
+            .eq('manuscript_id', manuscriptId)
+            .order('chapter_number', { ascending: true })
+
+          if (retryChapters && retryChapters.length > 0) {
+            console.log('✅ Chapters now available:', retryChapters.length)
+            clearInterval(pollInterval)
+            clearInterval(messageInterval)
+            setChapters(retryChapters)
+
+            // Initialize chapter editing status
+            const initialStatus: { [key: number]: ChapterEditingStatus } = {}
+            retryChapters.forEach(ch => {
+              initialStatus[ch.chapter_number] = 'not_started'
+            })
+            setChapterEditingStatus(initialStatus)
+
+            setIsLoading(false)
+            loadChapter(0, retryChapters)
+
+            addAlexMessage(
+              `Great! I've finished parsing your manuscript into ${retryChapters.length} chapters. ` +
+              `Ready to begin?`
+            )
+          } else if (pollCount >= maxPolls) {
+            console.warn('⚠️ Chapters not found after polling')
+            clearInterval(pollInterval)
+            clearInterval(messageInterval)
+            setIsLoading(false)
+            addAlexMessage(
+              'Your manuscript was uploaded successfully, but chapters are still being processed. ' +
+              'Please refresh the page in a moment to see your chapters.'
+            )
+          }
+        }, 3000)
       }
-    }, [searchParams, router])
+
+    } catch (error) {
+      console.error('Studio initialization error:', error)
+      setIsLoading(false)
+      addAlexMessage(`❌ Error loading your manuscript: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }, [searchParams, router])
 
   useEffect(() => {
     initializeStudio()
