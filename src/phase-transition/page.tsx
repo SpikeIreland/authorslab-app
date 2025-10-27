@@ -1,24 +1,26 @@
 'use client'
 
-import { Suspense, useState, useEffect } from 'react'
+import { Suspense, useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+
+interface Manuscript {
+  id: string
+  title: string
+  status: string
+}
 
 function TransitionContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const manuscriptId = searchParams.get('manuscriptId')
   
-  const [manuscript, setManuscript] = useState<any>(null)
+  const [manuscript, setManuscript] = useState<Manuscript | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isStartingPhase2, setIsStartingPhase2] = useState(false)
 
-  useEffect(() => {
-    loadManuscript()
-  }, [manuscriptId])
-
-  async function loadManuscript() {
+  const loadManuscript = useCallback(async () => {
     if (!manuscriptId) {
       router.push('/author-studio')
       return
@@ -39,7 +41,11 @@ function TransitionContent() {
 
     setManuscript(data)
     setIsLoading(false)
-  }
+  }, [manuscriptId, router])
+
+  useEffect(() => {
+    loadManuscript()
+  }, [loadManuscript])
 
   async function beginPhase2() {
     if (!manuscriptId) return
@@ -121,10 +127,10 @@ function TransitionContent() {
             
             <div className="bg-green-50 rounded-xl p-6 mb-6">
               <p className="text-gray-800 leading-relaxed mb-4">
-                "We've done incredible work together. Your story structure is strong, your character arcs are clear, and the pacing flows beautifully."
+                &ldquo;We&apos;ve done incredible work together. Your story structure is strong, your character arcs are clear, and the pacing flows beautifully.&rdquo;
               </p>
               <p className="text-gray-800 leading-relaxed">
-                "I'm handing you off to Sam now, who's going to polish your prose until it absolutely shines. You're in excellent hands!"
+                &ldquo;I&apos;m handing you off to Sam now, who&apos;s going to polish your prose until it absolutely shines. You&apos;re in excellent hands!&rdquo;
               </p>
             </div>
 
@@ -162,10 +168,10 @@ function TransitionContent() {
             
             <div className="bg-purple-50 rounded-xl p-6 mb-6">
               <p className="text-gray-800 leading-relaxed mb-4">
-                "Hey! I've read what you and Alex accomplished together—impressive work. Now let's make your prose sing."
+                &ldquo;Hey! I&apos;ve read what you and Alex accomplished together—impressive work. Now let&apos;s make your prose sing.&rdquo;
               </p>
               <p className="text-gray-800 leading-relaxed">
-                "I focus on the craft of writing: word choice, rhythm, flow, and voice. Every sentence will be polished to perfection."
+                &ldquo;I focus on the craft of writing: word choice, rhythm, flow, and voice. Every sentence will be polished to perfection.&rdquo;
               </p>
             </div>
 
@@ -215,7 +221,7 @@ function TransitionContent() {
               <div className="text-3xl mb-3">⚡</div>
               <h3 className="font-bold text-gray-900 mb-2">Same Workspace</h3>
               <p className="text-gray-600 text-sm">
-                The Author Studio interface stays the same—just with Sam's line-editing expertise.
+                The Author Studio interface stays the same—just with Sam&apos;s line-editing expertise.
               </p>
             </div>
           </div>
