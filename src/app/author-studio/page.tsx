@@ -359,11 +359,6 @@ function StudioContent() {
         const firstName = localStorage.getItem('currentUserFirstName') || 'there'
         setAuthorFirstName(firstName)
 
-
-        // Get author's first name from localStorage
-        const firstName = localStorage.getItem('currentUserFirstName') || 'there'
-        setAuthorFirstName(firstName)
-
         // Phase-specific greetings
         if (currentPhase === 2) {
           // Sam's greeting for Phase 2
