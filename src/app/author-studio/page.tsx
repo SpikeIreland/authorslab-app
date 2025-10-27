@@ -359,7 +359,7 @@ function StudioContent() {
           // Sam has started but hasn't finished reading yet
           console.log('Sam is reading... starting poll')
           setSamReadingInProgress(true)
-          pollForSamReadCompletion()
+          pollForSamReadCompletion(manuscriptData.id)
         } else if (!manuscriptData.line_editing_ready_at) {
           // First time in Phase 2 - Sam hasn't read yet
           console.log('First time in Phase 2 - triggering Sam read')
