@@ -264,8 +264,6 @@ function StudioContent() {
 
   const initializeStudio = useCallback(async () => {
     const manuscriptId = searchParams.get('manuscriptId')
-    const userId = searchParams.get('userId')
-    const authorProfileId = searchParams.get('authorProfileId')
 
     if (!manuscriptId) {
       console.error('No manuscript ID provided')
@@ -273,15 +271,33 @@ function StudioContent() {
       return
     }
 
-    if (!userId || !authorProfileId) {
-      console.error('No user ID or author profile ID provided')
-      router.push('/login')
-      return
-    }
-
     try {
       setLoadingMessage('Loading manuscript from database...')
       const supabase = createClient()
+
+      // 🆕 Get user from session instead of URL params
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+
+      if (userError || !user) {
+        console.error('Auth error:', userError)
+        router.push('/login')
+        return
+      }
+
+      // 🆕 Get author profile using the authenticated user ID
+      const { data: authorProfile, error: profileError } = await supabase
+        .from('author_profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single()
+
+      if (profileError || !authorProfile) {
+        console.error('Author profile not found:', profileError)
+        router.push('/onboarding')
+        return
+      }
+
+      const authorProfileId = authorProfile.id
 
       // Load manuscript details - verify it belongs to this author
       const { data: manuscriptData, error: manuscriptError } = await supabase
@@ -302,12 +318,12 @@ function StudioContent() {
 
       setManuscript(manuscriptData)
 
-      // 🆕 Check if Phase 1 is complete and Phase 2 hasn't started
+      // Check if Phase 1 is complete and Phase 2 hasn't started
       if (manuscriptData.developmental_phase_completed_at && !manuscriptData.line_editing_started_at) {
         setShowPhase2Banner(true)
       }
 
-      // 🆕 Detect which phase we're in
+      // Detect which phase we're in
       const phase = searchParams.get('phase')
       if (phase === '2' || manuscriptData.line_editing_started_at) {
         setCurrentPhase(2)
