@@ -288,7 +288,7 @@ function StudioContent() {
       const { data: authorProfile, error: profileError } = await supabase
         .from('author_profiles')
         .select('id')
-        .eq('user_id', user.id)
+        .eq('id', user.id)  // 🆕 Changed from 'user_id' to 'id'
         .maybeSingle()
 
       console.log('Author profile query result:', { authorProfile, profileError })
