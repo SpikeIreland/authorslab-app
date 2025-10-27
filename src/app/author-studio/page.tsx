@@ -972,7 +972,7 @@ function StudioContent() {
     }, 3000)
   }
 
-  async function pollForSamReadCompletion() {
+  async function pollForSamReadCompletion(manuscriptId: string) {
     const supabase = createClient()
     let pollCount = 0
     const maxPolls = 40 // 40 x 5 sec = 3.3 minutes max
@@ -984,7 +984,7 @@ function StudioContent() {
       const { data: manuscriptData } = await supabase
         .from('manuscripts')
         .select('line_editing_ready_at, sam_initial_thoughts')
-        .eq('id', manuscript?.id)
+        .eq('id', manuscriptId) // 🆕 Use parameter instead of manuscript?.id
         .single()
 
       if (manuscriptData?.line_editing_ready_at) {
