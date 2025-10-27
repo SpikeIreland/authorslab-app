@@ -808,7 +808,7 @@ function StudioContent() {
         }),
 
         // Generate summary + key points (enables editing)
-        fetch(WEBHOOKS.generateSummaryPoints, {
+        fetch(WEBHOOKS.generateSummary, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
