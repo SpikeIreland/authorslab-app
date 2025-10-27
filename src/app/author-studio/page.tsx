@@ -66,6 +66,9 @@ function StudioContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [authorFirstName, setAuthorFirstName] = useState<string>('')
+  const [currentPhase, setCurrentPhase] = useState<1 | 2>(1)
+  const [editorName, setEditorName] = useState('Alex')
+  const [editorColor, setEditorColor] = useState('green')
 
   // Manuscript state
   const [manuscript, setManuscript] = useState<Manuscript | null>(null)
@@ -302,6 +305,19 @@ function StudioContent() {
       // 🆕 Check if Phase 1 is complete and Phase 2 hasn't started
       if (manuscriptData.developmental_phase_completed_at && !manuscriptData.line_editing_started_at) {
         setShowPhase2Banner(true)
+      }
+
+      // 🆕 Detect which phase we're in
+      const phase = searchParams.get('phase')
+      if (phase === '2' || manuscriptData.line_editing_started_at) {
+        setCurrentPhase(2)
+        setEditorName('Sam')
+        setEditorColor('purple')
+        setShowPhase2Banner(false) // Hide banner if in Phase 2
+      } else {
+        setCurrentPhase(1)
+        setEditorName('Alex')
+        setEditorColor('green')
       }
 
       // Check if full analysis is already complete
@@ -1024,20 +1040,37 @@ function StudioContent() {
             <span>✍️</span>
             {authorFirstName ? `${authorFirstName}'s Writing Studio` : 'Your Writing Studio'}
           </div>
-          <div className="flex items-center gap-3 bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-full font-semibold">
-            <div className="w-6 h-6 bg-white/30 rounded-full flex items-center justify-center text-sm">A</div>
-            Working with Alex
+          <div className={`flex items-center gap-3 bg-gradient-to-r ${currentPhase === 2
+            ? 'from-purple-500 to-purple-600'
+            : 'from-green-500 to-green-600'
+            } text-white px-4 py-2 rounded-full font-semibold`}>
+            <div className="w-6 h-6 bg-white/30 rounded-full flex items-center justify-center text-sm">
+              {currentPhase === 2 ? 'S' : 'A'}
+            </div>
+            Working with {editorName}
           </div>
         </div>
 
         <div className="flex items-center gap-4">
           <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold ${alexThinking
             ? 'bg-yellow-50 border border-yellow-500 text-yellow-900'
-            : 'bg-green-50 border border-green-500 text-green-900'
+            : currentPhase === 2
+              ? 'bg-purple-50 border border-purple-500 text-purple-900'
+              : 'bg-green-50 border border-green-500 text-green-900'
             }`}>
-            <div className={`w-2 h-2 rounded-full ${alexThinking ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'
+            <div className={`w-2 h-2 rounded-full ${alexThinking
+              ? 'bg-yellow-500 animate-pulse'
+              : currentPhase === 2
+                ? 'bg-purple-500'
+                : 'bg-green-500'
               }`}></div>
-            {alexThinking ? 'Thinking...' : 'Alex is Online'}
+            {alexThinking ? 'Thinking...' : `${editorName} is Online`}
+          </div>
+          <div className={`w-10 h-10 bg-gradient-to-br ${currentPhase === 2
+            ? 'from-purple-500 to-purple-600'
+            : 'from-green-500 to-green-600'
+            } rounded-full flex items-center justify-center text-white font-semibold`}>
+            {currentPhase === 2 ? 'S' : 'A'}
           </div>
           <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-semibold">
             A
@@ -1581,17 +1614,22 @@ function StudioContent() {
           </div>
         )}
 
-        {/* RIGHT: Alex Panel */}
+        {/* RIGHT: Editor Panel (Alex/Sam) */}
         <div className="bg-white flex flex-col overflow-hidden">
-          {/* Alex header with Report button */}
-          <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-5 flex items-center justify-between">
+          {/* Editor header with Report button */}
+          <div className={`bg-gradient-to-r ${currentPhase === 2
+              ? 'from-purple-500 to-purple-600'
+              : 'from-green-500 to-green-600'
+            } text-white p-5 flex items-center justify-between`}>
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl font-bold">
-                A
+                {currentPhase === 2 ? 'S' : 'A'}
               </div>
               <div>
-                <h3 className="text-xl font-bold">Alex</h3>
-                <p className="text-sm opacity-90">Developmental Specialist</p>
+                <h3 className="text-xl font-bold">{editorName}</h3>
+                <p className="text-sm opacity-90">
+                  {currentPhase === 2 ? 'Line Editing Specialist' : 'Developmental Specialist'}
+                </p>
               </div>
             </div>
 
@@ -1614,9 +1652,11 @@ function StudioContent() {
             {alexMessages.map((msg, i) => (
               <div
                 key={i}
-                className={`p-4 rounded-xl ${msg.sender === 'Alex'
+                className={`p-4 rounded-xl ${msg.sender === editorName
                   ? 'bg-white border border-gray-200'
-                  : 'bg-green-50 border border-green-200 ml-8'
+                  : currentPhase === 2
+                    ? 'bg-purple-50 border border-purple-200 ml-8'
+                    : 'bg-green-50 border border-green-200 ml-8'
                   }`}
               >
                 <div className="font-semibold text-sm mb-1 text-gray-700">{msg.sender}</div>
@@ -1629,9 +1669,12 @@ function StudioContent() {
                 <div className="flex items-center gap-2 text-gray-700">
                   <span>{thinkingMessage}</span>
                   <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                    <div className={`w-2 h-2 ${currentPhase === 2 ? 'bg-purple-500' : 'bg-green-500'
+                      } rounded-full animate-bounce`} style={{ animationDelay: '0ms' }}></div>
+                    <div className={`w-2 h-2 ${currentPhase === 2 ? 'bg-purple-500' : 'bg-green-500'
+                      } rounded-full animate-bounce`} style={{ animationDelay: '150ms' }}></div>
+                    <div className={`w-2 h-2 ${currentPhase === 2 ? 'bg-purple-500' : 'bg-green-500'
+                      } rounded-full animate-bounce`} style={{ animationDelay: '300ms' }}></div>
                   </div>
                 </div>
               </div>
