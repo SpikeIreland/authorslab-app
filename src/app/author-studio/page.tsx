@@ -189,9 +189,11 @@ function StudioContent() {
     }
   }
 
-  // Helper function to add Alex messages to chat
-  function addAlexMessage(message: string, sender: 'Alex' | 'user' = 'Alex') {
-    setAlexMessages(prev => [...prev, { sender: sender === 'user' ? 'You' : 'Alex', message }])
+  function addAlexMessage(message: string) {
+    setAlexMessages(prev => [...prev, {
+      sender: editorName,  // 🆕 Use dynamic editor name instead of hardcoded 'Alex'
+      message
+    }])
   }
 
   // Update issue status
