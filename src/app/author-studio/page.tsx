@@ -923,7 +923,7 @@ function StudioContent() {
       }, 30000) // 30 seconds in
 
       // Start polling
-      pollForSamReadCompletion(manuscriptId)
+      pollForSamReadCompletion(manuscript.id)
 
     } catch (error) {
       console.error('Error triggering Sam read:', error)
