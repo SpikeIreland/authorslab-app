@@ -52,7 +52,8 @@ interface ManuscriptIssue {
   id: string
   manuscript_id: string
   chapter_number: number
-  element_type: 'character' | 'plot' | 'pacing' | 'structure' | 'theme'
+  element_type: 'character' | 'plot' | 'pacing' | 'structure' | 'theme' |
+  'word_choice' | 'sentence_flow' | 'dialogue' | 'voice' | 'clarity'
   severity: 'minor' | 'moderate' | 'major'
   issue_description: string
   alex_suggestion: string
