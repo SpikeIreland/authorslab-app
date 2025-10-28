@@ -1037,7 +1037,7 @@ function StudioContent() {
                     📖
                   </div>
                   <h3 className="text-lg font-bold text-gray-900 mb-2">
-                    Hi! I'm {editorName}
+                    Hi! I&apos;m {editorName}
                   </h3>
                   <p className="text-gray-600 text-sm mb-4">
                     Before we begin editing, I need to read your manuscript.
@@ -1052,7 +1052,7 @@ function StudioContent() {
                 </button>
 
                 <p className="text-xs text-gray-500 mt-3">
-                  This takes about 5 minutes. You'll get a comprehensive report by email.
+                  This takes about 5 minutes. You&apos;ll get a comprehensive report by email.
                 </p>
               </div>
             )}
