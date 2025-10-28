@@ -1424,17 +1424,18 @@ function StudioContent() {
                         <div className="flex flex-col gap-2">
                           {/* Top row: Status + Number + Title + Edit */}
                           <div className="flex items-start gap-2">
+
                             {/* Analysis status indicator */}
                             <div className="w-5 h-5 flex items-center justify-center flex-shrink-0 mt-0.5">
-                              {chapter.status === 'approved' ? (
-                                // Approved - show green checkmark
+                              {chapter.status === 'approved' && currentPhase === 1 ? (
+                                // Approved in Phase 1 - show green checkmark
                                 <span className="text-green-600 text-lg">✓</span>
                               ) : editStatus === 'analyzing' ? (
                                 // Analyzing - show spinner
                                 <div className="w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
                               ) : editStatus === 'ready' ? (
-                                // Ready for editing - show solid green circle
-                                <span className="text-green-600 text-lg">●</span>
+                                // Ready for editing - show solid circle
+                                <span className={`text-lg ${currentPhase === 2 ? 'text-purple-600' : 'text-green-600'}`}>●</span>
                               ) : (
                                 // Not started - show empty circle
                                 <span className="text-gray-300 text-lg">○</span>
@@ -1493,8 +1494,8 @@ function StudioContent() {
                           <div className="flex items-center gap-1 pl-8">
                             {/* Developmental Editing */}
                             <div className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold ${chapter.status === 'approved' || manuscript?.developmental_phase_completed_at
-                                ? 'bg-green-100 text-green-700'
-                                : 'bg-gray-100 text-gray-400'
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-gray-100 text-gray-400'
                               }`} title="Developmental Editing">
                               D
                             </div>
@@ -1522,7 +1523,7 @@ function StudioContent() {
               {chapters.map((chapter, index) => {
                 const isUnsaved = unsavedChapters.has(chapter.id)
                 const editStatus = chapterEditingStatus[chapter.chapter_number]
-                
+
                 return (
                   <button
                     key={chapter.id}
@@ -1725,52 +1726,113 @@ function StudioContent() {
               <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                 <button
                   onClick={() => setIssueFilter('all')}
-                  className={`px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap flex-shrink-0 ${issueFilter === 'all' ?
-                    'bg-white border border-gray-300' : 'hover:bg-gray-100 text-gray-600'
+                  className={`px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap flex-shrink-0 ${issueFilter === 'all'
+                      ? 'bg-white border border-gray-300'
+                      : 'hover:bg-gray-100 text-gray-600'
                     }`}
                 >
                   All ({chapterIssues.length})
                 </button>
-                <button
-                  onClick={() => setIssueFilter('character')}
-                  className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'character' ?
-                    'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
-                    }`}
-                >
-                  Character ({chapterIssues.filter(i => i.element_type === 'character').length})
-                </button>
-                <button
-                  onClick={() => setIssueFilter('plot')}
-                  className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'plot' ?
-                    'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
-                    }`}
-                >
-                  Plot ({chapterIssues.filter(i => i.element_type === 'plot').length})
-                </button>
-                <button
-                  onClick={() => setIssueFilter('pacing')}
-                  className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'pacing' ?
-                    'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
-                    }`}
-                >
-                  Pacing ({chapterIssues.filter(i => i.element_type === 'pacing').length})
-                </button>
-                <button
-                  onClick={() => setIssueFilter('structure')}
-                  className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'structure' ?
-                    'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
-                    }`}
-                >
-                  Structure ({chapterIssues.filter(i => i.element_type === 'structure').length})
-                </button>
-                <button
-                  onClick={() => setIssueFilter('theme')}
-                  className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'theme' ?
-                    'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
-                    }`}
-                >
-                  Theme ({chapterIssues.filter(i => i.element_type === 'theme').length})
-                </button>
+
+                {currentPhase === 1 ? (
+                  // Alex's developmental filters
+                  <>
+                    <button
+                      onClick={() => setIssueFilter('character')}
+                      className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'character'
+                          ? 'bg-white border border-gray-300 font-medium'
+                          : 'hover:bg-gray-100 text-gray-600'
+                        }`}
+                    >
+                      Character ({chapterIssues.filter(i => i.element_type === 'character').length})
+                    </button>
+                    <button
+                      onClick={() => setIssueFilter('plot')}
+                      className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'plot'
+                          ? 'bg-white border border-gray-300 font-medium'
+                          : 'hover:bg-gray-100 text-gray-600'
+                        }`}
+                    >
+                      Plot ({chapterIssues.filter(i => i.element_type === 'plot').length})
+                    </button>
+                    <button
+                      onClick={() => setIssueFilter('pacing')}
+                      className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'pacing'
+                          ? 'bg-white border border-gray-300 font-medium'
+                          : 'hover:bg-gray-100 text-gray-600'
+                        }`}
+                    >
+                      Pacing ({chapterIssues.filter(i => i.element_type === 'pacing').length})
+                    </button>
+                    <button
+                      onClick={() => setIssueFilter('structure')}
+                      className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'structure'
+                          ? 'bg-white border border-gray-300 font-medium'
+                          : 'hover:bg-gray-100 text-gray-600'
+                        }`}
+                    >
+                      Structure ({chapterIssues.filter(i => i.element_type === 'structure').length})
+                    </button>
+                    <button
+                      onClick={() => setIssueFilter('theme')}
+                      className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'theme'
+                          ? 'bg-white border border-gray-300 font-medium'
+                          : 'hover:bg-gray-100 text-gray-600'
+                        }`}
+                    >
+                      Theme ({chapterIssues.filter(i => i.element_type === 'theme').length})
+                    </button>
+                  </>
+                ) : (
+                  // Sam's line-editing filters
+                  <>
+                    <button
+                      onClick={() => setIssueFilter('word_choice')}
+                      className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'word_choice'
+                          ? 'bg-white border border-gray-300 font-medium'
+                          : 'hover:bg-gray-100 text-gray-600'
+                        }`}
+                    >
+                      Word Choice ({chapterIssues.filter(i => i.element_type === 'word_choice').length})
+                    </button>
+                    <button
+                      onClick={() => setIssueFilter('sentence_flow')}
+                      className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'sentence_flow'
+                          ? 'bg-white border border-gray-300 font-medium'
+                          : 'hover:bg-gray-100 text-gray-600'
+                        }`}
+                    >
+                      Sentence Flow ({chapterIssues.filter(i => i.element_type === 'sentence_flow').length})
+                    </button>
+                    <button
+                      onClick={() => setIssueFilter('dialogue')}
+                      className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'dialogue'
+                          ? 'bg-white border border-gray-300 font-medium'
+                          : 'hover:bg-gray-100 text-gray-600'
+                        }`}
+                    >
+                      Dialogue ({chapterIssues.filter(i => i.element_type === 'dialogue').length})
+                    </button>
+                    <button
+                      onClick={() => setIssueFilter('voice')}
+                      className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'voice'
+                          ? 'bg-white border border-gray-300 font-medium'
+                          : 'hover:bg-gray-100 text-gray-600'
+                        }`}
+                    >
+                      Voice ({chapterIssues.filter(i => i.element_type === 'voice').length})
+                    </button>
+                    <button
+                      onClick={() => setIssueFilter('clarity')}
+                      className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'clarity'
+                          ? 'bg-white border border-gray-300 font-medium'
+                          : 'hover:bg-gray-100 text-gray-600'
+                        }`}
+                    >
+                      Clarity ({chapterIssues.filter(i => i.element_type === 'clarity').length})
+                    </button>
+                  </>
+                )}
               </div>
             </div>
 
