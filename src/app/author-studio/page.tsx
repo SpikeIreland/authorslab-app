@@ -156,6 +156,142 @@ function StudioContent() {
   // Sidebar collapsed
   const [isChapterSidebarCollapsed, setIsChapterSidebarCollapsed] = useState(false)
 
+  const triggerFullAnalysis = async () => {
+    setFullAnalysisInProgress(true)
+    setThinkingMessage('📖 Starting to read your manuscript...')
+
+    // Animated status messages
+    setTimeout(() => setThinkingMessage('📊 Analyzing story structure...'), 3000)
+    setTimeout(() => setThinkingMessage('🎭 Studying character development...'), 6000)
+    setTimeout(() => setThinkingMessage('✨ Examining pacing and flow...'), 9000)
+    setTimeout(() => setThinkingMessage('📝 Making notes on key elements...'), 12000)
+    setTimeout(() => setThinkingMessage('🔍 Almost done, finalizing thoughts...'), 15000)
+
+    try {
+      // Update database status
+      const supabase = createClient()
+      await supabase
+        .from('manuscripts')
+        .update({
+          analysis_started_at: new Date().toISOString(),
+          status: 'analyzing'
+        })
+        .eq('id', manuscript?.id)
+
+      // Trigger all THREE workflows simultaneously
+      await Promise.all([
+        // 1. Full analysis (PDF report)
+        fetch(WEBHOOKS.alexFullAnalysis, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            manuscriptId: manuscript?.id,
+            userId: manuscript?.author_id
+          })
+        }).catch(() => console.log('✅ Full analysis webhook triggered')),
+
+        // 2. Generate summary + key points
+        fetch(WEBHOOKS.alexGenerateSummary, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            manuscriptId: manuscript?.id,
+            userId: manuscript?.author_id
+          })
+        }).catch(() => console.log('✅ Summary webhook triggered')),
+
+        // 3. Chapter summaries
+        fetch(WEBHOOKS.alexGenerateChapterSummaries, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            manuscriptId: manuscript?.id,
+            userId: manuscript?.author_id
+          })
+        }).catch(() => console.log('✅ Chapter summaries webhook triggered'))
+      ])
+
+      console.log('✅ All analysis webhooks triggered successfully')
+
+      // Add initial message to chat
+      setChatMessages(prev => [...prev, {
+        sender: editorName,
+        message: `Perfect! I'm diving into "${manuscript?.title}" now. This will take about 5 minutes.\n\n` +
+          `I'm analyzing:\n` +
+          `• Story structure and plot\n` +
+          `• Character development\n` +
+          `• Pacing and flow\n` +
+          `• Themes and motifs\n\n` +
+          `You'll receive a comprehensive report by email when I'm done. Feel free to explore the chapters while I read! 📚`,
+        timestamp: new Date().toISOString()
+      }])
+
+      // Poll for completion
+      pollForAnalysisCompletion()
+
+    } catch (error) {
+      console.error('Error triggering analysis:', error)
+      setFullAnalysisInProgress(false)
+      setChatMessages(prev => [...prev, {
+        sender: editorName,
+        message: 'There was an issue starting the analysis. Please try again.',
+        timestamp: new Date().toISOString()
+      }])
+    }
+  }
+
+  const pollForAnalysisCompletion = async () => {
+    const supabase = createClient()
+    let attempts = 0
+    const maxAttempts = 100 // 5 minutes (100 x 3 sec)
+
+    const pollInterval = setInterval(async () => {
+      attempts++
+
+      const { data: manuscriptData } = await supabase
+        .from('manuscripts')
+        .select('full_analysis_completed_at, report_pdf_url, manuscript_summary')
+        .eq('id', manuscript?.id)
+        .single()
+
+      if (manuscriptData?.full_analysis_completed_at) {
+        clearInterval(pollInterval)
+        setFullAnalysisInProgress(false)
+        setAnalysisComplete(true)
+
+        if (manuscriptData.report_pdf_url) {
+          setFullReportPdfUrl(manuscriptData.report_pdf_url)
+        }
+
+        // Update local manuscript state
+        setManuscript(prev => prev ? {
+          ...prev,
+          full_analysis_completed_at: manuscriptData.full_analysis_completed_at,
+          report_pdf_url: manuscriptData.report_pdf_url,
+          manuscript_summary: manuscriptData.manuscript_summary
+        } : null)
+
+        // Add completion message to chat
+        setChatMessages(prev => [...prev, {
+          sender: editorName,
+          message: `✅ I've finished reading your manuscript! I'm genuinely excited about what you've created.\n\n` +
+            `📧 I've sent you a comprehensive analysis report by email.\n\n` +
+            `**Ready to start editing?**\n` +
+            `Click on any chapter and hit "Start Editing" to see my specific notes. We'll work through them together, one chapter at a time.`,
+          timestamp: new Date().toISOString()
+        }])
+      } else if (attempts >= maxAttempts) {
+        clearInterval(pollInterval)
+        setFullAnalysisInProgress(false)
+        setChatMessages(prev => [...prev, {
+          sender: editorName,
+          message: '⚠️ Analysis is taking longer than expected. Please check your email in a few minutes, or refresh the page to see if it completed.',
+          timestamp: new Date().toISOString()
+        }])
+      }
+    }, 3000) // Poll every 3 seconds
+  }
+
   // Auto-scroll chat
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
