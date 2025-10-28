@@ -125,10 +125,7 @@ function StudioContent() {
   const [chapterIssues, setChapterIssues] = useState<ManuscriptIssue[]>([])
   const [showIssuesPanel, setShowIssuesPanel] = useState(false)
   const [selectedIssue, setSelectedIssue] = useState<ManuscriptIssue | null>(null)
-  const [issueFilter, setIssueFilter] = useState
-  'all' | 'character' | 'plot' | 'pacing' | 'structure' | 'theme' |
-    'word_choice' | 'sentence_flow' | 'dialogue' | 'voice' | 'clarity'
-    > ('all')
+  const [issueFilter, setIssueFilter] = useState<'all' | 'character' | 'plot' | 'pacing' | 'structure' | 'theme' | 'word_choice' | 'sentence_flow' | 'dialogue' | 'voice' | 'clarity'>('all')
 
   // Refs
   const editorRef = useRef<HTMLDivElement>(null)
