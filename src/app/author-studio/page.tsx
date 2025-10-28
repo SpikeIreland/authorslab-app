@@ -147,6 +147,8 @@ function StudioContent() {
   // Analysis State
   const [analysisComplete, setAnalysisComplete] = useState(false)
   const [fullAnalysisInProgress, setFullAnalysisInProgress] = useState(false)
+  const [thinkingMessage, setThinkingMessage] = useState('')  // ADD THIS
+  const [fullReportPdfUrl, setFullReportPdfUrl] = useState<string | null>(null)  // ADD THIS
 
   // Author name
   const [authorFirstName, setAuthorFirstName] = useState<string>('')
