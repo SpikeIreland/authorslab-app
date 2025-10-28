@@ -29,7 +29,7 @@ import {
   transitionToNextPhase
 } from '@/lib/supabase/helpers'
 
-import { EDITOR_CONFIG, ISSUE_CATEGORIES } from '@/types/database'
+import { EDITOR_CONFIG, ISSUE_CATEGORIES_BY_PHASE } from '@/types/database'
 
 // Webhook URLs
 const WEBHOOKS = {
