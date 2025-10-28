@@ -1095,18 +1095,41 @@ function StudioContent() {
     const supabase = createClient()
 
     try {
-      const currentChapter = chapters[currentChapterIndex]  // 🆕 Get the actual chapter object
+      const currentChapter = chapters[currentChapterIndex]
+
+      console.log('🔍 Attempting to approve chapter:', {
+        chapterId: currentChapter.id,
+        chapterNumber: currentChapter.chapter_number,
+        title: currentChapter.title,
+        manuscriptId: manuscript?.id
+      })
 
       // Update the current chapter to approved
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('chapters')
         .update({
           status: 'approved',
-          content: editorContent
+          content: editorContent,
+          updated_at: new Date().toISOString() // Explicitly set timestamp
         })
-        .eq('id', currentChapter.id)  // 🆕 Use currentChapter.id
+        .eq('id', currentChapter.id)
+        .select() // Request the updated data back
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ Database error approving chapter:', error)
+        throw error
+      }
+
+      console.log('✅ Chapter approved in database:', data)
+
+      // Verify the update actually worked
+      const { data: verifyData } = await supabase
+        .from('chapters')
+        .select('id, chapter_number, status')
+        .eq('id', currentChapter.id)
+        .single()
+
+      console.log('🔍 Verification query result:', verifyData)
 
       // Update local state
       const updatedChapters = [...chapters]
@@ -1118,11 +1141,10 @@ function StudioContent() {
       // Remove from unsaved chapters set
       setUnsavedChapters(prev => {
         const newSet = new Set(prev)
-        newSet.delete(currentChapter.id)  // 🆕 Use currentChapter.id
+        newSet.delete(currentChapter.id)
         return newSet
       })
 
-      // 🆕 FIX: Use actual chapter number and title
       const chapterLabel = currentChapter.chapter_number === 0
         ? 'Prologue'
         : `Chapter ${currentChapter.chapter_number}`
@@ -1131,17 +1153,20 @@ function StudioContent() {
 
       // CHECK IF ALL CHAPTERS ARE NOW APPROVED
       const allChaptersApproved = updatedChapters.every(ch => ch.status === 'approved')
+      console.log(`📊 Approval status: ${updatedChapters.filter(ch => ch.status === 'approved').length}/${updatedChapters.length} chapters approved`)
 
       if (allChaptersApproved && manuscript?.id) {
         // All chapters approved - trigger Alex's sign-off
+        console.log('🎉 ALL chapters approved - triggering phase completion')
         await handleDevelopmentalPhaseComplete(updatedChapters)
       } else if (currentChapterIndex < chapters.length - 1) {
         // Move to next chapter if not all approved yet
+        console.log('➡️ Moving to next chapter...')
         setTimeout(() => loadChapter(currentChapterIndex + 1), 1000)
       }
     } catch (error) {
-      console.error('Approve error:', error)
-      addAlexMessage('❌ Error approving chapter. Please try again.')
+      console.error('❌ Approve error:', error)
+      addAlexMessage(`❌ Error approving chapter: ${error.message}. Please try again.`)
     }
   }
 
