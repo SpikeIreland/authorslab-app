@@ -417,9 +417,13 @@ function StudioContent() {
         const firstName = localStorage.getItem('currentUserFirstName') || 'there'
         setAuthorFirstName(firstName)
 
+        // Detect phase directly from data
+        const phase = searchParams.get('phase')
+        const isPhase2 = phase === '2' || manuscriptData.line_editing_started_at
+
         // Phase-specific greetings
-        if (currentPhase === 2) {
-          // Check if Sam has already read
+        if (isPhase2) {
+          // We're in Phase 2 - Sam's territory
           if (manuscriptData.line_editing_ready_at && manuscriptData.sam_initial_thoughts) {
             // Sam already read - show his thoughts + ready message
             addAlexMessage(manuscriptData.sam_initial_thoughts)
@@ -430,8 +434,8 @@ function StudioContent() {
                 `Click "Start Editing" on any chapter for my specific line-editing suggestions. Let's make your prose shine! ✨`
               )
             }, 1000)
-          } else {
-            // Sam hasn't read yet - show welcome and trigger read
+          } else if (!manuscriptData.line_editing_started_at) {
+            // First time in Phase 2 - show greeting and trigger read
             addAlexMessage(
               `Hey ${firstName}! I'm Sam, your line editor. ✨\n\n` +
               `I've already reviewed the fantastic structural work you and Alex accomplished together on "${manuscriptData.title}". Alex did incredible work on your story architecture—now let's make every sentence sing!\n\n` +
@@ -444,8 +448,9 @@ function StudioContent() {
               triggerSamInitialRead()
             }, 1500)
           }
+          // If line_editing_started_at but not ready, polling is already happening (no greeting needed)
         } else {
-          // Alex's greeting - Different based on analysis status
+          // Phase 1 - Alex's greeting - Different based on analysis status
           if (manuscriptData.full_analysis_completed_at) {
             // Returning user - analysis already done
             addAlexMessage(
