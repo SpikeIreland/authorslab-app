@@ -1021,12 +1021,43 @@ function StudioContent() {
 
         {/* RIGHT: Chat Panel */}
         <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
+          {/* Editor Header */}
           <div className={`p-4 ${getEditorColorClasses(editorColor).bg} text-white`}>
             <h2 className="text-xl font-bold">{editorName}</h2>
             <p className="text-sm opacity-90">{EDITOR_CONFIG[currentPhase as PhaseNumber].phaseName}</p>
           </div>
 
+          {/* Messages Area */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {/* Show "Read my Manuscript" button if analysis not started */}
+            {!analysisComplete && !fullAnalysisInProgress && chatMessages.length === 0 && (
+              <div className="text-center py-8">
+                <div className="mb-6">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-3xl">
+                    📖
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">
+                    Hi! I'm {editorName}
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Before we begin editing, I need to read your manuscript.
+                  </p>
+                </div>
+
+                <button
+                  onClick={triggerFullAnalysis}
+                  className={`w-full ${getEditorColorClasses(editorColor).bg} text-white px-6 py-4 rounded-xl font-bold text-base ${getEditorColorClasses(editorColor).bgHover} transition-all shadow-md hover:shadow-lg`}
+                >
+                  📖 Read My Manuscript
+                </button>
+
+                <p className="text-xs text-gray-500 mt-3">
+                  This takes about 5 minutes. You'll get a comprehensive report by email.
+                </p>
+              </div>
+            )}
+
+            {/* Chat Messages */}
             {chatMessages.map((msg, index) => (
               <div
                 key={index}
@@ -1040,7 +1071,27 @@ function StudioContent() {
               </div>
             ))}
 
-            {isThinking && (
+            {/* Reading Progress Indicator */}
+            {fullAnalysisInProgress && (
+              <div className={`${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} border rounded-lg p-4 mr-8`}>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="relative">
+                    <div className={`w-10 h-10 border-4 ${getEditorColorClasses(editorColor).borderColor} ${getEditorColorClasses(editorColor).borderTopColor} rounded-full animate-spin`}></div>
+                    <div className="absolute inset-0 flex items-center justify-center text-lg">
+                      📖
+                    </div>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-sm">{editorName}</div>
+                    <div className="text-xs text-gray-600">Reading your manuscript...</div>
+                  </div>
+                </div>
+                <div className="text-sm text-gray-700">{thinkingMessage}</div>
+              </div>
+            )}
+
+            {/* Thinking indicator for chat */}
+            {isThinking && !fullAnalysisInProgress && (
               <div className={`${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} border rounded-lg p-3 mr-8`}>
                 <div className="font-semibold text-sm mb-1">{editorName}</div>
                 <div className="text-sm">Thinking...</div>
@@ -1050,6 +1101,7 @@ function StudioContent() {
             <div ref={messagesEndRef} />
           </div>
 
+          {/* Chat Input */}
           <form onSubmit={handleChatSubmit} className="p-4 border-t border-gray-200">
             <div className="flex gap-2">
               <input
@@ -1057,12 +1109,13 @@ function StudioContent() {
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
                 placeholder={`Ask ${editorName}...`}
-                className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 ${getEditorColorClasses(editorColor).ring}`}
+                disabled={fullAnalysisInProgress}
+                className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 ${getEditorColorClasses(editorColor).ring} disabled:bg-gray-100 disabled:cursor-not-allowed`}
               />
               <button
                 type="submit"
-                disabled={!userInput.trim() || isThinking}
-                className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg ${getEditorColorClasses(editorColor).bgHover} disabled:opacity-50`}
+                disabled={!userInput.trim() || isThinking || fullAnalysisInProgress}
+                className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg ${getEditorColorClasses(editorColor).bgHover} disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 Send
               </button>
