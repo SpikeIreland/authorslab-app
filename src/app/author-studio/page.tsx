@@ -1076,7 +1076,7 @@ function StudioContent() {
               <div className={`${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} border rounded-lg p-4 mr-8`}>
                 <div className="flex items-center gap-3 mb-3">
                   <div className="relative">
-                    <div className={`w-10 h-10 border-4 ${getEditorColorClasses(editorColor).borderColor} ${getEditorColorClasses(editorColor).borderTopColor} rounded-full animate-spin`}></div>
+                    <div className="w-10 h-10 border-4 border-gray-200 border-t-gray-600 rounded-full animate-spin"></div>
                     <div className="absolute inset-0 flex items-center justify-center text-lg">
                       📖
                     </div>
