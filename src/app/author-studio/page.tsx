@@ -1166,7 +1166,8 @@ function StudioContent() {
       }
     } catch (error) {
       console.error('❌ Approve error:', error)
-      addAlexMessage(`❌ Error approving chapter: ${error.message}. Please try again.`)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      addAlexMessage(`❌ Error approving chapter: ${errorMessage}. Please try again.`)
     }
   }
 
