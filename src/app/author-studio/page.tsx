@@ -465,6 +465,8 @@ function StudioContent() {
               `Once you're happy with everything, just click the button below or type **"Please read my manuscript"** and I'll dive in!`
             )
           }
+        }
+
       } else {
 
         // Chapters still being parsed
