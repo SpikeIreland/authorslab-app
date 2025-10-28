@@ -466,7 +466,6 @@ function StudioContent() {
             )
           }
         }
-
       } else {
 
         // Chapters still being parsed
@@ -1492,542 +1491,540 @@ function StudioContent() {
 
                           {/* Bottom row: Editing stage indicators */}
                           <div className="flex items-center gap-1 pl-8">
-                            {/* Bottom row: Editing stage indicators */}
-                            <div className="flex items-center gap-1 pl-8">
-                              {/* Developmental Editing */}
-                              <div className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold ${chapter.status === 'approved' || manuscript?.developmental_phase_completed_at
+                            {/* Developmental Editing */}
+                            <div className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold ${chapter.status === 'approved' || manuscript?.developmental_phase_completed_at
                                 ? 'bg-green-100 text-green-700'
                                 : 'bg-gray-100 text-gray-400'
-                                }`} title="Developmental Editing">
-                                D
-                              </div>
+                              }`} title="Developmental Editing">
+                              D
+                            </div>
 
-                              {/* Copy Editing */}
-                              <div className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold bg-gray-100 text-gray-300" title="Copy Editing (Coming Soon)">
-                                C
-                              </div>
+                            {/* Copy Editing */}
+                            <div className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold bg-gray-100 text-gray-300" title="Copy Editing (Coming Soon)">
+                              C
+                            </div>
 
-                              {/* Line Editing */}
-                              <div className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold bg-gray-100 text-gray-300" title="Line Editing (Coming Soon)">
-                                L
-                              </div>
+                            {/* Line Editing */}
+                            <div className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold bg-gray-100 text-gray-300" title="Line Editing (Coming Soon)">
+                              L
                             </div>
                           </div>
                         </div>
-                        )
+                      </div>
+                    )
                   })}
-                      </div>
+                </div>
               </div>
-              </>
-              ) : (
-              // Collapsed sidebar view - just chapter numbers
-              <div className="space-y-2">
-                {chapters.map((chapter, index) => {
-                  const isUnsaved = unsavedChapters.has(chapter.id)
-                  const editStatus = chapterEditingStatus[chapter.chapter_number]
+            </>
+          ) : (
+            // Collapsed sidebar view - just chapter numbers
+            <div className="space-y-2">
+              {chapters.map((chapter, index) => {
+                const isUnsaved = unsavedChapters.has(chapter.id)
+                const editStatus = chapterEditingStatus[chapter.chapter_number]
+                
+                return (
+                  <button
+                    key={chapter.id}
+                    onClick={() => !isLocked && loadChapter(index)}
+                    disabled={isLocked}
+                    className={`w-full p-2 rounded-lg border transition-all relative ${isLocked
+                      ? 'bg-gray-50 border-gray-200 opacity-50 cursor-not-allowed'
+                      : index === currentChapterIndex
+                        ? 'bg-green-50 border-green-500 shadow-sm'
+                        : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm'
+                      }`}
+                    title={chapter.title}
+                  >
+                    {/* Unsaved indicator */}
+                    {isUnsaved && (
+                      <div className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                    )}
 
-                  return (
-                    <button
-                      key={chapter.id}
-                      onClick={() => !isLocked && loadChapter(index)}
-                      disabled={isLocked}
-                      className={`w-full p-2 rounded-lg border transition-all relative ${isLocked
-                        ? 'bg-gray-50 border-gray-200 opacity-50 cursor-not-allowed'
-                        : index === currentChapterIndex
-                          ? 'bg-green-50 border-green-500 shadow-sm'
-                          : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-sm'
-                        }`}
-                      title={chapter.title}
-                    >
-                      {/* Unsaved indicator */}
-                      {isUnsaved && (
-                        <div className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                      )}
-
-                      {/* Status indicator */}
-                      <div className="flex flex-col items-center gap-1">
-                        <div className="w-4 h-4 flex items-center justify-center">
-                          {editStatus === 'analyzing' && (
-                            <div className="w-3 h-3 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
-                          )}
-                          {editStatus === 'ready' && (
-                            <span className="text-green-600 text-sm">✓</span>
-                          )}
-                          {editStatus === 'not_started' && (
-                            <span className="text-gray-300 text-sm">○</span>
-                          )}
-                        </div>
-                        <span className="text-xs font-bold text-gray-700">
-                          {chapter.chapter_number === 0 ? 'P' :
-                            chapter.chapter_number === 999 ? 'E' :
-                              chapter.chapter_number}
-                        </span>
+                    {/* Status indicator */}
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="w-4 h-4 flex items-center justify-center">
+                        {editStatus === 'analyzing' && (
+                          <div className="w-3 h-3 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+                        )}
+                        {editStatus === 'ready' && (
+                          <span className="text-green-600 text-sm">✓</span>
+                        )}
+                        {editStatus === 'not_started' && (
+                          <span className="text-gray-300 text-sm">○</span>
+                        )}
                       </div>
-                    </button>
-                  )
-                })}
-              </div>
-          )}
+                      <span className="text-xs font-bold text-gray-700">
+                        {chapter.chapter_number === 0 ? 'P' :
+                          chapter.chapter_number === 999 ? 'E' :
+                            chapter.chapter_number}
+                      </span>
+                    </div>
+                  </button>
+                )
+              })}
             </div>
+          )}
+        </div>
 
-          {/* CENTER: Editor */}
-          <div className="bg-white flex flex-col overflow-hidden border-r-2 border-gray-200">
-            {/* Chapter header with buttons */}
-            <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-green-700">
-                {chapters[currentChapterIndex]?.title || 'Loading...'}
-              </h3>
-              <div className="flex gap-3">
-                {/* Start Editing Button */}
-                {currentEditingStatus === 'not_started' && (
-                  <button
-                    onClick={() => analyzeChapter(currentChapter.chapter_number)}
-                    disabled={fullAnalysisInProgress || !analysisComplete}
-                    className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${fullAnalysisInProgress || !analysisComplete
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
-                      : 'bg-green-600 text-white hover:bg-green-700'
-                      }`}
-                    title={
-                      fullAnalysisInProgress
-                        ? 'Please wait for Alex to finish reading the manuscript (approx. 5 minutes)'
-                        : !analysisComplete
-                          ? 'Please complete full analysis first by typing "Yes" to Alex'
-                          : 'Start editing this chapter'
-                    }
-                  >
-                    <span>🚀</span>
-                    {fullAnalysisInProgress ? 'Waiting for Full Analysis...' : 'Start Editing'}
-                  </button>
-                )}
-
-                {/* Analyzing Status */}
-                {currentEditingStatus === 'analyzing' && (
-                  <div className="bg-yellow-50 border border-yellow-200 px-4 py-2 rounded-lg flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-yellow-700">{analyzingMessage}</span>
-                  </div>
-                )}
-
-                {/* Notes Button */}
-                {currentEditingStatus === 'ready' && (
-                  <button
-                    onClick={() => setShowIssuesPanel(!showIssuesPanel)}
-                    className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${showIssuesPanel
-                      ? 'bg-orange-600 text-white'
-                      : 'bg-orange-50 text-orange-700 border border-orange-300 hover:bg-orange-100'
-                      }`}
-                  >
-                    <span>📝</span>
-                    Notes ({chapterIssues.length})
-                  </button>
-                )}
-
-                {/* Save Button - Always visible */}
+        {/* CENTER: Editor */}
+        <div className="bg-white flex flex-col overflow-hidden border-r-2 border-gray-200">
+          {/* Chapter header with buttons */}
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+            <h3 className="text-lg font-bold text-green-700">
+              {chapters[currentChapterIndex]?.title || 'Loading...'}
+            </h3>
+            <div className="flex gap-3">
+              {/* Start Editing Button */}
+              {currentEditingStatus === 'not_started' && (
                 <button
-                  onClick={saveChanges}
-                  disabled={!hasUnsavedChanges}
-                  className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${hasUnsavedChanges
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  onClick={() => analyzeChapter(currentChapter.chapter_number)}
+                  disabled={fullAnalysisInProgress || !analysisComplete}
+                  className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${fullAnalysisInProgress || !analysisComplete
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
+                    : 'bg-green-600 text-white hover:bg-green-700'
+                    }`}
+                  title={
+                    fullAnalysisInProgress
+                      ? 'Please wait for Alex to finish reading the manuscript (approx. 5 minutes)'
+                      : !analysisComplete
+                        ? 'Please complete full analysis first by typing "Yes" to Alex'
+                        : 'Start editing this chapter'
+                  }
+                >
+                  <span>🚀</span>
+                  {fullAnalysisInProgress ? 'Waiting for Full Analysis...' : 'Start Editing'}
+                </button>
+              )}
+
+              {/* Analyzing Status */}
+              {currentEditingStatus === 'analyzing' && (
+                <div className="bg-yellow-50 border border-yellow-200 px-4 py-2 rounded-lg flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-yellow-700">{analyzingMessage}</span>
+                </div>
+              )}
+
+              {/* Notes Button */}
+              {currentEditingStatus === 'ready' && (
+                <button
+                  onClick={() => setShowIssuesPanel(!showIssuesPanel)}
+                  className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${showIssuesPanel
+                    ? 'bg-orange-600 text-white'
+                    : 'bg-orange-50 text-orange-700 border border-orange-300 hover:bg-orange-100'
                     }`}
                 >
-                  <span>💾</span> Save
+                  <span>📝</span>
+                  Notes ({chapterIssues.length})
                 </button>
+              )}
 
-                {/* Approve Button */}
-                {currentEditingStatus === 'ready' && (
-                  <button
-                    onClick={approveChapter}
-                    className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all flex items-center gap-2"
-                  >
-                    <span>✓</span> Approve
-                  </button>
-                )}
-              </div>
-            </div>
+              {/* Save Button - Always visible */}
+              <button
+                onClick={saveChanges}
+                disabled={!hasUnsavedChanges}
+                className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${hasUnsavedChanges
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+              >
+                <span>💾</span> Save
+              </button>
 
-            {/* Toolbar */}
-            <div className="px-6 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 font-bold">B</button>
-                <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 italic">I</button>
-                <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 underline">U</button>
-              </div>
-              <div className="text-sm text-gray-600">
-                <span className="font-semibold">Words: {wordCount.toLocaleString()}</span>
-                <span className="mx-2">|</span>
-                <span className="capitalize">{chapterStatus}</span>
-                {hasUnsavedChanges && <span className="mx-2 text-blue-600">• Unsaved</span>}
-              </div>
-            </div>
-
-            {/* Editor */}
-            <div
-              ref={editorRef}
-              contentEditable
-              className="flex-1 p-8 overflow-y-auto focus:outline-none"
-              style={{ fontFamily: 'Georgia, serif', fontSize: '1.1rem', lineHeight: '1.8' }}
-              dangerouslySetInnerHTML={{ __html: editorContent }}
-              onInput={(e) => {
-                const newContent = e.currentTarget.innerHTML
-                setEditorContent(newContent)
-                setHasUnsavedChanges(true)
-
-                // Cache the unsaved content
-                setUnsavedChapterContent(prev => ({
-                  ...prev,
-                  [chapters[currentChapterIndex].id]: newContent
-                }))
-
-                // Add to unsaved chapters set
-                setUnsavedChapters(prev => new Set(prev).add(chapters[currentChapterIndex].id))
-              }}
-            ></div>
-
-
-            {/* Chat input */}
-            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
-              <div className="flex gap-3">
-                <input
-                  type="text"
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
-                  placeholder="Ask Alex anything..."
-                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500"
-                />
+              {/* Approve Button */}
+              {currentEditingStatus === 'ready' && (
                 <button
-                  onClick={sendChatMessage}
-                  className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-all"
+                  onClick={approveChapter}
+                  className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all flex items-center gap-2"
                 >
-                  Send
+                  <span>✓</span> Approve
                 </button>
-              </div>
+              )}
             </div>
           </div>
 
-          {/* Issues Panel - Slides in when open */}
-          {showIssuesPanel && currentEditingStatus === 'ready' && (
-            <div className="bg-white border-r-2 border-gray-200 flex flex-col overflow-hidden">
-              {/* Header */}
-              <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-bold">Chapter Notes</h3>
-                  <p className="text-sm opacity-90">{filteredIssues.length} items to review</p>
-                </div>
+          {/* Toolbar */}
+          <div className="px-6 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 font-bold">B</button>
+              <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 italic">I</button>
+              <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 underline">U</button>
+            </div>
+            <div className="text-sm text-gray-600">
+              <span className="font-semibold">Words: {wordCount.toLocaleString()}</span>
+              <span className="mx-2">|</span>
+              <span className="capitalize">{chapterStatus}</span>
+              {hasUnsavedChanges && <span className="mx-2 text-blue-600">• Unsaved</span>}
+            </div>
+          </div>
+
+          {/* Editor */}
+          <div
+            ref={editorRef}
+            contentEditable
+            className="flex-1 p-8 overflow-y-auto focus:outline-none"
+            style={{ fontFamily: 'Georgia, serif', fontSize: '1.1rem', lineHeight: '1.8' }}
+            dangerouslySetInnerHTML={{ __html: editorContent }}
+            onInput={(e) => {
+              const newContent = e.currentTarget.innerHTML
+              setEditorContent(newContent)
+              setHasUnsavedChanges(true)
+
+              // Cache the unsaved content
+              setUnsavedChapterContent(prev => ({
+                ...prev,
+                [chapters[currentChapterIndex].id]: newContent
+              }))
+
+              // Add to unsaved chapters set
+              setUnsavedChapters(prev => new Set(prev).add(chapters[currentChapterIndex].id))
+            }}
+          ></div>
+
+
+          {/* Chat input */}
+          <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+            <div className="flex gap-3">
+              <input
+                type="text"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
+                placeholder="Ask Alex anything..."
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500"
+              />
+              <button
+                onClick={sendChatMessage}
+                className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-all"
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Issues Panel - Slides in when open */}
+        {showIssuesPanel && currentEditingStatus === 'ready' && (
+          <div className="bg-white border-r-2 border-gray-200 flex flex-col overflow-hidden">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold">Chapter Notes</h3>
+                <p className="text-sm opacity-90">{filteredIssues.length} items to review</p>
+              </div>
+              <button
+                onClick={() => setShowIssuesPanel(false)}
+                className="text-white hover:bg-white/20 rounded-lg p-2 transition-all"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Filter Tabs - Horizontal Scrollable */}
+            <div className="border-b border-gray-200 bg-gray-50 p-3 filter-tabs-scroll">
+              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                 <button
-                  onClick={() => setShowIssuesPanel(false)}
-                  className="text-white hover:bg-white/20 rounded-lg p-2 transition-all"
+                  onClick={() => setIssueFilter('all')}
+                  className={`px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap flex-shrink-0 ${issueFilter === 'all' ?
+                    'bg-white border border-gray-300' : 'hover:bg-gray-100 text-gray-600'
+                    }`}
                 >
-                  ✕
+                  All ({chapterIssues.length})
+                </button>
+                <button
+                  onClick={() => setIssueFilter('character')}
+                  className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'character' ?
+                    'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
+                    }`}
+                >
+                  Character ({chapterIssues.filter(i => i.element_type === 'character').length})
+                </button>
+                <button
+                  onClick={() => setIssueFilter('plot')}
+                  className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'plot' ?
+                    'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
+                    }`}
+                >
+                  Plot ({chapterIssues.filter(i => i.element_type === 'plot').length})
+                </button>
+                <button
+                  onClick={() => setIssueFilter('pacing')}
+                  className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'pacing' ?
+                    'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
+                    }`}
+                >
+                  Pacing ({chapterIssues.filter(i => i.element_type === 'pacing').length})
+                </button>
+                <button
+                  onClick={() => setIssueFilter('structure')}
+                  className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'structure' ?
+                    'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
+                    }`}
+                >
+                  Structure ({chapterIssues.filter(i => i.element_type === 'structure').length})
+                </button>
+                <button
+                  onClick={() => setIssueFilter('theme')}
+                  className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'theme' ?
+                    'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
+                    }`}
+                >
+                  Theme ({chapterIssues.filter(i => i.element_type === 'theme').length})
                 </button>
               </div>
-
-              {/* Filter Tabs - Horizontal Scrollable */}
-              <div className="border-b border-gray-200 bg-gray-50 p-3 filter-tabs-scroll">
-                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                  <button
-                    onClick={() => setIssueFilter('all')}
-                    className={`px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap flex-shrink-0 ${issueFilter === 'all' ?
-                      'bg-white border border-gray-300' : 'hover:bg-gray-100 text-gray-600'
-                      }`}
-                  >
-                    All ({chapterIssues.length})
-                  </button>
-                  <button
-                    onClick={() => setIssueFilter('character')}
-                    className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'character' ?
-                      'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
-                      }`}
-                  >
-                    Character ({chapterIssues.filter(i => i.element_type === 'character').length})
-                  </button>
-                  <button
-                    onClick={() => setIssueFilter('plot')}
-                    className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'plot' ?
-                      'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
-                      }`}
-                  >
-                    Plot ({chapterIssues.filter(i => i.element_type === 'plot').length})
-                  </button>
-                  <button
-                    onClick={() => setIssueFilter('pacing')}
-                    className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'pacing' ?
-                      'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
-                      }`}
-                  >
-                    Pacing ({chapterIssues.filter(i => i.element_type === 'pacing').length})
-                  </button>
-                  <button
-                    onClick={() => setIssueFilter('structure')}
-                    className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'structure' ?
-                      'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
-                      }`}
-                  >
-                    Structure ({chapterIssues.filter(i => i.element_type === 'structure').length})
-                  </button>
-                  <button
-                    onClick={() => setIssueFilter('theme')}
-                    className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'theme' ?
-                      'bg-white border border-gray-300 font-medium' : 'hover:bg-gray-100 text-gray-600'
-                      }`}
-                  >
-                    Theme ({chapterIssues.filter(i => i.element_type === 'theme').length})
-                  </button>
-                </div>
-              </div>
-
-              {/* Issues List */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                {filteredIssues.length === 0 ? (
-                  <div className="text-center py-12 text-gray-500">
-                    <div className="text-4xl mb-3">✨</div>
-                    <p className="font-medium">No issues found</p>
-                    <p className="text-sm">
-                      {issueFilter === 'all' ? 'This chapter looks great!' : `No ${issueFilter} issues`}
-                    </p>
-                  </div>
-                ) : (
-                  filteredIssues.map((issue) => (
-                    <div
-                      key={issue.id}
-                      onClick={() => setSelectedIssue(selectedIssue?.id === issue.id ? null : issue)}
-                      className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${selectedIssue?.id === issue.id
-                        ? 'border-orange-500 bg-orange-50'
-                        : 'border-gray-200 bg-white hover:border-orange-300 hover:shadow-sm'
-                        }`}
-                    >
-                      {/* Issue Header */}
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <span className={`w-2 h-2 rounded-full ${issue.severity === 'major' ? 'bg-red-500' :
-                            issue.severity === 'moderate' ? 'bg-yellow-500' :
-                              'bg-blue-500'
-                            }`}></span>
-                          <span className="text-xs font-semibold text-gray-500 uppercase">
-                            {issue.element_type}
-                          </span>
-                        </div>
-                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${issue.status === 'resolved' ? 'bg-green-100 text-green-700' :
-                          issue.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
-                            issue.status === 'dismissed' ? 'bg-gray-100 text-gray-600' :
-                              'bg-orange-100 text-orange-700'
-                          }`}>
-                          {issue.status === 'flagged' ? 'New' : issue.status.replace('_', ' ')}
-                        </span>
-                      </div>
-
-                      {/* Issue Description */}
-                      <p className="text-sm text-gray-900 font-medium mb-2 line-clamp-2">
-                        {issue.issue_description}
-                      </p>
-
-                      {/* Preview of suggestion */}
-                      {selectedIssue?.id !== issue.id && (
-                        <p className="text-xs text-gray-600 line-clamp-1">
-                          {issue.alex_suggestion}
-                        </p>
-                      )}
-
-                      {/* Expanded view when selected */}
-                      {selectedIssue?.id === issue.id && (
-                        <div className="mt-3 pt-3 border-t border-orange-200">
-                          <p className="text-sm text-gray-700 mb-3">
-                            <span className="font-semibold text-orange-700">For Discussion:</span>
-                            <br />
-                            {issue.alex_suggestion}
-                          </p>
-
-                          {/* Action Buttons */}
-                          <div className="flex gap-2">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                discussIssue(issue)
-                              }}
-                              className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-all"
-                            >
-                              💬 Discuss
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                updateIssueStatus(issue.id, 'dismissed')
-                              }}
-                              className="flex-1 bg-gray-600 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-gray-700 transition-all"
-                            >
-                              ✕ Dismiss
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* Footer Stats */}
-              <div className="border-t border-gray-200 bg-gray-50 p-4">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">
-                    {chapterIssues.filter(i => i.status === 'resolved').length} resolved
-                  </span>
-                  <span className="text-gray-600">
-                    {chapterIssues.filter(i => i.status === 'flagged').length} remaining
-                  </span>
-                </div>
-              </div>
             </div>
-          )}
 
-          {/* RIGHT: Editor Panel (Alex/Sam) */}
-          <div className="bg-white flex flex-col overflow-hidden">
-            {/* Editor header with Report button */}
-            <div className={`bg-gradient-to-r ${currentPhase === 2
-              ? 'from-purple-500 to-purple-600'
-              : 'from-green-500 to-green-600'
-              } text-white p-5 flex items-center justify-between`}>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl font-bold">
-                  {currentPhase === 2 ? 'S' : 'A'}
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold">{editorName}</h3>
-                  <p className="text-sm opacity-90">
-                    {currentPhase === 2 ? 'Line Editing Specialist' : 'Developmental Specialist'}
+            {/* Issues List */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {filteredIssues.length === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                  <div className="text-4xl mb-3">✨</div>
+                  <p className="font-medium">No issues found</p>
+                  <p className="text-sm">
+                    {issueFilter === 'all' ? 'This chapter looks great!' : `No ${issueFilter} issues`}
                   </p>
                 </div>
-              </div>
+              ) : (
+                filteredIssues.map((issue) => (
+                  <div
+                    key={issue.id}
+                    onClick={() => setSelectedIssue(selectedIssue?.id === issue.id ? null : issue)}
+                    className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${selectedIssue?.id === issue.id
+                      ? 'border-orange-500 bg-orange-50'
+                      : 'border-gray-200 bg-white hover:border-orange-300 hover:shadow-sm'
+                      }`}
+                  >
+                    {/* Issue Header */}
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-2 h-2 rounded-full ${issue.severity === 'major' ? 'bg-red-500' :
+                          issue.severity === 'moderate' ? 'bg-yellow-500' :
+                            'bg-blue-500'
+                          }`}></span>
+                        <span className="text-xs font-semibold text-gray-500 uppercase">
+                          {issue.element_type}
+                        </span>
+                      </div>
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${issue.status === 'resolved' ? 'bg-green-100 text-green-700' :
+                        issue.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+                          issue.status === 'dismissed' ? 'bg-gray-100 text-gray-600' :
+                            'bg-orange-100 text-orange-700'
+                        }`}>
+                        {issue.status === 'flagged' ? 'New' : issue.status.replace('_', ' ')}
+                      </span>
+                    </div>
 
-              {/* Report Access Button */}
-              {fullReportPdfUrl && (
-                <button
-                  onClick={() => setShowReportPanel(true)}
-                  className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 text-sm backdrop-blur-sm"
-                >
-                  <span>📄</span> View Report
-                </button>
+                    {/* Issue Description */}
+                    <p className="text-sm text-gray-900 font-medium mb-2 line-clamp-2">
+                      {issue.issue_description}
+                    </p>
+
+                    {/* Preview of suggestion */}
+                    {selectedIssue?.id !== issue.id && (
+                      <p className="text-xs text-gray-600 line-clamp-1">
+                        {issue.alex_suggestion}
+                      </p>
+                    )}
+
+                    {/* Expanded view when selected */}
+                    {selectedIssue?.id === issue.id && (
+                      <div className="mt-3 pt-3 border-t border-orange-200">
+                        <p className="text-sm text-gray-700 mb-3">
+                          <span className="font-semibold text-orange-700">For Discussion:</span>
+                          <br />
+                          {issue.alex_suggestion}
+                        </p>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              discussIssue(issue)
+                            }}
+                            className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-all"
+                          >
+                            💬 Discuss
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              updateIssueStatus(issue.id, 'dismissed')
+                            }}
+                            className="flex-1 bg-gray-600 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-gray-700 transition-all"
+                          >
+                            ✕ Dismiss
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))
               )}
             </div>
 
-            {/* Messages */}
-            <div
-              ref={alexMessagesRef}
-              className="flex-1 overflow-y-auto p-5 bg-gray-50 space-y-4"
-            >
-              {alexMessages.map((msg, i) => (
-                <div
-                  key={i}
-                  className={`p-4 rounded-xl ${msg.sender === editorName
-                    ? 'bg-white border border-gray-200'
-                    : currentPhase === 2
-                      ? 'bg-purple-50 border border-purple-200 ml-8'
-                      : 'bg-green-50 border border-green-200 ml-8'
-                    }`}
-                >
-                  <div className="font-semibold text-sm mb-1 text-gray-700">{msg.sender}</div>
-                  <div className="text-gray-900 whitespace-pre-wrap">{msg.message}</div>
-                </div>
-              ))}
-
-              {alexThinking && (
-                <div className="bg-gray-100 border border-gray-300 p-4 rounded-xl animate-pulse">
-                  <div className="flex items-center gap-2 text-gray-700">
-                    <span>{thinkingMessage}</span>
-                    <div className="flex gap-1">
-                      <div className={`w-2 h-2 ${currentPhase === 2 ? 'bg-purple-500' : 'bg-green-500'
-                        } rounded-full animate-bounce`} style={{ animationDelay: '0ms' }}></div>
-                      <div className={`w-2 h-2 ${currentPhase === 2 ? 'bg-purple-500' : 'bg-green-500'
-                        } rounded-full animate-bounce`} style={{ animationDelay: '150ms' }}></div>
-                      <div className={`w-2 h-2 ${currentPhase === 2 ? 'bg-purple-500' : 'bg-green-500'
-                        } rounded-full animate-bounce`} style={{ animationDelay: '300ms' }}></div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Invisible div for scrolling to */}
-              <div ref={messagesEndRef} />
+            {/* Footer Stats */}
+            <div className="border-t border-gray-200 bg-gray-50 p-4">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">
+                  {chapterIssues.filter(i => i.status === 'resolved').length} resolved
+                </span>
+                <span className="text-gray-600">
+                  {chapterIssues.filter(i => i.status === 'flagged').length} remaining
+                </span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* === ADD THE BUTTON HERE === */}
-        {
-          !analysisComplete && !fullAnalysisInProgress && (
-            <div className="px-6 py-4 bg-green-50 border-t border-green-200">
-              <button
-                onClick={triggerFullAnalysis}
-                className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-4 rounded-lg font-bold text-lg hover:from-green-600 hover:to-green-700 transition-all shadow-md hover:shadow-lg"
-              >
-                📖 Please Read My Manuscript
-              </button>
-              <p className="text-xs text-gray-600 text-center mt-2">
-                This takes about 5 minutes and you&apos;ll get a comprehensive report by email.
-              </p>
-            </div>
-          )
-        }
-
-        {/* Report Overlay Panel */}
-        {
-          showReportPanel && fullReportPdfUrl && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-8">
-              <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full h-[90vh] flex flex-col">
-                {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-green-100">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-bold">
-                      A
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-900">Alex Comprehensive Analysis</h3>
-                      <p className="text-sm text-gray-600">Full Manuscript Report</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-
-                    <a href={fullReportPdfUrl}
-                      download
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-all flex items-center gap-2"
-                    >
-                      <span>⬇️</span> Download PDF
-                    </a>
-                    <button
-                      onClick={() => setShowReportPanel(false)}
-                      className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-300 transition-all"
-                    >
-                      ✕ Close
-                    </button>
-                  </div>
-                </div>
-
-                {/* PDF Viewer */}
-                <div className="flex-1 overflow-hidden">
-                  <iframe
-                    src={fullReportPdfUrl}
-                    className="w-full h-full"
-                    title="Alex's Comprehensive Analysis Report"
-                  />
-                </div>
+        {/* RIGHT: Editor Panel (Alex/Sam) */}
+        <div className="bg-white flex flex-col overflow-hidden">
+          {/* Editor header with Report button */}
+          <div className={`bg-gradient-to-r ${currentPhase === 2
+            ? 'from-purple-500 to-purple-600'
+            : 'from-green-500 to-green-600'
+            } text-white p-5 flex items-center justify-between`}>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl font-bold">
+                {currentPhase === 2 ? 'S' : 'A'}
+              </div>
+              <div>
+                <h3 className="text-xl font-bold">{editorName}</h3>
+                <p className="text-sm opacity-90">
+                  {currentPhase === 2 ? 'Line Editing Specialist' : 'Developmental Specialist'}
+                </p>
               </div>
             </div>
-          )
-        }
-      </div >
-      )
+
+            {/* Report Access Button */}
+            {fullReportPdfUrl && (
+              <button
+                onClick={() => setShowReportPanel(true)}
+                className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 text-sm backdrop-blur-sm"
+              >
+                <span>📄</span> View Report
+              </button>
+            )}
+          </div>
+
+          {/* Messages */}
+          <div
+            ref={alexMessagesRef}
+            className="flex-1 overflow-y-auto p-5 bg-gray-50 space-y-4"
+          >
+            {alexMessages.map((msg, i) => (
+              <div
+                key={i}
+                className={`p-4 rounded-xl ${msg.sender === editorName
+                  ? 'bg-white border border-gray-200'
+                  : currentPhase === 2
+                    ? 'bg-purple-50 border border-purple-200 ml-8'
+                    : 'bg-green-50 border border-green-200 ml-8'
+                  }`}
+              >
+                <div className="font-semibold text-sm mb-1 text-gray-700">{msg.sender}</div>
+                <div className="text-gray-900 whitespace-pre-wrap">{msg.message}</div>
+              </div>
+            ))}
+
+            {alexThinking && (
+              <div className="bg-gray-100 border border-gray-300 p-4 rounded-xl animate-pulse">
+                <div className="flex items-center gap-2 text-gray-700">
+                  <span>{thinkingMessage}</span>
+                  <div className="flex gap-1">
+                    <div className={`w-2 h-2 ${currentPhase === 2 ? 'bg-purple-500' : 'bg-green-500'
+                      } rounded-full animate-bounce`} style={{ animationDelay: '0ms' }}></div>
+                    <div className={`w-2 h-2 ${currentPhase === 2 ? 'bg-purple-500' : 'bg-green-500'
+                      } rounded-full animate-bounce`} style={{ animationDelay: '150ms' }}></div>
+                    <div className={`w-2 h-2 ${currentPhase === 2 ? 'bg-purple-500' : 'bg-green-500'
+                      } rounded-full animate-bounce`} style={{ animationDelay: '300ms' }}></div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Invisible div for scrolling to */}
+            <div ref={messagesEndRef} />
+          </div>
+        </div>
+      </div>
+
+      {/* === ADD THE BUTTON HERE === */}
+      {
+        !analysisComplete && !fullAnalysisInProgress && (
+          <div className="px-6 py-4 bg-green-50 border-t border-green-200">
+            <button
+              onClick={triggerFullAnalysis}
+              className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-4 rounded-lg font-bold text-lg hover:from-green-600 hover:to-green-700 transition-all shadow-md hover:shadow-lg"
+            >
+              📖 Please Read My Manuscript
+            </button>
+            <p className="text-xs text-gray-600 text-center mt-2">
+              This takes about 5 minutes and you&apos;ll get a comprehensive report by email.
+            </p>
+          </div>
+        )
+      }
+
+      {/* Report Overlay Panel */}
+      {
+        showReportPanel && fullReportPdfUrl && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-8">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full h-[90vh] flex flex-col">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-green-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-bold">
+                    A
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">Alex Comprehensive Analysis</h3>
+                    <p className="text-sm text-gray-600">Full Manuscript Report</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+
+                  <a href={fullReportPdfUrl}
+                    download
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-all flex items-center gap-2"
+                  >
+                    <span>⬇️</span> Download PDF
+                  </a>
+                  <button
+                    onClick={() => setShowReportPanel(false)}
+                    className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-300 transition-all"
+                  >
+                    ✕ Close
+                  </button>
+                </div>
+              </div>
+
+              {/* PDF Viewer */}
+              <div className="flex-1 overflow-hidden">
+                <iframe
+                  src={fullReportPdfUrl}
+                  className="w-full h-full"
+                  title="Alex's Comprehensive Analysis Report"
+                />
+              </div>
+            </div>
+          </div>
+        )
+      }
+    </div >
+  )
 }
 
-      export default function AuthorStudioPage() {
+export default function AuthorStudioPage() {
   return (
-      <Suspense fallback={
-        <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center">
-          <div className="text-2xl font-semibold text-gray-700">Loading studio...</div>
-        </div>
-      }>
-        <StudioContent />
-      </Suspense>
-      )
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center">
+        <div className="text-2xl font-semibold text-gray-700">Loading studio...</div>
+      </div>
+    }>
+      <StudioContent />
+    </Suspense>
+  )
 }
