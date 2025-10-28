@@ -125,7 +125,10 @@ function StudioContent() {
   const [chapterIssues, setChapterIssues] = useState<ManuscriptIssue[]>([])
   const [showIssuesPanel, setShowIssuesPanel] = useState(false)
   const [selectedIssue, setSelectedIssue] = useState<ManuscriptIssue | null>(null)
-  const [issueFilter, setIssueFilter] = useState<'all' | 'character' | 'plot' | 'pacing' | 'structure' | 'theme'>('all')
+  const [issueFilter, setIssueFilter] = useState
+  'all' | 'character' | 'plot' | 'pacing' | 'structure' | 'theme' |
+    'word_choice' | 'sentence_flow' | 'dialogue' | 'voice' | 'clarity'
+    > ('all')
 
   // Refs
   const editorRef = useRef<HTMLDivElement>(null)
@@ -1727,8 +1730,8 @@ function StudioContent() {
                 <button
                   onClick={() => setIssueFilter('all')}
                   className={`px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap flex-shrink-0 ${issueFilter === 'all'
-                      ? 'bg-white border border-gray-300'
-                      : 'hover:bg-gray-100 text-gray-600'
+                    ? 'bg-white border border-gray-300'
+                    : 'hover:bg-gray-100 text-gray-600'
                     }`}
                 >
                   All ({chapterIssues.length})
@@ -1740,8 +1743,8 @@ function StudioContent() {
                     <button
                       onClick={() => setIssueFilter('character')}
                       className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'character'
-                          ? 'bg-white border border-gray-300 font-medium'
-                          : 'hover:bg-gray-100 text-gray-600'
+                        ? 'bg-white border border-gray-300 font-medium'
+                        : 'hover:bg-gray-100 text-gray-600'
                         }`}
                     >
                       Character ({chapterIssues.filter(i => i.element_type === 'character').length})
@@ -1749,8 +1752,8 @@ function StudioContent() {
                     <button
                       onClick={() => setIssueFilter('plot')}
                       className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'plot'
-                          ? 'bg-white border border-gray-300 font-medium'
-                          : 'hover:bg-gray-100 text-gray-600'
+                        ? 'bg-white border border-gray-300 font-medium'
+                        : 'hover:bg-gray-100 text-gray-600'
                         }`}
                     >
                       Plot ({chapterIssues.filter(i => i.element_type === 'plot').length})
@@ -1758,8 +1761,8 @@ function StudioContent() {
                     <button
                       onClick={() => setIssueFilter('pacing')}
                       className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'pacing'
-                          ? 'bg-white border border-gray-300 font-medium'
-                          : 'hover:bg-gray-100 text-gray-600'
+                        ? 'bg-white border border-gray-300 font-medium'
+                        : 'hover:bg-gray-100 text-gray-600'
                         }`}
                     >
                       Pacing ({chapterIssues.filter(i => i.element_type === 'pacing').length})
@@ -1767,8 +1770,8 @@ function StudioContent() {
                     <button
                       onClick={() => setIssueFilter('structure')}
                       className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'structure'
-                          ? 'bg-white border border-gray-300 font-medium'
-                          : 'hover:bg-gray-100 text-gray-600'
+                        ? 'bg-white border border-gray-300 font-medium'
+                        : 'hover:bg-gray-100 text-gray-600'
                         }`}
                     >
                       Structure ({chapterIssues.filter(i => i.element_type === 'structure').length})
@@ -1776,8 +1779,8 @@ function StudioContent() {
                     <button
                       onClick={() => setIssueFilter('theme')}
                       className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'theme'
-                          ? 'bg-white border border-gray-300 font-medium'
-                          : 'hover:bg-gray-100 text-gray-600'
+                        ? 'bg-white border border-gray-300 font-medium'
+                        : 'hover:bg-gray-100 text-gray-600'
                         }`}
                     >
                       Theme ({chapterIssues.filter(i => i.element_type === 'theme').length})
@@ -1789,8 +1792,8 @@ function StudioContent() {
                     <button
                       onClick={() => setIssueFilter('word_choice')}
                       className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'word_choice'
-                          ? 'bg-white border border-gray-300 font-medium'
-                          : 'hover:bg-gray-100 text-gray-600'
+                        ? 'bg-white border border-gray-300 font-medium'
+                        : 'hover:bg-gray-100 text-gray-600'
                         }`}
                     >
                       Word Choice ({chapterIssues.filter(i => i.element_type === 'word_choice').length})
@@ -1798,8 +1801,8 @@ function StudioContent() {
                     <button
                       onClick={() => setIssueFilter('sentence_flow')}
                       className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'sentence_flow'
-                          ? 'bg-white border border-gray-300 font-medium'
-                          : 'hover:bg-gray-100 text-gray-600'
+                        ? 'bg-white border border-gray-300 font-medium'
+                        : 'hover:bg-gray-100 text-gray-600'
                         }`}
                     >
                       Sentence Flow ({chapterIssues.filter(i => i.element_type === 'sentence_flow').length})
@@ -1807,8 +1810,8 @@ function StudioContent() {
                     <button
                       onClick={() => setIssueFilter('dialogue')}
                       className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'dialogue'
-                          ? 'bg-white border border-gray-300 font-medium'
-                          : 'hover:bg-gray-100 text-gray-600'
+                        ? 'bg-white border border-gray-300 font-medium'
+                        : 'hover:bg-gray-100 text-gray-600'
                         }`}
                     >
                       Dialogue ({chapterIssues.filter(i => i.element_type === 'dialogue').length})
@@ -1816,8 +1819,8 @@ function StudioContent() {
                     <button
                       onClick={() => setIssueFilter('voice')}
                       className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'voice'
-                          ? 'bg-white border border-gray-300 font-medium'
-                          : 'hover:bg-gray-100 text-gray-600'
+                        ? 'bg-white border border-gray-300 font-medium'
+                        : 'hover:bg-gray-100 text-gray-600'
                         }`}
                     >
                       Voice ({chapterIssues.filter(i => i.element_type === 'voice').length})
@@ -1825,8 +1828,8 @@ function StudioContent() {
                     <button
                       onClick={() => setIssueFilter('clarity')}
                       className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap flex-shrink-0 ${issueFilter === 'clarity'
-                          ? 'bg-white border border-gray-300 font-medium'
-                          : 'hover:bg-gray-100 text-gray-600'
+                        ? 'bg-white border border-gray-300 font-medium'
+                        : 'hover:bg-gray-100 text-gray-600'
                         }`}
                     >
                       Clarity ({chapterIssues.filter(i => i.element_type === 'clarity').length})
