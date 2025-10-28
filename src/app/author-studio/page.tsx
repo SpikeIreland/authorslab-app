@@ -31,6 +31,62 @@ import {
 
 import { EDITOR_CONFIG, ISSUE_CATEGORIES_BY_PHASE } from '@/types/database'
 
+function getEditorColorClasses(color: string) {
+  const colorMap = {
+    green: {
+      bg: 'bg-green-600',
+      bgHover: 'hover:bg-green-700',
+      bgLight: 'bg-green-50',
+      text: 'text-green-600',
+      border: 'border-green-500',
+      borderLight: 'border-green-300',
+      borderColor: 'border-green-200',
+      ring: 'focus:ring-green-500',
+    },
+    purple: {
+      bg: 'bg-purple-600',
+      bgHover: 'hover:bg-purple-700',
+      bgLight: 'bg-purple-50',
+      text: 'text-purple-600',
+      border: 'border-purple-500',
+      borderLight: 'border-purple-300',
+      borderColor: 'border-purple-200',
+      ring: 'focus:ring-purple-500',
+    },
+    blue: {
+      bg: 'bg-blue-600',
+      bgHover: 'hover:bg-blue-700',
+      bgLight: 'bg-blue-50',
+      text: 'text-blue-600',
+      border: 'border-blue-500',
+      borderLight: 'border-blue-300',
+      borderColor: 'border-blue-200',
+      ring: 'focus:ring-blue-500',
+    },
+    teal: {
+      bg: 'bg-teal-600',
+      bgHover: 'hover:bg-teal-700',
+      bgLight: 'bg-teal-50',
+      text: 'text-teal-600',
+      border: 'border-teal-500',
+      borderLight: 'border-teal-300',
+      borderColor: 'border-teal-200',
+      ring: 'focus:ring-teal-500',
+    },
+    orange: {
+      bg: 'bg-orange-600',
+      bgHover: 'hover:bg-orange-700',
+      bgLight: 'bg-orange-50',
+      text: 'text-orange-600',
+      border: 'border-orange-500',
+      borderLight: 'border-orange-300',
+      borderColor: 'border-orange-200',
+      ring: 'focus:ring-orange-500',
+    },
+  }
+  return colorMap[color as keyof typeof colorMap] || colorMap.green
+}
+
 // Webhook URLs
 const WEBHOOKS = {
   alexFullAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-full-manuscript-analysis',
@@ -181,7 +237,7 @@ function StudioContent() {
 
       // Load active phase (PRIMARY ORCHESTRATOR!)
       const phase = await getActivePhase(supabase, manuscriptId)
-      
+
       if (!phase) {
         console.error('No active phase found')
         throw new Error('No active phase')
@@ -219,7 +275,7 @@ function StudioContent() {
       // Load chat history for active phase
       setLoadingMessage('Loading chat history...')
       const history = await getChatHistory(supabase, manuscriptId, phase.phase_number)
-      
+
       if (history && history.length > 0) {
         const messages = history.map(msg => ({
           sender: msg.sender,
@@ -252,7 +308,7 @@ function StudioContent() {
       if (manuscript.full_analysis_text) {
         addChatMessage('Alex', `Hi ${firstName}! Welcome back. What do you want to work on today? Click on any chapter and let's get started.`)
       } else {
-        addChatMessage('Alex', 
+        addChatMessage('Alex',
           `Welcome! I'm Alex, your developmental editor. I can see you've uploaded "${manuscript.title}" with ${chapters.length} chapters.\n\n` +
           `Before we dive in, let me read your manuscript and create a comprehensive analysis. This will take about 3-4 minutes.\n\n` +
           `Click the button below when you're ready!`
@@ -274,7 +330,7 @@ function StudioContent() {
   function loadChapter(index: number, chaptersList?: Chapter[]) {
     const chaptersToUse = chaptersList || chapters
     const chapter = chaptersToUse[index]
-    
+
     if (!chapter) return
 
     setCurrentChapterIndex(index)
@@ -295,7 +351,7 @@ function StudioContent() {
     if (!manuscript?.id || !activePhase) return
 
     const supabase = createClient()
-    
+
     const { data: issues, error } = await supabase
       .from('manuscript_issues')
       .select('*')
@@ -334,12 +390,12 @@ function StudioContent() {
   // Handle chat submission
   async function handleChatSubmit(e: React.FormEvent) {
     e.preventDefault()
-    
+
     if (!userInput.trim() || !manuscript || !activePhase) return
 
     const message = userInput.trim()
     setUserInput('')
-    
+
     // Add user message
     await addChatMessage('Author', message, chapters[currentChapterIndex]?.chapter_number)
 
@@ -433,8 +489,8 @@ function StudioContent() {
       setChapters(updatedChapters)
       setHasUnsavedChanges(false)
 
-      const chapterLabel = currentChapter.chapter_number === 0 
-        ? 'Prologue' 
+      const chapterLabel = currentChapter.chapter_number === 0
+        ? 'Prologue'
         : `Chapter ${currentChapter.chapter_number}`
 
       await addChatMessage(editorName, `✅ ${chapterLabel} approved! Great work.`)
@@ -529,7 +585,7 @@ function StudioContent() {
         `**Next up: Phase 3 with Jordan** for the final technical polish!\n\n` +
         `*— Sam, Your Line Editor* ✨`
     }
-    
+
     return `Phase ${phaseNumber} complete! Moving to next phase...`
   }
 
@@ -560,7 +616,7 @@ function StudioContent() {
       'Organizing my thoughts...',
       'Almost done...'
     ]
-    
+
     let msgIndex = 0
     setAnalyzingMessage(messages[0])
     const msgInterval = setInterval(() => {
@@ -570,8 +626,8 @@ function StudioContent() {
 
     try {
       // Trigger chapter analysis
-      const analysisWebhook = activePhase.phase_number === 2 
-        ? WEBHOOKS.samChapterAnalysis 
+      const analysisWebhook = activePhase.phase_number === 2
+        ? WEBHOOKS.samChapterAnalysis
         : WEBHOOKS.alexChapterAnalysis
 
       await fetch(analysisWebhook, {
@@ -608,7 +664,7 @@ function StudioContent() {
 
       if (chapterIssues.length > 0 || attempts >= maxAttempts) {
         clearInterval(pollInterval)
-        
+
         setChapterEditingStatus(prev => ({
           ...prev,
           [chapterNumber]: 'ready'
@@ -672,7 +728,7 @@ function StudioContent() {
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Header */}
-      <header className={`bg-${editorColor}-600 text-white p-4 shadow-lg`}>
+      <header className={`${getEditorColorClasses(editorColor).bg} text-white p-4 shadow-lg`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <BookOpen className="w-8 h-8" />
@@ -713,29 +769,28 @@ function StudioContent() {
               const editStatus = chapterEditingStatus[chapter.chapter_number]
               const phaseColumn = `phase_${currentPhase}_approved_at` as keyof Chapter
               const isApproved = !!chapter[phaseColumn]
-              
+
               return (
                 <button
                   key={chapter.id}
                   onClick={() => !isLocked && loadChapter(index)}
                   disabled={isLocked}
-                  className={`w-full p-3 rounded-lg mb-2 text-left transition ${
-                    isLocked
-                      ? 'opacity-50 cursor-not-allowed'
-                      : index === currentChapterIndex
-                        ? `bg-${editorColor}-50 border-2 border-${editorColor}-500`
-                        : 'bg-white border border-gray-200 hover:border-${editorColor}-300'
-                  }`}
+                  className={`w-full p-3 rounded-lg mb-2 text-left transition ${isLocked
+                    ? 'opacity-50 cursor-not-allowed'
+                    : index === currentChapterIndex
+                      ? `${getEditorColorClasses(editorColor).bgLight} border-2 ${getEditorColorClasses(editorColor).border}`
+                      : `bg-white border border-gray-200 ${getEditorColorClasses(editorColor).borderLight}`
+                    }`}
                 >
                   {!isChapterSidebarCollapsed ? (
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 flex items-center justify-center">
                         {isApproved ? (
-                          <span className={`text-${editorColor}-600 text-lg`}>✓</span>
+                          <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>✓</span>
                         ) : editStatus === 'analyzing' ? (
-                          <div className={`w-4 h-4 border-2 border-${editorColor}-500 border-t-transparent rounded-full animate-spin`}></div>
+                          <div className={`w-4 h-4 border-2 ${getEditorColorClasses(editorColor).border} border-t-transparent rounded-full animate-spin`}></div>
                         ) : editStatus === 'ready' ? (
-                          <span className={`text-${editorColor}-600 text-lg`}>●</span>
+                          <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>●</span>
                         ) : (
                           <span className="text-gray-300 text-lg">○</span>
                         )}
@@ -766,20 +821,19 @@ function StudioContent() {
               {currentEditingStatus === 'not_started' && analysisComplete && (
                 <button
                   onClick={() => analyzeChapter(currentChapter.chapter_number)}
-                  className={`px-4 py-2 bg-${editorColor}-600 text-white rounded-lg hover:bg-${editorColor}-700`}
+                  className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg ${getEditorColorClasses(editorColor).bgHover}`}
                 >
                   Start Editing
                 </button>
               )}
-              
+
               {chapterIssues.length > 0 && (
                 <button
                   onClick={() => setShowIssuesPanel(!showIssuesPanel)}
-                  className={`px-4 py-2 rounded-lg ${
-                    showIssuesPanel
-                      ? `bg-${editorColor}-600 text-white`
-                      : `bg-${editorColor}-50 text-${editorColor}-700 border border-${editorColor}-300`
-                  }`}
+                  className={`px-4 py-2 rounded-lg ${showIssuesPanel
+                    ? `${getEditorColorClasses(editorColor).bg} text-white`
+                    : `${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).text} border ${getEditorColorClasses(editorColor).borderLight}`
+                    }`}
                 >
                   Notes ({chapterIssues.length})
                 </button>
@@ -788,11 +842,10 @@ function StudioContent() {
               <button
                 onClick={saveChanges}
                 disabled={!hasUnsavedChanges}
-                className={`px-4 py-2 rounded-lg ${
-                  hasUnsavedChanges
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
+                className={`px-4 py-2 rounded-lg ${hasUnsavedChanges
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
               >
                 Save
               </button>
@@ -800,7 +853,7 @@ function StudioContent() {
               {currentEditingStatus === 'ready' && (
                 <button
                   onClick={handleApproveChapter}
-                  className={`px-4 py-2 bg-${editorColor}-600 text-white rounded-lg hover:bg-${editorColor}-700`}
+                  className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg ${getEditorColorClasses(editorColor).bgHover}`}
                 >
                   Approve
                 </button>
@@ -815,7 +868,7 @@ function StudioContent() {
                 setEditorContent(e.target.value)
                 setHasUnsavedChanges(true)
               }}
-              className="w-full h-full min-h-[500px] p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-${editorColor}-500 font-serif text-lg leading-relaxed"
+              className={`w-full h-full min-h-[500px] p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 ${getEditorColorClasses(editorColor).ring} font-serif text-lg leading-relaxed`}
               disabled={isLocked}
             />
           </div>
@@ -828,7 +881,7 @@ function StudioContent() {
 
         {/* RIGHT: Chat Panel */}
         <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
-          <div className={`p-4 bg-${editorColor}-600 text-white`}>
+          <div className={`p-4 ${getEditorColorClasses(editorColor).bg} text-white`}>
             <h2 className="text-xl font-bold">{editorName}</h2>
             <p className="text-sm opacity-90">{EDITOR_CONFIG[currentPhase as PhaseNumber].phaseName}</p>
           </div>
@@ -837,24 +890,23 @@ function StudioContent() {
             {chatMessages.map((msg, index) => (
               <div
                 key={index}
-                className={`${
-                  msg.sender === 'Author'
-                    ? 'bg-blue-50 border-blue-200 ml-8'
-                    : `bg-${editorColor}-50 border-${editorColor}-200 mr-8`
-                } border rounded-lg p-3`}
+                className={`${msg.sender === 'Author'
+                  ? 'bg-blue-50 border-blue-200 ml-8'
+                  : `${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} mr-8`
+                  } border rounded-lg p-3`}
               >
                 <div className="font-semibold text-sm mb-1">{msg.sender}</div>
                 <div className="text-sm whitespace-pre-wrap">{msg.message}</div>
               </div>
             ))}
-            
+
             {isThinking && (
-              <div className={`bg-${editorColor}-50 border-${editorColor}-200 border rounded-lg p-3 mr-8`}>
+              <div className={`${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} border rounded-lg p-3 mr-8`}>
                 <div className="font-semibold text-sm mb-1">{editorName}</div>
                 <div className="text-sm">Thinking...</div>
               </div>
             )}
-            
+
             <div ref={messagesEndRef} />
           </div>
 
@@ -865,12 +917,12 @@ function StudioContent() {
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
                 placeholder={`Ask ${editorName}...`}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-${editorColor}-500"
+                className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 ${getEditorColorClasses(editorColor).ring}`}
               />
               <button
                 type="submit"
                 disabled={!userInput.trim() || isThinking}
-                className={`px-4 py-2 bg-${editorColor}-600 text-white rounded-lg hover:bg-${editorColor}-700 disabled:opacity-50`}
+                className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg ${getEditorColorClasses(editorColor).bgHover} disabled:opacity-50`}
               >
                 Send
               </button>
@@ -896,24 +948,22 @@ function StudioContent() {
           <div className="p-3 border-b border-gray-200 flex gap-2 overflow-x-auto">
             <button
               onClick={() => setIssueFilter('all')}
-              className={`px-3 py-1 rounded-lg text-sm ${
-                issueFilter === 'all'
-                  ? `bg-${editorColor}-600 text-white`
-                  : 'bg-gray-200 text-gray-700'
-              }`}
+              className={`px-3 py-1 rounded-lg text-sm ${issueFilter === 'all'
+                ? `${getEditorColorClasses(editorColor).bg} text-white`
+                : 'bg-gray-200 text-gray-700'
+                }`}
             >
               All ({chapterIssues.length})
             </button>
-            
+
             {ISSUE_CATEGORIES_BY_PHASE[currentPhase as PhaseNumber].map(category => (
               <button
                 key={category}
                 onClick={() => setIssueFilter(category)}
-                className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap ${
-                  issueFilter === category
-                    ? `bg-${editorColor}-600 text-white`
-                    : 'bg-gray-200 text-gray-700'
-                }`}
+                className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap ${issueFilter === category
+                  ? `${getEditorColorClasses(editorColor).bg} text-white`
+                  : 'bg-gray-200 text-gray-700'
+                  }`}
               >
                 {category.replace('_', ' ')} ({chapterIssues.filter(i => i.element_type === category).length})
               </button>
@@ -924,7 +974,7 @@ function StudioContent() {
             {filteredIssues.map(issue => (
               <div
                 key={issue.id}
-                className={`border-l-4 border-${editorColor}-500 bg-gray-50 p-3 rounded`}
+                className={`border-l-4 ${getEditorColorClasses(editorColor).border} bg-gray-50 p-3 rounded`}
               >
                 <div className="text-sm font-semibold text-gray-700 mb-1">
                   {issue.element_type.replace('_', ' ')}
@@ -933,7 +983,7 @@ function StudioContent() {
                 <div className="text-sm text-gray-600 italic">{issue.editor_suggestion}</div>
               </div>
             ))}
-            
+
             {filteredIssues.length === 0 && (
               <div className="text-center text-gray-500 py-8">
                 No notes in this category
