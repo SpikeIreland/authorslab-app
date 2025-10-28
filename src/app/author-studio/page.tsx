@@ -92,6 +92,8 @@ const WEBHOOKS = {
   alexFullAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-full-manuscript-analysis',
   alexChapterAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-chapter-analysis',
   alexChat: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-chat',
+  alexGenerateSummary: 'https://spikeislandstudios.app.n8n.cloud/webhook/generate-summary-points',  // NEW
+  alexGenerateChapterSummaries: 'https://spikeislandstudios.app.n8n.cloud/webhook/generate-chapter-summaries',  // NEW
   samFullAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/sam-full-manuscript-analysis',
   samChapterAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/sam-chapter-analysis',
   samChat: 'https://spikeislandstudios.app.n8n.cloud/webhook/sam-chat',
