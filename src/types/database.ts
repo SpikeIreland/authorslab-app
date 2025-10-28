@@ -448,3 +448,4 @@ export async function createApprovedSnapshot(
   
   return true
 }
+export const ISSUE_CATEGORIES = ISSUE_CATEGORIES_BY_PHASE
