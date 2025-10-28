@@ -358,19 +358,16 @@ function StudioContent() {
         setEditorColor('purple')
         setShowPhase2Banner(false)
 
-        // 🆕 Check if Sam needs to read the manuscript
-        if (manuscriptData.line_editing_started_at && !manuscriptData.line_editing_ready_at) {
-          // Sam has started but hasn't finished reading yet
-          console.log('Sam is reading... starting poll')
+        // Check Sam's reading status
+        if (manuscriptData.status === 'sam_reading' && !manuscriptData.line_editing_ready_at) {
+          // Sam's webhook is running - poll for completion
+          console.log('Sam is currently reading... starting poll')
           setSamReadingInProgress(true)
           pollForSamReadCompletion(manuscriptData.id)
         } else if (!manuscriptData.line_editing_ready_at) {
           // First time in Phase 2 - Sam hasn't read yet
-          console.log('First time in Phase 2 - triggering Sam read')
-          // Trigger read after a short delay to let the page settle
-          setTimeout(() => {
-            triggerSamInitialRead()
-          }, 1000)
+          console.log('First time in Phase 2 - Sam needs to read')
+          // Don't trigger here - let the greeting section handle it
         }
       } else {
         setCurrentPhase(1)
@@ -421,11 +418,10 @@ function StudioContent() {
         const phase = searchParams.get('phase')
         const isPhase2 = phase === '2' || manuscriptData.line_editing_started_at
 
-        // Phase-specific greetings
         if (isPhase2) {
           // We're in Phase 2 - Sam's territory
           if (manuscriptData.line_editing_ready_at && manuscriptData.sam_initial_thoughts) {
-            // Sam already read - show his thoughts + ready message
+            // Sam finished reading - show his thoughts
             addAlexMessage(manuscriptData.sam_initial_thoughts)
 
             setTimeout(() => {
@@ -434,16 +430,16 @@ function StudioContent() {
                 `Click "Start Editing" on any chapter for my specific line-editing suggestions. Let's make your prose shine! ✨`
               )
             }, 1000)
-          } else if (manuscriptData.line_editing_started_at && !manuscriptData.line_editing_ready_at) {
-            // Sam is currently reading - show status message
+          } else if (manuscriptData.status === 'sam_reading') {
+            // Sam is currently reading (webhook already triggered)
             addAlexMessage(
               `Hey ${firstName}! I'm Sam, your line editor. ✨\n\n` +
               `I can see I've already started reading your approved manuscript. Give me just a moment to finish up and I'll share my initial thoughts!\n\n` +
               `📖 Reading in progress...`
             )
-            // Polling is already happening from phase detection above
+            // Polling already started above
           } else {
-            // First time in Phase 2 - show greeting and trigger read
+            // First time in Phase 2 - trigger Sam's read
             addAlexMessage(
               `Hey ${firstName}! I'm Sam, your line editor. ✨\n\n` +
               `I've already reviewed the fantastic structural work you and Alex accomplished together on "${manuscriptData.title}". Alex did incredible work on your story architecture—now let's make every sentence sing!\n\n` +
