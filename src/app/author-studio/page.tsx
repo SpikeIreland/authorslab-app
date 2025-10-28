@@ -905,7 +905,7 @@ function StudioContent() {
               All ({chapterIssues.length})
             </button>
             
-            {ISSUE_CATEGORIES[currentPhase as PhaseNumber].map(category => (
+            {ISSUE_CATEGORIES_BY_PHASE[currentPhase as PhaseNumber].map(category => (
               <button
                 key={category}
                 onClick={() => setIssueFilter(category)}
