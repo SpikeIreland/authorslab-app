@@ -434,7 +434,15 @@ function StudioContent() {
                 `Click "Start Editing" on any chapter for my specific line-editing suggestions. Let's make your prose shine! ✨`
               )
             }, 1000)
-          } else if (!manuscriptData.line_editing_started_at) {
+          } else if (manuscriptData.line_editing_started_at && !manuscriptData.line_editing_ready_at) {
+            // Sam is currently reading - show status message
+            addAlexMessage(
+              `Hey ${firstName}! I'm Sam, your line editor. ✨\n\n` +
+              `I can see I've already started reading your approved manuscript. Give me just a moment to finish up and I'll share my initial thoughts!\n\n` +
+              `📖 Reading in progress...`
+            )
+            // Polling is already happening from phase detection above
+          } else {
             // First time in Phase 2 - show greeting and trigger read
             addAlexMessage(
               `Hey ${firstName}! I'm Sam, your line editor. ✨\n\n` +
@@ -448,8 +456,8 @@ function StudioContent() {
               triggerSamInitialRead()
             }, 1500)
           }
-          // If line_editing_started_at but not ready, polling is already happening (no greeting needed)
         } else {
+
           // Phase 1 - Alex's greeting - Different based on analysis status
           if (manuscriptData.full_analysis_completed_at) {
             // Returning user - analysis already done
