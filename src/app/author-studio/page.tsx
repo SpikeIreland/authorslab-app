@@ -1163,7 +1163,7 @@ function StudioContent() {
 
               {/* Save Button - Always visible */}
               <button
-                onClick={saveChanges}
+                onClick={() => saveChanges(false)}
                 disabled={!hasUnsavedChanges}
                 className={`px-4 py-2 rounded-lg ${hasUnsavedChanges
                   ? 'bg-blue-600 text-white hover:bg-blue-700'
