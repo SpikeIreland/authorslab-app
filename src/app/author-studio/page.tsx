@@ -832,9 +832,9 @@ function StudioContent() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-white rounded-2xl p-12 text-center max-w-md shadow-2xl">
-          <div className="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+          <div className="w-16 h-16 border-4 border-gray-200 border-t-green-600 rounded-full animate-spin mx-auto mb-6"></div>
           <h3 className="text-2xl font-bold text-gray-900 mb-3">Setting Up Your Studio</h3>
           <p className="text-gray-600">{loadingMessage}</p>
         </div>
@@ -845,7 +845,7 @@ function StudioContent() {
   // Error state
   if (!manuscript || !activePhase) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl p-12 text-center max-w-md shadow-2xl">
           <div className="text-6xl mb-4">❌</div>
           <h3 className="text-2xl font-bold text-gray-900 mb-3">Error Loading Studio</h3>
@@ -867,23 +867,19 @@ function StudioContent() {
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Header */}
-      <header className={`${getEditorColorClasses(editorColor).bg} text-white p-4 shadow-lg`}>
+      <header className="bg-white border-b border-gray-200 p-4 shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <BookOpen className="w-8 h-8" />
+            <div className={`w-10 h-10 rounded-lg ${getEditorColorClasses(editorColor).bg} text-white flex items-center justify-center`}>
+              <BookOpen className="w-6 h-6" />
+            </div>
             <div>
-              <h1 className="text-2xl font-bold">{manuscript.title}</h1>
-              <p className="text-sm opacity-90">
+              <h1 className="text-xl font-bold text-gray-900">{manuscript.title}</h1>
+              <p className={`text-sm ${getEditorColorClasses(editorColor).text} font-medium`}>
                 Phase {currentPhase}: {EDITOR_CONFIG[currentPhase as PhaseNumber].phaseName} with {editorName}
               </p>
             </div>
           </div>
-          <Link
-            href="/dashboard"
-            className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition"
-          >
-            Dashboard
-          </Link>
         </div>
       </header>
 
