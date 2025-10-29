@@ -878,17 +878,35 @@ function StudioContent() {
     const pollInterval = setInterval(async () => {
       attempts++
 
-      await loadChapterIssues(chapterNumber)
+      // Load issues and get the actual count
+      const supabase = createClient()
+      const { data: issues } = await supabase
+        .from('manuscript_issues')
+        .select('*')
+        .eq('manuscript_id', manuscript!.id)
+        .eq('chapter_number', chapterNumber)
+        .eq('phase_number', activePhase!.phase_number)
+        .neq('status', 'dismissed')
 
-      if (chapterIssues.length > 0 || attempts >= maxAttempts) {
+      const issueCount = issues?.length || 0
+
+      console.log(`Polling attempt ${attempts}: Found ${issueCount} issues`)
+
+      // Stop polling if we found issues OR reached max attempts
+      if (issueCount > 0 || attempts >= maxAttempts) {
         clearInterval(pollInterval)
 
+        // Update the chapter editing status
         setChapterEditingStatus(prev => ({
           ...prev,
           [chapterNumber]: 'ready'
         }))
 
-        if (chapterIssues.length > 0) {
+        // Reload the issues into state
+        await loadChapterIssues(chapterNumber)
+
+        // Add chat message
+        if (issueCount > 0) {
           await addChatMessage(
             editorName,
             `✅ I've got some thoughts on this chapter. Check the sidebar!`
@@ -1199,16 +1217,6 @@ function StudioContent() {
 
           {/* Messages Area */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {/* ADD THIS DEBUG LOG */}
-            {(() => {
-              console.log('🔍 Button conditions:', {
-                analysisComplete,
-                fullAnalysisInProgress,
-                chatMessagesLength: chatMessages.length,
-                shouldShowButton: !analysisComplete && !fullAnalysisInProgress && chatMessages.length === 0
-              })
-              return null
-            })()}
 
             {/* Show "Read my Manuscript" button if analysis not started */}
             {!analysisComplete && !fullAnalysisInProgress && (
