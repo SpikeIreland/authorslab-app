@@ -888,6 +888,39 @@ function StudioContent() {
               </p>
             </div>
           </div>
+
+          {/* Editor Icons - Shows progress through phases */}
+          <div className="flex items-center gap-2">
+            {/* Alex (A) - Phase 1 Developmental */}
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${currentPhase > 1
+                ? 'bg-green-600 text-white'
+                : currentPhase === 1
+                  ? 'bg-green-600 text-white ring-2 ring-green-300'
+                  : 'bg-gray-200 text-gray-400'
+              }`}>
+              A
+            </div>
+
+            {/* Sam (S) - Phase 2 Line Editing */}
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${currentPhase > 2
+                ? 'bg-purple-600 text-white'
+                : currentPhase === 2
+                  ? 'bg-purple-600 text-white ring-2 ring-purple-300'
+                  : 'bg-gray-200 text-gray-400'
+              }`}>
+              S
+            </div>
+
+            {/* Jordan (J) - Phase 3 Copy Editing */}
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${currentPhase > 3
+                ? 'bg-blue-600 text-white'
+                : currentPhase === 3
+                  ? 'bg-blue-600 text-white ring-2 ring-blue-300'
+                  : 'bg-gray-200 text-gray-400'
+              }`}>
+              J
+            </div>
+          </div>
         </div>
       </header>
 
