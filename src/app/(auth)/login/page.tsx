@@ -63,15 +63,11 @@ function LoginContent() {
         router.push(
           `/author-studio?userId=${authData.user.id}&authorProfileId=${profile.id}&manuscriptId=${latestManuscript.id}`
         )
-      } else if (profile.onboarding_complete) {
-        // Onboarding complete but no manuscript - go to studio (will show upload)
-        console.log('✅ Redirecting to studio (no manuscript)')
-        router.push(`/author-studio?userId=${authData.user.id}&authorProfileId=${profile.id}`)
       } else {
-        // Not onboarded - go to onboarding
-        console.log('✅ Redirecting to onboarding')
+        // No manuscripts - send to onboarding to create one
+        console.log('✅ No manuscripts found, redirecting to onboarding')
         router.push(
-          `/onboarding?userId=${authData.user.id}&authorProfileId=${profile.id}&firstName=${encodeURIComponent(profile.first_name || '')}&lastName=${encodeURIComponent(profile.last_name || '')}&email=${encodeURIComponent(profile.email)}`
+          `/onboarding?userId=${authData.user.id}&authorProfileId=${profile.id}&email=${profile.email}&firstName=${profile.first_name || ''}&lastName=${profile.last_name || ''}`
         )
       }
 
