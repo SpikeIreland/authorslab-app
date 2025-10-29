@@ -118,11 +118,13 @@ function StudioContent() {
   const [currentChapterIndex, setCurrentChapterIndex] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [loadingMessage, setLoadingMessage] = useState('Loading your studio...')
+  const [isSaving, setIsSaving] = useState(false)
 
   // Phase/Editor State (derived from activePhase)
   const currentPhase = activePhase?.phase_number || 1
   const editorName = activePhase?.editor_name || 'Alex'
   const editorColor = activePhase?.editor_color || 'green'
+  const [autoSaveTimer, setAutoSaveTimer] = useState<NodeJS.Timeout | null>(null)
 
   // Editor State
   const [editorContent, setEditorContent] = useState('')
@@ -642,18 +644,19 @@ function StudioContent() {
     await loadChapterIssues(currentChapter.chapter_number)
   }
 
-  // Save chapter changes
-  async function saveChanges() {
-    if (!manuscript || !chapters[currentChapterIndex]) return
+  async function saveChanges(isAutoSave = false) {
+    if (!currentChapter || !manuscript || !hasUnsavedChanges) return
 
-    const supabase = createClient()
-    const currentChapter = chapters[currentChapterIndex]
+    if (!isAutoSave) setIsLocked(true) // Only lock for manual saves
+    setIsSaving(true)
 
     try {
+      const supabase = createClient()
       const { error } = await supabase
         .from('chapters')
         .update({
           content: editorContent,
+          word_count: wordCount,
           updated_at: new Date().toISOString()
         })
         .eq('id', currentChapter.id)
@@ -661,18 +664,24 @@ function StudioContent() {
       if (error) throw error
 
       setHasUnsavedChanges(false)
-      await addChatMessage(editorName, '✅ Changes saved successfully!')
-
-      // Remove from unsaved chapters
       setUnsavedChapters(prev => {
         const newSet = new Set(prev)
         newSet.delete(currentChapter.chapter_number)
         return newSet
       })
 
+      if (!isAutoSave) {
+        await addChatMessage(editorName, '✅ Chapter saved successfully!')
+      }
+
     } catch (error) {
       console.error('Save error:', error)
-      await addChatMessage(editorName, '❌ Error saving changes. Please try again.')
+      if (!isAutoSave) {
+        await addChatMessage(editorName, '❌ Failed to save. Please try again.')
+      }
+    } finally {
+      setIsSaving(false)
+      if (!isAutoSave) setIsLocked(false)
     }
   }
 
@@ -825,7 +834,7 @@ function StudioContent() {
 
     await addChatMessage(
       editorName,
-      `📖 Let me analyze "${chapterLabel}". This will just take a moment...`
+      `📖 Let me get my notes on "${chapterLabel}". This will just take a moment...`
     )
 
     // Show analyzing messages
@@ -910,7 +919,7 @@ function StudioContent() {
         if (issueCount > 0) {
           await addChatMessage(
             editorName,
-            `✅ I've got some thoughts on this chapter. Check the sidebar!`
+            `✅ I've got some thoughts on this chapter. Click the Notes Button!`
           )
         } else {
           await addChatMessage(
@@ -1187,7 +1196,7 @@ function StudioContent() {
               {hasUnsavedChanges && (
                 <span className="flex items-center gap-1 text-blue-600 font-medium">
                   <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                  Unsaved changes
+                  {isSaving ? 'Saving...' : 'Unsaved changes'}
                 </span>
               )}
             </div>
@@ -1199,8 +1208,17 @@ function StudioContent() {
               onChange={(e) => {
                 setEditorContent(e.target.value)
                 setHasUnsavedChanges(true)
-                // Mark this chapter as unsaved
                 setUnsavedChapters(prev => new Set(prev).add(currentChapter.chapter_number))
+
+                // Clear existing timer
+                if (autoSaveTimer) clearTimeout(autoSaveTimer)
+
+                // Set new auto-save timer (3 seconds)
+                const timer = setTimeout(() => {
+                  saveChanges(true) // Auto-save flag
+                }, 3000)
+
+                setAutoSaveTimer(timer)
               }}
               className={`w-full h-full min-h-[500px] p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 ${getEditorColorClasses(editorColor).ring} font-serif text-lg leading-relaxed`}
               disabled={isLocked}
