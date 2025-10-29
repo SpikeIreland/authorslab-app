@@ -425,779 +425,782 @@ function StudioContent() {
         console.log(`✅ Restored ${history.length} chat messages`)
       } else {
         // Show initial greeting for this phase
-        showInitialGreeting(phase, manuscriptData, authorProfile.first_name)
-      }
-
-      setIsLoading(false)
-
-    } catch (error) {
-      console.error('Error initializing studio:', error)
-      setIsLoading(false)
-      // Could show error state here
-    }
-  }, [searchParams, router])
-
-  useEffect(() => {
-    initializeStudio()
-  }, [initializeStudio])
-
-  // Show initial greeting based on phase
-  function showInitialGreeting(phase: EditingPhase, manuscript: Manuscript, firstName: string) {
-    if (phase.phase_number === 1) {
-      // Alex's greeting
-      if (manuscript.full_analysis_text) {
-        addChatMessage('Alex', `Hi ${firstName}! Welcome back. What do you want to work on today? Click on any chapter and let's get started.`)
       } else {
-        addChatMessage('Alex',
-          `Welcome! I'm Alex, your developmental editor. I can see you've uploaded "${manuscript.title}" with ${chapters.length} chapters.\n\n` +
-          `Before we dive in, let me read your manuscript and create a comprehensive analysis. This will take about 3-4 minutes.\n\n` +
-          `Click the button below when you're ready!`
-        )
+        // Show initial greeting for this phase
+        showInitialGreeting(phase, manuscriptData, authorProfile.first_name, chaptersData?.length || 0)
       }
-    } else if (phase.phase_number === 2) {
-      // Sam's greeting
-      addChatMessage('Sam',
-        `Hey ${firstName}! I'm Sam, your line editor. ✨\n\n` +
-        `I've already reviewed the fantastic structural work you and Alex accomplished together on "${manuscript.title}". ` +
-        `Now let's make every sentence sing!\n\n` +
-        `Give me just a couple of minutes to read through your approved manuscript and I'll share my initial thoughts. In the meantime, feel free to look around! 📚`
+    }
+
+      setIsLoading(false)
+
+  } catch (error) {
+    console.error('Error initializing studio:', error)
+    setIsLoading(false)
+    // Could show error state here
+  }
+}, [searchParams, router])
+
+useEffect(() => {
+  initializeStudio()
+}, [initializeStudio])
+
+// Show initial greeting based on phase
+function showInitialGreeting(phase: EditingPhase, manuscript: Manuscript, firstName: string, chapterCount: number) {
+  if (phase.phase_number === 1) {
+    // Alex's greeting
+    if (manuscript.full_analysis_text) {
+      addChatMessage('Alex', `Hi ${firstName}! Welcome back. What do you want to work on today? Click on any chapter and let's get started.`)
+    } else {
+      addChatMessage('Alex',
+        `Welcome! I'm Alex, your developmental editor. I can see you've uploaded "${manuscript.title}" with ${chapterCount} chapters.\n\n` +
+        `I'm ready to read your manuscript and create a comprehensive analysis. This will take about 5 minutes.\n\n` +
+        `When you're ready, click the "Read My Manuscript" button above to begin! 📖`
       )
     }
-    // Add greetings for Jordan, Taylor, Quinn as needed
+  } else if (phase.phase_number === 2) {
+    // Sam's greeting
+    addChatMessage('Sam',
+      `Hey ${firstName}! I'm Sam, your line editor. ✨\n\n` +
+      `I've already reviewed the fantastic structural work you and Alex accomplished together on "${manuscript.title}". ` +
+      `Now let's make every sentence sing!\n\n` +
+      `Give me just a couple of minutes to read through your approved manuscript and I'll share my initial thoughts. In the meantime, feel free to look around! 📚`
+    )
+  }
+  // Add greetings for Jordan, Taylor, Quinn as needed
+}
+
+// Load chapter into editor
+function loadChapter(index: number, chaptersList?: Chapter[]) {
+  const chaptersToUse = chaptersList || chapters
+  const chapter = chaptersToUse[index]
+
+  if (!chapter) return
+
+  setCurrentChapterIndex(index)
+  setEditorContent(chapter.content)
+  setHasUnsavedChanges(false)
+
+  // Load issues for this chapter if ready
+  const editStatus = chapterEditingStatus[chapter.chapter_number]
+  if (editStatus === 'ready') {
+    loadChapterIssues(chapter.chapter_number)
+  } else {
+    setChapterIssues([])
+  }
+}
+
+// Load issues for a chapter
+async function loadChapterIssues(chapterNumber: number) {
+  if (!manuscript?.id || !activePhase) return
+
+  const supabase = createClient()
+
+  const { data: issues, error } = await supabase
+    .from('manuscript_issues')
+    .select('*')
+    .eq('manuscript_id', manuscript.id)
+    .eq('chapter_number', chapterNumber)
+    .eq('phase_number', activePhase.phase_number)
+    .order('severity', { ascending: false })
+
+  if (error) {
+    console.error('Error loading issues:', error)
+    return
   }
 
-  // Load chapter into editor
-  function loadChapter(index: number, chaptersList?: Chapter[]) {
-    const chaptersToUse = chaptersList || chapters
-    const chapter = chaptersToUse[index]
+  setChapterIssues(issues || [])
+  console.log(`Loaded ${issues?.length || 0} issues for chapter ${chapterNumber}`)
+}
 
-    if (!chapter) return
+// Add chat message (and persist to database)
+async function addChatMessage(sender: string, message: string, chapterNumber?: number) {
+  // Add to local state immediately for responsiveness
+  setChatMessages(prev => [...prev, { sender, message }])
 
-    setCurrentChapterIndex(index)
-    setEditorContent(chapter.content)
+  // Persist to database
+  if (manuscript?.id && activePhase) {
+    await saveChatMessage(
+      createClient(),
+      manuscript.id,
+      activePhase.phase_number,
+      sender as EditorChatMessage['sender'],
+      message,
+      chapterNumber
+    )
+  }
+}
+
+// Handle chat submission
+async function handleChatSubmit(e: React.FormEvent) {
+  e.preventDefault()
+
+  if (!userInput.trim() || !manuscript || !activePhase) return
+
+  const message = userInput.trim()
+  setUserInput('')
+
+  // Add user message
+  await addChatMessage('Author', message, chapters[currentChapterIndex]?.chapter_number)
+
+  // Show thinking state
+  setIsThinking(true)
+
+  try {
+    // Determine which chat webhook to use
+    const chatWebhook = activePhase.phase_number === 2 ? WEBHOOKS.samChat : WEBHOOKS.alexChat
+
+    const response = await fetch(chatWebhook, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: message,
+        manuscriptId: manuscript.id,
+        chapterNumber: chapters[currentChapterIndex]?.chapter_number,
+        chapterContent: editorContent
+      })
+    })
+
+    const data = await response.json()
+    const editorResponse = data.response || data.output || "I'm having trouble connecting. Let me help based on what I see."
+
+    setIsThinking(false)
+    await addChatMessage(editorName, editorResponse)
+
+  } catch (error) {
+    console.error('Chat error:', error)
+    setIsThinking(false)
+    await addChatMessage(editorName, "I'm having trouble connecting. Let me help based on what I see in your manuscript.")
+  }
+}
+
+// Save chapter changes
+async function saveChanges() {
+  if (!manuscript || !chapters[currentChapterIndex]) return
+
+  const supabase = createClient()
+  const currentChapter = chapters[currentChapterIndex]
+
+  try {
+    const { error } = await supabase
+      .from('chapters')
+      .update({
+        content: editorContent,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', currentChapter.id)
+
+    if (error) throw error
+
+    setHasUnsavedChanges(false)
+    await addChatMessage(editorName, '✅ Changes saved successfully!')
+
+  } catch (error) {
+    console.error('Save error:', error)
+    await addChatMessage(editorName, '❌ Error saving changes. Please try again.')
+  }
+}
+
+// Approve chapter for current phase
+async function handleApproveChapter() {
+  if (!manuscript || !activePhase || !chapters[currentChapterIndex]) return
+
+  const supabase = createClient()
+  const currentChapter = chapters[currentChapterIndex]
+
+  try {
+    // Approve chapter using helper
+    const success = await approveChapter(
+      supabase,
+      currentChapter.id,
+      activePhase.phase_number as PhaseNumber,
+      editorContent
+    )
+
+    if (!success) {
+      throw new Error('Failed to approve chapter')
+    }
+
+    console.log(`✅ Chapter ${currentChapter.chapter_number} approved for Phase ${activePhase.phase_number}`)
+
+    // Update local state
+    const phaseColumn = `phase_${activePhase.phase_number}_approved_at` as keyof Chapter
+    const updatedChapters = [...chapters]
+    updatedChapters[currentChapterIndex] = {
+      ...updatedChapters[currentChapterIndex],
+      [phaseColumn]: new Date().toISOString()
+    }
+    setChapters(updatedChapters)
     setHasUnsavedChanges(false)
 
-    // Load issues for this chapter if ready
-    const editStatus = chapterEditingStatus[chapter.chapter_number]
-    if (editStatus === 'ready') {
-      loadChapterIssues(chapter.chapter_number)
-    } else {
-      setChapterIssues([])
-    }
-  }
+    const chapterLabel = currentChapter.chapter_number === 0
+      ? 'Prologue'
+      : `Chapter ${currentChapter.chapter_number}`
 
-  // Load issues for a chapter
-  async function loadChapterIssues(chapterNumber: number) {
-    if (!manuscript?.id || !activePhase) return
+    await addChatMessage(editorName, `✅ ${chapterLabel} approved! Great work.`)
 
-    const supabase = createClient()
+    // Check if all chapters are now approved
+    const allApproved = await areAllChaptersApproved(
+      supabase,
+      manuscript.id,
+      activePhase.phase_number as PhaseNumber
+    )
 
-    const { data: issues, error } = await supabase
-      .from('manuscript_issues')
-      .select('*')
-      .eq('manuscript_id', manuscript.id)
-      .eq('chapter_number', chapterNumber)
-      .eq('phase_number', activePhase.phase_number)
-      .order('severity', { ascending: false })
-
-    if (error) {
-      console.error('Error loading issues:', error)
-      return
+    if (allApproved) {
+      // All chapters approved - handle phase completion
+      await handlePhaseComplete()
+    } else if (currentChapterIndex < chapters.length - 1) {
+      // Move to next chapter
+      setTimeout(() => loadChapter(currentChapterIndex + 1), 1000)
     }
 
-    setChapterIssues(issues || [])
-    console.log(`Loaded ${issues?.length || 0} issues for chapter ${chapterNumber}`)
+  } catch (error) {
+    console.error('Approve error:', error)
+    await addChatMessage(editorName, '❌ Error approving chapter. Please try again.')
   }
+}
 
-  // Add chat message (and persist to database)
-  async function addChatMessage(sender: string, message: string, chapterNumber?: number) {
-    // Add to local state immediately for responsiveness
-    setChatMessages(prev => [...prev, { sender, message }])
+// Handle phase completion
+async function handlePhaseComplete() {
+  if (!manuscript || !activePhase) return
 
-    // Persist to database
-    if (manuscript?.id && activePhase) {
-      await saveChatMessage(
-        createClient(),
-        manuscript.id,
-        activePhase.phase_number,
-        sender as EditorChatMessage['sender'],
-        message,
-        chapterNumber
+  const supabase = createClient()
+
+  try {
+    console.log(`🎉 All chapters approved for Phase ${activePhase.phase_number}!`)
+
+    // 1. Create approved snapshot
+    const snapshotCreated = await createApprovedSnapshot(
+      supabase,
+      manuscript.id,
+      activePhase.phase_number as PhaseNumber,
+      activePhase.editor_name
+    )
+
+    if (!snapshotCreated) {
+      console.error('Failed to create snapshot')
+    }
+
+    // 2. Transition to next phase
+    const transitioned = await transitionToNextPhase(
+      supabase,
+      manuscript.id,
+      activePhase.phase_number as PhaseNumber
+    )
+
+    if (!transitioned) {
+      throw new Error('Failed to transition phases')
+    }
+
+    // 3. Show completion message
+    setTimeout(() => {
+      addChatMessage(
+        editorName,
+        getPhaseCompletionMessage(activePhase.phase_number, chapters.length)
       )
-    }
+    }, 1500)
+
+    // 4. Reload to show new phase
+    setTimeout(() => {
+      window.location.reload()
+    }, 3000)
+
+  } catch (error) {
+    console.error('Error completing phase:', error)
+    await addChatMessage(editorName, '✅ All chapters approved! There was an issue with the transition, but your work is safe.')
+  }
+}
+
+// Get phase completion message
+function getPhaseCompletionMessage(phaseNumber: number, chapterCount: number): string {
+  if (phaseNumber === 1) {
+    return `🎉 **Incredible work, ${authorFirstName}!**\n\n` +
+      `You've successfully approved all ${chapterCount} chapters. Your story structure is solid, ` +
+      `your character arcs are clear, and the pacing flows beautifully.\n\n` +
+      `**What happens next?**\n` +
+      `You're ready for **Phase 2: Line Editing with Sam**. Sam will work at the sentence level, ` +
+      `polishing your prose and making sure every word sings.\n\n` +
+      `The page will reload in a moment to begin Phase 2...\n\n` +
+      `*— Alex, Your Developmental Editor* 👔`
+  } else if (phaseNumber === 2) {
+    return `✨ **Beautiful work, ${authorFirstName}!**\n\n` +
+      `Your prose is polished and shining. Every sentence flows, your dialogue sparkles, ` +
+      `and your voice is consistent and compelling.\n\n` +
+      `**Next up: Phase 3 with Jordan** for the final technical polish!\n\n` +
+      `*— Sam, Your Line Editor* ✨`
   }
 
-  // Handle chat submission
-  async function handleChatSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  return `Phase ${phaseNumber} complete! Moving to next phase...`
+}
 
-    if (!userInput.trim() || !manuscript || !activePhase) return
+// Analyze chapter on demand
+async function analyzeChapter(chapterNumber: number) {
+  if (!manuscript || !activePhase) return
 
-    const message = userInput.trim()
-    setUserInput('')
+  const chapter = chapters.find(ch => ch.chapter_number === chapterNumber)
+  if (!chapter) return
 
-    // Add user message
-    await addChatMessage('Author', message, chapters[currentChapterIndex]?.chapter_number)
+  // Update status
+  setChapterEditingStatus(prev => ({
+    ...prev,
+    [chapterNumber]: 'analyzing'
+  }))
 
-    // Show thinking state
-    setIsThinking(true)
+  const chapterLabel = chapter.chapter_number === 0 ? 'Prologue' : chapter.title
 
-    try {
-      // Determine which chat webhook to use
-      const chatWebhook = activePhase.phase_number === 2 ? WEBHOOKS.samChat : WEBHOOKS.alexChat
+  await addChatMessage(
+    editorName,
+    `📖 Let me analyze "${chapterLabel}". This will just take a moment...`
+  )
 
-      const response = await fetch(chatWebhook, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: message,
-          manuscriptId: manuscript.id,
-          chapterNumber: chapters[currentChapterIndex]?.chapter_number,
-          chapterContent: editorContent
-        })
+  // Show analyzing messages
+  const messages = [
+    'Reading through carefully...',
+    'Taking notes...',
+    'Organizing my thoughts...',
+    'Almost done...'
+  ]
+
+  let msgIndex = 0
+  setAnalyzingMessage(messages[0])
+  const msgInterval = setInterval(() => {
+    msgIndex = (msgIndex + 1) % messages.length
+    setAnalyzingMessage(messages[msgIndex])
+  }, 4000)
+
+  try {
+    // Trigger chapter analysis
+    const analysisWebhook = activePhase.phase_number === 2
+      ? WEBHOOKS.samChapterAnalysis
+      : WEBHOOKS.alexChapterAnalysis
+
+    await fetch(analysisWebhook, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        manuscriptId: manuscript.id,
+        chapterNumber: chapterNumber,
+        userId: manuscript.author_id
       })
+    }).catch(() => console.log('✅ Analysis webhook triggered'))
 
-      const data = await response.json()
-      const editorResponse = data.response || data.output || "I'm having trouble connecting. Let me help based on what I see."
+    clearInterval(msgInterval)
 
-      setIsThinking(false)
-      await addChatMessage(editorName, editorResponse)
+    // Poll for issues
+    pollForChapterIssues(chapterNumber)
 
-    } catch (error) {
-      console.error('Chat error:', error)
-      setIsThinking(false)
-      await addChatMessage(editorName, "I'm having trouble connecting. Let me help based on what I see in your manuscript.")
-    }
+  } catch (error) {
+    clearInterval(msgInterval)
+    console.error('Error analyzing chapter:', error)
+    await addChatMessage(editorName, '❌ Had trouble analyzing. Please try again.')
   }
+}
 
-  // Save chapter changes
-  async function saveChanges() {
-    if (!manuscript || !chapters[currentChapterIndex]) return
+// Poll for chapter issues to appear
+function pollForChapterIssues(chapterNumber: number) {
+  let attempts = 0
+  const maxAttempts = 20
 
-    const supabase = createClient()
-    const currentChapter = chapters[currentChapterIndex]
+  const pollInterval = setInterval(async () => {
+    attempts++
 
-    try {
-      const { error } = await supabase
-        .from('chapters')
-        .update({
-          content: editorContent,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', currentChapter.id)
+    await loadChapterIssues(chapterNumber)
 
-      if (error) throw error
+    if (chapterIssues.length > 0 || attempts >= maxAttempts) {
+      clearInterval(pollInterval)
 
-      setHasUnsavedChanges(false)
-      await addChatMessage(editorName, '✅ Changes saved successfully!')
+      setChapterEditingStatus(prev => ({
+        ...prev,
+        [chapterNumber]: 'ready'
+      }))
 
-    } catch (error) {
-      console.error('Save error:', error)
-      await addChatMessage(editorName, '❌ Error saving changes. Please try again.')
-    }
-  }
-
-  // Approve chapter for current phase
-  async function handleApproveChapter() {
-    if (!manuscript || !activePhase || !chapters[currentChapterIndex]) return
-
-    const supabase = createClient()
-    const currentChapter = chapters[currentChapterIndex]
-
-    try {
-      // Approve chapter using helper
-      const success = await approveChapter(
-        supabase,
-        currentChapter.id,
-        activePhase.phase_number as PhaseNumber,
-        editorContent
-      )
-
-      if (!success) {
-        throw new Error('Failed to approve chapter')
-      }
-
-      console.log(`✅ Chapter ${currentChapter.chapter_number} approved for Phase ${activePhase.phase_number}`)
-
-      // Update local state
-      const phaseColumn = `phase_${activePhase.phase_number}_approved_at` as keyof Chapter
-      const updatedChapters = [...chapters]
-      updatedChapters[currentChapterIndex] = {
-        ...updatedChapters[currentChapterIndex],
-        [phaseColumn]: new Date().toISOString()
-      }
-      setChapters(updatedChapters)
-      setHasUnsavedChanges(false)
-
-      const chapterLabel = currentChapter.chapter_number === 0
-        ? 'Prologue'
-        : `Chapter ${currentChapter.chapter_number}`
-
-      await addChatMessage(editorName, `✅ ${chapterLabel} approved! Great work.`)
-
-      // Check if all chapters are now approved
-      const allApproved = await areAllChaptersApproved(
-        supabase,
-        manuscript.id,
-        activePhase.phase_number as PhaseNumber
-      )
-
-      if (allApproved) {
-        // All chapters approved - handle phase completion
-        await handlePhaseComplete()
-      } else if (currentChapterIndex < chapters.length - 1) {
-        // Move to next chapter
-        setTimeout(() => loadChapter(currentChapterIndex + 1), 1000)
-      }
-
-    } catch (error) {
-      console.error('Approve error:', error)
-      await addChatMessage(editorName, '❌ Error approving chapter. Please try again.')
-    }
-  }
-
-  // Handle phase completion
-  async function handlePhaseComplete() {
-    if (!manuscript || !activePhase) return
-
-    const supabase = createClient()
-
-    try {
-      console.log(`🎉 All chapters approved for Phase ${activePhase.phase_number}!`)
-
-      // 1. Create approved snapshot
-      const snapshotCreated = await createApprovedSnapshot(
-        supabase,
-        manuscript.id,
-        activePhase.phase_number as PhaseNumber,
-        activePhase.editor_name
-      )
-
-      if (!snapshotCreated) {
-        console.error('Failed to create snapshot')
-      }
-
-      // 2. Transition to next phase
-      const transitioned = await transitionToNextPhase(
-        supabase,
-        manuscript.id,
-        activePhase.phase_number as PhaseNumber
-      )
-
-      if (!transitioned) {
-        throw new Error('Failed to transition phases')
-      }
-
-      // 3. Show completion message
-      setTimeout(() => {
-        addChatMessage(
+      if (chapterIssues.length > 0) {
+        await addChatMessage(
           editorName,
-          getPhaseCompletionMessage(activePhase.phase_number, chapters.length)
+          `✅ I've got some thoughts on this chapter. Check the sidebar!`
         )
-      }, 1500)
-
-      // 4. Reload to show new phase
-      setTimeout(() => {
-        window.location.reload()
-      }, 3000)
-
-    } catch (error) {
-      console.error('Error completing phase:', error)
-      await addChatMessage(editorName, '✅ All chapters approved! There was an issue with the transition, but your work is safe.')
-    }
-  }
-
-  // Get phase completion message
-  function getPhaseCompletionMessage(phaseNumber: number, chapterCount: number): string {
-    if (phaseNumber === 1) {
-      return `🎉 **Incredible work, ${authorFirstName}!**\n\n` +
-        `You've successfully approved all ${chapterCount} chapters. Your story structure is solid, ` +
-        `your character arcs are clear, and the pacing flows beautifully.\n\n` +
-        `**What happens next?**\n` +
-        `You're ready for **Phase 2: Line Editing with Sam**. Sam will work at the sentence level, ` +
-        `polishing your prose and making sure every word sings.\n\n` +
-        `The page will reload in a moment to begin Phase 2...\n\n` +
-        `*— Alex, Your Developmental Editor* 👔`
-    } else if (phaseNumber === 2) {
-      return `✨ **Beautiful work, ${authorFirstName}!**\n\n` +
-        `Your prose is polished and shining. Every sentence flows, your dialogue sparkles, ` +
-        `and your voice is consistent and compelling.\n\n` +
-        `**Next up: Phase 3 with Jordan** for the final technical polish!\n\n` +
-        `*— Sam, Your Line Editor* ✨`
-    }
-
-    return `Phase ${phaseNumber} complete! Moving to next phase...`
-  }
-
-  // Analyze chapter on demand
-  async function analyzeChapter(chapterNumber: number) {
-    if (!manuscript || !activePhase) return
-
-    const chapter = chapters.find(ch => ch.chapter_number === chapterNumber)
-    if (!chapter) return
-
-    // Update status
-    setChapterEditingStatus(prev => ({
-      ...prev,
-      [chapterNumber]: 'analyzing'
-    }))
-
-    const chapterLabel = chapter.chapter_number === 0 ? 'Prologue' : chapter.title
-
-    await addChatMessage(
-      editorName,
-      `📖 Let me analyze "${chapterLabel}". This will just take a moment...`
-    )
-
-    // Show analyzing messages
-    const messages = [
-      'Reading through carefully...',
-      'Taking notes...',
-      'Organizing my thoughts...',
-      'Almost done...'
-    ]
-
-    let msgIndex = 0
-    setAnalyzingMessage(messages[0])
-    const msgInterval = setInterval(() => {
-      msgIndex = (msgIndex + 1) % messages.length
-      setAnalyzingMessage(messages[msgIndex])
-    }, 4000)
-
-    try {
-      // Trigger chapter analysis
-      const analysisWebhook = activePhase.phase_number === 2
-        ? WEBHOOKS.samChapterAnalysis
-        : WEBHOOKS.alexChapterAnalysis
-
-      await fetch(analysisWebhook, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          manuscriptId: manuscript.id,
-          chapterNumber: chapterNumber,
-          userId: manuscript.author_id
-        })
-      }).catch(() => console.log('✅ Analysis webhook triggered'))
-
-      clearInterval(msgInterval)
-
-      // Poll for issues
-      pollForChapterIssues(chapterNumber)
-
-    } catch (error) {
-      clearInterval(msgInterval)
-      console.error('Error analyzing chapter:', error)
-      await addChatMessage(editorName, '❌ Had trouble analyzing. Please try again.')
-    }
-  }
-
-  // Poll for chapter issues to appear
-  function pollForChapterIssues(chapterNumber: number) {
-    let attempts = 0
-    const maxAttempts = 20
-
-    const pollInterval = setInterval(async () => {
-      attempts++
-
-      await loadChapterIssues(chapterNumber)
-
-      if (chapterIssues.length > 0 || attempts >= maxAttempts) {
-        clearInterval(pollInterval)
-
-        setChapterEditingStatus(prev => ({
-          ...prev,
-          [chapterNumber]: 'ready'
-        }))
-
-        if (chapterIssues.length > 0) {
-          await addChatMessage(
-            editorName,
-            `✅ I've got some thoughts on this chapter. Check the sidebar!`
-          )
-        } else {
-          await addChatMessage(
-            editorName,
-            `✅ Analysis complete! This chapter looks good.`
-          )
-        }
+      } else {
+        await addChatMessage(
+          editorName,
+          `✅ Analysis complete! This chapter looks good.`
+        )
       }
-    }, 2000)
-  }
+    }
+  }, 2000)
+}
 
-  // Get filtered issues
-  const filteredIssues = issueFilter === 'all'
-    ? chapterIssues
-    : chapterIssues.filter(issue => issue.element_type === issueFilter)
+// Get filtered issues
+const filteredIssues = issueFilter === 'all'
+  ? chapterIssues
+  : chapterIssues.filter(issue => issue.element_type === issueFilter)
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center">
-        <div className="bg-white rounded-2xl p-12 text-center max-w-md shadow-2xl">
-          <div className="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-3">Setting Up Your Studio</h3>
-          <p className="text-gray-600">{loadingMessage}</p>
-        </div>
+// Loading state
+if (isLoading) {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center">
+      <div className="bg-white rounded-2xl p-12 text-center max-w-md shadow-2xl">
+        <div className="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+        <h3 className="text-2xl font-bold text-gray-900 mb-3">Setting Up Your Studio</h3>
+        <p className="text-gray-600">{loadingMessage}</p>
       </div>
-    )
-  }
+    </div>
+  )
+}
 
-  // Error state
-  if (!manuscript || !activePhase) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl p-12 text-center max-w-md shadow-2xl">
-          <div className="text-6xl mb-4">❌</div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-3">Error Loading Studio</h3>
-          <p className="text-gray-600 mb-6">Unable to load your manuscript. Please try again.</p>
+// Error state
+if (!manuscript || !activePhase) {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl p-12 text-center max-w-md shadow-2xl">
+        <div className="text-6xl mb-4">❌</div>
+        <h3 className="text-2xl font-bold text-gray-900 mb-3">Error Loading Studio</h3>
+        <p className="text-gray-600 mb-6">Unable to load your manuscript. Please try again.</p>
+        <button
+          onClick={() => router.push('/onboarding')}
+          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
+        >
+          Return to Onboarding
+        </button>
+      </div>
+    </div>
+  )
+}
+
+const currentChapter = chapters[currentChapterIndex]
+const currentEditingStatus = currentChapter ? chapterEditingStatus[currentChapter.chapter_number] : 'not_started'
+
+return (
+  <div className="h-screen flex flex-col bg-gray-50">
+    {/* Header */}
+    <header className={`${getEditorColorClasses(editorColor).bg} text-white p-4 shadow-lg`}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <BookOpen className="w-8 h-8" />
+          <div>
+            <h1 className="text-2xl font-bold">{manuscript.title}</h1>
+            <p className="text-sm opacity-90">
+              Phase {currentPhase}: {EDITOR_CONFIG[currentPhase as PhaseNumber].phaseName} with {editorName}
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/dashboard"
+          className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition"
+        >
+          Dashboard
+        </Link>
+      </div>
+    </header>
+
+    {/* Main Layout */}
+    <div className="flex-1 flex overflow-hidden">
+      {/* LEFT: Chapter Navigation */}
+      <div className={`${isChapterSidebarCollapsed ? 'w-16' : 'w-64'} bg-white border-r border-gray-200 flex flex-col transition-all`}>
+        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+          {!isChapterSidebarCollapsed && (
+            <h2 className="font-bold text-gray-900">Chapters ({chapters.length})</h2>
+          )}
           <button
-            onClick={() => router.push('/onboarding')}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
+            onClick={() => setIsChapterSidebarCollapsed(!isChapterSidebarCollapsed)}
+            className="p-2 hover:bg-gray-100 rounded"
           >
-            Return to Onboarding
+            {isChapterSidebarCollapsed ? '→' : '←'}
           </button>
         </div>
-      </div>
-    )
-  }
 
-  const currentChapter = chapters[currentChapterIndex]
-  const currentEditingStatus = currentChapter ? chapterEditingStatus[currentChapter.chapter_number] : 'not_started'
+        <div className="flex-1 overflow-y-auto p-2">
+          {chapters.map((chapter, index) => {
+            const editStatus = chapterEditingStatus[chapter.chapter_number]
+            const phaseColumn = `phase_${currentPhase}_approved_at` as keyof Chapter
+            const isApproved = !!chapter[phaseColumn]
 
-  return (
-    <div className="h-screen flex flex-col bg-gray-50">
-      {/* Header */}
-      <header className={`${getEditorColorClasses(editorColor).bg} text-white p-4 shadow-lg`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <BookOpen className="w-8 h-8" />
-            <div>
-              <h1 className="text-2xl font-bold">{manuscript.title}</h1>
-              <p className="text-sm opacity-90">
-                Phase {currentPhase}: {EDITOR_CONFIG[currentPhase as PhaseNumber].phaseName} with {editorName}
-              </p>
-            </div>
-          </div>
-          <Link
-            href="/dashboard"
-            className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition"
-          >
-            Dashboard
-          </Link>
-        </div>
-      </header>
-
-      {/* Main Layout */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* LEFT: Chapter Navigation */}
-        <div className={`${isChapterSidebarCollapsed ? 'w-16' : 'w-64'} bg-white border-r border-gray-200 flex flex-col transition-all`}>
-          <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-            {!isChapterSidebarCollapsed && (
-              <h2 className="font-bold text-gray-900">Chapters ({chapters.length})</h2>
-            )}
-            <button
-              onClick={() => setIsChapterSidebarCollapsed(!isChapterSidebarCollapsed)}
-              className="p-2 hover:bg-gray-100 rounded"
-            >
-              {isChapterSidebarCollapsed ? '→' : '←'}
-            </button>
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-2">
-            {chapters.map((chapter, index) => {
-              const editStatus = chapterEditingStatus[chapter.chapter_number]
-              const phaseColumn = `phase_${currentPhase}_approved_at` as keyof Chapter
-              const isApproved = !!chapter[phaseColumn]
-
-              return (
-                <button
-                  key={chapter.id}
-                  onClick={() => !isLocked && loadChapter(index)}
-                  disabled={isLocked}
-                  className={`w-full p-3 rounded-lg mb-2 text-left transition ${isLocked
-                    ? 'opacity-50 cursor-not-allowed'
-                    : index === currentChapterIndex
-                      ? `${getEditorColorClasses(editorColor).bgLight} border-2 ${getEditorColorClasses(editorColor).border}`
-                      : `bg-white border border-gray-200 ${getEditorColorClasses(editorColor).borderLight}`
-                    }`}
-                >
-                  {!isChapterSidebarCollapsed ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 flex items-center justify-center">
-                        {isApproved ? (
-                          <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>✓</span>
-                        ) : editStatus === 'analyzing' ? (
-                          <div className={`w-4 h-4 border-2 ${getEditorColorClasses(editorColor).border} border-t-transparent rounded-full animate-spin`}></div>
-                        ) : editStatus === 'ready' ? (
-                          <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>●</span>
-                        ) : (
-                          <span className="text-gray-300 text-lg">○</span>
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-xs text-gray-500">
-                          {chapter.chapter_number === 0 ? 'Prologue' : `Chapter ${chapter.chapter_number}`}
-                        </div>
-                        <div className="font-semibold text-sm">{chapter.title}</div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-center">
-                      {chapter.chapter_number === 0 ? 'P' : chapter.chapter_number}
-                    </div>
-                  )}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* CENTER: Editor */}
-        <div className="flex-1 flex flex-col bg-white">
-          <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-            <h3 className="text-lg font-bold">{currentChapter?.title || 'Loading...'}</h3>
-            <div className="flex gap-2">
-              {currentEditingStatus === 'not_started' && analysisComplete && (
-                <button
-                  onClick={() => analyzeChapter(currentChapter.chapter_number)}
-                  className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg ${getEditorColorClasses(editorColor).bgHover}`}
-                >
-                  Start Editing
-                </button>
-              )}
-
-              {chapterIssues.length > 0 && (
-                <button
-                  onClick={() => setShowIssuesPanel(!showIssuesPanel)}
-                  className={`px-4 py-2 rounded-lg ${showIssuesPanel
-                    ? `${getEditorColorClasses(editorColor).bg} text-white`
-                    : `${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).text} border ${getEditorColorClasses(editorColor).borderLight}`
-                    }`}
-                >
-                  Notes ({chapterIssues.length})
-                </button>
-              )}
-
+            return (
               <button
-                onClick={saveChanges}
-                disabled={!hasUnsavedChanges}
-                className={`px-4 py-2 rounded-lg ${hasUnsavedChanges
-                  ? 'bg-blue-600 text-white hover:bg-blue-700'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                key={chapter.id}
+                onClick={() => !isLocked && loadChapter(index)}
+                disabled={isLocked}
+                className={`w-full p-3 rounded-lg mb-2 text-left transition ${isLocked
+                  ? 'opacity-50 cursor-not-allowed'
+                  : index === currentChapterIndex
+                    ? `${getEditorColorClasses(editorColor).bgLight} border-2 ${getEditorColorClasses(editorColor).border}`
+                    : `bg-white border border-gray-200 ${getEditorColorClasses(editorColor).borderLight}`
                   }`}
               >
-                Save
-              </button>
-
-              {currentEditingStatus === 'ready' && (
-                <button
-                  onClick={handleApproveChapter}
-                  className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg ${getEditorColorClasses(editorColor).bgHover}`}
-                >
-                  Approve
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-6">
-            <textarea
-              value={editorContent}
-              onChange={(e) => {
-                setEditorContent(e.target.value)
-                setHasUnsavedChanges(true)
-              }}
-              className={`w-full h-full min-h-[500px] p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 ${getEditorColorClasses(editorColor).ring} font-serif text-lg leading-relaxed`}
-              disabled={isLocked}
-            />
-          </div>
-
-          <div className="p-4 border-t border-gray-200 text-sm text-gray-600">
-            Words: {wordCount.toLocaleString()}
-            {hasUnsavedChanges && <span className="mx-2 text-blue-600">• Unsaved changes</span>}
-          </div>
-        </div>
-
-        {/* RIGHT: Chat Panel */}
-        <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
-          {/* Editor Header */}
-          <div className={`p-4 ${getEditorColorClasses(editorColor).bg} text-white`}>
-            <h2 className="text-xl font-bold">{editorName}</h2>
-            <p className="text-sm opacity-90">{EDITOR_CONFIG[currentPhase as PhaseNumber].phaseName}</p>
-          </div>
-
-          {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {/* ADD THIS DEBUG LOG */}
-            {(() => {
-              console.log('🔍 Button conditions:', {
-                analysisComplete,
-                fullAnalysisInProgress,
-                chatMessagesLength: chatMessages.length,
-                shouldShowButton: !analysisComplete && !fullAnalysisInProgress && chatMessages.length === 0
-              })
-              return null
-            })()}
-
-            {/* Show "Read my Manuscript" button if analysis not started */}
-            {!analysisComplete && !fullAnalysisInProgress && (
-              <div className="text-center py-8">
-                <div className="mb-6">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-3xl">
-                    📖
-                  </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">
-                    Hi! I&apos;m {editorName}
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4">
-                    Before we begin editing, I need to read your manuscript.
-                  </p>
-                </div>
-
-                <button
-                  onClick={triggerFullAnalysis}
-                  className={`w-full ${getEditorColorClasses(editorColor).bg} text-white px-6 py-4 rounded-xl font-bold text-base ${getEditorColorClasses(editorColor).bgHover} transition-all shadow-md hover:shadow-lg`}
-                >
-                  📖 Read My Manuscript
-                </button>
-
-                <p className="text-xs text-gray-500 mt-3">
-                  This takes about 5 minutes. You&apos;ll get a comprehensive report by email.
-                </p>
-              </div>
-            )}
-
-            {/* Chat Messages */}
-            {chatMessages.map((msg, index) => (
-              <div
-                key={index}
-                className={`${msg.sender === 'Author'
-                  ? 'bg-blue-50 border-blue-200 ml-8'
-                  : `${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} mr-8`
-                  } border rounded-lg p-3`}
-              >
-                <div className="font-semibold text-sm mb-1">{msg.sender}</div>
-                <div className="text-sm whitespace-pre-wrap">{msg.message}</div>
-              </div>
-            ))}
-
-            {/* Reading Progress Indicator */}
-            {fullAnalysisInProgress && (
-              <div className={`${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} border rounded-lg p-4 mr-8`}>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="relative">
-                    <div className="w-10 h-10 border-4 border-gray-200 border-t-gray-600 rounded-full animate-spin"></div>
-                    <div className="absolute inset-0 flex items-center justify-center text-lg">
-                      📖
+                {!isChapterSidebarCollapsed ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 flex items-center justify-center">
+                      {isApproved ? (
+                        <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>✓</span>
+                      ) : editStatus === 'analyzing' ? (
+                        <div className={`w-4 h-4 border-2 ${getEditorColorClasses(editorColor).border} border-t-transparent rounded-full animate-spin`}></div>
+                      ) : editStatus === 'ready' ? (
+                        <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>●</span>
+                      ) : (
+                        <span className="text-gray-300 text-lg">○</span>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-xs text-gray-500">
+                        {chapter.chapter_number === 0 ? 'Prologue' : `Chapter ${chapter.chapter_number}`}
+                      </div>
+                      <div className="font-semibold text-sm">{chapter.title}</div>
                     </div>
                   </div>
-                  <div>
-                    <div className="font-semibold text-sm">{editorName}</div>
-                    <div className="text-xs text-gray-600">Reading your manuscript...</div>
+                ) : (
+                  <div className="text-center">
+                    {chapter.chapter_number === 0 ? 'P' : chapter.chapter_number}
                   </div>
-                </div>
-                <div className="text-sm text-gray-700">{thinkingMessage}</div>
-              </div>
-            )}
-
-            {/* Thinking indicator for chat */}
-            {isThinking && !fullAnalysisInProgress && (
-              <div className={`${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} border rounded-lg p-3 mr-8`}>
-                <div className="font-semibold text-sm mb-1">{editorName}</div>
-                <div className="text-sm">Thinking...</div>
-              </div>
-            )}
-
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Chat Input */}
-          <form onSubmit={handleChatSubmit} className="p-4 border-t border-gray-200">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                placeholder={`Ask ${editorName}...`}
-                disabled={fullAnalysisInProgress}
-                className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 ${getEditorColorClasses(editorColor).ring} disabled:bg-gray-100 disabled:cursor-not-allowed`}
-              />
-              <button
-                type="submit"
-                disabled={!userInput.trim() || isThinking || fullAnalysisInProgress}
-                className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg ${getEditorColorClasses(editorColor).bgHover} disabled:opacity-50 disabled:cursor-not-allowed`}
-              >
-                Send
+                )}
               </button>
-            </div>
-          </form>
+            )
+          })}
         </div>
       </div>
 
-      {/* Issues Panel Overlay */}
-      {showIssuesPanel && (
-        <div className="absolute right-96 top-20 bottom-0 w-96 bg-white shadow-2xl border-l border-gray-200 flex flex-col">
-          <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-            <h3 className="font-bold">Editor Notes</h3>
+      {/* CENTER: Editor */}
+      <div className="flex-1 flex flex-col bg-white">
+        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+          <h3 className="text-lg font-bold">{currentChapter?.title || 'Loading...'}</h3>
+          <div className="flex gap-2">
+            {currentEditingStatus === 'not_started' && analysisComplete && (
+              <button
+                onClick={() => analyzeChapter(currentChapter.chapter_number)}
+                className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg ${getEditorColorClasses(editorColor).bgHover}`}
+              >
+                Start Editing
+              </button>
+            )}
+
+            {chapterIssues.length > 0 && (
+              <button
+                onClick={() => setShowIssuesPanel(!showIssuesPanel)}
+                className={`px-4 py-2 rounded-lg ${showIssuesPanel
+                  ? `${getEditorColorClasses(editorColor).bg} text-white`
+                  : `${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).text} border ${getEditorColorClasses(editorColor).borderLight}`
+                  }`}
+              >
+                Notes ({chapterIssues.length})
+              </button>
+            )}
+
             <button
-              onClick={() => setShowIssuesPanel(false)}
-              className="text-gray-500 hover:text-gray-700"
+              onClick={saveChanges}
+              disabled={!hasUnsavedChanges}
+              className={`px-4 py-2 rounded-lg ${hasUnsavedChanges
+                ? 'bg-blue-600 text-white hover:bg-blue-700'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
             >
-              ✕
+              Save
+            </button>
+
+            {currentEditingStatus === 'ready' && (
+              <button
+                onClick={handleApproveChapter}
+                className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg ${getEditorColorClasses(editorColor).bgHover}`}
+              >
+                Approve
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-6">
+          <textarea
+            value={editorContent}
+            onChange={(e) => {
+              setEditorContent(e.target.value)
+              setHasUnsavedChanges(true)
+            }}
+            className={`w-full h-full min-h-[500px] p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 ${getEditorColorClasses(editorColor).ring} font-serif text-lg leading-relaxed`}
+            disabled={isLocked}
+          />
+        </div>
+
+        <div className="p-4 border-t border-gray-200 text-sm text-gray-600">
+          Words: {wordCount.toLocaleString()}
+          {hasUnsavedChanges && <span className="mx-2 text-blue-600">• Unsaved changes</span>}
+        </div>
+      </div>
+
+      {/* RIGHT: Chat Panel */}
+      <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
+        {/* Editor Header */}
+        <div className={`p-4 ${getEditorColorClasses(editorColor).bg} text-white`}>
+          <h2 className="text-xl font-bold">{editorName}</h2>
+          <p className="text-sm opacity-90">{EDITOR_CONFIG[currentPhase as PhaseNumber].phaseName}</p>
+        </div>
+
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {/* ADD THIS DEBUG LOG */}
+          {(() => {
+            console.log('🔍 Button conditions:', {
+              analysisComplete,
+              fullAnalysisInProgress,
+              chatMessagesLength: chatMessages.length,
+              shouldShowButton: !analysisComplete && !fullAnalysisInProgress && chatMessages.length === 0
+            })
+            return null
+          })()}
+
+          {/* Show "Read my Manuscript" button if analysis not started */}
+          {!analysisComplete && !fullAnalysisInProgress && (
+            <div className="text-center py-8">
+              <div className="mb-6">
+                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-3xl">
+                  📖
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">
+                  Hi! I&apos;m {editorName}
+                </h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  Before we begin editing, I need to read your manuscript.
+                </p>
+              </div>
+
+              <button
+                onClick={triggerFullAnalysis}
+                className={`w-full ${getEditorColorClasses(editorColor).bg} text-white px-6 py-4 rounded-xl font-bold text-base ${getEditorColorClasses(editorColor).bgHover} transition-all shadow-md hover:shadow-lg`}
+              >
+                📖 Read My Manuscript
+              </button>
+
+              <p className="text-xs text-gray-500 mt-3">
+                This takes about 5 minutes. You&apos;ll get a comprehensive report by email.
+              </p>
+            </div>
+          )}
+
+          {/* Chat Messages */}
+          {chatMessages.map((msg, index) => (
+            <div
+              key={index}
+              className={`${msg.sender === 'Author'
+                ? 'bg-blue-50 border-blue-200 ml-8'
+                : `${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} mr-8`
+                } border rounded-lg p-3`}
+            >
+              <div className="font-semibold text-sm mb-1">{msg.sender}</div>
+              <div className="text-sm whitespace-pre-wrap">{msg.message}</div>
+            </div>
+          ))}
+
+          {/* Reading Progress Indicator */}
+          {fullAnalysisInProgress && (
+            <div className={`${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} border rounded-lg p-4 mr-8`}>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="relative">
+                  <div className="w-10 h-10 border-4 border-gray-200 border-t-gray-600 rounded-full animate-spin"></div>
+                  <div className="absolute inset-0 flex items-center justify-center text-lg">
+                    📖
+                  </div>
+                </div>
+                <div>
+                  <div className="font-semibold text-sm">{editorName}</div>
+                  <div className="text-xs text-gray-600">Reading your manuscript...</div>
+                </div>
+              </div>
+              <div className="text-sm text-gray-700">{thinkingMessage}</div>
+            </div>
+          )}
+
+          {/* Thinking indicator for chat */}
+          {isThinking && !fullAnalysisInProgress && (
+            <div className={`${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} border rounded-lg p-3 mr-8`}>
+              <div className="font-semibold text-sm mb-1">{editorName}</div>
+              <div className="text-sm">Thinking...</div>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Chat Input */}
+        <form onSubmit={handleChatSubmit} className="p-4 border-t border-gray-200">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={userInput}
+              onChange={(e) => setUserInput(e.target.value)}
+              placeholder={`Ask ${editorName}...`}
+              disabled={fullAnalysisInProgress}
+              className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 ${getEditorColorClasses(editorColor).ring} disabled:bg-gray-100 disabled:cursor-not-allowed`}
+            />
+            <button
+              type="submit"
+              disabled={!userInput.trim() || isThinking || fullAnalysisInProgress}
+              className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg ${getEditorColorClasses(editorColor).bgHover} disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              Send
             </button>
           </div>
+        </form>
+      </div>
+    </div>
 
-          {/* Filters */}
-          <div className="p-3 border-b border-gray-200 flex gap-2 overflow-x-auto">
+    {/* Issues Panel Overlay */}
+    {showIssuesPanel && (
+      <div className="absolute right-96 top-20 bottom-0 w-96 bg-white shadow-2xl border-l border-gray-200 flex flex-col">
+        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+          <h3 className="font-bold">Editor Notes</h3>
+          <button
+            onClick={() => setShowIssuesPanel(false)}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Filters */}
+        <div className="p-3 border-b border-gray-200 flex gap-2 overflow-x-auto">
+          <button
+            onClick={() => setIssueFilter('all')}
+            className={`px-3 py-1 rounded-lg text-sm ${issueFilter === 'all'
+              ? `${getEditorColorClasses(editorColor).bg} text-white`
+              : 'bg-gray-200 text-gray-700'
+              }`}
+          >
+            All ({chapterIssues.length})
+          </button>
+
+          {ISSUE_CATEGORIES_BY_PHASE[currentPhase as PhaseNumber].map(category => (
             <button
-              onClick={() => setIssueFilter('all')}
-              className={`px-3 py-1 rounded-lg text-sm ${issueFilter === 'all'
+              key={category}
+              onClick={() => setIssueFilter(category)}
+              className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap ${issueFilter === category
                 ? `${getEditorColorClasses(editorColor).bg} text-white`
                 : 'bg-gray-200 text-gray-700'
                 }`}
             >
-              All ({chapterIssues.length})
+              {category.replace('_', ' ')} ({chapterIssues.filter(i => i.element_type === category).length})
             </button>
-
-            {ISSUE_CATEGORIES_BY_PHASE[currentPhase as PhaseNumber].map(category => (
-              <button
-                key={category}
-                onClick={() => setIssueFilter(category)}
-                className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap ${issueFilter === category
-                  ? `${getEditorColorClasses(editorColor).bg} text-white`
-                  : 'bg-gray-200 text-gray-700'
-                  }`}
-              >
-                {category.replace('_', ' ')} ({chapterIssues.filter(i => i.element_type === category).length})
-              </button>
-            ))}
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {filteredIssues.map(issue => (
-              <div
-                key={issue.id}
-                className={`border-l-4 ${getEditorColorClasses(editorColor).border} bg-gray-50 p-3 rounded`}
-              >
-                <div className="text-sm font-semibold text-gray-700 mb-1">
-                  {issue.element_type.replace('_', ' ')}
-                </div>
-                <div className="text-sm text-gray-900 mb-2">{issue.issue_description}</div>
-                <div className="text-sm text-gray-600 italic">{issue.editor_suggestion}</div>
-              </div>
-            ))}
-
-            {filteredIssues.length === 0 && (
-              <div className="text-center text-gray-500 py-8">
-                No notes in this category
-              </div>
-            )}
-          </div>
+          ))}
         </div>
-      )}
-    </div>
-  )
+
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {filteredIssues.map(issue => (
+            <div
+              key={issue.id}
+              className={`border-l-4 ${getEditorColorClasses(editorColor).border} bg-gray-50 p-3 rounded`}
+            >
+              <div className="text-sm font-semibold text-gray-700 mb-1">
+                {issue.element_type.replace('_', ' ')}
+              </div>
+              <div className="text-sm text-gray-900 mb-2">{issue.issue_description}</div>
+              <div className="text-sm text-gray-600 italic">{issue.editor_suggestion}</div>
+            </div>
+          ))}
+
+          {filteredIssues.length === 0 && (
+            <div className="text-center text-gray-500 py-8">
+              No notes in this category
+            </div>
+          )}
+        </div>
+      </div>
+    )}
+  </div>
+)
 }
 
 export default function AuthorStudioPage() {
