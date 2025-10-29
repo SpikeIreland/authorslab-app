@@ -371,7 +371,7 @@ function StudioContent() {
       setManuscript(manuscriptData)
 
       // Check if analysis is complete
-      if (manuscriptData.full_analysis_text) {
+      if (manuscriptData.full_analysis_completed_at) {
         setAnalysisComplete(true)
       }
 
@@ -1041,7 +1041,7 @@ function StudioContent() {
             })()}
 
             {/* Show "Read my Manuscript" button if analysis not started */}
-            {!analysisComplete && !fullAnalysisInProgress && chatMessages.length === 0 && (
+            {!analysisComplete && !fullAnalysisInProgress && (
               <div className="text-center py-8">
                 <div className="mb-6">
                   <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-3xl">
