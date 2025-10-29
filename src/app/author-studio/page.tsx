@@ -1029,6 +1029,17 @@ function StudioContent() {
 
           {/* Messages Area */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {/* ADD THIS DEBUG LOG */}
+            {(() => {
+              console.log('🔍 Button conditions:', {
+                analysisComplete,
+                fullAnalysisInProgress,
+                chatMessagesLength: chatMessages.length,
+                shouldShowButton: !analysisComplete && !fullAnalysisInProgress && chatMessages.length === 0
+              })
+              return null
+            })()}
+
             {/* Show "Read my Manuscript" button if analysis not started */}
             {!analysisComplete && !fullAnalysisInProgress && chatMessages.length === 0 && (
               <div className="text-center py-8">
