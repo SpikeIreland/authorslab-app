@@ -645,14 +645,22 @@ function StudioContent() {
   }
 
   async function saveChanges(isAutoSave = false) {
-    if (!currentChapter || !manuscript || !hasUnsavedChanges) return
+    if (!currentChapter || !manuscript || !hasUnsavedChanges) {
+      console.log('Save blocked:', { currentChapter: !!currentChapter, manuscript: !!manuscript, hasUnsavedChanges })
+      return
+    }
 
-    if (!isAutoSave) setIsLocked(true) // Only lock for manual saves
+    console.log('💾 Saving chapter:', currentChapter.chapter_number, 'Auto:', isAutoSave)
+
+    if (!isAutoSave) setIsLocked(true)
     setIsSaving(true)
 
     try {
       const supabase = createClient()
-      const { error } = await supabase
+
+      console.log('Updating chapter with content length:', editorContent.length)
+
+      const { data, error } = await supabase
         .from('chapters')
         .update({
           content: editorContent,
@@ -660,8 +668,14 @@ function StudioContent() {
           updated_at: new Date().toISOString()
         })
         .eq('id', currentChapter.id)
+        .select()
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ Supabase error:', error)
+        throw error
+      }
+
+      console.log('✅ Save successful:', data)
 
       setHasUnsavedChanges(false)
       setUnsavedChapters(prev => {
@@ -675,7 +689,7 @@ function StudioContent() {
       }
 
     } catch (error) {
-      console.error('Save error:', error)
+      console.error('💥 Save error:', error)
       if (!isAutoSave) {
         await addChatMessage(editorName, '❌ Failed to save. Please try again.')
       }
