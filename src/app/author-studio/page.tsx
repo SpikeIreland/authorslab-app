@@ -953,6 +953,7 @@ function StudioContent() {
           <div className="p-4 border-b border-gray-200 flex items-center justify-between">
             <h3 className="text-lg font-bold">{currentChapter?.title || 'Loading...'}</h3>
             <div className="flex gap-2">
+              {/* Start Editing Button - Shows when not started */}
               {currentEditingStatus === 'not_started' && analysisComplete && (
                 <button
                   onClick={() => analyzeChapter(currentChapter.chapter_number)}
@@ -962,6 +963,18 @@ function StudioContent() {
                 </button>
               )}
 
+              {/* Retrieving Notes Button - Shows during analysis */}
+              {currentEditingStatus === 'analyzing' && (
+                <button
+                  disabled
+                  className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg opacity-75 cursor-wait flex items-center gap-2`}
+                >
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Retrieving Notes...
+                </button>
+              )}
+
+              {/* Notes Button - Shows when analysis complete and issues exist */}
               {chapterIssues.length > 0 && (
                 <button
                   onClick={() => setShowIssuesPanel(!showIssuesPanel)}
@@ -974,6 +987,7 @@ function StudioContent() {
                 </button>
               )}
 
+              {/* Save Button - Always visible */}
               <button
                 onClick={saveChanges}
                 disabled={!hasUnsavedChanges}
@@ -985,6 +999,7 @@ function StudioContent() {
                 Save
               </button>
 
+              {/* Approve Button - Shows when ready */}
               {currentEditingStatus === 'ready' && (
                 <button
                   onClick={handleApproveChapter}
