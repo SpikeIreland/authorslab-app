@@ -118,6 +118,7 @@ function StudioContent() {
   const [currentChapterIndex, setCurrentChapterIndex] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [loadingMessage, setLoadingMessage] = useState('Loading your studio...')
+  const [showReportsDropdown, setShowReportsDropdown] = useState(false)
 
   // Phase/Editor State (derived from activePhase)
   const currentPhase = activePhase?.phase_number || 1
@@ -889,6 +890,77 @@ function StudioContent() {
             </div>
           </div>
 
+          {/* Right side - Reports Dropdown and Editor Icons */}
+          <div className="flex items-center gap-4">
+            {/* Reports Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setShowReportsDropdown(!showReportsDropdown)}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition font-medium text-gray-700"
+              >
+                📄 Reports
+                <span className="text-xs">{showReportsDropdown ? '▲' : '▼'}</span>
+              </button>
+
+              {/* Dropdown Menu */}
+              {showReportsDropdown && (
+                <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
+                  <div className="p-2">
+                    {/* Alex's Report */}
+                    {manuscript.report_pdf_url ? (
+
+                      href = { manuscript.report_pdf_url }
+                  target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-3 hover:bg-green-50 rounded-lg transition"
+                >
+                    <div className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">
+                      A
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-gray-900 text-sm">Alex&apos;s Report</div>
+                      <div className="text-xs text-gray-600">Developmental Analysis</div>
+                    </div>
+                    <div className="text-green-600 text-lg flex-shrink-0">✓</div>
+                  </a>
+                  ) : (
+                  <div className="flex items-center gap-3 p-3 opacity-50">
+                    <div className="w-8 h-8 bg-gray-200 text-gray-400 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">
+                      A
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-gray-500 text-sm">Alex&apos;s Report</div>
+                      <div className="text-xs text-gray-400">Not ready yet</div>
+                    </div>
+                  </div>
+              )}
+
+                  {/* Sam's Report - Future */}
+                  <div className="flex items-center gap-3 p-3 opacity-50">
+                    <div className="w-8 h-8 bg-gray-200 text-gray-400 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">
+                      S
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-gray-500 text-sm">Sam&apos;s Report</div>
+                      <div className="text-xs text-gray-400">Not ready yet</div>
+                    </div>
+                  </div>
+
+                  {/* Jordan's Report - Future */}
+                  <div className="flex items-center gap-3 p-3 opacity-50">
+                    <div className="w-8 h-8 bg-gray-200 text-gray-400 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">
+                      J
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-gray-500 text-sm">Jordan&apos;s Report</div>
+                      <div className="text-xs text-gray-400">Not ready yet</div>
+                    </div>
+                  </div>
+                </div>
+          </div>
+        )}
+          </div>
+
           {/* Editor Icons - Shows progress through phases */}
           <div className="flex items-center gap-2">
             {/* Alex (A) - Phase 1 Developmental */}
@@ -922,12 +994,14 @@ function StudioContent() {
             </div>
           </div>
         </div>
-      </header>
+    </div>
+</header >
 
-      {/* Main Layout */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* LEFT: Chapter Navigation */}
-        <div className={`${isChapterSidebarCollapsed ? 'w-16' : 'w-64'} bg-white border-r border-gray-200 flex flex-col transition-all`}>
+    {/* Main Layout */ }
+    < div className = "flex-1 flex overflow-hidden" >
+      {/* LEFT: Chapter Navigation */ }
+      < div className = {`${isChapterSidebarCollapsed ? 'w-16' : 'w-64'} bg-white border-r border-gray-200 flex flex-col transition-all`
+}>
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between mb-2">
               {!isChapterSidebarCollapsed && (
@@ -1021,72 +1095,72 @@ function StudioContent() {
               )
             })}
           </div>
-        </div>
+        </div >
 
-        {/* CENTER: Editor */}
-        <div className="flex-1 flex flex-col bg-white">
-          <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-            <h3 className="text-lg font-bold">{currentChapter?.title || 'Loading...'}</h3>
-            <div className="flex gap-2">
-              {/* Start Editing Button - Shows when not started */}
-              {currentEditingStatus === 'not_started' && analysisComplete && (
-                <button
-                  onClick={() => analyzeChapter(currentChapter.chapter_number)}
-                  className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg ${getEditorColorClasses(editorColor).bgHover}`}
-                >
-                  Start Editing
-                </button>
-              )}
+  {/* CENTER: Editor */ }
+  < div className = "flex-1 flex flex-col bg-white" >
+    <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+      <h3 className="text-lg font-bold">{currentChapter?.title || 'Loading...'}</h3>
+      <div className="flex gap-2">
+        {/* Start Editing Button - Shows when not started */}
+        {currentEditingStatus === 'not_started' && analysisComplete && (
+          <button
+            onClick={() => analyzeChapter(currentChapter.chapter_number)}
+            className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg ${getEditorColorClasses(editorColor).bgHover}`}
+          >
+            Start Editing
+          </button>
+        )}
 
-              {/* Retrieving Notes Button - Shows during analysis */}
-              {currentEditingStatus === 'analyzing' && (
-                <button
-                  disabled
-                  className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg opacity-75 cursor-wait flex items-center gap-2`}
-                >
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Retrieving Notes...
-                </button>
-              )}
+        {/* Retrieving Notes Button - Shows during analysis */}
+        {currentEditingStatus === 'analyzing' && (
+          <button
+            disabled
+            className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg opacity-75 cursor-wait flex items-center gap-2`}
+          >
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            Retrieving Notes...
+          </button>
+        )}
 
-              {/* Notes Button - Shows when analysis complete and issues exist */}
-              {chapterIssues.length > 0 && (
-                <button
-                  onClick={() => setShowIssuesPanel(!showIssuesPanel)}
-                  className={`px-4 py-2 rounded-lg ${showIssuesPanel
-                    ? `${getEditorColorClasses(editorColor).bg} text-white`
-                    : `${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).text} border ${getEditorColorClasses(editorColor).borderLight}`
-                    }`}
-                >
-                  Notes ({chapterIssues.length})
-                </button>
-              )}
+        {/* Notes Button - Shows when analysis complete and issues exist */}
+        {chapterIssues.length > 0 && (
+          <button
+            onClick={() => setShowIssuesPanel(!showIssuesPanel)}
+            className={`px-4 py-2 rounded-lg ${showIssuesPanel
+              ? `${getEditorColorClasses(editorColor).bg} text-white`
+              : `${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).text} border ${getEditorColorClasses(editorColor).borderLight}`
+              }`}
+          >
+            Notes ({chapterIssues.length})
+          </button>
+        )}
 
-              {/* Save Button - Always visible */}
-              <button
-                onClick={saveChanges}
-                disabled={!hasUnsavedChanges}
-                className={`px-4 py-2 rounded-lg ${hasUnsavedChanges
-                  ? 'bg-blue-600 text-white hover:bg-blue-700'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
-              >
-                Save
-              </button>
+        {/* Save Button - Always visible */}
+        <button
+          onClick={saveChanges}
+          disabled={!hasUnsavedChanges}
+          className={`px-4 py-2 rounded-lg ${hasUnsavedChanges
+            ? 'bg-blue-600 text-white hover:bg-blue-700'
+            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
+        >
+          Save
+        </button>
 
-              {/* Approve Button - Shows when ready */}
-              {currentEditingStatus === 'ready' && (
-                <button
-                  onClick={handleApproveChapter}
-                  className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg ${getEditorColorClasses(editorColor).bgHover}`}
-                >
-                  Approve
-                </button>
-              )}
-            </div>
-          </div>
+        {/* Approve Button - Shows when ready */}
+        {currentEditingStatus === 'ready' && (
+          <button
+            onClick={handleApproveChapter}
+            className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg ${getEditorColorClasses(editorColor).bgHover}`}
+          >
+            Approve
+          </button>
+        )}
+      </div>
+    </div>
 
-          {/* Toolbar Strip - Word Count and Status */}
+{/* Toolbar Strip - Word Count and Status */ }
           <div className="px-4 py-2 bg-gray-50 border-b border-gray-200 flex items-center justify-between text-sm">
             <div className="flex items-center gap-4">
               <span className="text-gray-600">
@@ -1116,187 +1190,197 @@ function StudioContent() {
               disabled={isLocked}
             />
           </div>
-        </div>
+        </div >
 
-        {/* RIGHT: Chat Panel */}
-        <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
-          {/* Editor Header */}
-          <div className={`p-4 ${getEditorColorClasses(editorColor).bg} text-white`}>
+  {/* RIGHT: Chat Panel */ }
+  < div className = "w-96 bg-white border-l border-gray-200 flex flex-col" >
+    {/* Editor Header */ }
+    < div className = {`p-4 ${getEditorColorClasses(editorColor).bg} text-white`}>
             <h2 className="text-xl font-bold">{editorName}</h2>
             <p className="text-sm opacity-90">{EDITOR_CONFIG[currentPhase as PhaseNumber].phaseName}</p>
-          </div>
+          </div >
 
-          {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {/* ADD THIS DEBUG LOG */}
-            {(() => {
-              console.log('🔍 Button conditions:', {
-                analysisComplete,
-                fullAnalysisInProgress,
-                chatMessagesLength: chatMessages.length,
-                shouldShowButton: !analysisComplete && !fullAnalysisInProgress && chatMessages.length === 0
-              })
-              return null
-            })()}
+  {/* Messages Area */ }
+  < div className = "flex-1 overflow-y-auto p-4 space-y-4" >
+    {/* ADD THIS DEBUG LOG */ }
+{
+  (() => {
+    console.log('🔍 Button conditions:', {
+      analysisComplete,
+      fullAnalysisInProgress,
+      chatMessagesLength: chatMessages.length,
+      shouldShowButton: !analysisComplete && !fullAnalysisInProgress && chatMessages.length === 0
+    })
+    return null
+  })()
+}
 
-            {/* Show "Read my Manuscript" button if analysis not started */}
-            {!analysisComplete && !fullAnalysisInProgress && (
-              <div className="text-center py-8">
-                <div className="mb-6">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-3xl">
-                    📖
-                  </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">
-                    Hi! I&apos;m {editorName}
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4">
-                    Before we begin editing, I need to read your manuscript.
-                  </p>
-                </div>
-
-                <button
-                  onClick={triggerFullAnalysis}
-                  className={`w-full ${getEditorColorClasses(editorColor).bg} text-white px-6 py-4 rounded-xl font-bold text-base ${getEditorColorClasses(editorColor).bgHover} transition-all shadow-md hover:shadow-lg`}
-                >
-                  📖 Read My Manuscript
-                </button>
-
-                <p className="text-xs text-gray-500 mt-3">
-                  This takes about 5 minutes. You&apos;ll get a comprehensive report by email.
-                </p>
-              </div>
-            )}
-
-            {/* Chat Messages */}
-            {chatMessages.map((msg, index) => (
-              <div
-                key={index}
-                className={`${msg.sender === 'Author'
-                  ? 'bg-blue-50 border-blue-200 ml-8'
-                  : `${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} mr-8`
-                  } border rounded-lg p-3`}
-              >
-                <div className="font-semibold text-sm mb-1">{msg.sender}</div>
-                <div className="text-sm whitespace-pre-wrap">{msg.message}</div>
-              </div>
-            ))}
-
-            {/* Reading Progress Indicator */}
-            {fullAnalysisInProgress && (
-              <div className={`${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} border rounded-lg p-4 mr-8`}>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="relative">
-                    <div className="w-10 h-10 border-4 border-gray-200 border-t-gray-600 rounded-full animate-spin"></div>
-                    <div className="absolute inset-0 flex items-center justify-center text-lg">
-                      📖
-                    </div>
-                  </div>
-                  <div>
-                    <div className="font-semibold text-sm">{editorName}</div>
-                    <div className="text-xs text-gray-600">Reading your manuscript...</div>
-                  </div>
-                </div>
-                <div className="text-sm text-gray-700">{thinkingMessage}</div>
-              </div>
-            )}
-
-            {/* Thinking indicator for chat */}
-            {isThinking && !fullAnalysisInProgress && (
-              <div className={`${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} border rounded-lg p-3 mr-8`}>
-                <div className="font-semibold text-sm mb-1">{editorName}</div>
-                <div className="text-sm">Thinking...</div>
-              </div>
-            )}
-
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Chat Input */}
-          <form onSubmit={handleChatSubmit} className="p-4 border-t border-gray-200">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                placeholder={`Ask ${editorName}...`}
-                disabled={fullAnalysisInProgress}
-                className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 ${getEditorColorClasses(editorColor).ring} disabled:bg-gray-100 disabled:cursor-not-allowed`}
-              />
-              <button
-                type="submit"
-                disabled={!userInput.trim() || isThinking || fullAnalysisInProgress}
-                className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg ${getEditorColorClasses(editorColor).bgHover} disabled:opacity-50 disabled:cursor-not-allowed`}
-              >
-                Send
-              </button>
-            </div>
-          </form>
+{/* Show "Read my Manuscript" button if analysis not started */ }
+{
+  !analysisComplete && !fullAnalysisInProgress && (
+    <div className="text-center py-8">
+      <div className="mb-6">
+        <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-3xl">
+          📖
         </div>
+        <h3 className="text-lg font-bold text-gray-900 mb-2">
+          Hi! I&apos;m {editorName}
+        </h3>
+        <p className="text-gray-600 text-sm mb-4">
+          Before we begin editing, I need to read your manuscript.
+        </p>
       </div>
 
-      {/* Issues Panel Overlay */}
-      {
-        showIssuesPanel && (
-          <div className="absolute right-96 top-20 bottom-0 w-96 bg-white shadow-2xl border-l border-gray-200 flex flex-col">
-            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-              <h3 className="font-bold">Editor Notes</h3>
-              <button
-                onClick={() => setShowIssuesPanel(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ✕
-              </button>
-            </div>
+      <button
+        onClick={triggerFullAnalysis}
+        className={`w-full ${getEditorColorClasses(editorColor).bg} text-white px-6 py-4 rounded-xl font-bold text-base ${getEditorColorClasses(editorColor).bgHover} transition-all shadow-md hover:shadow-lg`}
+      >
+        📖 Read My Manuscript
+      </button>
 
-            {/* Filters */}
-            <div className="p-3 border-b border-gray-200 flex gap-2 overflow-x-auto">
-              <button
-                onClick={() => setIssueFilter('all')}
-                className={`px-3 py-1 rounded-lg text-sm ${issueFilter === 'all'
-                  ? `${getEditorColorClasses(editorColor).bg} text-white`
-                  : 'bg-gray-200 text-gray-700'
-                  }`}
-              >
-                All ({chapterIssues.length})
-              </button>
+      <p className="text-xs text-gray-500 mt-3">
+        This takes about 5 minutes. You&apos;ll get a comprehensive report by email.
+      </p>
+    </div>
+  )
+}
 
-              {ISSUE_CATEGORIES_BY_PHASE[currentPhase as PhaseNumber].map(category => (
-                <button
-                  key={category}
-                  onClick={() => setIssueFilter(category)}
-                  className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap ${issueFilter === category
-                    ? `${getEditorColorClasses(editorColor).bg} text-white`
-                    : 'bg-gray-200 text-gray-700'
-                    }`}
-                >
-                  {category.replace('_', ' ')} ({chapterIssues.filter(i => i.element_type === category).length})
-                </button>
-              ))}
-            </div>
+{/* Chat Messages */ }
+{
+  chatMessages.map((msg, index) => (
+    <div
+      key={index}
+      className={`${msg.sender === 'Author'
+        ? 'bg-blue-50 border-blue-200 ml-8'
+        : `${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} mr-8`
+        } border rounded-lg p-3`}
+    >
+      <div className="font-semibold text-sm mb-1">{msg.sender}</div>
+      <div className="text-sm whitespace-pre-wrap">{msg.message}</div>
+    </div>
+  ))
+}
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {filteredIssues.map(issue => (
-                <div
-                  key={issue.id}
-                  className={`border-l-4 ${getEditorColorClasses(editorColor).border} bg-gray-50 p-3 rounded`}
-                >
-                  <div className="text-sm font-semibold text-gray-700 mb-1">
-                    {issue.element_type.replace('_', ' ')}
-                  </div>
-                  <div className="text-sm text-gray-900 mb-2">{issue.issue_description}</div>
-                  <div className="text-sm text-gray-600 italic">{issue.editor_suggestion}</div>
-                </div>
-              ))}
-
-              {filteredIssues.length === 0 && (
-                <div className="text-center text-gray-500 py-8">
-                  No notes in this category
-                </div>
-              )}
-            </div>
+{/* Reading Progress Indicator */ }
+{
+  fullAnalysisInProgress && (
+    <div className={`${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} border rounded-lg p-4 mr-8`}>
+      <div className="flex items-center gap-3 mb-3">
+        <div className="relative">
+          <div className="w-10 h-10 border-4 border-gray-200 border-t-gray-600 rounded-full animate-spin"></div>
+          <div className="absolute inset-0 flex items-center justify-center text-lg">
+            📖
           </div>
-        )
-      }
+        </div>
+        <div>
+          <div className="font-semibold text-sm">{editorName}</div>
+          <div className="text-xs text-gray-600">Reading your manuscript...</div>
+        </div>
+      </div>
+      <div className="text-sm text-gray-700">{thinkingMessage}</div>
+    </div>
+  )
+}
+
+{/* Thinking indicator for chat */ }
+{
+  isThinking && !fullAnalysisInProgress && (
+    <div className={`${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} border rounded-lg p-3 mr-8`}>
+      <div className="font-semibold text-sm mb-1">{editorName}</div>
+      <div className="text-sm">Thinking...</div>
+    </div>
+  )
+}
+
+<div ref={messagesEndRef} />
+          </div >
+
+  {/* Chat Input */ }
+  < form onSubmit = { handleChatSubmit } className = "p-4 border-t border-gray-200" >
+    <div className="flex gap-2">
+      <input
+        type="text"
+        value={userInput}
+        onChange={(e) => setUserInput(e.target.value)}
+        placeholder={`Ask ${editorName}...`}
+        disabled={fullAnalysisInProgress}
+        className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 ${getEditorColorClasses(editorColor).ring} disabled:bg-gray-100 disabled:cursor-not-allowed`}
+      />
+      <button
+        type="submit"
+        disabled={!userInput.trim() || isThinking || fullAnalysisInProgress}
+        className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg ${getEditorColorClasses(editorColor).bgHover} disabled:opacity-50 disabled:cursor-not-allowed`}
+      >
+        Send
+      </button>
+    </div>
+          </form >
+        </div >
+      </div >
+
+  {/* Issues Panel Overlay */ }
+{
+  showIssuesPanel && (
+    <div className="absolute right-96 top-20 bottom-0 w-96 bg-white shadow-2xl border-l border-gray-200 flex flex-col">
+      <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+        <h3 className="font-bold">Editor Notes</h3>
+        <button
+          onClick={() => setShowIssuesPanel(false)}
+          className="text-gray-500 hover:text-gray-700"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* Filters */}
+      <div className="p-3 border-b border-gray-200 flex gap-2 overflow-x-auto">
+        <button
+          onClick={() => setIssueFilter('all')}
+          className={`px-3 py-1 rounded-lg text-sm ${issueFilter === 'all'
+            ? `${getEditorColorClasses(editorColor).bg} text-white`
+            : 'bg-gray-200 text-gray-700'
+            }`}
+        >
+          All ({chapterIssues.length})
+        </button>
+
+        {ISSUE_CATEGORIES_BY_PHASE[currentPhase as PhaseNumber].map(category => (
+          <button
+            key={category}
+            onClick={() => setIssueFilter(category)}
+            className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap ${issueFilter === category
+              ? `${getEditorColorClasses(editorColor).bg} text-white`
+              : 'bg-gray-200 text-gray-700'
+              }`}
+          >
+            {category.replace('_', ' ')} ({chapterIssues.filter(i => i.element_type === category).length})
+          </button>
+        ))}
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {filteredIssues.map(issue => (
+          <div
+            key={issue.id}
+            className={`border-l-4 ${getEditorColorClasses(editorColor).border} bg-gray-50 p-3 rounded`}
+          >
+            <div className="text-sm font-semibold text-gray-700 mb-1">
+              {issue.element_type.replace('_', ' ')}
+            </div>
+            <div className="text-sm text-gray-900 mb-2">{issue.issue_description}</div>
+            <div className="text-sm text-gray-600 italic">{issue.editor_suggestion}</div>
+          </div>
+        ))}
+
+        {filteredIssues.length === 0 && (
+          <div className="text-center text-gray-500 py-8">
+            No notes in this category
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
     </div >
   )
 }
