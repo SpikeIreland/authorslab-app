@@ -468,24 +468,29 @@ function StudioContent() {
     // Add greetings for Jordan, Taylor, Quinn as needed
   }
 
-  // Load chapter into editor
-  function loadChapter(index: number, chaptersList?: Chapter[]) {
-    const chaptersToUse = chaptersList || chapters
-    const chapter = chaptersToUse[index]
+  async function loadChapter(index: number) {
+    if (isLocked) return
 
-    if (!chapter) return
+    // Clear auto-save timer when switching chapters
+    if (autoSaveTimer) {
+      clearTimeout(autoSaveTimer)
+      setAutoSaveTimer(null)
+    }
+
+    // Save current chapter if it has unsaved changes
+    if (hasUnsavedChanges && currentChapter) {
+      console.log('💾 Auto-saving before switching chapters')
+      await saveChanges(true)
+    }
 
     setCurrentChapterIndex(index)
+    const chapter = chapters[index]
+
     setEditorContent(chapter.content)
+    setWordCount(chapter.content.split(/\s+/).filter(w => w.length > 0).length)
     setHasUnsavedChanges(false)
 
-    // Load issues for this chapter if ready
-    const editStatus = chapterEditingStatus[chapter.chapter_number]
-    if (editStatus === 'ready') {
-      loadChapterIssues(chapter.chapter_number)
-    } else {
-      setChapterIssues([])
-    }
+    await loadChapterIssues(chapter.chapter_number)
   }
 
   // Load issues for a chapter
