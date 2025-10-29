@@ -573,6 +573,8 @@ function StudioContent() {
 
   // Handle discussing an issue with the editor
   async function handleDiscussIssue(issue: ManuscriptIssue) {
+    if (!manuscript || !activePhase) return  // ← Add this line
+
     // Add issue to chat as "Discussion Point"
     await addChatMessage(
       'Discussion Point',
@@ -583,7 +585,7 @@ function StudioContent() {
     setIsThinking(true)
 
     try {
-      const chatWebhook = activePhase?.phase_number === 2
+      const chatWebhook = activePhase.phase_number === 2  // ← Remove ? since we checked above
         ? WEBHOOKS.samChat
         : WEBHOOKS.alexChat
 
@@ -591,14 +593,14 @@ function StudioContent() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          manuscriptId: manuscript?.id,
+          manuscriptId: manuscript.id,
           authorFirstName: authorFirstName,
-          message: `I'd like to discuss this note: ${issue.issue_description}`, // ← Changed from userMessage
+          message: `I'd like to discuss this note: ${issue.issue_description}`,
           context: {
-            manuscriptId: manuscript?.id,
+            manuscriptId: manuscript.id,
             chapter: currentChapter.chapter_number,
             chapterTitle: currentChapter.title,
-            chapterContent: editorContent.substring(0, 2000), // First 2000 chars for context
+            chapterContent: editorContent.substring(0, 2000),
             manuscriptTitle: manuscript.title,
             analysisComplete: analysisComplete,
             issueId: issue.id,
@@ -610,10 +612,8 @@ function StudioContent() {
 
       const data = await response.json()
 
-      // Add editor's response to chat
       await addChatMessage(editorName, data.response || "Let me think about that...")
 
-      // Update issue status to in_progress
       const supabase = createClient()
       await supabase
         .from('manuscript_issues')
