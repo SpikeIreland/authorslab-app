@@ -596,6 +596,7 @@ function StudioContent() {
           manuscriptId: manuscript.id,
           authorFirstName: authorFirstName,
           message: `I'd like to discuss this note: ${issue.issue_description}`,
+          isDiscussionPoint: true,  // ← Add this flag
           context: {
             manuscriptId: manuscript.id,
             chapter: currentChapter.chapter_number,
