@@ -412,7 +412,7 @@ function StudioContent() {
         setChapterEditingStatus(initialStatus)
 
         // Load first chapter
-        loadChapter(0, chaptersData)
+        loadChapter(0)
       }
 
       // Load chat history for active phase
