@@ -133,6 +133,7 @@ function StudioContent() {
   // Chapter Editing Status
   const [chapterEditingStatus, setChapterEditingStatus] = useState<{ [key: number]: ChapterEditingStatus }>({})
   const [analyzingMessage, setAnalyzingMessage] = useState('')
+  const [unsavedChapters, setUnsavedChapters] = useState<Set<number>>(new Set())
 
   // Chat State
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
@@ -590,6 +591,13 @@ function StudioContent() {
       setHasUnsavedChanges(false)
       await addChatMessage(editorName, '✅ Changes saved successfully!')
 
+      // Remove from unsaved chapters
+      setUnsavedChapters(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(currentChapter.chapter_number)
+        return newSet
+      })
+
     } catch (error) {
       console.error('Save error:', error)
       await addChatMessage(editorName, '❌ Error saving changes. Please try again.')
@@ -930,6 +938,20 @@ function StudioContent() {
             )}
           </div>
 
+          <div className="w-6 h-6 flex items-center justify-center">
+            {isApproved ? (
+              <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>✓</span>
+            ) : editStatus === 'analyzing' ? (
+              <div className={`w-4 h-4 border-2 ${getEditorColorClasses(editorColor).border} border-t-transparent rounded-full animate-spin`}></div>
+            ) : editStatus === 'ready' ? (
+              <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>●</span>
+            ) : unsavedChapters.has(chapter.chapter_number) ? (
+              <span className="text-blue-600 text-lg">●</span>
+            ) : (
+              <span className="text-gray-300 text-lg">○</span>
+            )}
+          </div>
+
           <div className="flex-1 overflow-y-auto p-2">
             {chapters.map((chapter, index) => {
               const editStatus = chapterEditingStatus[chapter.chapter_number]
@@ -1065,6 +1087,8 @@ function StudioContent() {
               onChange={(e) => {
                 setEditorContent(e.target.value)
                 setHasUnsavedChanges(true)
+                // Mark this chapter as unsaved
+                setUnsavedChapters(prev => new Set(prev).add(currentChapter.chapter_number))
               }}
               className={`w-full h-full min-h-[500px] p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 ${getEditorColorClasses(editorColor).ring} font-serif text-lg leading-relaxed`}
               disabled={isLocked}
