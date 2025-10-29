@@ -592,10 +592,15 @@ function StudioContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           manuscriptId: manuscript?.id,
-          userId: manuscript?.author_id,
-          chapterNumber: currentChapter.chapter_number,
-          userMessage: `I'd like to discuss this note: ${issue.issue_description}`,
+          authorFirstName: authorFirstName,
+          message: `I'd like to discuss this note: ${issue.issue_description}`, // ← Changed from userMessage
           context: {
+            manuscriptId: manuscript?.id,
+            chapter: currentChapter.chapter_number,
+            chapterTitle: currentChapter.title,
+            chapterContent: editorContent.substring(0, 2000), // First 2000 chars for context
+            manuscriptTitle: manuscript.title,
+            analysisComplete: analysisComplete,
             issueId: issue.id,
             elementType: issue.element_type,
             editorSuggestion: issue.editor_suggestion
