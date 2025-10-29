@@ -587,7 +587,7 @@ function StudioContent() {
         ? WEBHOOKS.samChat
         : WEBHOOKS.alexChat
 
-      await fetch(chatWebhook, {
+      const response = await fetch(chatWebhook, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -601,10 +601,12 @@ function StudioContent() {
             editorSuggestion: issue.editor_suggestion
           }
         })
-      }).catch(() => console.log('✅ Chat webhook triggered'))
+      })
 
-      // Poll for response
-      await pollForChatResponse()
+      const data = await response.json()
+
+      // Add editor's response to chat
+      await addChatMessage(editorName, data.response || "Let me think about that...")
 
       // Update issue status to in_progress
       const supabase = createClient()
@@ -615,6 +617,8 @@ function StudioContent() {
 
     } catch (error) {
       console.error('Error discussing issue:', error)
+      await addChatMessage(editorName, "Sorry, I had trouble responding. Please try again.")
+    } finally {
       setIsThinking(false)
     }
   }
