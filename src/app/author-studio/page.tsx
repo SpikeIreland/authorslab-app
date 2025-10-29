@@ -119,6 +119,7 @@ function StudioContent() {
   const [isLoading, setIsLoading] = useState(true)
   const [loadingMessage, setLoadingMessage] = useState('Loading your studio...')
   const [isSaving, setIsSaving] = useState(false)
+  const pendingContentRef = useRef<string>('')
 
   // Phase/Editor State (derived from activePhase)
   const currentPhase = activePhase?.phase_number || 1
@@ -401,18 +402,21 @@ function StudioContent() {
         console.error('Chapters error:', chaptersError)
       }
 
+      // Load first chapter
       if (chaptersData && chaptersData.length > 0) {
         setChapters(chaptersData)
 
-        // Initialize chapter editing status
-        const initialStatus: { [key: number]: ChapterEditingStatus } = {}
-        chaptersData.forEach(ch => {
-          initialStatus[ch.chapter_number] = 'not_started'
-        })
-        setChapterEditingStatus(initialStatus)
+        // Find first non-prologue chapter or use prologue if it exists
+        const firstChapterIndex = chaptersData.findIndex(ch => ch.chapter_number === 1) !== -1
+          ? chaptersData.findIndex(ch => ch.chapter_number === 1)
+          : 0
 
-        // Load first chapter
-        loadChapter(0)
+        setCurrentChapterIndex(firstChapterIndex)
+        const firstChapter = chaptersData[firstChapterIndex]
+
+        setEditorContent(firstChapter.content)
+        setWordCount(firstChapter.content.split(/\s+/).filter(w => w.length > 0).length)
+        setHasUnsavedChanges(false)
       }
 
       // Load chat history for active phase
@@ -478,9 +482,20 @@ function StudioContent() {
     }
 
     // Save current chapter if it has unsaved changes
-    if (hasUnsavedChanges && currentChapter) {
+    if (hasUnsavedChanges && currentChapter && pendingContentRef.current) {
       console.log('💾 Auto-saving before switching chapters')
-      await saveChanges(true)
+
+      // Save the pending content directly to database
+      const supabase = createClient()
+      await supabase
+        .from('chapters')
+        .update({
+          content: pendingContentRef.current,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', currentChapter.id)
+
+      pendingContentRef.current = '' // Clear ref
     }
 
     setCurrentChapterIndex(index)
@@ -1225,7 +1240,9 @@ function StudioContent() {
             <textarea
               value={editorContent}
               onChange={(e) => {
-                setEditorContent(e.target.value)
+                const newContent = e.target.value
+                setEditorContent(newContent)
+                pendingContentRef.current = newContent  // Store immediately
                 setHasUnsavedChanges(true)
                 setUnsavedChapters(prev => new Set(prev).add(currentChapter.chapter_number))
 
@@ -1234,7 +1251,7 @@ function StudioContent() {
 
                 // Set new auto-save timer (3 seconds)
                 const timer = setTimeout(() => {
-                  saveChanges(true) // Auto-save flag
+                  saveChanges(true)
                 }, 3000)
 
                 setAutoSaveTimer(timer)
