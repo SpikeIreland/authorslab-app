@@ -938,19 +938,6 @@ function StudioContent() {
             )}
           </div>
 
-          <div className="w-6 h-6 flex items-center justify-center">
-            {isApproved ? (
-              <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>✓</span>
-            ) : editStatus === 'analyzing' ? (
-              <div className={`w-4 h-4 border-2 ${getEditorColorClasses(editorColor).border} border-t-transparent rounded-full animate-spin`}></div>
-            ) : editStatus === 'ready' ? (
-              <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>●</span>
-            ) : unsavedChapters.has(chapter.chapter_number) ? (
-              <span className="text-blue-600 text-lg">●</span>
-            ) : (
-              <span className="text-gray-300 text-lg">○</span>
-            )}
-          </div>
 
           <div className="flex-1 overflow-y-auto p-2">
             {chapters.map((chapter, index) => {
@@ -979,6 +966,8 @@ function StudioContent() {
                           <div className={`w-4 h-4 border-2 ${getEditorColorClasses(editorColor).border} border-t-transparent rounded-full animate-spin`}></div>
                         ) : editStatus === 'ready' ? (
                           <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>●</span>
+                        ) : unsavedChapters.has(chapter.chapter_number) ? (
+                          <span className="text-blue-600 text-lg">●</span>
                         ) : (
                           <span className="text-gray-300 text-lg">○</span>
                         )}
