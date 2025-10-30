@@ -202,7 +202,7 @@ function StudioContent() {
         }).catch(() => console.log('✅ Full analysis webhook triggered')),
 
         // 2. Generate summary + key points
-        fetch(WEBHOOKS.generateSummary, {
+        fetch(WEBHOOKS.alexGenerateSummary, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -212,7 +212,7 @@ function StudioContent() {
         }).catch(() => console.log('✅ Summary webhook triggered')),
 
         // 3. Chapter summaries
-        fetch(WEBHOOKS.generateChapterSummaries, {
+        fetch(WEBHOOKS.alexGenerateChapterSummaries, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
