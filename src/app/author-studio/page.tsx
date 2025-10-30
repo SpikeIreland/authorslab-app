@@ -373,13 +373,9 @@ function StudioContent() {
       if (chaptersData && chaptersData.length > 0) {
         setChapters(chaptersData)
 
-        // Find first non-prologue chapter or use prologue if it exists
-        const firstChapterIndex = chaptersData.findIndex(ch => ch.chapter_number === 1) !== -1
-          ? chaptersData.findIndex(ch => ch.chapter_number === 1)
-          : 0
-
-        setCurrentChapterIndex(firstChapterIndex)
-        const firstChapter = chaptersData[firstChapterIndex]
+        // Load the first chapter in the array (Prologue if exists, otherwise Chapter 1)
+        setCurrentChapterIndex(0)
+        const firstChapter = chaptersData[0]
 
         setEditorContent(firstChapter.content)
         setWordCount(firstChapter.content.split(/\s+/).filter((w: string) => w.length > 0).length)
