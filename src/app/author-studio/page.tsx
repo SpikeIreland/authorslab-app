@@ -358,9 +358,10 @@ function StudioContent() {
 
       setManuscript(manuscriptData)
 
-      // Check if analysis is complete
-      if (manuscriptData.full_analysis_completed_at) {
+      // Check if analysis is complete (summary + key points, not full PDF)
+      if (manuscriptData.manuscript_summary && manuscriptData.full_analysis_key_points) {
         setAnalysisComplete(true)
+        console.log('✅ Analysis already complete on page load')
       }
 
       // Load active phase (PRIMARY ORCHESTRATOR!)
