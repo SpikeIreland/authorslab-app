@@ -391,7 +391,15 @@ function StudioContent() {
       if (chaptersData && chaptersData.length > 0) {
         setChapters(chaptersData)
 
-        // Load the first chapter in the array (Prologue if exists, otherwise Chapter 1)
+        // Initialize chapter editing status for all chapters
+        const initialStatus: { [key: number]: ChapterEditingStatus } = {}
+        chaptersData.forEach(ch => {
+          initialStatus[ch.chapter_number] = 'not_started'
+        })
+        setChapterEditingStatus(initialStatus)
+        console.log('✅ Initialized editing status for', chaptersData.length, 'chapters')
+
+        // Load the first chapter in the array
         setCurrentChapterIndex(0)
         const firstChapter = chaptersData[0]
 
