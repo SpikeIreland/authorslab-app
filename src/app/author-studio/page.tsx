@@ -711,7 +711,11 @@ function StudioContent() {
       })
 
       if (!isAutoSave) {
-        await addChatMessage(editorName, '✅ Chapter saved successfully!')
+        const chapterLabel = currentChapter.chapter_number === 0
+          ? 'Prologue'
+          : `Chapter ${currentChapter.chapter_number}`
+
+        await addChatMessage(editorName, `✅ ${chapterLabel}: "${currentChapter.title}" saved successfully!`)
       }
 
     } catch (error) {
