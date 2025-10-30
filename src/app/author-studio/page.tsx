@@ -452,6 +452,31 @@ function StudioContent() {
     // Add greetings for Jordan, Taylor, Quinn as needed
   }
 
+  // Edit chapter title
+  async function handleEditChapterTitle(chapter: Chapter) {
+    const newTitle = prompt(`Edit title for ${chapter.chapter_number === 0 ? 'Prologue' : `Chapter ${chapter.chapter_number}`}:`, chapter.title)
+
+    if (newTitle && newTitle.trim() && newTitle !== chapter.title) {
+      const supabase = createClient()
+      const { error } = await supabase
+        .from('chapters')
+        .update({ title: newTitle.trim() })
+        .eq('id', chapter.id)
+
+      if (!error) {
+        // Update local state
+        setChapters(prev => prev.map(ch =>
+          ch.id === chapter.id ? { ...ch, title: newTitle.trim() } : ch
+        ))
+
+        await addChatMessage(editorName, `✅ Chapter title updated to "${newTitle.trim()}"`)
+      } else {
+        console.error('Failed to update title:', error)
+        await addChatMessage(editorName, '❌ Failed to update chapter title. Please try again.')
+      }
+    }
+  }
+
   async function loadChapter(index: number) {
     if (isLocked) return
 
@@ -918,6 +943,7 @@ function StudioContent() {
     }
   }
 
+
   // Poll for chapter issues to appear
   function pollForChapterIssues(chapterNumber: number) {
     let attempts = 0
@@ -1120,7 +1146,7 @@ function StudioContent() {
                   key={chapter.id}
                   onClick={() => !isLocked && loadChapter(index)}
                   disabled={isLocked}
-                  className={`w-full p-3 rounded-lg mb-2 text-left transition ${isLocked
+                  className={`group w-full p-3 rounded-lg mb-2 text-left transition ${isLocked
                     ? 'opacity-50 cursor-not-allowed'
                     : index === currentChapterIndex
                       ? `${getEditorColorClasses(editorColor).bgLight} border-2 ${getEditorColorClasses(editorColor).border}`
@@ -1142,11 +1168,25 @@ function StudioContent() {
                           <span className="text-gray-300 text-lg">○</span>
                         )}
                       </div>
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <div className="text-xs text-gray-500">
                           {chapter.chapter_number === 0 ? 'Prologue' : `Chapter ${chapter.chapter_number}`}
                         </div>
-                        <div className="font-semibold text-sm">{chapter.title}</div>
+                        <div className="flex items-center gap-1">
+                          <div className="font-semibold text-sm flex-1">{chapter.title}</div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleEditChapterTitle(chapter)
+                            }}
+                            className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white rounded transition"
+                            title="Edit chapter title"
+                          >
+                            <svg className="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ) : (
