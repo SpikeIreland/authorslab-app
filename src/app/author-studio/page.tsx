@@ -161,15 +161,22 @@ function StudioContent() {
   const [isChapterSidebarCollapsed, setIsChapterSidebarCollapsed] = useState(false)
 
   const triggerFullAnalysis = async () => {
-    setFullAnalysisInProgress(true)
-    setThinkingMessage('📖 Starting to read your manuscript...')
+    if (!manuscript) return
 
-    // Animated status messages
-    setTimeout(() => setThinkingMessage('📊 Analyzing story structure...'), 3000)
-    setTimeout(() => setThinkingMessage('🎭 Studying character development...'), 6000)
-    setTimeout(() => setThinkingMessage('✨ Examining pacing and flow...'), 9000)
-    setTimeout(() => setThinkingMessage('📝 Making notes on key elements...'), 12000)
-    setTimeout(() => setThinkingMessage('🔍 Almost done, finalizing thoughts...'), 15000)
+    setFullAnalysisInProgress(true)
+
+    // Add immediate message BEFORE triggering the workflow
+    await addChatMessage(
+      editorName,
+      `Perfect! I'm diving into your manuscript now. This will take about 5 minutes.\n\n` +
+      `I'm analyzing:\n` +
+      `• Story structure and plot\n` +
+      `• Character development\n` +
+      `• Pacing and flow\n` +
+      `• Themes and motifs\n\n` +
+      `You'll receive a comprehensive report by email when I'm done.\n\n` +
+      `**While I read:** Check that your text and chapters loaded correctly, and save any edits you make. 📚`
+    )
 
     try {
       // Update database status
@@ -180,55 +187,19 @@ function StudioContent() {
           analysis_started_at: new Date().toISOString(),
           status: 'analyzing'
         })
-        .eq('id', manuscript?.id)
+        .eq('id', manuscript.id)
 
-      // Trigger all THREE workflows simultaneously
-      await Promise.all([
-        // 1. Full analysis (PDF report)
-        fetch(WEBHOOKS.alexFullAnalysis, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            manuscriptId: manuscript?.id,
-            userId: manuscript?.author_id
-          })
-        }).catch(() => console.log('✅ Full analysis webhook triggered')),
+      // Trigger the analysis workflow
+      await fetch(WEBHOOKS.alexFullAnalysis, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          manuscriptId: manuscript.id,
+          userId: manuscript.author_id
+        })
+      }).catch(() => console.log('✅ Full analysis webhook triggered'))
 
-        // 2. Generate summary + key points
-        fetch(WEBHOOKS.alexGenerateSummary, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            manuscriptId: manuscript?.id,
-            userId: manuscript?.author_id
-          })
-        }).catch(() => console.log('✅ Summary webhook triggered')),
-
-        // 3. Chapter summaries
-        fetch(WEBHOOKS.alexGenerateChapterSummaries, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            manuscriptId: manuscript?.id,
-            userId: manuscript?.author_id
-          })
-        }).catch(() => console.log('✅ Chapter summaries webhook triggered'))
-      ])
-
-      console.log('✅ All analysis webhooks triggered successfully')
-
-      // Add initial message to chat
-      setChatMessages(prev => [...prev, {
-        sender: editorName,
-        message: `Perfect! I'm diving into "${manuscript?.title}" now. This will take about 5 minutes.\n\n` +
-          `I'm analyzing:\n` +
-          `• Story structure and plot\n` +
-          `• Character development\n` +
-          `• Pacing and flow\n` +
-          `• Themes and motifs\n\n` +
-          `You'll receive a comprehensive report by email when I'm done. Feel free to explore the chapters while I read! 📚`,
-        timestamp: new Date().toISOString()
-      }])
+      console.log('✅ Analysis workflow triggered successfully')
 
       // Poll for completion
       pollForAnalysisCompletion()
@@ -236,11 +207,7 @@ function StudioContent() {
     } catch (error) {
       console.error('Error triggering analysis:', error)
       setFullAnalysisInProgress(false)
-      setChatMessages(prev => [...prev, {
-        sender: editorName,
-        message: 'There was an issue starting the analysis. Please try again.',
-        timestamp: new Date().toISOString()
-      }])
+      await addChatMessage(editorName, 'There was an issue starting the analysis. Please try again.')
     }
   }
 
