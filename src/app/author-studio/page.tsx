@@ -132,6 +132,7 @@ function StudioContent() {
   const [wordCount, setWordCount] = useState(0)
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [isLocked, setIsLocked] = useState(false)
+  const [editorPhases, setEditorPhases] = useState<EditingPhase[]>([])
 
   // Chapter Editing Status
   const [chapterEditingStatus, setChapterEditingStatus] = useState<{ [key: number]: ChapterEditingStatus }>({})
@@ -366,16 +367,45 @@ function StudioContent() {
         console.log('✅ Analysis already complete on page load')
       }
 
-      // Load active phase (PRIMARY ORCHESTRATOR!)
-      const phase = await getActivePhase(supabase, manuscriptId)
+      // ========================================
+      // NEW: Load ALL editing phases
+      // ========================================
+      setLoadingMessage('Loading phases...')
+      const { data: allPhases } = await supabase
+        .from('editing_phases')
+        .select('*')
+        .eq('manuscript_id', manuscriptId)
+        .order('phase_number', { ascending: true })
 
-      if (!phase) {
-        console.error('No active phase found')
-        throw new Error('No active phase')
+      if (allPhases) {
+        setEditorPhases(allPhases)
+        console.log(`✅ Loaded ${allPhases.length} editing phases`)
+
+        // Get the active phase from loaded phases
+        const activePhase = allPhases.find(p => p.phase_status === 'active')
+
+        if (!activePhase) {
+          console.error('No active phase found')
+          throw new Error('No active phase')
+        }
+
+        setActivePhase(activePhase)
+        console.log(`✅ Active phase: ${activePhase.phase_name} (${activePhase.editor_name})`)
+      } else {
+        // Fallback to old method if allPhases query fails
+        const phase = await getActivePhase(supabase, manuscriptId)
+
+        if (!phase) {
+          console.error('No active phase found')
+          throw new Error('No active phase')
+        }
+
+        setActivePhase(phase)
+        console.log(`✅ Active phase: ${phase.phase_name} (${phase.editor_name})`)
       }
-
-      setActivePhase(phase)
-      console.log(`✅ Active phase: ${phase.phase_name} (${phase.editor_name})`)
+      // ========================================
+      // END NEW CODE
+      // ========================================
 
       // Load chapters
       setLoadingMessage('Loading chapters...')
@@ -412,18 +442,22 @@ function StudioContent() {
 
       // Load chat history for active phase
       setLoadingMessage('Loading chat history...')
-      const history = await getChatHistory(supabase, manuscriptId, phase.phase_number)
+      const activePhaseToUse = allPhases?.find(p => p.phase_status === 'active') || await getActivePhase(supabase, manuscriptId)
 
-      if (history && history.length > 0) {
-        const messages = history.map(msg => ({
-          sender: msg.sender,
-          message: msg.message
-        }))
-        setChatMessages(messages)
-        console.log(`✅ Restored ${history.length} chat messages`)
-      } else {
-        // Show initial greeting for this phase
-        showInitialGreeting(phase, manuscriptData, authorProfile.first_name, chaptersData?.length || 0)
+      if (activePhaseToUse) {
+        const history = await getChatHistory(supabase, manuscriptId, activePhaseToUse.phase_number)
+
+        if (history && history.length > 0) {
+          const messages = history.map(msg => ({
+            sender: msg.sender,
+            message: msg.message
+          }))
+          setChatMessages(messages)
+          console.log(`✅ Restored ${history.length} chat messages`)
+        } else {
+          // Show initial greeting for this phase
+          showInitialGreeting(activePhaseToUse, manuscriptData, authorProfile.first_name, chaptersData?.length || 0)
+        }
       }
 
       setIsLoading(false)
@@ -452,15 +486,84 @@ function StudioContent() {
         )
       }
     } else if (phase.phase_number === 2) {
-      // Sam's greeting
-      addChatMessage('Sam',
-        `Hey ${firstName}! I'm Sam, your line editor. ✨\n\n` +
-        `I've already reviewed the fantastic structural work you and Alex accomplished together on "${manuscript.title}". ` +
-        `Now let's make every sentence sing!\n\n` +
-        `Give me just a couple of minutes to read through your approved manuscript and I'll share my initial thoughts. In the meantime, feel free to look around! 📚`
+      // Sam's greeting - check if he finished reading
+      const samPhase = editorPhases.find(p => p.phase_number === 2)
+
+      if (samPhase?.report_pdf_url) {
+        // Sam finished reading
+        addChatMessage('Sam',
+          `Hey ${firstName}! I'm Sam, your line editor. ✨\n\n` +
+          `I've already read through your approved manuscript and I'm excited about the prose work ahead! ` +
+          `The structural foundation Alex helped you build is solid—now let's make every sentence shine.\n\n` +
+          `📧 I've sent you a detailed line-editing report by email.\n\n` +
+          `**Ready to start?** Click on any chapter to see my specific prose notes! 📚`
+        )
+      } else {
+        // Sam is still reading
+        addChatMessage('Sam',
+          `Hey ${firstName}! I'm Sam, your line editor. ✨\n\n` +
+          `I've reviewed the fantastic structural work you and Alex accomplished together on "${manuscript.title}". ` +
+          `I'm currently doing a deep read of your prose—should be done in just a few minutes.\n\n` +
+          `**While I read:** Feel free to browse your chapters. I'll let you know when I'm ready! 📚`
+        )
+
+        // Poll for Sam's reading completion
+        pollForSamReading()
+      }
+    } else if (phase.phase_number === 3) {
+      // Jordan's greeting (for future Phase 3)
+      addChatMessage('Jordan',
+        `Hi ${firstName}! I'm Jordan, your copy editor. 🔍\n\n` +
+        `I've reviewed the excellent work you did with Alex and Sam. ` +
+        `Now let's make sure every technical detail is perfect.\n\n` +
+        `Click on any chapter to start! 📚`
       )
     }
-    // Add greetings for Jordan, Taylor, Quinn as needed
+  }
+
+  const pollForSamReading = async () => {
+    if (!manuscript) return
+
+    const supabase = createClient()
+    let attempts = 0
+    const maxAttempts = 60 // 3 minutes (60 x 3 seconds)
+
+    const pollInterval = setInterval(async () => {
+      attempts++
+
+      const { data: samPhase } = await supabase
+        .from('editing_phases')
+        .select('report_pdf_url')
+        .eq('manuscript_id', manuscript.id)
+        .eq('phase_number', 2)
+        .single()
+
+      if (samPhase?.report_pdf_url) {
+        clearInterval(pollInterval)
+
+        await addChatMessage('Sam',
+          `✨ Done reading! Your prose has some really beautiful moments.\n\n` +
+          `📧 I've sent you my line-editing report by email.\n\n` +
+          `**Let's get started!** Click on any chapter to see my prose notes.`
+        )
+
+        // Reload phases to show report button in header
+        const { data: allPhases } = await supabase
+          .from('editing_phases')
+          .select('*')
+          .eq('manuscript_id', manuscript.id)
+          .order('phase_number', { ascending: true })
+
+        if (allPhases) {
+          setEditorPhases(allPhases)
+        }
+      } else if (attempts >= maxAttempts) {
+        clearInterval(pollInterval)
+        await addChatMessage('Sam',
+          `Almost done reading... Feel free to start browsing chapters while I finish up! ✨`
+        )
+      }
+    }, 3000) // Poll every 3 seconds
   }
 
   // Edit chapter title
@@ -836,7 +939,21 @@ function StudioContent() {
         console.error('Failed to create snapshot')
       }
 
-      // 2. Transition to next phase
+      // 2. If completing Phase 1, trigger Sam's reading ← ADD THIS!
+      if (activePhase.phase_number === 1) {
+        console.log('🚀 Starting Sam\'s manuscript reading...')
+
+        fetch(WEBHOOKS.samFullAnalysis, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            manuscriptId: manuscript.id,
+            userId: manuscript.author_id
+          })
+        }).catch(() => console.log('✅ Sam reading triggered'))
+      }
+
+      // 3. Transition to next phase
       const transitioned = await transitionToNextPhase(
         supabase,
         manuscript.id,
@@ -847,13 +964,13 @@ function StudioContent() {
         throw new Error('Failed to transition phases')
       }
 
-      // 3. Add farewell message from Alex
+      // 4. Add farewell message
       await addChatMessage(
         editorName,
         getPhaseCompletionMessage(activePhase.phase_number, chapters.length)
       )
 
-      // 4. Show "Meet Sam" button
+      // 5. Show "Meet Sam" button
       setShowMeetNextEditorButton(true)
 
     } catch (error) {
@@ -869,8 +986,10 @@ function StudioContent() {
 
   // Get phase completion message
   function getPhaseCompletionMessage(phaseNumber: number, chapterCount: number): string {
+    const firstName = authorFirstName || 'there'
+
     if (phaseNumber === 1) {
-      return `🎉 **Incredible work, ${authorFirstName}!**\n\n` +
+      return `🎉 **Incredible work, ${firstName}!**\n\n` +
         `You've successfully approved all ${chapterCount} chapters. Your story structure is solid, ` +
         `your character arcs are clear, and the pacing flows beautifully.\n\n` +
         `**What happens next?**\n` +
@@ -879,11 +998,17 @@ function StudioContent() {
         `Click the **"Meet Sam"** button above when you're ready for the handoff! 👋\n\n` +
         `*— Alex, Your Developmental Editor* 👔`
     } else if (phaseNumber === 2) {
-      return `✨ **Beautiful work, ${authorFirstName}!**\n\n` +
+      return `✨ **Beautiful work, ${firstName}!**\n\n` +
         `Your prose is polished and shining. Every sentence flows, your dialogue sparkles, ` +
         `and your voice is consistent and compelling.\n\n` +
         `**Next up: Phase 3 with Jordan** for the final technical polish!\n\n` +
         `*— Sam, Your Line Editor* ✨`
+    } else if (phaseNumber === 3) {
+      return `🔍 **Excellent work, ${firstName}!**\n\n` +
+        `Your manuscript is technically perfect. Grammar is tight, punctuation is precise, ` +
+        `and consistency is maintained throughout.\n\n` +
+        `**Next up: Phase 4 with Taylor** for publishing preparation!\n\n` +
+        `*— Jordan, Your Copy Editor* 🔍`
     }
 
     return `Phase ${phaseNumber} complete! Moving to next phase...`
