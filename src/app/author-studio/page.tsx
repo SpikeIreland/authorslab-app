@@ -237,51 +237,45 @@ function StudioContent() {
   const pollForAnalysisCompletion = async () => {
     const supabase = createClient()
     let attempts = 0
-    const maxAttempts = 100 // 5 minutes (100 x 3 sec)
+    const maxAttempts = 100 // 5 minutes
 
     const pollInterval = setInterval(async () => {
       attempts++
 
       const { data: manuscriptData } = await supabase
         .from('manuscripts')
-        .select('full_analysis_completed_at, report_pdf_url, manuscript_summary')
+        .select('manuscript_summary, full_analysis_key_points, report_pdf_url')
         .eq('id', manuscript?.id)
         .single()
 
-      if (manuscriptData?.full_analysis_completed_at) {
+      // Check if summary exists (not full_analysis_completed_at)
+      if (manuscriptData?.manuscript_summary && manuscriptData?.full_analysis_key_points) {
         clearInterval(pollInterval)
         setFullAnalysisInProgress(false)
         setAnalysisComplete(true)
 
-        if (manuscriptData.report_pdf_url) {
-          setFullReportPdfUrl(manuscriptData.report_pdf_url)
-        }
-
         // Update local manuscript state
         setManuscript(prev => prev ? {
           ...prev,
-          full_analysis_completed_at: manuscriptData.full_analysis_completed_at,
-          report_pdf_url: manuscriptData.report_pdf_url,
-          manuscript_summary: manuscriptData.manuscript_summary
+          manuscript_summary: manuscriptData.manuscript_summary,
+          full_analysis_key_points: manuscriptData.full_analysis_key_points,
+          report_pdf_url: manuscriptData.report_pdf_url
         } : null)
 
-        // Add completion message to chat
-        setChatMessages(prev => [...prev, {
-          sender: editorName,
-          message: `✅ I've finished reading your manuscript! I'm genuinely excited about what you've created.\n\n` +
-            `📧 I've sent you a comprehensive analysis report by email.\n\n` +
-            `**Ready to start editing?**\n` +
-            `Click on any chapter and hit "Start Editing" to see my specific notes. We'll work through them together, one chapter at a time.`,
-          timestamp: new Date().toISOString()
-        }])
+        await addChatMessage(
+          editorName,
+          `✅ I've finished reading your manuscript! I'm genuinely excited about what you've created.\n\n` +
+          `📧 Your comprehensive PDF report will arrive by email shortly (it takes about 15 minutes to generate).\n\n` +
+          `**Ready to start editing?**\n` +
+          `Click on any chapter and hit "Start Editing" to see my specific notes. We'll work through them together, one chapter at a time.`
+        )
       } else if (attempts >= maxAttempts) {
         clearInterval(pollInterval)
         setFullAnalysisInProgress(false)
-        setChatMessages(prev => [...prev, {
-          sender: editorName,
-          message: '⚠️ Analysis is taking longer than expected. Please check your email in a few minutes, or refresh the page to see if it completed.',
-          timestamp: new Date().toISOString()
-        }])
+        await addChatMessage(
+          editorName,
+          '⚠️ Analysis is taking longer than expected. Please refresh the page in a moment.'
+        )
       }
     }, 3000) // Poll every 3 seconds
   }
