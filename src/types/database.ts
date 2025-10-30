@@ -77,6 +77,10 @@ export interface EditingPhase {
   chapters_analyzed: number
   chapters_approved: number
 
+  // Report
+  report_pdf_url: string | null          // ← ADD THIS
+  report_generated_at: string | null     // ← ADD THIS
+
   // Metadata
   created_at: string
   updated_at: string
