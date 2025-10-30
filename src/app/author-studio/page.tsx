@@ -475,17 +475,15 @@ function StudioContent() {
   async function loadChapter(index: number) {
     if (isLocked) return
 
-    // Clear auto-save timer when switching chapters
+    // Clear auto-save timer
     if (autoSaveTimer) {
       clearTimeout(autoSaveTimer)
       setAutoSaveTimer(null)
     }
 
-    // Save current chapter if it has unsaved changes
+    // Save current chapter if unsaved
     if (hasUnsavedChanges && currentChapter && pendingContentRef.current) {
-      console.log('💾 Auto-saving before switching chapters')
-
-      // Save the pending content directly to database
+      console.log('💾 Saving before switch')
       const supabase = createClient()
       await supabase
         .from('chapters')
@@ -495,17 +493,39 @@ function StudioContent() {
         })
         .eq('id', currentChapter.id)
 
-      pendingContentRef.current = '' // Clear ref
+      pendingContentRef.current = ''
     }
 
-    setCurrentChapterIndex(index)
-    const chapter = chapters[index]
+    // Get chapter ID from state
+    const chapterId = chapters[index]?.id
+    if (!chapterId) return
 
-    setEditorContent(chapter.content)
-    setWordCount(chapter.content.split(/\s+/).filter((w: string) => w.length > 0).length)
+    // Fetch FRESH chapter data from database
+    const supabase = createClient()
+    const { data: freshChapter, error } = await supabase
+      .from('chapters')
+      .select('*')
+      .eq('id', chapterId)
+      .single()
+
+    if (error || !freshChapter) {
+      console.error('Failed to load chapter:', error)
+      return
+    }
+
+    console.log('📖 Loaded fresh chapter from database:', freshChapter.chapter_number)
+
+    setCurrentChapterIndex(index)
+    setEditorContent(freshChapter.content)
+    setWordCount(freshChapter.content.split(/\s+/).filter((w: string) => w.length > 0).length)
     setHasUnsavedChanges(false)
 
-    await loadChapterIssues(chapter.chapter_number)
+    const editStatus = chapterEditingStatus[freshChapter.chapter_number]
+    if (editStatus === 'ready') {
+      await loadChapterIssues(freshChapter.chapter_number)
+    } else {
+      setChapterIssues([])
+    }
   }
 
   // Load issues for a chapter
