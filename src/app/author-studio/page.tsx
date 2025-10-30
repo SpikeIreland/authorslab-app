@@ -502,7 +502,7 @@ function StudioContent() {
     const chapter = chapters[index]
 
     setEditorContent(chapter.content)
-    setWordCount(chapter.content.split(/\s+/).filter(w => w.length > 0).length)
+    setWordCount(firstChapter.content.split(/\s+/).filter((w: string) => w.length > 0).length)
     setHasUnsavedChanges(false)
 
     await loadChapterIssues(chapter.chapter_number)
