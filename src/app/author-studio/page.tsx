@@ -1207,6 +1207,15 @@ function StudioContent() {
             <h3 className="text-lg font-bold">{currentChapter?.title || 'Loading...'}</h3>
             <div className="flex gap-2">
               {/* Start Editing Button - Shows when not started */}
+              {/* Start Editing Button - Shows when not started */}
+              {(() => {
+                console.log('🔍 Start Editing button check:', {
+                  currentEditingStatus,
+                  analysisComplete,
+                  shouldShow: currentEditingStatus === 'not_started' && analysisComplete
+                })
+                return null
+              })()}
               {currentEditingStatus === 'not_started' && analysisComplete && (
                 <button
                   onClick={() => analyzeChapter(currentChapter.chapter_number)}
