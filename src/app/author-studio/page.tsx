@@ -189,17 +189,40 @@ function StudioContent() {
         })
         .eq('id', manuscript.id)
 
-      // Trigger the analysis workflow
-      await fetch(WEBHOOKS.alexFullAnalysis, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          manuscriptId: manuscript.id,
-          userId: manuscript.author_id
-        })
-      }).catch(() => console.log('✅ Full analysis webhook triggered'))
+      // Trigger all THREE workflows simultaneously
+      await Promise.all([
+        // 1. Full analysis (PDF report)
+        fetch(WEBHOOKS.alexFullAnalysis, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            manuscriptId: manuscript.id,
+            userId: manuscript.author_id
+          })
+        }).catch(() => console.log('✅ Full analysis webhook triggered')),
 
-      console.log('✅ Analysis workflow triggered successfully')
+        // 2. Generate summary + key points
+        fetch(WEBHOOKS.generateSummary, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            manuscriptId: manuscript.id,
+            userId: manuscript.author_id
+          })
+        }).catch(() => console.log('✅ Summary webhook triggered')),
+
+        // 3. Chapter summaries
+        fetch(WEBHOOKS.generateChapterSummaries, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            manuscriptId: manuscript.id,
+            userId: manuscript.author_id
+          })
+        }).catch(() => console.log('✅ Chapter summaries webhook triggered'))
+      ])
+
+      console.log('✅ All analysis workflows triggered successfully')
 
       // Poll for completion
       pollForAnalysisCompletion()
