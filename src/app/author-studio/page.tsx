@@ -415,7 +415,7 @@ function StudioContent() {
         const firstChapter = chaptersData[firstChapterIndex]
 
         setEditorContent(firstChapter.content)
-        setWordCount(firstChapter.content.split(/\s+/).filter(w => w.length > 0).length)
+        setWordCount(firstChapter.content.split(/\s+/).filter((w: string) => w.length > 0).length)
         setHasUnsavedChanges(false)
       }
 
