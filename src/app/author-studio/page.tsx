@@ -154,6 +154,8 @@ function StudioContent() {
   const [thinkingMessage, setThinkingMessage] = useState('')  // ADD THIS
   const [fullReportPdfUrl, setFullReportPdfUrl] = useState<string | null>(null)  // ADD THIS
 
+  const [showMeetNextEditorButton, setShowMeetNextEditorButton] = useState(false)
+
   // Author name
   const [authorFirstName, setAuthorFirstName] = useState<string>('')
 
@@ -816,14 +818,11 @@ function StudioContent() {
     }
   }
 
-  // Handle phase completion
-  async function handlePhaseComplete() {
+  async function handlePhaseCompletion() {
     if (!manuscript || !activePhase) return
 
-    const supabase = createClient()
-
     try {
-      console.log(`🎉 All chapters approved for Phase ${activePhase.phase_number}!`)
+      const supabase = createClient()
 
       // 1. Create approved snapshot
       const snapshotCreated = await createApprovedSnapshot(
@@ -848,23 +847,24 @@ function StudioContent() {
         throw new Error('Failed to transition phases')
       }
 
-      // 3. Show completion message
-      setTimeout(() => {
-        addChatMessage(
-          editorName,
-          getPhaseCompletionMessage(activePhase.phase_number, chapters.length)
-        )
-      }, 1500)
+      // 3. Add farewell message from Alex
+      await addChatMessage(
+        editorName,
+        getPhaseCompletionMessage(activePhase.phase_number, chapters.length)
+      )
 
-      // 4. Redirect to phase transition page
-      setTimeout(() => {
-        router.push(`/phase-transition?manuscriptId=${manuscript.id}&fromPhase=${activePhase.phase_number}&toPhase=${activePhase.phase_number + 1}`)
-      }, 3000)
+      // 4. Show "Meet Sam" button
+      setShowMeetNextEditorButton(true)
 
     } catch (error) {
       console.error('Error completing phase:', error)
       await addChatMessage(editorName, '✅ All chapters approved! There was an issue with the transition, but your work is safe.')
     }
+  }
+
+  // Navigate to phase transition
+  function handleMeetNextEditor() {
+    router.push(`/phase-transition?manuscriptId=${manuscript?.id}&fromPhase=${activePhase?.phase_number}&toPhase=${(activePhase?.phase_number || 0) + 1}`)
   }
 
   // Get phase completion message
@@ -876,7 +876,7 @@ function StudioContent() {
         `**What happens next?**\n` +
         `You're ready for **Phase 2: Line Editing with Sam**. Sam will work at the sentence level, ` +
         `polishing your prose and making sure every word sings.\n\n` +
-        `The page will reload in a moment to begin Phase 2...\n\n` +
+        `Click the **"Meet Sam"** button above when you're ready for the handoff! 👋\n\n` +
         `*— Alex, Your Developmental Editor* 👔`
     } else if (phaseNumber === 2) {
       return `✨ **Beautiful work, ${authorFirstName}!**\n\n` +
@@ -1270,12 +1270,22 @@ function StudioContent() {
               </button>
 
               {/* Approve Button - Shows when ready */}
-              {currentEditingStatus === 'ready' && (
+              {currentEditingStatus === 'ready' && !showMeetNextEditorButton && (
                 <button
                   onClick={handleApproveChapter}
                   className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg ${getEditorColorClasses(editorColor).bgHover}`}
                 >
                   Approve
+                </button>
+              )}
+
+              {/* Meet Next Editor Button - Shows after all chapters approved */}
+              {showMeetNextEditorButton && (
+                <button
+                  onClick={handleMeetNextEditor}
+                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg font-bold text-base hover:from-purple-700 hover:to-purple-800 transition-all shadow-lg animate-pulse"
+                >
+                  👋 Meet Sam
                 </button>
               )}
             </div>
