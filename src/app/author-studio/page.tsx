@@ -847,9 +847,9 @@ function StudioContent() {
         )
       }, 1500)
 
-      // 4. Reload to show new phase
+      // 4. Redirect to phase transition page
       setTimeout(() => {
-        window.location.reload()
+        router.push(`/phase-transition?manuscriptId=${manuscript.id}&fromPhase=${activePhase.phase_number}&toPhase=${activePhase.phase_number + 1}`)
       }, 3000)
 
     } catch (error) {
