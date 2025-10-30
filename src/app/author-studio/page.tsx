@@ -806,7 +806,7 @@ function StudioContent() {
 
       if (allApproved) {
         // All chapters approved - handle phase completion
-        await handlePhaseComplete()
+        await handlePhaseCompletion()
       } else if (currentChapterIndex < chapters.length - 1) {
         // Move to next chapter
         setTimeout(() => loadChapter(currentChapterIndex + 1), 1000)
