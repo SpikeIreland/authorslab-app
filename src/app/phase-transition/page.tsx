@@ -62,19 +62,21 @@ function TransitionContent() {
         return
       }
 
-      // Update manuscript to Phase 2
-      const { error } = await supabase
-        .from('manuscripts')
-        .update({
-          status: 'line_editing',
-          line_editing_started_at: new Date().toISOString()
-        })
-        .eq('id', manuscriptId)
+      // Use the new architecture: transition via editing_phases
+      const { error: transitionError } = await supabase.rpc('transition_to_next_phase', {
+        p_manuscript_id: manuscriptId
+      })
 
-      if (error) throw error
+      if (transitionError) {
+        console.error('Transition error:', transitionError)
+        throw transitionError
+      }
 
-      // Redirect to Author Studio with Phase 2 active
-      router.push(`/author-studio?manuscriptId=${manuscriptId}&phase=2`)
+      console.log('✅ Transitioned from Phase 1 to Phase 2')
+
+      // Redirect to Author Studio (it will automatically load Phase 2)
+      router.push(`/author-studio?manuscriptId=${manuscriptId}`)
+
     } catch (error) {
       console.error('Error starting Phase 2:', error)
       setIsStartingPhase2(false)
