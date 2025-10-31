@@ -100,7 +100,7 @@ const WEBHOOKS = {
 }
 
 interface ChatMessage {
-  sender: string
+  sender: 'Author' | 'system' | string
   message: string
 }
 
@@ -110,6 +110,7 @@ function StudioContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const chatInputRef = useRef<HTMLInputElement>(null)
 
   // Core State
   const [manuscript, setManuscript] = useState<Manuscript | null>(null)
@@ -148,6 +149,7 @@ function StudioContent() {
   const [chapterIssues, setChapterIssues] = useState<ManuscriptIssue[]>([])
   const [showIssuesPanel, setShowIssuesPanel] = useState(false)
   const [issueFilter, setIssueFilter] = useState<string>('all')
+  const [discussingIssue, setDiscussingIssue] = useState<ManuscriptIssue | null>(null)
 
   // Analysis State
   const [analysisComplete, setAnalysisComplete] = useState(false)
@@ -448,10 +450,10 @@ function StudioContent() {
         const history = await getChatHistory(supabase, manuscriptId, activePhaseToUse.phase_number)
 
         if (history && history.length > 0) {
-          const messages = history.map(msg => ({
-            sender: msg.sender,
+          const messages: ChatMessage[] = history.map(msg => ({
+            sender: msg.sender === 'author' ? 'Author' : editorName,
             message: msg.message
-          }))
+          })) as ChatMessage[]  // ← Add type assertion
           setChatMessages(messages)
           console.log(`✅ Restored ${history.length} chat messages`)
         } else {
@@ -672,7 +674,7 @@ function StudioContent() {
   }
 
   // Add chat message (and persist to database)
-  async function addChatMessage(sender: string, message: string, chapterNumber?: number) {
+  async function addChatMessage(sender: ChatMessage['sender'], message: string, chapterNumber?: number) {
     // Add to local state immediately for responsiveness
     setChatMessages(prev => [...prev, { sender, message }])
 
@@ -689,7 +691,6 @@ function StudioContent() {
     }
   }
 
-  // Handle chat submission
   async function handleChatSubmit(e: React.FormEvent) {
     e.preventDefault()
 
@@ -708,15 +709,25 @@ function StudioContent() {
       // Determine which chat webhook to use
       const chatWebhook = activePhase.phase_number === 2 ? WEBHOOKS.samChat : WEBHOOKS.alexChat
 
+      // Build the payload - include note context if discussing an issue
+      const payload = {
+        message: message,
+        manuscriptId: manuscript.id,
+        chapterNumber: chapters[currentChapterIndex]?.chapter_number,
+        chapterContent: editorContent,
+        ...(discussingIssue && {
+          isNoteDiscussion: true,
+          issueId: discussingIssue.id,
+          noteContent: discussingIssue.issue_description,
+          noteQuestion: discussingIssue.editor_suggestion,
+          noteType: discussingIssue.element_type
+        })
+      }
+
       const response = await fetch(chatWebhook, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: message,
-          manuscriptId: manuscript.id,
-          chapterNumber: chapters[currentChapterIndex]?.chapter_number,
-          chapterContent: editorContent
-        })
+        body: JSON.stringify(payload)
       })
 
       const data = await response.json()
@@ -725,64 +736,38 @@ function StudioContent() {
       setIsThinking(false)
       await addChatMessage(editorName, editorResponse)
 
+      // Clear the discussing issue after response
+      setDiscussingIssue(null)
+
     } catch (error) {
       console.error('Chat error:', error)
       setIsThinking(false)
       await addChatMessage(editorName, "I'm having trouble connecting. Let me help based on what I see in your manuscript.")
+
+      // Clear discussing issue even on error
+      setDiscussingIssue(null)
     }
   }
 
-  // Handle discussing an issue with the editor
   async function handleDiscussIssue(issue: ManuscriptIssue) {
     if (!manuscript || !activePhase) return
 
-    // Show the note content in chat
+    // Close the issues panel
+    setShowIssuesPanel(false)
+
+    // Store the issue being discussed (don't send yet!)
+    setDiscussingIssue(issue)
+
+    // Add a system message showing what's being discussed
     await addChatMessage(
-      'Discussion Point',
-      `📍 **${issue.element_type.replace('_', ' ').toUpperCase()}**\n\n` +
-      `${issue.issue_description}\n\n` +
-      `*${editorName}'s question: ${issue.editor_suggestion}*`
+      'system',
+      `📝 **Discussing ${editorName}'s Note:**\n\n` +
+      `**Issue:** ${issue.issue_description}\n\n` +
+      `**${editorName}'s question:** ${issue.editor_suggestion}\n\n` +
+      `*What would you like to ask ${editorName} about this?*`
     )
-
-    // Trigger chat workflow with CONTEXT about this being Alex's note
-    setIsThinking(true)
-
-    try {
-      const chatWebhook = activePhase.phase_number === 2
-        ? WEBHOOKS.samChat
-        : WEBHOOKS.alexChat
-
-      const response = await fetch(chatWebhook, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          // IMPORTANT: Signal that this is Alex's own note being discussed
-          message: `I want to discuss the note you left about: "${issue.issue_description.substring(0, 100)}..."`,
-          manuscriptId: manuscript.id,
-          chapterNumber: chapters[currentChapterIndex]?.chapter_number,
-          chapterContent: editorContent,
-          // NEW: Add context that this is a note discussion
-          isNoteDiscussion: true,
-          noteContent: issue.issue_description,
-          noteQuestion: issue.editor_suggestion,
-          noteType: issue.element_type
-        })
-      })
-
-      const data = await response.json()
-      const editorResponse = data.response || data.output ||
-        "Let me explain my thinking on this section..."
-
-      setIsThinking(false)
-      await addChatMessage(editorName, editorResponse)
-
-    } catch (error) {
-      console.error('Chat error:', error)
-      setIsThinking(false)
-      await addChatMessage(editorName,
-        "Let me explain what I was thinking when I made that note..."
-      )
-    }
+    // Focus the chat input so author can type immediately
+    chatInputRef.current?.focus()
   }
 
   // Handle dismissing an issue
@@ -1673,10 +1658,15 @@ function StudioContent() {
                 key={index}
                 className={`${msg.sender === 'Author'
                   ? 'bg-blue-50 border-blue-200 ml-8'
-                  : `${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} mr-8`
+                  : msg.sender === 'system'
+                    ? 'bg-amber-50 border-amber-300 border-dashed'
+                    : `${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} mr-8`
                   } border rounded-lg p-3`}
               >
-                <div className="font-semibold text-sm mb-1">{msg.sender}</div>
+                {/* Only show sender name if not a system message */}
+                {msg.sender !== 'system' && (
+                  <div className="font-semibold text-sm mb-1">{msg.sender}</div>
+                )}
                 <div className="text-sm whitespace-pre-wrap">{msg.message}</div>
               </div>
             ))}
@@ -1715,6 +1705,7 @@ function StudioContent() {
           <form onSubmit={handleChatSubmit} className="p-4 border-t border-gray-200">
             <div className="flex gap-2">
               <input
+                ref={chatInputRef}  // ← ADD THIS LINE
                 type="text"
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
