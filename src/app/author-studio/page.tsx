@@ -734,19 +734,21 @@ function StudioContent() {
 
   // Handle discussing an issue with the editor
   async function handleDiscussIssue(issue: ManuscriptIssue) {
-    if (!manuscript || !activePhase) return  // ← Add this line
+    if (!manuscript || !activePhase) return
 
-    // Add issue to chat as "Discussion Point"
+    // Show the note content in chat
     await addChatMessage(
       'Discussion Point',
-      `**${issue.element_type.replace('_', ' ')}**\n\n${issue.issue_description}\n\n*${editorName}'s suggestion: ${issue.editor_suggestion}*`
+      `📍 **${issue.element_type.replace('_', ' ').toUpperCase()}**\n\n` +
+      `${issue.issue_description}\n\n` +
+      `*${editorName}'s question: ${issue.editor_suggestion}*`
     )
 
-    // Trigger alex-chat workflow
+    // Trigger chat workflow with CONTEXT about this being Alex's note
     setIsThinking(true)
 
     try {
-      const chatWebhook = activePhase.phase_number === 2  // ← Remove ? since we checked above
+      const chatWebhook = activePhase.phase_number === 2
         ? WEBHOOKS.samChat
         : WEBHOOKS.alexChat
 
@@ -754,39 +756,32 @@ function StudioContent() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          // IMPORTANT: Signal that this is Alex's own note being discussed
+          message: `I want to discuss the note you left about: "${issue.issue_description.substring(0, 100)}..."`,
           manuscriptId: manuscript.id,
-          authorFirstName: authorFirstName,
-          message: `I'd like to discuss this note: ${issue.issue_description}`,
-          isDiscussionPoint: true,  // ← Add this flag
-          context: {
-            manuscriptId: manuscript.id,
-            chapter: currentChapter.chapter_number,
-            chapterTitle: currentChapter.title,
-            chapterContent: editorContent.substring(0, 2000),
-            manuscriptTitle: manuscript.title,
-            analysisComplete: analysisComplete,
-            issueId: issue.id,
-            elementType: issue.element_type,
-            editorSuggestion: issue.editor_suggestion
-          }
+          chapterNumber: chapters[currentChapterIndex]?.chapter_number,
+          chapterContent: editorContent,
+          // NEW: Add context that this is a note discussion
+          isNoteDiscussion: true,
+          noteContent: issue.issue_description,
+          noteQuestion: issue.editor_suggestion,
+          noteType: issue.element_type
         })
       })
 
       const data = await response.json()
+      const editorResponse = data.response || data.output ||
+        "Let me explain my thinking on this section..."
 
-      await addChatMessage(editorName, data.response || "Let me think about that...")
-
-      const supabase = createClient()
-      await supabase
-        .from('manuscript_issues')
-        .update({ status: 'in_progress' })
-        .eq('id', issue.id)
+      setIsThinking(false)
+      await addChatMessage(editorName, editorResponse)
 
     } catch (error) {
-      console.error('Error discussing issue:', error)
-      await addChatMessage(editorName, "Sorry, I had trouble responding. Please try again.")
-    } finally {
+      console.error('Chat error:', error)
       setIsThinking(false)
+      await addChatMessage(editorName,
+        "Let me explain what I was thinking when I made that note..."
+      )
     }
   }
 
@@ -1660,11 +1655,22 @@ function StudioContent() {
                   key={issue.id}
                   className={`border-l-4 ${getEditorColorClasses(editorColor).border} bg-gray-50 p-3 rounded`}
                 >
-                  <div className="text-sm font-semibold text-gray-700 mb-1">
-                    {issue.element_type.replace('_', ' ')}
+                  {/* Category badge */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className={`px-2 py-0.5 rounded text-xs font-semibold ${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).text}`}>
+                      {issue.element_type.replace('_', ' ')}
+                    </span>
                   </div>
-                  <div className="text-sm text-gray-900 mb-2">{issue.issue_description}</div>
-                  <div className="text-sm text-gray-600 italic mb-3">{issue.editor_suggestion}</div>
+
+                  {/* Observation */}
+                  <div className="text-sm text-gray-700 mb-2 leading-relaxed">
+                    {issue.issue_description}
+                  </div>
+
+                  {/* Editor's question - styled as quote with color accent */}
+                  <div className={`${getEditorColorClasses(editorColor).text} italic text-sm mb-3 border-l-2 ${getEditorColorClasses(editorColor).border} pl-2 py-1`}>
+                    &quot;{issue.editor_suggestion}&quot;
+                  </div>
 
                   {/* Action Buttons */}
                   <div className="flex gap-2">
