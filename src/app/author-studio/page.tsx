@@ -1167,9 +1167,9 @@ function StudioContent() {
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Header */}
-      {/* Header */}
       <header className="bg-white border-b border-gray-200 p-4 shadow-sm">
         <div className="flex items-center justify-between">
+          {/* Left: Manuscript Title */}
           <div className="flex items-center gap-4">
             <div className={`w-10 h-10 rounded-lg ${getEditorColorClasses(editorColor).bg} text-white flex items-center justify-center`}>
               <BookOpen className="w-6 h-6" />
@@ -1182,10 +1182,12 @@ function StudioContent() {
             </div>
           </div>
 
-          {/* Editor Avatars with Report Buttons */}
-          <div className="flex items-center gap-3">
-            {/* Alex (Phase 1) */}
-            <div className="relative group">
+          {/* Right: Editor Progress & Report Buttons */}
+          <div className="flex items-center gap-6">
+
+            {/* Editor Progress Indicators */}
+            <div className="flex items-center gap-3">
+              {/* Alex (Phase 1) */}
               <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${currentPhase > 1
                 ? 'bg-green-600 text-white'
                 : currentPhase === 1
@@ -1194,24 +1196,8 @@ function StudioContent() {
                 }`}>
                 A
               </div>
-              {/* Alex's Report Button - Only show if report exists */}
-              {editorPhases.find(p => p.phase_number === 1)?.report_pdf_url && (
-                <button
-                  onClick={() => {
-                    const alexPhase = editorPhases.find(p => p.phase_number === 1)
-                    if (alexPhase?.report_pdf_url) {
-                      window.open(alexPhase.report_pdf_url, '_blank')
-                    }
-                  }}
-                  className="absolute -bottom-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap px-2 py-1 bg-green-600 text-white text-xs rounded shadow-lg hover:bg-green-700"
-                >
-                  📄 Alex&apos;s Report
-                </button>
-              )}
-            </div>
 
-            {/* Sam (Phase 2) */}
-            <div className="relative group">
+              {/* Sam (Phase 2) */}
               <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${currentPhase > 2
                 ? 'bg-purple-600 text-white'
                 : currentPhase === 2
@@ -1220,24 +1206,8 @@ function StudioContent() {
                 }`}>
                 S
               </div>
-              {/* Sam's Report Button - Only show if report exists */}
-              {editorPhases.find(p => p.phase_number === 2)?.report_pdf_url && (
-                <button
-                  onClick={() => {
-                    const samPhase = editorPhases.find(p => p.phase_number === 2)
-                    if (samPhase?.report_pdf_url) {
-                      window.open(samPhase.report_pdf_url, '_blank')
-                    }
-                  }}
-                  className="absolute -bottom-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap px-2 py-1 bg-purple-600 text-white text-xs rounded shadow-lg hover:bg-purple-700"
-                >
-                  📄 Sam&apos;s Report
-                </button>
-              )}
-            </div>
 
-            {/* Jordan (Phase 3) */}
-            <div className="relative group">
+              {/* Jordan (Phase 3) */}
               <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${currentPhase > 3
                 ? 'bg-blue-600 text-white'
                 : currentPhase === 3
@@ -1246,20 +1216,175 @@ function StudioContent() {
                 }`}>
                 J
               </div>
-              {/* Jordan's Report Button - Only show if report exists */}
-              {editorPhases.find(p => p.phase_number === 3)?.report_pdf_url && (
-                <button
-                  onClick={() => {
-                    const jordanPhase = editorPhases.find(p => p.phase_number === 3)
-                    if (jordanPhase?.report_pdf_url) {
-                      window.open(jordanPhase.report_pdf_url, '_blank')
-                    }
-                  }}
-                  className="absolute -bottom-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap px-2 py-1 bg-blue-600 text-white text-xs rounded shadow-lg hover:bg-blue-700"
-                >
-                  📄 Jordan&apos;s Report
-                </button>
-              )}
+            </div>
+
+            {/* PDF Report Buttons - Always Visible */}
+            <div className="flex items-center gap-2 border-l border-gray-200 pl-6">
+              {/* Alex's Report Button */}
+              {(() => {
+                const alexPhase = editorPhases.find(p => p.phase_number === 1)
+                const hasReport = alexPhase?.report_pdf_url
+                const isReading = alexPhase?.phase_status === 'active' && !alexPhase?.ai_read_completed_at
+                const phaseStarted = alexPhase?.phase_status !== 'pending'
+
+                if (!phaseStarted) {
+                  // Phase not started yet
+                  return (
+                    <button
+                      disabled
+                      className="px-3 py-1.5 bg-gray-200 text-gray-400 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
+                    >
+                      <span>📄</span>
+                      <span>Alex Report</span>
+                    </button>
+                  )
+                } else if (isReading) {
+                  // Alex is reading (PDF generating)
+                  return (
+                    <button
+                      disabled
+                      className="px-3 py-1.5 bg-green-100 text-green-600 text-xs rounded-lg cursor-wait flex items-center gap-1.5"
+                    >
+                      <div className="w-3 h-3 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                      <span>Generating...</span>
+                    </button>
+                  )
+                } else if (hasReport) {
+                  // Report is ready
+                  return (
+                    <button
+                      onClick={() => {
+                        if (alexPhase?.report_pdf_url) {
+                          window.open(alexPhase.report_pdf_url, '_blank')
+                        }
+                      }}
+                      className="px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1.5 shadow-sm"
+                    >
+                      <span>📄</span>
+                      <span>Alex Report</span>
+                    </button>
+                  )
+                } else {
+                  // Phase complete but no report (error state)
+                  return (
+                    <button
+                      disabled
+                      className="px-3 py-1.5 bg-gray-200 text-gray-500 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
+                    >
+                      <span>⚠️</span>
+                      <span>No Report</span>
+                    </button>
+                  )
+                }
+              })()}
+
+              {/* Sam's Report Button */}
+              {(() => {
+                const samPhase = editorPhases.find(p => p.phase_number === 2)
+                const hasReport = samPhase?.report_pdf_url
+                const isReading = samPhase?.phase_status === 'active' && !samPhase?.ai_read_completed_at
+                const phaseStarted = samPhase?.phase_status !== 'pending'
+
+                if (!phaseStarted) {
+                  return (
+                    <button
+                      disabled
+                      className="px-3 py-1.5 bg-gray-200 text-gray-400 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
+                    >
+                      <span>📄</span>
+                      <span>Sam Report</span>
+                    </button>
+                  )
+                } else if (isReading) {
+                  return (
+                    <button
+                      disabled
+                      className="px-3 py-1.5 bg-purple-100 text-purple-600 text-xs rounded-lg cursor-wait flex items-center gap-1.5"
+                    >
+                      <div className="w-3 h-3 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+                      <span>Generating...</span>
+                    </button>
+                  )
+                } else if (hasReport) {
+                  return (
+                    <button
+                      onClick={() => {
+                        if (samPhase?.report_pdf_url) {
+                          window.open(samPhase.report_pdf_url, '_blank')
+                        }
+                      }}
+                      className="px-3 py-1.5 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-1.5 shadow-sm"
+                    >
+                      <span>📄</span>
+                      <span>Sam Report</span>
+                    </button>
+                  )
+                } else {
+                  return (
+                    <button
+                      disabled
+                      className="px-3 py-1.5 bg-gray-200 text-gray-500 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
+                    >
+                      <span>⚠️</span>
+                      <span>No Report</span>
+                    </button>
+                  )
+                }
+              })()}
+
+              {/* Jordan's Report Button */}
+              {(() => {
+                const jordanPhase = editorPhases.find(p => p.phase_number === 3)
+                const hasReport = jordanPhase?.report_pdf_url
+                const isReading = jordanPhase?.phase_status === 'active' && !jordanPhase?.ai_read_completed_at
+                const phaseStarted = jordanPhase?.phase_status !== 'pending'
+
+                if (!phaseStarted) {
+                  return (
+                    <button
+                      disabled
+                      className="px-3 py-1.5 bg-gray-200 text-gray-400 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
+                    >
+                      <span>📄</span>
+                      <span>Jordan Report</span>
+                    </button>
+                  )
+                } else if (isReading) {
+                  return (
+                    <button
+                      disabled
+                      className="px-3 py-1.5 bg-blue-100 text-blue-600 text-xs rounded-lg cursor-wait flex items-center gap-1.5"
+                    >
+                      <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                      <span>Generating...</span>
+                    </button>
+                  )
+                } else if (hasReport) {
+                  return (
+                    <button
+                      onClick={() => {
+                        if (jordanPhase?.report_pdf_url) {
+                          window.open(jordanPhase.report_pdf_url, '_blank')
+                        }
+                      }}
+                      className="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1.5 shadow-sm"
+                    >
+                      <span>📄</span>
+                      <span>Jordan Report</span>
+                    </button>
+                  )
+                } else {
+                  return (
+                    <button
+                      disabled
+                      className="px-3 py-1.5 bg-gray-200 text-gray-500 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
+                    >
+                      <span>⚠️</span>
+                      <span>No Report</span>
+                    </button>
+                  )
+                }
+              })()}
             </div>
           </div>
         </div>
