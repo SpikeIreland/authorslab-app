@@ -1172,6 +1172,7 @@ function StudioContent() {
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Header */}
+      {/* Header */}
       <header className="bg-white border-b border-gray-200 p-4 shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -1186,36 +1187,84 @@ function StudioContent() {
             </div>
           </div>
 
-          {/* Editor Icons - Shows progress through phases */}
-          <div className="flex items-center gap-2">
-            {/* Alex (A) - Phase 1 Developmental */}
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${currentPhase > 1
-              ? 'bg-green-600 text-white'
-              : currentPhase === 1
-                ? 'bg-green-600 text-white ring-2 ring-green-300'
-                : 'bg-gray-200 text-gray-400'
-              }`}>
-              A
+          {/* Editor Avatars with Report Buttons */}
+          <div className="flex items-center gap-3">
+            {/* Alex (Phase 1) */}
+            <div className="relative group">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${currentPhase > 1
+                ? 'bg-green-600 text-white'
+                : currentPhase === 1
+                  ? 'bg-green-600 text-white ring-2 ring-green-300'
+                  : 'bg-gray-200 text-gray-400'
+                }`}>
+                A
+              </div>
+              {/* Alex's Report Button - Only show if report exists */}
+              {editorPhases.find(p => p.phase_number === 1)?.report_pdf_url && (
+                <button
+                  onClick={() => {
+                    const alexPhase = editorPhases.find(p => p.phase_number === 1)
+                    if (alexPhase?.report_pdf_url) {
+                      window.open(alexPhase.report_pdf_url, '_blank')
+                    }
+                  }}
+                  className="absolute -bottom-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap px-2 py-1 bg-green-600 text-white text-xs rounded shadow-lg hover:bg-green-700"
+                >
+                  📄 Alex&apos;s Report
+                </button>
+              )}
             </div>
 
-            {/* Sam (S) - Phase 2 Line Editing */}
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${currentPhase > 2
-              ? 'bg-purple-600 text-white'
-              : currentPhase === 2
-                ? 'bg-purple-600 text-white ring-2 ring-purple-300'
-                : 'bg-gray-200 text-gray-400'
-              }`}>
-              S
+            {/* Sam (Phase 2) */}
+            <div className="relative group">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${currentPhase > 2
+                ? 'bg-purple-600 text-white'
+                : currentPhase === 2
+                  ? 'bg-purple-600 text-white ring-2 ring-purple-300'
+                  : 'bg-gray-200 text-gray-400'
+                }`}>
+                S
+              </div>
+              {/* Sam's Report Button - Only show if report exists */}
+              {editorPhases.find(p => p.phase_number === 2)?.report_pdf_url && (
+                <button
+                  onClick={() => {
+                    const samPhase = editorPhases.find(p => p.phase_number === 2)
+                    if (samPhase?.report_pdf_url) {
+                      window.open(samPhase.report_pdf_url, '_blank')
+                    }
+                  }}
+                  className="absolute -bottom-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap px-2 py-1 bg-purple-600 text-white text-xs rounded shadow-lg hover:bg-purple-700"
+                >
+                  📄 Sam&apos;s Report
+                </button>
+              )}
             </div>
 
-            {/* Jordan (J) - Phase 3 Copy Editing */}
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${currentPhase > 3
-              ? 'bg-blue-600 text-white'
-              : currentPhase === 3
-                ? 'bg-blue-600 text-white ring-2 ring-blue-300'
-                : 'bg-gray-200 text-gray-400'
-              }`}>
-              J
+            {/* Jordan (Phase 3) */}
+            <div className="relative group">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${currentPhase > 3
+                ? 'bg-blue-600 text-white'
+                : currentPhase === 3
+                  ? 'bg-blue-600 text-white ring-2 ring-blue-300'
+                  : 'bg-gray-200 text-gray-400'
+                }`}>
+                J
+              </div>
+              {/* Jordan's Report Button - Only show if report exists */}
+              {editorPhases.find(p => p.phase_number === 3)?.report_pdf_url && (
+                <button
+                  onClick={() => {
+                    const jordanPhase = editorPhases.find(p => p.phase_number === 3)
+                    if (jordanPhase?.report_pdf_url) {
+                      window.open(jordanPhase.report_pdf_url, '_blank')
+                    }
+                  }}
+                  className="absolute -bottom-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap px-2 py-1 bg-blue-600 text-white text-xs rounded shadow-lg hover:bg-blue-700"
+                >
+                  📄 Jordan&apos;s Report
+                </button>
+              )}
             </div>
           </div>
         </div>
