@@ -54,7 +54,7 @@ function TransitionContent() {
     const supabase = createClient()
 
     try {
-      // Verify auth before proceeding
+      // Verify auth
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
         console.error('Not authenticated')
@@ -62,19 +62,44 @@ function TransitionContent() {
         return
       }
 
-      // Use the new architecture: transition via editing_phases
-      const { error: transitionError } = await supabase.rpc('transition_to_next_phase', {
-        p_manuscript_id: manuscriptId
-      })
+      // 1. Mark Phase 1 complete
+      const { error: phase1Error } = await supabase
+        .from('editing_phases')
+        .update({
+          phase_status: 'complete',
+          completed_at: new Date().toISOString()
+        })
+        .eq('manuscript_id', manuscriptId)
+        .eq('phase_number', 1)
 
-      if (transitionError) {
-        console.error('Transition error:', transitionError)
-        throw transitionError
-      }
+      if (phase1Error) throw phase1Error
+
+      // 2. Mark Phase 2 active
+      const { error: phase2Error } = await supabase
+        .from('editing_phases')
+        .update({
+          phase_status: 'active',
+          started_at: new Date().toISOString()
+        })
+        .eq('manuscript_id', manuscriptId)
+        .eq('phase_number', 2)
+
+      if (phase2Error) throw phase2Error
+
+      // 3. Update manuscript phase number
+      const { error: manuscriptError } = await supabase
+        .from('manuscripts')
+        .update({
+          current_phase_number: 2,
+          status: 'editing'
+        })
+        .eq('id', manuscriptId)
+
+      if (manuscriptError) throw manuscriptError
 
       console.log('✅ Transitioned from Phase 1 to Phase 2')
 
-      // Redirect to Author Studio (it will automatically load Phase 2)
+      // Redirect to Author Studio
       router.push(`/author-studio?manuscriptId=${manuscriptId}`)
 
     } catch (error) {
