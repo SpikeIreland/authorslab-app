@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { BookOpen } from 'lucide-react'
+import { VersionsDropdown } from '@/components/VersionsDropdown'
 
 // Import types and helpers
 import type {
@@ -1370,6 +1371,14 @@ function StudioContent() {
                   )
                 }
               })()}
+            </div>
+
+            {/* NEW: Versions Dropdown */}
+            <div className="border-l border-gray-200 pl-6">
+              <VersionsDropdown
+                manuscriptId={manuscript.id}
+                currentPhaseNumber={currentPhase}
+              />
             </div>
           </div>
         </div>
