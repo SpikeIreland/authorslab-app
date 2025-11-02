@@ -79,10 +79,10 @@ export function VersionsDropdown({ manuscriptId, currentPhaseNumber }: VersionsD
                                                         Phase {phase.phaseNumber} - {phase.editor}
                                                     </span>
                                                     <span className={`px-2 py-0.5 text-xs font-medium rounded ${isComplete
-                                                            ? 'bg-green-100 text-green-700'
-                                                            : isCurrent
-                                                                ? 'bg-purple-100 text-purple-700'
-                                                                : 'bg-gray-100 text-gray-600'
+                                                        ? 'bg-green-100 text-green-700'
+                                                        : isCurrent
+                                                            ? 'bg-purple-100 text-purple-700'
+                                                            : 'bg-gray-100 text-gray-600'
                                                         }`}>
                                                         {isComplete ? '✓ Complete' : isCurrent ? '⚡ Current' : 'Pending'}
                                                     </span>
@@ -91,8 +91,6 @@ export function VersionsDropdown({ manuscriptId, currentPhaseNumber }: VersionsD
 
                                             <div className="p-3 space-y-2">
                                                 {phase.versions.map((version) => {
-                                                    const isDocx = version.version_type === 'docx'
-
                                                     return (
                                                         <button
                                                             key={version.id}
@@ -102,21 +100,22 @@ export function VersionsDropdown({ manuscriptId, currentPhaseNumber }: VersionsD
                                                             }}
                                                             className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-left hover:bg-gray-100 transition-colors"
                                                         >
-                                                            {isDocx ? (
-                                                                <DocumentTextIcon className="w-5 h-5 text-blue-600 flex-shrink-0" />
-                                                            ) : (
-                                                                <DocumentIcon className="w-5 h-5 text-red-600 flex-shrink-0" />
-                                                            )}
+                                                            <DocumentIcon className="w-5 h-5 text-red-600 flex-shrink-0" />
+
                                                             <div className="flex-1 min-w-0">
                                                                 <div className="text-sm font-medium text-gray-900">
-                                                                    {version.version_type.toUpperCase()}
+                                                                    {phase.editor}'s Final Version
                                                                 </div>
-                                                                {version.word_count && (
-                                                                    <div className="text-xs text-gray-500">
-                                                                        {version.word_count.toLocaleString()} words
-                                                                    </div>
-                                                                )}
+                                                                <div className="text-xs text-gray-500">
+                                                                    PDF · {new Date(version.created_at).toLocaleDateString('en-US', {
+                                                                        month: 'short',
+                                                                        day: 'numeric',
+                                                                        year: 'numeric'
+                                                                    })}
+                                                                    {version.word_count && ` · ${version.word_count.toLocaleString()} words`}
+                                                                </div>
                                                             </div>
+
                                                             <ChevronDownIcon className="w-4 h-4 text-gray-400 -rotate-90 flex-shrink-0" />
                                                         </button>
                                                     )
