@@ -19,6 +19,8 @@ function TransitionContent() {
   const [manuscript, setManuscript] = useState<Manuscript | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isStartingPhase2, setIsStartingPhase2] = useState(false)
+  const [isGeneratingVersion, setIsGeneratingVersion] = useState(false)
+  const [versionGenerated, setVersionGenerated] = useState(false)
 
   const loadManuscript = useCallback(async () => {
     if (!manuscriptId) {
@@ -61,6 +63,63 @@ function TransitionContent() {
         router.push('/login')
         return
       }
+
+      // NEW: Get author info for version generation email
+      const { data: manuscriptData } = await supabase
+        .from('manuscripts')
+        .select(`
+    id,
+    title,
+    author_id,
+    author_profiles!inner (
+      email,
+      first_name
+    )
+  `)
+        .eq('id', manuscriptId)
+        .single()
+
+      // Extract author profile (it comes as an array from the join)
+      const authorProfile = Array.isArray(manuscriptData?.author_profiles)
+        ? manuscriptData.author_profiles[0]
+        : manuscriptData?.author_profiles
+
+      // NEW: Step 0 - Generate manuscript version + send email
+      setIsGeneratingVersion(true)
+      console.log('📦 Generating Phase 1 manuscript version...')
+
+      try {
+        const versionResponse = await fetch(
+          'https://spikeislandstudios.app.n8n.cloud/webhook/generate-manuscript-version',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              manuscriptId: manuscriptId,
+              phaseNumber: 1,
+              editorName: 'Alex',
+              authorEmail: authorProfile?.email,
+              authorFirstName: authorProfile?.first_name,
+              manuscriptTitle: manuscriptData?.title
+            })
+          }
+        )
+
+        if (versionResponse.ok) {
+          console.log('✅ Version generated and email sent!')
+          setVersionGenerated(true)
+        } else {
+          console.warn('⚠️ Version generation had issues, but continuing...')
+        }
+      } catch (versionError) {
+        console.error('Version generation error:', versionError)
+        // Don't block transition if version generation fails
+      }
+
+      setIsGeneratingVersion(false)
+
+      // Wait a moment for the success message to show
+      await new Promise(resolve => setTimeout(resolve, 1500))
 
       // 1. Mark Phase 1 complete
       const { error: phase1Error } = await supabase
@@ -269,7 +328,17 @@ function TransitionContent() {
             disabled={isStartingPhase2}
             className="bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 text-white px-12 py-4 rounded-xl text-lg font-bold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isStartingPhase2 ? (
+            {isGeneratingVersion ? (
+              <>
+                <span className="inline-block animate-spin mr-2">📦</span>
+                Preparing Your Manuscript...
+              </>
+            ) : versionGenerated ? (
+              <>
+                <span className="mr-2">✅</span>
+                Email Sent! Starting Phase 2...
+              </>
+            ) : isStartingPhase2 ? (
               <>
                 <span className="inline-block animate-spin mr-2">⏳</span>
                 Starting Phase 2...
@@ -281,9 +350,23 @@ function TransitionContent() {
             )}
           </button>
 
-          <p className="text-gray-500 text-sm mt-4">
-            You can always return to view your Phase 1 analysis
-          </p>
+          {isGeneratingVersion && (
+            <p className="text-purple-600 text-sm mt-4 font-medium">
+              Generating downloadable versions and sending to your email...
+            </p>
+          )}
+
+          {versionGenerated && !isGeneratingVersion && (
+            <p className="text-green-600 text-sm mt-4 font-medium">
+              📧 Check your email for download links!
+            </p>
+          )}
+
+          {!isGeneratingVersion && !versionGenerated && (
+            <p className="text-gray-500 text-sm mt-4">
+              Your approved manuscript will be emailed to you
+            </p>
+          )}
         </div>
       </div>
     </div>

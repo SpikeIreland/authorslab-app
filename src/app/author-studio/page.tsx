@@ -977,18 +977,24 @@ function StudioContent() {
         `You're ready for **Phase 2: Line Editing with Sam**. Sam will work at the sentence level, ` +
         `polishing your prose and making sure every word sings.\n\n` +
         `Click the **"Meet Sam"** button above when you're ready for the handoff! 👋\n\n` +
+        `*Your approved manuscript will be generated and emailed to you for safekeeping.*\n\n` +
         `*— Alex, Your Developmental Editor* 👔`
     } else if (phaseNumber === 2) {
       return `✨ **Beautiful work, ${firstName}!**\n\n` +
-        `Your prose is polished and shining. Every sentence flows, your dialogue sparkles, ` +
-        `and your voice is consistent and compelling.\n\n` +
-        `**Next up: Phase 3 with Jordan** for the final technical polish!\n\n` +
+        `You've polished all ${chapterCount} chapters to perfection! Your prose sparkles, ` +
+        `your dialogue feels authentic, and every sentence has purpose and rhythm.\n\n` +
+        `**What happens next?**\n` +
+        `You're ready for **Phase 3: Copy Editing with Jordan**. Jordan will give your manuscript ` +
+        `the final technical polish—grammar, punctuation, and consistency.\n\n` +
+        `Click the **"Meet Jordan"** button above when you're ready! 🔍\n\n` +
+        `*Your line-edited manuscript will be generated and emailed to you for safekeeping.*\n\n` +
         `*— Sam, Your Line Editor* ✨`
     } else if (phaseNumber === 3) {
       return `🔍 **Excellent work, ${firstName}!**\n\n` +
         `Your manuscript is technically perfect. Grammar is tight, punctuation is precise, ` +
         `and consistency is maintained throughout.\n\n` +
         `**Next up: Phase 4 with Taylor** for publishing preparation!\n\n` +
+        `*Your copy-edited manuscript will be generated and emailed to you for safekeeping.*\n\n` +
         `*— Jordan, Your Copy Editor* 🔍`
     }
 
@@ -1502,7 +1508,6 @@ function StudioContent() {
           <div className="p-4 border-b border-gray-200 flex items-center justify-between">
             <h3 className="text-lg font-bold">{currentChapter?.title || 'Loading...'}</h3>
             <div className="flex gap-2">
-              {/* Start Editing Button - Shows when not started */}
               {/* Start Editing Button - Shows when not started */}
               {(() => {
                 console.log('🔍 Start Editing button check:', {
