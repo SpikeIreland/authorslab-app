@@ -104,7 +104,7 @@ export function VersionsDropdown({ manuscriptId, currentPhaseNumber }: VersionsD
 
                                                             <div className="flex-1 min-w-0">
                                                                 <div className="text-sm font-medium text-gray-900">
-                                                                    {phase.editor}'s Final Version
+                                                                    {`${phase.editor}'s Final Version`}
                                                                 </div>
                                                                 <div className="text-xs text-gray-500">
                                                                     PDF · {new Date(version.created_at).toLocaleDateString('en-US', {
