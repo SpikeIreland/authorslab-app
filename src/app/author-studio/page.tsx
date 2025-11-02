@@ -93,8 +93,8 @@ const WEBHOOKS = {
   alexFullAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-full-manuscript-analysis',
   alexChapterAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-chapter-analysis',
   alexChat: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-chat',
-  alexGenerateSummary: 'https://spikeislandstudios.app.n8n.cloud/webhook/generate-summary-points',  // NEW
-  alexGenerateChapterSummaries: 'https://spikeislandstudios.app.n8n.cloud/webhook/generate-chapter-summaries',  // NEW
+  alexGenerateSummary: 'https://spikeislandstudios.app.n8n.cloud/webhook/generate-summary-points',
+  alexGenerateChapterSummaries: 'https://spikeislandstudios.app.n8n.cloud/webhook/generate-chapter-summaries',
   samFullAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/sam-full-manuscript-analysis',
   samChapterAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/sam-chapter-analysis',
   samChat: 'https://spikeislandstudios.app.n8n.cloud/webhook/sam-chat',
@@ -155,8 +155,8 @@ function StudioContent() {
   // Analysis State
   const [analysisComplete, setAnalysisComplete] = useState(false)
   const [fullAnalysisInProgress, setFullAnalysisInProgress] = useState(false)
-  const [thinkingMessage, setThinkingMessage] = useState('')  // ADD THIS
-  const [fullReportPdfUrl, setFullReportPdfUrl] = useState<string | null>(null)  // ADD THIS
+  const [thinkingMessage, setThinkingMessage] = useState('')
+  const [fullReportPdfUrl, setFullReportPdfUrl] = useState<string | null>(null)
 
   const [showMeetNextEditorButton, setShowMeetNextEditorButton] = useState(false)
 
@@ -285,6 +285,52 @@ function StudioContent() {
       }
     }, 3000) // Poll every 3 seconds
   }
+
+  // Realtime subscription for PDF report completion
+  useEffect(() => {
+    if (!manuscript?.id) return
+
+    console.log('📡 Subscribing to report updates for manuscript:', manuscript.id)
+
+    const supabase = createClient() // ← CREATE SUPABASE CLIENT HERE
+
+    const channel = supabase
+      .channel('report-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'editing_phases',
+          filter: `manuscript_id=eq.${manuscript.id}`
+        },
+        (payload) => {
+          console.log('🔔 Editing phase update received:', payload)
+
+          if (payload.new.report_pdf_url && payload.new.ai_read_completed_at) {
+            console.log('✅ PDF Report ready (realtime)')
+
+            // Update manuscript state with report URL
+            setManuscript(prev => prev ? {
+              ...prev,
+              report_pdf_url: payload.new.report_pdf_url
+            } : null)
+
+            // Add chat message when report is ready
+            addChatMessage(
+              editorName,
+              `📧 Your comprehensive PDF report is ready! Check your email or click "${editorName}'s Report" above.`
+            )
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      console.log('🔌 Unsubscribing from report updates')
+      supabase.removeChannel(channel)
+    }
+  }, [manuscript?.id, editorName])
 
   // Auto-scroll chat
   useEffect(() => {
