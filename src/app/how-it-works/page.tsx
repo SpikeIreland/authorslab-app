@@ -270,7 +270,7 @@ export default function HowItWorksPage() {
             {/* Phase 4: Publishing Preparation - COMING SOON */}
             <div className="mb-20 relative opacity-90">
               <div className="absolute -top-4 -right-4 bg-teal-500 text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg z-10">
-                COMING Q1 2025
+                COMING Q4 2025
               </div>
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-16 h-16 bg-teal-500 text-white rounded-full flex items-center justify-center text-2xl font-bold shadow-lg">
@@ -339,7 +339,7 @@ export default function HowItWorksPage() {
             {/* Phase 5: Marketing Strategy - COMING SOON */}
             <div className="mb-20 relative opacity-90">
               <div className="absolute -top-4 -right-4 bg-orange-500 text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg z-10">
-                COMING Q1 2025
+                COMING Q4 2025
               </div>
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-16 h-16 bg-orange-500 text-white rounded-full flex items-center justify-center text-2xl font-bold shadow-lg">

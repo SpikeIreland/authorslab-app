@@ -186,7 +186,7 @@ export default function PricingPage() {
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-12">
               <div className="inline-block px-4 py-2 bg-teal-100 text-teal-800 rounded-full text-sm font-bold mb-4">
-                Coming Q1 2025
+                Coming Q4 2025
               </div>
               <h2 className="text-4xl font-bold text-gray-900 mb-4">
                 Complete Your Journey
@@ -355,12 +355,12 @@ export default function PricingPage() {
                     <tr>
                       <td className="px-6 py-4 text-sm text-gray-700">Publishing Prep (Phase 4)</td>
                       <td className="px-6 py-4 text-center text-gray-300">—</td>
-                      <td className="px-6 py-4 text-center text-orange-400 text-xs bg-blue-50">Coming Q1</td>
+                      <td className="px-6 py-4 text-center text-orange-400 text-xs bg-blue-50">Coming Q4</td>
                     </tr>
                     <tr>
                       <td className="px-6 py-4 text-sm text-gray-700">Marketing Strategy (Phase 5)</td>
                       <td className="px-6 py-4 text-center text-gray-300">—</td>
-                      <td className="px-6 py-4 text-center text-orange-400 text-xs bg-blue-50">Coming Q1</td>
+                      <td className="px-6 py-4 text-center text-orange-400 text-xs bg-blue-50">Coming Q4</td>
                     </tr>
                     <tr className="bg-gray-50">
                       <td className="px-6 py-4 text-sm font-semibold text-gray-900">Price</td>

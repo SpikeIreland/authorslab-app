@@ -12,8 +12,8 @@ export default function FAQPage() {
       category: "Getting Started",
       questions: [
         {
-          q: "How do I get started with AuthorLab.ai?",
-          a: "Getting started is easy! You can begin with our free manuscript analysis to see what's possible, or jump straight into the complete Author Package. Simply sign up, upload your manuscript, and our AI editors will begin working on your book."
+          q: "How do I get started with AuthorsLab.ai?",
+          a: "Getting started is easy! You can begin with our free manuscript analysis to see what's possible, or jump straight into the complete 3-Phase Editing Package. Simply sign up, upload your manuscript, and our AI editors will begin working on your book immediately."
         },
         {
           q: "What file formats do you accept?",
@@ -21,7 +21,7 @@ export default function FAQPage() {
         },
         {
           q: "How long does it take to get started after signing up?",
-          a: "Immediately! Once you upload your manuscript, our AI editors begin analyzing it right away. You'll receive your first feedback within 24-48 hours depending on the length of your manuscript."
+          a: "Immediately! Once you upload your manuscript, our AI editors begin analyzing it right away. The free analysis typically completes in about 5 minutes and is delivered to your email."
         },
         {
           q: "Do I need any special software?",
@@ -33,16 +33,20 @@ export default function FAQPage() {
       category: "The Editing Process",
       questions: [
         {
-          q: "What's the difference between the 4 editing phases?",
-          a: "Phase 1 (Developmental) focuses on big-picture story structure, characters, and plot. Phase 2 (Line Editing) refines your prose at the sentence level. Phase 3 (Copy Editing) ensures technical accuracy and grammar. Phase 4 (Publishing Prep) formats your book for publication. Each phase builds on the previous one."
+          q: "What are the 5 editing phases?",
+          a: "Phase 1 (Developmental with Alex) focuses on story structure and character development. Phase 2 (Line Editing with Sam) refines your prose at the sentence level. Phase 3 (Copy Editing with Jordan) ensures technical accuracy and grammar. Phase 4 (Publishing with Taylor) formats your book for publication - launching Q1 2025. Phase 5 (Marketing with Quinn) helps you promote your book - launching Q1 2025. The first three phases are available now."
+        },
+        {
+          q: "Which phases are available now?",
+          a: "Phases 1-3 (Alex, Sam, and Jordan) are fully available now. This covers complete developmental editing, line editing, and copy editing. Phase 4 (Publishing with Taylor) and Phase 5 (Marketing with Quinn) are launching in Q1 2025."
         },
         {
           q: "Can I skip phases or do them out of order?",
-          a: "We recommend completing all phases in order for the best results. Each phase is designed to build on the previous one. However, if you've already had developmental editing done elsewhere, contact us to discuss starting at Phase 2."
+          a: "We recommend completing all phases in order for the best results. Each phase builds on the previous one. However, if you've already had developmental editing done elsewhere, contact us to discuss starting at Phase 2."
         },
         {
-          q: "How long does the complete editing process take?",
-          a: "Most manuscripts complete all 4 phases in 10-16 days. The exact timeline depends on your manuscript's length and complexity. You'll see estimated timelines for your specific manuscript after upload."
+          q: "How long does the editing process take?",
+          a: "You work at your own pace! Most authors complete all three available phases (developmental, line, and copy editing) in 2-4 weeks, but there are no deadlines or time limits. Take as long as you need to perfect your manuscript."
         },
         {
           q: "What if I disagree with the AI's suggestions?",
@@ -50,7 +54,7 @@ export default function FAQPage() {
         },
         {
           q: "Can I communicate with the AI editors?",
-          a: "Yes! You can ask questions, request clarification, or discuss specific aspects of your manuscript with Alex, Sam, and Jordan throughout the editing process."
+          a: "Yes! You can ask questions, request clarification, or discuss specific aspects of your manuscript with Alex, Sam, and Jordan throughout the editing process. It's a real-time collaborative workspace."
         }
       ]
     },
@@ -59,19 +63,27 @@ export default function FAQPage() {
       questions: [
         {
           q: "What's included in the free manuscript analysis?",
-          a: "Our free analysis includes a comprehensive AI-powered report covering story structure, character development, pacing, plot consistency, and key improvement areas. It's a detailed overview that shows you what's working and what needs attention."
+          a: "Our free analysis includes a comprehensive AI-powered report from Alex covering story structure, character development, pacing, plot consistency, and key improvement areas. It's delivered as a PDF to your email in about 5 minutes. It's a detailed overview that shows you what's working and what needs attention."
         },
         {
-          q: "Is the $399 Author Package a one-time payment or subscription?",
-          a: "It's a one-time payment! You pay $399 once and receive complete editing through all 4 phases, plus publishing preparation. No hidden fees, no recurring charges."
+          q: "How much does the complete editing package cost?",
+          a: "The 3-Phase Editing Package (Phases 1-3: Alex, Sam, and Jordan) is $299 as a one-time payment. This includes developmental editing, line editing, and copy editing. When Phase 4 (Publishing) and Phase 5 (Marketing) launch in Q1 2025, they'll be available as add-ons with pricing to be announced."
         },
         {
-          q: "What's the difference between the Free Analysis and the $399 package?",
-          a: "The free analysis provides an overview and diagnostic report. The $399 Author Package includes the full 4-phase editing journey, real-time workspace collaboration, chapter-by-chapter feedback, implementation guidance, and publishing preparation."
+          q: "Is the $299 package a one-time payment or subscription?",
+          a: "It's a one-time payment! You pay $299 once and receive complete editing through all three available phases. No hidden fees, no recurring charges. Work at your own pace with no time limits."
+        },
+        {
+          q: "What's the difference between the Free Analysis and the $299 package?",
+          a: "The free analysis provides a diagnostic report from Alex. The $299 package includes the full 3-phase editing journey with Alex, Sam, and Jordan, featuring real-time workspace collaboration, chapter-by-chapter interactive editing, downloadable manuscript versions at each phase, and the ability to discuss and refine with each editor."
         },
         {
           q: "Can I upgrade from the free analysis to the full package?",
-          a: "Absolutely! After receiving your free analysis, you can upgrade to the complete Author Package at any time. We'll continue right where the analysis left off."
+          a: "Absolutely! After receiving your free analysis, you can upgrade to the complete 3-Phase Editing Package at any time. We'll continue right where the analysis left off."
+        },
+        {
+          q: "When will Phase 4 (Publishing) and Phase 5 (Marketing) be available?",
+          a: "Both Phase 4 with Taylor (Publishing Preparation) and Phase 5 with Quinn (Marketing Strategy) are launching in Q1 2025. If you purchase the 3-Phase Package now, you'll be first to know when they launch and receive special early access pricing."
         },
         {
           q: "Do you offer refunds?",
@@ -92,19 +104,23 @@ export default function FAQPage() {
         },
         {
           q: "What if I have a very long manuscript (over 100,000 words)?",
-          a: "We can handle manuscripts of virtually any length. Very long manuscripts may require additional processing time. Contact us before uploading manuscripts over 150,000 words to discuss timeline expectations."
+          a: "We can handle manuscripts of virtually any length. The AI editors work efficiently regardless of length - you'll still get comprehensive feedback on every chapter."
         },
         {
           q: "Can I work on my manuscript while it's being edited?",
-          a: "Yes! You have full access to your manuscript at all times. However, we recommend waiting for feedback from each phase before making major changes, so the AI editors can provide the most accurate guidance."
+          a: "Yes! You have full access to your manuscript at all times. However, we recommend completing each phase before making major changes, so the AI editors can provide the most accurate guidance for the next phase."
         },
         {
           q: "What happens to my manuscript after the editing is complete?",
-          a: "You receive your fully edited manuscript in multiple formats (Word document, PDF, and publication-ready files). Your original files remain in your account for reference. You own all rights to your work."
+          a: "You receive your fully edited manuscript as a downloadable PDF at the completion of each phase (3 versions total). Your files remain in your account for reference. You own all rights to your work and can download anytime."
         },
         {
           q: "Can I download my manuscript at any time?",
-          a: "Yes! You can download your manuscript in various formats at any stage of the process. You always have full access to your work."
+          a: "Yes! You can download your manuscript at any stage of the process. After completing each phase, you'll receive a polished PDF version of your manuscript showing all the improvements made."
+        },
+        {
+          q: "Can I return to previous editors after moving to the next phase?",
+          a: "Yes! After completing all three phases, you can return to any editor (Alex, Sam, or Jordan) to continue refining your manuscript. All your chat history and progress is saved."
         }
       ]
     },
@@ -112,24 +128,24 @@ export default function FAQPage() {
       category: "Publishing & Beyond",
       questions: [
         {
-          q: "Does Phase 4 actually publish my book?",
-          a: "Phase 4 prepares your manuscript for publication by creating print-ready PDFs, e-book files (EPUB, MOBI), and providing publishing platform guidance. The actual uploading to Amazon KDP, IngramSpark, or other platforms is done by you, but we give you everything you need and step-by-step instructions."
+          q: "Does AuthorsLab.ai publish my book?",
+          a: "When Phase 4 launches in Q1 2025, Taylor will prepare your manuscript for publication by creating print-ready PDFs, e-book files, and providing publishing platform guidance. The actual uploading to Amazon KDP, IngramSpark, or other platforms is done by you, but Taylor will give you everything you need and step-by-step instructions."
         },
         {
-          q: "Do you help with cover design?",
-          a: "Phase 4 includes cover design guidance and templates. For custom professional cover design, we can connect you with recommended designers (additional cost)."
+          q: "Will you help with marketing my book?",
+          a: "When Phase 5 launches in Q1 2025, Quinn will help you build your author platform, identify your target readers, create social media content calendars, and develop a strategic book launch campaign. This comprehensive marketing support is designed to help you connect with your readers."
         },
         {
-          q: "What about marketing my book?",
-          a: "Phase 4 includes basic marketing materials templates (book description, author bio, social media posts). For comprehensive marketing support, ask about our Marketing Add-on package."
+          q: "Can I use AuthorsLab.ai for multiple books?",
+          a: "Yes! Each manuscript is a separate project with its own $299 fee for the 3-Phase Editing Package. Many authors use our service for their entire series or multiple books."
         },
         {
-          q: "Can I use AuthorLab.ai for multiple books?",
-          a: "Yes! Each manuscript is a separate project with its own $399 fee. Many authors use our service for their entire series or multiple books."
+          q: "Is the editing quality suitable for traditional publishing submissions?",
+          a: "Yes! The editing quality from Alex, Sam, and Jordan is professional-grade and suitable for traditional publishing submissions. Our AI editors are trained on published works and industry standards."
         },
         {
-          q: "Do you help with traditional publishing submissions?",
-          a: "While our primary focus is on preparing manuscripts for self-publishing, the editing quality is suitable for traditional publishing submissions. We can provide query letter guidance as an add-on service."
+          q: "What if I want to start editing now but wait for publishing and marketing phases?",
+          a: "Perfect! Start with the 3-Phase Editing Package ($299) now to work with Alex, Sam, and Jordan. When Phase 4 (Publishing) and Phase 5 (Marketing) launch in Q1 2025, you'll be notified and can add them to your completed manuscript."
         }
       ]
     },
@@ -138,19 +154,23 @@ export default function FAQPage() {
       questions: [
         {
           q: "What if I get stuck or have questions during the process?",
-          a: "Author Package customers receive priority support throughout their journey. You can reach out via email, and we typically respond within 24 hours. For urgent issues, we offer expedited support."
+          a: "You can ask questions directly to your AI editors (Alex, Sam, and Jordan) through the platform's chat feature. For technical or account questions, we provide email support with typically 24-hour response times."
         },
         {
           q: "Do you offer phone support?",
-          a: "Currently, we provide support via email and in-platform messaging. This allows us to keep costs low while providing detailed, thoughtful responses to your questions."
+          a: "Currently, we provide support via email and through the in-platform chat with your AI editors. This allows us to keep costs low while providing detailed, thoughtful responses to your questions."
         },
         {
           q: "What if I need help understanding the AI feedback?",
-          a: "That's what we're here for! If any feedback is unclear, you can ask for clarification directly through the platform, and we'll provide additional context and examples."
+          a: "That's what the chat feature is for! If any feedback is unclear, you can ask for clarification directly from Alex, Sam, or Jordan, and they'll provide additional context and examples in real-time."
         },
         {
           q: "Can I request a human editor to review the AI's work?",
-          a: "Currently, all editing is performed by our AI editorial team (Alex, Sam, and Jordan). For manuscripts requiring human editorial oversight, please contact us about our Premium Review add-on service."
+          a: "Currently, all editing is performed by our AI editorial team (Alex, Sam, and Jordan). They're trained on thousands of published works and provide professional-grade feedback. For manuscripts requiring human editorial oversight, please contact us about custom solutions."
+        },
+        {
+          q: "How do I contact support if I have technical issues?",
+          a: "You can reach us at support@authorslab.ai for any technical questions, account issues, or general inquiries. We typically respond within 24 hours."
         }
       ]
     }
@@ -204,7 +224,7 @@ export default function FAQPage() {
             </span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Everything you need to know about AuthorLab.ai, our AI editors, and the editing process.
+            Everything you need to know about AuthorsLab.ai, our AI editors, and the editing process.
           </p>
         </div>
       </section>
@@ -310,7 +330,7 @@ export default function FAQPage() {
             Ready to Get Started?
           </h2>
           <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
-            Join hundreds of authors who have transformed their manuscripts with AuthorLab.ai.
+            Join authors who are transforming their manuscripts with professional AI editing.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <Link href="/free-analysis">
@@ -319,8 +339,8 @@ export default function FAQPage() {
               </Button>
             </Link>
             <Link href="/signup">
-              <Button className="text-lg px-8 py-6">
-                Begin Full Journey - $399
+              <Button className="text-lg px-8 py-6 bg-gradient-to-r from-green-400 to-blue-400 text-gray-900 hover:from-green-500 hover:to-blue-500 font-bold">
+                Begin 3-Phase Journey - $299
               </Button>
             </Link>
           </div>
