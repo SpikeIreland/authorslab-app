@@ -44,29 +44,29 @@ export default function Home() {
         <div className="max-w-4xl mx-auto text-center">
           {/* Badge */}
           <div className="inline-block mb-6">
-            <span className="px-4 py-2 bg-gradient-to-r from-yellow-400/20 to-yellow-200/20 border-2 border-yellow-400 text-yellow-700 rounded-full text-sm font-bold">
-              ✍️ Professional AI-Powered Writing Studio
+            <span className="px-4 py-2 bg-gradient-to-r from-green-400/20 to-blue-400/20 border-2 border-green-400 text-green-700 rounded-full text-sm font-bold">
+              ✨ 3-Phase Professional Editing Available Now
             </span>
           </div>
 
           {/* Main Heading */}
           <h1 className="text-5xl md:text-7xl font-extrabold text-gray-900 mb-6 leading-tight">
-            Write With Your
-            <span className="block bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
-              AI Partner
+            Your Manuscript,
+            <span className="block bg-gradient-to-r from-green-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
+              Professionally Edited
             </span>
           </h1>
 
           {/* Subtitle */}
           <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
-            Experience the future of writing: get professional AI analysis that transforms how you see your manuscript, with insights that make your story stronger.
+            Work with your AI editorial team: Alex refines your story structure, Sam polishes your prose, and Jordan perfects every technical detail.
           </p>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
             <Link href="/signup">
               <Button className="text-lg px-8 py-6 shadow-2xl hover:shadow-3xl transition-all">
-                Get Started Free
+                Start Your Journey
               </Button>
             </Link>
             <Link href="/how-it-works">
@@ -80,7 +80,7 @@ export default function Home() {
           <div className="flex flex-wrap justify-center gap-8 text-gray-600">
             <div className="flex items-center gap-2">
               <span className="text-2xl">⚡</span>
-              <span>Real-time feedback</span>
+              <span>Real-time collaboration</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-2xl">🎯</span>
@@ -94,69 +94,97 @@ export default function Home() {
         </div>
       </div>
 
-      {/* How It Works - Quick Overview */}
+      {/* Your Complete Editing Journey */}
       <div className="bg-gradient-to-br from-blue-50 to-purple-50 py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                Your Complete Writing Journey
+                Your Complete Editing Journey
               </h2>
               <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Four collaborative phases that transform your manuscript from first draft to published book
+                Three professional editing phases available now, with publishing and marketing coming soon
               </p>
             </div>
 
-            <div className="grid md:grid-cols-4 gap-8">
-              {/* Phase 1 */}
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border-t-4 border-green-500">
-                <div className="w-16 h-16 bg-green-500 text-white rounded-full flex items-center justify-center text-2xl font-bold mb-4 mx-auto">
+            <div className="grid md:grid-cols-5 gap-6">
+              {/* Phase 1 - Alex */}
+              <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border-t-4 border-green-500 relative">
+                <div className="absolute -top-3 -right-3 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                  AVAILABLE
+                </div>
+                <div className="w-14 h-14 bg-green-500 text-white rounded-full flex items-center justify-center text-xl font-bold mb-3 mx-auto">
                   1
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">Developmental</h3>
-                <p className="text-gray-600 text-center text-sm mb-4">Story structure & character development</p>
+                <h3 className="text-lg font-bold text-gray-900 mb-2 text-center">Developmental</h3>
+                <p className="text-gray-600 text-center text-sm mb-3">Story structure & character arcs</p>
                 <div className="text-center">
-                  <span className="text-2xl">🎯</span>
-                  <p className="text-xs text-gray-500 mt-2">Meet Alex</p>
+                  <span className="text-3xl">👔</span>
+                  <p className="text-xs text-gray-500 mt-1 font-semibold">Alex</p>
                 </div>
               </div>
 
-              {/* Phase 2 */}
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border-t-4 border-purple-500">
-                <div className="w-16 h-16 bg-purple-500 text-white rounded-full flex items-center justify-center text-2xl font-bold mb-4 mx-auto">
+              {/* Phase 2 - Sam */}
+              <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border-t-4 border-purple-500 relative">
+                <div className="absolute -top-3 -right-3 bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                  AVAILABLE
+                </div>
+                <div className="w-14 h-14 bg-purple-500 text-white rounded-full flex items-center justify-center text-xl font-bold mb-3 mx-auto">
                   2
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">Line Editing</h3>
-                <p className="text-gray-600 text-center text-sm mb-4">Prose polish & sentence flow</p>
+                <h3 className="text-lg font-bold text-gray-900 mb-2 text-center">Line Editing</h3>
+                <p className="text-gray-600 text-center text-sm mb-3">Prose polish & sentence flow</p>
                 <div className="text-center">
-                  <span className="text-2xl">✨</span>
-                  <p className="text-xs text-gray-500 mt-2">Meet Sam</p>
+                  <span className="text-3xl">✨</span>
+                  <p className="text-xs text-gray-500 mt-1 font-semibold">Sam</p>
                 </div>
               </div>
 
-              {/* Phase 3 */}
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border-t-4 border-red-500">
-                <div className="w-16 h-16 bg-red-500 text-white rounded-full flex items-center justify-center text-2xl font-bold mb-4 mx-auto">
+              {/* Phase 3 - Jordan */}
+              <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border-t-4 border-blue-500 relative">
+                <div className="absolute -top-3 -right-3 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                  AVAILABLE
+                </div>
+                <div className="w-14 h-14 bg-blue-500 text-white rounded-full flex items-center justify-center text-xl font-bold mb-3 mx-auto">
                   3
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">Copy Editing</h3>
-                <p className="text-gray-600 text-center text-sm mb-4">Grammar & technical accuracy</p>
+                <h3 className="text-lg font-bold text-gray-900 mb-2 text-center">Copy Editing</h3>
+                <p className="text-gray-600 text-center text-sm mb-3">Grammar & technical perfection</p>
                 <div className="text-center">
-                  <span className="text-2xl">🔍</span>
-                  <p className="text-xs text-gray-500 mt-2">Meet Jordan</p>
+                  <span className="text-3xl">🔍</span>
+                  <p className="text-xs text-gray-500 mt-1 font-semibold">Jordan</p>
                 </div>
               </div>
 
-              {/* Phase 4 */}
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border-t-4 border-yellow-500">
-                <div className="w-16 h-16 bg-yellow-500 text-white rounded-full flex items-center justify-center text-2xl font-bold mb-4 mx-auto">
+              {/* Phase 4 - Taylor */}
+              <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border-t-4 border-teal-400 relative opacity-90">
+                <div className="absolute -top-3 -right-3 bg-teal-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                  SOON
+                </div>
+                <div className="w-14 h-14 bg-teal-400 text-white rounded-full flex items-center justify-center text-xl font-bold mb-3 mx-auto">
                   4
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">Publishing</h3>
-                <p className="text-gray-600 text-center text-sm mb-4">Format & launch preparation</p>
+                <h3 className="text-lg font-bold text-gray-900 mb-2 text-center">Publishing</h3>
+                <p className="text-gray-600 text-center text-sm mb-3">Format & launch prep</p>
                 <div className="text-center">
-                  <span className="text-2xl">🚀</span>
-                  <p className="text-xs text-gray-500 mt-2">Your Book</p>
+                  <span className="text-3xl">📚</span>
+                  <p className="text-xs text-gray-500 mt-1 font-semibold">Taylor</p>
+                </div>
+              </div>
+
+              {/* Phase 5 - Quinn */}
+              <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border-t-4 border-orange-400 relative opacity-90">
+                <div className="absolute -top-3 -right-3 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                  SOON
+                </div>
+                <div className="w-14 h-14 bg-orange-400 text-white rounded-full flex items-center justify-center text-xl font-bold mb-3 mx-auto">
+                  5
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2 text-center">Marketing</h3>
+                <p className="text-gray-600 text-center text-sm mb-3">Strategy & promotion</p>
+                <div className="text-center">
+                  <span className="text-3xl">🚀</span>
+                  <p className="text-xs text-gray-500 mt-1 font-semibold">Quinn</p>
                 </div>
               </div>
             </div>
@@ -185,9 +213,9 @@ export default function Home() {
               <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center text-3xl mb-6">
                 ✍️
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Real-Time Writing Partner</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Chapter-by-Chapter Editing</h3>
               <p className="text-gray-700">
-                Select any text and get instant feedback on dialogue, pacing, character development, and story structure as you write.
+                Work through your manuscript systematically with targeted feedback on each chapter from your AI editorial team.
               </p>
             </div>
 
@@ -198,18 +226,18 @@ export default function Home() {
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-4">Context-Aware AI</h3>
               <p className="text-gray-700">
-                AI understands your entire manuscript, character arcs, and plot threads to give relevant, story-specific advice.
+                Each editor understands your entire manuscript, character arcs, and plot threads to give relevant, story-specific advice.
               </p>
             </div>
 
             {/* Feature 3 */}
             <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-8 border border-green-200 hover:shadow-xl transition-shadow">
               <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center text-3xl mb-6">
-                🛡️
+                📥
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Secure & Private</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Downloadable Reports</h3>
               <p className="text-gray-700">
-                Your manuscripts are protected with enterprise-grade security. Your creative work stays completely confidential.
+                Get comprehensive PDF reports at each phase completion, plus downloadable manuscript versions as you progress.
               </p>
             </div>
           </div>
@@ -224,7 +252,7 @@ export default function Home() {
               Simple, Transparent Pricing
             </h2>
             <p className="text-xl text-gray-600 mb-12">
-              Start free or jump straight into your complete writing journey
+              Professional editing for your entire manuscript
             </p>
 
             <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -232,7 +260,21 @@ export default function Home() {
               <div className="bg-white rounded-2xl p-8 shadow-lg border-2 border-gray-200">
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">Free Analysis</h3>
                 <div className="text-5xl font-bold text-gray-900 mb-4">$0</div>
-                <p className="text-gray-600 mb-6">Professional AI feedback report</p>
+                <p className="text-gray-600 mb-6">Professional AI feedback report on your manuscript</p>
+                <ul className="text-left space-y-2 mb-6 text-gray-600">
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600 mt-1">✓</span>
+                    <span>Full manuscript analysis</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600 mt-1">✓</span>
+                    <span>Developmental insights</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600 mt-1">✓</span>
+                    <span>PDF report delivered</span>
+                  </li>
+                </ul>
                 <Link href="/free-analysis">
                   <Button variant="outline" className="w-full py-6">
                     Get Free Analysis
@@ -240,19 +282,41 @@ export default function Home() {
                 </Link>
               </div>
 
-              {/* Author Package */}
-              <div className="bg-gradient-to-br from-blue-900 to-purple-900 rounded-2xl p-8 shadow-2xl border-2 border-yellow-400 relative">
+              {/* Complete Editing Package */}
+              <div className="bg-gradient-to-br from-blue-900 to-purple-900 rounded-2xl p-8 shadow-2xl border-2 border-blue-400 relative">
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-yellow-400 text-gray-900 px-4 py-2 rounded-full text-sm font-bold">
-                    MOST POPULAR
+                  <span className="bg-gradient-to-r from-green-400 to-blue-400 text-gray-900 px-4 py-2 rounded-full text-sm font-bold">
+                    3 PHASES AVAILABLE
                   </span>
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-2 mt-4">Complete Package</h3>
-                <div className="text-5xl font-bold text-white mb-4">$399</div>
-                <p className="text-blue-100 mb-6">From first draft to published book</p>
+                <h3 className="text-2xl font-bold text-white mb-2 mt-4">Complete Editing</h3>
+                <div className="text-5xl font-bold text-white mb-4">$299</div>
+                <p className="text-blue-100 mb-6">All three professional editing phases</p>
+                <ul className="text-left space-y-2 mb-6 text-blue-100">
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-400 mt-1">✓</span>
+                    <span>Phase 1: Developmental editing with Alex</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-400 mt-1">✓</span>
+                    <span>Phase 2: Line editing with Sam</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-400 mt-1">✓</span>
+                    <span>Phase 3: Copy editing with Jordan</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-300 mt-1">⏳</span>
+                    <span className="text-blue-200">Publishing prep (coming soon)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-300 mt-1">⏳</span>
+                    <span className="text-blue-200">Marketing strategy (coming soon)</span>
+                  </li>
+                </ul>
                 <Link href="/signup">
-                  <Button className="w-full py-6 bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 hover:from-yellow-500 hover:to-yellow-600">
-                    Start Your Journey
+                  <Button className="w-full py-6 bg-gradient-to-r from-green-400 to-blue-400 text-gray-900 hover:from-green-500 hover:to-blue-500 font-bold">
+                    Start Editing Journey
                   </Button>
                 </Link>
               </div>
@@ -267,42 +331,90 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Meet the Editors Preview */}
+      {/* Meet Your Editorial Team */}
       <div className="container mx-auto px-4 py-20">
-        <div className="max-w-5xl mx-auto text-center">
+        <div className="max-w-6xl mx-auto text-center">
           <h2 className="text-4xl font-bold text-gray-900 mb-6">
             Meet Your AI Editorial Team
           </h2>
           <p className="text-xl text-gray-600 mb-12">
-            Three specialists, each expert in their craft
+            Five specialists, each expert in their craft
           </p>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-5xl mx-auto mb-4">
-                🎯
+          <div className="grid md:grid-cols-5 gap-6">
+            {/* Alex */}
+            <div className="text-center relative">
+              <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-5xl mx-auto mb-4 shadow-lg">
+                👔
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">Alex</h3>
-              <p className="text-gray-600 mb-2">Developmental Editor</p>
+              <p className="text-gray-600 mb-2 font-semibold">Developmental Editor</p>
               <p className="text-sm text-gray-500">Story structure & character development</p>
+              <div className="mt-3">
+                <span className="inline-block bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">
+                  AVAILABLE NOW
+                </span>
+              </div>
             </div>
 
-            <div className="text-center">
-              <div className="w-24 h-24 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-5xl mx-auto mb-4">
+            {/* Sam */}
+            <div className="text-center relative">
+              <div className="w-24 h-24 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-5xl mx-auto mb-4 shadow-lg">
                 ✨
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">Sam</h3>
-              <p className="text-gray-600 mb-2">Line Editor</p>
+              <p className="text-gray-600 mb-2 font-semibold">Line Editor</p>
               <p className="text-sm text-gray-500">Prose polish & style refinement</p>
+              <div className="mt-3">
+                <span className="inline-block bg-purple-100 text-purple-700 text-xs font-bold px-3 py-1 rounded-full">
+                  AVAILABLE NOW
+                </span>
+              </div>
             </div>
 
-            <div className="text-center">
-              <div className="w-24 h-24 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center text-5xl mx-auto mb-4">
+            {/* Jordan */}
+            <div className="text-center relative">
+              <div className="w-24 h-24 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-5xl mx-auto mb-4 shadow-lg">
                 🔍
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">Jordan</h3>
-              <p className="text-gray-600 mb-2">Copy Editor</p>
+              <p className="text-gray-600 mb-2 font-semibold">Copy Editor</p>
               <p className="text-sm text-gray-500">Grammar & technical accuracy</p>
+              <div className="mt-3">
+                <span className="inline-block bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">
+                  AVAILABLE NOW
+                </span>
+              </div>
+            </div>
+
+            {/* Taylor */}
+            <div className="text-center relative opacity-90">
+              <div className="w-24 h-24 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center text-5xl mx-auto mb-4 shadow-lg">
+                📚
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Taylor</h3>
+              <p className="text-gray-600 mb-2 font-semibold">Publishing Specialist</p>
+              <p className="text-sm text-gray-500">Format prep & launch strategy</p>
+              <div className="mt-3">
+                <span className="inline-block bg-teal-50 text-teal-600 text-xs font-bold px-3 py-1 rounded-full border border-teal-300">
+                  COMING Q1 2025
+                </span>
+              </div>
+            </div>
+
+            {/* Quinn */}
+            <div className="text-center relative opacity-90">
+              <div className="w-24 h-24 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center text-5xl mx-auto mb-4 shadow-lg">
+                🚀
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Quinn</h3>
+              <p className="text-gray-600 mb-2 font-semibold">Marketing Strategist</p>
+              <p className="text-sm text-gray-500">Platform building & book promotion</p>
+              <div className="mt-3">
+                <span className="inline-block bg-orange-50 text-orange-600 text-xs font-bold px-3 py-1 rounded-full border border-orange-300">
+                  COMING Q1 2025
+                </span>
+              </div>
             </div>
           </div>
 
@@ -324,7 +436,7 @@ export default function Home() {
               Ready to Transform Your Writing?
             </h2>
             <p className="text-xl text-blue-100 mb-8">
-              Join the future of collaborative writing. Experience what it&apos;s like to have a professional editor, writing coach, and creative partner available 24/7.
+              Join authors who are experiencing professional editing with AI. Three complete editing phases available now, with publishing and marketing coming soon.
             </p>
             <div className="flex gap-4 justify-center flex-wrap">
               <Link href="/free-analysis">
@@ -333,8 +445,8 @@ export default function Home() {
                 </Button>
               </Link>
               <Link href="/signup">
-                <Button className="text-lg px-8 py-6">
-                  Start Complete Journey - $399
+                <Button className="text-lg px-8 py-6 bg-gradient-to-r from-green-400 to-blue-400 text-gray-900 hover:from-green-500 hover:to-blue-500 font-bold">
+                  Start Complete Journey - $299
                 </Button>
               </Link>
             </div>
