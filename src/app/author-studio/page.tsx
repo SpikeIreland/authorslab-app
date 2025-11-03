@@ -88,7 +88,6 @@ function getEditorColorClasses(color: string) {
   return colorMap[color as keyof typeof colorMap] || colorMap.green
 }
 
-// Webhook URLs
 const WEBHOOKS = {
   alexFullAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-full-manuscript-analysis',
   alexChapterAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-chapter-analysis',
@@ -98,6 +97,9 @@ const WEBHOOKS = {
   samFullAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/sam-full-manuscript-analysis',
   samChapterAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/sam-chapter-analysis',
   samChat: 'https://spikeislandstudios.app.n8n.cloud/webhook/sam-chat',
+  jordanFullAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/jordan-full-manuscript-analysis',
+  jordanChapterAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/jordan-chapter-analysis',
+  jordanChat: 'https://spikeislandstudios.app.n8n.cloud/webhook/jordan-chat',
 }
 
 interface ChatMessage {
