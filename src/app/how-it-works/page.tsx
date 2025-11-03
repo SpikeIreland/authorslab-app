@@ -60,13 +60,10 @@ export default function HowItWorksPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
 
-            {/* Phase 1: Developmental Editing - AVAILABLE */}
-            <div className="mb-20 relative">
-              <div className="absolute -top-4 -right-4 bg-green-500 text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg z-10">
-                AVAILABLE NOW
-              </div>
+            {/* Phase 1: Developmental Editing */}
+            <div className="mb-20">
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 bg-green-500 text-white rounded-full flex items-center justify-center text-2xl font-bold shadow-lg">
+                <div className="w-16 h-16 bg-green-500 text-white rounded-full flex items-center justify-center text-2xl font-bold">
                   1
                 </div>
                 <div>
@@ -123,19 +120,16 @@ export default function HowItWorksPage() {
                 </div>
                 <div className="mt-6 p-4 bg-white rounded-lg border border-green-300">
                   <p className="text-sm text-gray-600">
-                    <strong>AI Editor:</strong> Alex (Developmental Specialist) · <strong>Work at your own pace</strong>
+                    <strong>Status:</strong> Available Now | <strong>AI Editor:</strong> Alex (Developmental Specialist) | <strong>Work at your own pace</strong>
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Phase 2: Line Editing - AVAILABLE */}
-            <div className="mb-20 relative">
-              <div className="absolute -top-4 -right-4 bg-purple-500 text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg z-10">
-                AVAILABLE NOW
-              </div>
+            {/* Phase 2: Line Editing */}
+            <div className="mb-20">
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 bg-purple-500 text-white rounded-full flex items-center justify-center text-2xl font-bold shadow-lg">
+                <div className="w-16 h-16 bg-purple-500 text-white rounded-full flex items-center justify-center text-2xl font-bold">
                   2
                 </div>
                 <div>
@@ -192,19 +186,16 @@ export default function HowItWorksPage() {
                 </div>
                 <div className="mt-6 p-4 bg-white rounded-lg border border-purple-300">
                   <p className="text-sm text-gray-600">
-                    <strong>AI Editor:</strong> Sam (Line Editing Specialist) · <strong>Work at your own pace</strong>
+                    <strong>Status:</strong> Available Now | <strong>AI Editor:</strong> Sam (Line Editing Specialist) | <strong>Work at your own pace</strong>
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Phase 3: Copy Editing - AVAILABLE */}
-            <div className="mb-20 relative">
-              <div className="absolute -top-4 -right-4 bg-blue-500 text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg z-10">
-                AVAILABLE NOW
-              </div>
+            {/* Phase 3: Copy Editing */}
+            <div className="mb-20">
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 bg-blue-500 text-white rounded-full flex items-center justify-center text-2xl font-bold shadow-lg">
+                <div className="w-16 h-16 bg-blue-500 text-white rounded-full flex items-center justify-center text-2xl font-bold">
                   3
                 </div>
                 <div>
@@ -261,88 +252,176 @@ export default function HowItWorksPage() {
                 </div>
                 <div className="mt-6 p-4 bg-white rounded-lg border border-blue-300">
                   <p className="text-sm text-gray-600">
-                    <strong>AI Editor:</strong> Jordan (Copy Editing Specialist) · <strong>Work at your own pace</strong>
+                    <strong>Status:</strong> Available Now | <strong>AI Editor:</strong> Jordan (Copy Editing Specialist) | <strong>Work at your own pace</strong>
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Phase 4: Publishing Preparation - COMING SOON */}
-            <div className="mb-20 relative opacity-90">
-              <div className="absolute -top-4 -right-4 bg-teal-500 text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg z-10">
-                COMING Q4 2025
-              </div>
+            {/* Phase 4: Publishing Preparation */}
+            <div className="mb-20 opacity-95">
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 bg-teal-500 text-white rounded-full flex items-center justify-center text-2xl font-bold shadow-lg">
+                <div className="w-16 h-16 bg-teal-500 text-white rounded-full flex items-center justify-center text-2xl font-bold">
                   4
                 </div>
                 <div>
                   <h2 className="text-3xl font-bold text-gray-900">Publishing Preparation</h2>
-                  <p className="text-teal-600 font-semibold">Format & Launch Strategy · Meet Taylor 📚</p>
+                  <p className="text-teal-600 font-semibold">Format & Launch Support · Meet Taylor 📚</p>
                 </div>
               </div>
 
               <div className="bg-teal-50 rounded-2xl p-8 border-2 border-teal-200">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">What Will Happen in Phase 4:</h3>
+                <div className="bg-teal-100 border-l-4 border-teal-500 rounded-lg p-6 mb-6">
+                  <h4 className="font-bold text-teal-900 mb-3 text-lg flex items-center gap-2">
+                    <span className="text-2xl">🎯</span>
+                    Why This Approach Is Better For You
+                  </h4>
+                  <p className="text-teal-800 leading-relaxed">
+                    Unlike traditional publishing services that take your rights and charge thousands, Taylor gives you professional-grade publishing tools and guidance while YOU keep 100% ownership, control, and royalties. Your book, your rights, your success.
+                  </p>
+                </div>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-4">What Happens in Phase 4:</h3>
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-3">📚 Publishing Ready</h4>
+                    <h4 className="font-semibold text-gray-900 mb-3">📚 What Taylor Prepares For You</h4>
                     <ul className="space-y-2 text-gray-700">
                       <li className="flex items-start gap-2">
                         <span className="text-teal-600 mt-1">✓</span>
-                        <span>Professional manuscript formatting</span>
+                        <span>Professional EPUB files for all ebook platforms</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-teal-600 mt-1">✓</span>
-                        <span>E-book and print layout optimization</span>
+                        <span>Print-ready PDFs (multiple trim sizes)</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-teal-600 mt-1">✓</span>
-                        <span>Cover design guidance and consultation</span>
+                        <span>AI-generated cover designs (ebook & print)</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-teal-600 mt-1">✓</span>
-                        <span>Platform submission preparation</span>
+                        <span>Optimized book description & metadata</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-teal-600 mt-1">✓</span>
+                        <span>Keyword research & category recommendations</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-teal-600 mt-1">✓</span>
+                        <span>File validation & quality checks</span>
                       </li>
                     </ul>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-3">🎯 You Will Receive</h4>
+                    <h4 className="font-semibold text-gray-900 mb-3">🎯 What You Do (With Taylor&apos;s Guidance)</h4>
                     <ul className="space-y-2 text-gray-700">
                       <li className="flex items-start gap-2">
                         <span className="text-teal-600 mt-1">→</span>
-                        <span>Print-ready PDF formatted for publication</span>
+                        <span>Review and select your favorite cover design</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-teal-600 mt-1">→</span>
-                        <span>E-book files (EPUB, MOBI formats)</span>
+                        <span>Approve formatting previews</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-teal-600 mt-1">→</span>
-                        <span>Book description and metadata templates</span>
+                        <span>Create free accounts on publishing platforms</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-teal-600 mt-1">→</span>
-                        <span>Publishing platform guidance</span>
+                        <span>Upload files following Taylor&apos;s video tutorials</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-teal-600 mt-1">→</span>
+                        <span>Set your pricing and distribution</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-teal-600 mt-1">→</span>
+                        <span>Click &quot;Publish&quot; - your book goes live!</span>
                       </li>
                     </ul>
                   </div>
                 </div>
+
+                <div className="mt-6 bg-white rounded-lg border-2 border-teal-300 p-6">
+                  <h4 className="font-bold text-gray-900 mb-3">📖 Supported Publishing Platforms</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-700">
+                    <div className="flex items-center gap-2">
+                      <span className="text-teal-600">✓</span>
+                      <span>Amazon KDP</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-teal-600">✓</span>
+                      <span>IngramSpark</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-teal-600">✓</span>
+                      <span>Draft2Digital</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-teal-600">✓</span>
+                      <span>Apple Books</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-teal-600">✓</span>
+                      <span>Google Play</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-teal-600">✓</span>
+                      <span>Kobo</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-teal-600">✓</span>
+                      <span>Barnes & Noble</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-teal-600">✓</span>
+                      <span>Lulu</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 bg-gradient-to-r from-teal-100 to-teal-50 rounded-lg border border-teal-300 p-6">
+                  <h4 className="font-bold text-teal-900 mb-3 flex items-center gap-2">
+                    <span className="text-xl">💰</span>
+                    You Keep 100% Ownership & Control
+                  </h4>
+                  <ul className="space-y-2 text-teal-800 text-sm">
+                    <li className="flex items-start gap-2">
+                      <span className="text-teal-600 mt-1">•</span>
+                      <span><strong>All rights remain yours</strong> - no contracts giving away ownership</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-teal-600 mt-1">•</span>
+                      <span><strong>You keep all royalties</strong> after platform fees (typically 60-70% of sales price)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-teal-600 mt-1">•</span>
+                      <span><strong>You set your own prices</strong> - change them anytime you want</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-teal-600 mt-1">•</span>
+                      <span><strong>You control distribution</strong> - choose which countries and platforms</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-teal-600 mt-1">•</span>
+                      <span><strong>You can update anytime</strong> - upload new versions whenever you want</span>
+                    </li>
+                  </ul>
+                </div>
+
                 <div className="mt-6 p-4 bg-white rounded-lg border border-teal-300">
                   <p className="text-sm text-gray-600">
-                    <strong>AI Specialist:</strong> Taylor (Publishing Expert) · <strong>Launching Q1 2025</strong>
+                    <strong>Status:</strong> Launching Q1 2025 | <strong>Publishing Specialist:</strong> Taylor | <strong>Estimated Timeline:</strong> Files ready in 3-5 days
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Phase 5: Marketing Strategy - COMING SOON */}
-            <div className="mb-20 relative opacity-90">
-              <div className="absolute -top-4 -right-4 bg-orange-500 text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg z-10">
-                COMING Q4 2025
-              </div>
+            {/* Phase 5: Marketing Strategy */}
+            <div className="mb-20 opacity-95">
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 bg-orange-500 text-white rounded-full flex items-center justify-center text-2xl font-bold shadow-lg">
+                <div className="w-16 h-16 bg-orange-500 text-white rounded-full flex items-center justify-center text-2xl font-bold">
                   5
                 </div>
                 <div>
@@ -399,7 +478,7 @@ export default function HowItWorksPage() {
                 </div>
                 <div className="mt-6 p-4 bg-white rounded-lg border border-orange-300">
                   <p className="text-sm text-gray-600">
-                    <strong>AI Specialist:</strong> Quinn (Marketing Strategist) · <strong>Launching Q1 2025</strong>
+                    <strong>Status:</strong> Launching Q1 2025 | <strong>Marketing Specialist:</strong> Quinn (Marketing Strategist)
                   </p>
                 </div>
               </div>
@@ -414,7 +493,7 @@ export default function HowItWorksPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
             <h2 className="text-4xl font-bold text-center text-gray-900 mb-12">Your Journey Starts Today</h2>
-
+            
             <div className="grid md:grid-cols-2 gap-8">
               {/* Available Now */}
               <div className="bg-white rounded-2xl p-8 shadow-xl border-2 border-green-400">
