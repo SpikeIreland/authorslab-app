@@ -432,16 +432,27 @@ function StudioContent() {
         setEditorPhases(allPhases)
         console.log(`✅ Loaded ${allPhases.length} editing phases`)
 
-        // Get the active phase from loaded phases
-        const activePhase = allPhases.find(p => p.phase_status === 'active')
+        // Check if user requested a specific phase via URL parameter
+        const phaseParam = searchParams.get('phase')
+        let phaseToLoad
 
-        if (!activePhase) {
-          console.error('No active phase found')
-          throw new Error('No active phase')
+        if (phaseParam) {
+          // User clicked "Return to [Editor]" from phase-complete page
+          const targetPhaseNumber = parseInt(phaseParam)
+          phaseToLoad = allPhases.find(p => p.phase_number === targetPhaseNumber)
+          console.log(`🔄 Loading requested phase ${targetPhaseNumber}`)
+        } else {
+          // Normal flow - load the currently active phase
+          phaseToLoad = allPhases.find(p => p.phase_status === 'active')
         }
 
-        setActivePhase(activePhase)
-        console.log(`✅ Active phase: ${activePhase.phase_name} (${activePhase.editor_name})`)
+        if (!phaseToLoad) {
+          console.error('No phase found to load')
+          throw new Error('No phase found')
+        }
+
+        setActivePhase(phaseToLoad)
+        console.log(`✅ Loaded phase: ${phaseToLoad.phase_name} (${phaseToLoad.editor_name})`)
       } else {
         // Fallback to old method if allPhases query fails
         const phase = await getActivePhase(supabase, manuscriptId)
@@ -1026,6 +1037,7 @@ function StudioContent() {
     router.push(`/phase-transition?manuscriptId=${manuscript?.id}&fromPhase=${activePhase?.phase_number}&toPhase=${(activePhase?.phase_number || 0) + 1}`)
   }
 
+
   function getPhaseCompletionMessage(phaseNumber: number, chapterCount: number): string {
     const firstName = authorFirstName || 'there'
 
@@ -1051,13 +1063,13 @@ function StudioContent() {
         `*— Sam, Your Line Editor* ✨`
     } else if (phaseNumber === 3) {
       return `🔍 **Excellent work, ${firstName}!**\n\n` +
-        `You've successfully approved all ${chapterCount} chapters. Your manuscript is now ` +
-        `technically flawless and ready for the next stage.\n\n` +
-        `**What happens next?**\n` +
-        `You're ready for **Phase 4: Publishing with Taylor**. Taylor will prepare your manuscript ` +
-        `for publication and guide you through the final steps.\n\n` +
-        `Click the **"Meet Taylor"** button above when you're ready! 👋\n\n` +
-        `*Your copy-edited manuscript will be generated and emailed to you for safekeeping.*\n\n` +
+        `You've successfully completed all three editing phases! Your manuscript is now:\n` +
+        `- Structurally sound (Alex)\n` +
+        `- Beautifully written (Sam)\n` +
+        `- Technically flawless (Jordan)\n\n` +
+        `**🎉 You're Ready!**\n` +
+        `Click the **"View Completion Summary"** button above to see everything you've accomplished ` +
+        `and download your manuscript versions!\n\n` +
         `*— Jordan, Your Copy Editor* 🔍`
     }
 
@@ -1637,22 +1649,34 @@ function StudioContent() {
                 </button>
               )}
 
-              {/* Meet Next Editor Button - Shows after all chapters approved */}
+              {/* Meet Next Editor Button OR Completion Summary */}
               {showMeetNextEditorButton && (
-                <button
-                  onClick={handleMeetNextEditor}
-                  className={`px-6 py-3 bg-gradient-to-r text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse ${activePhase?.phase_number === 1
-                      ? 'from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800'
-                      : activePhase?.phase_number === 2
-                        ? 'from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800'
-                        : 'from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800'
-                    }`}
-                >
-                  {activePhase?.phase_number === 1 && '👋 Meet Sam'}
-                  {activePhase?.phase_number === 2 && '👋 Meet Jordan'}
-                  {activePhase?.phase_number === 3 && '👋 Meet Taylor'}
-                  {(!activePhase || activePhase.phase_number > 3) && '👋 Continue'}
-                </button>
+                <>
+                  {activePhase?.phase_number === 3 ? (
+                    // Phase 3 complete - Show completion summary
+                    <button
+                      onClick={() => router.push(`/phase-complete?manuscriptId=${manuscript?.id}`)}
+                      className="px-6 py-3 bg-gradient-to-r from-green-600 via-purple-600 to-blue-600 text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse hover:shadow-xl"
+                    >
+                      🎉 View Completion Summary
+                    </button>
+                  ) : (
+                    // Phase 1 or 2 - Show meet next editor
+                    <button
+                      onClick={handleMeetNextEditor}
+                      className={`px-6 py-3 bg-gradient-to-r text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse ${activePhase?.phase_number === 1
+                        ? 'from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800'
+                        : activePhase?.phase_number === 2
+                          ? 'from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800'
+                          : 'from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800'
+                        }`}
+                    >
+                      {activePhase?.phase_number === 1 && '👋 Meet Sam'}
+                      {activePhase?.phase_number === 2 && '👋 Meet Jordan'}
+                      {activePhase?.phase_number === 3 && '👋 View Summary'}
+                    </button>
+                  )}
+                </>
               )}
             </div>
           </div>
