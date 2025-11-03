@@ -968,8 +968,9 @@ function StudioContent() {
         console.error('Failed to create snapshot')
       }
 
-      // 2. If completing Phase 1, trigger Sam's reading ← ADD THIS!
+      // 2. Trigger next editor's reading
       if (activePhase.phase_number === 1) {
+        // Completing Phase 1 → Trigger Sam's reading
         console.log('🚀 Starting Sam\'s manuscript reading...')
 
         fetch(WEBHOOKS.samFullAnalysis, {
@@ -980,6 +981,18 @@ function StudioContent() {
             userId: manuscript.author_id
           })
         }).catch(() => console.log('✅ Sam reading triggered'))
+      } else if (activePhase.phase_number === 2) {
+        // Completing Phase 2 → Trigger Jordan's reading
+        console.log('🚀 Starting Jordan\'s manuscript reading...')
+
+        fetch(WEBHOOKS.jordanFullAnalysis, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            manuscriptId: manuscript.id,
+            userId: manuscript.author_id
+          })
+        }).catch(() => console.log('✅ Jordan reading triggered'))
       }
 
       // 3. Transition to next phase
@@ -999,7 +1012,7 @@ function StudioContent() {
         getPhaseCompletionMessage(activePhase.phase_number, chapters.length)
       )
 
-      // 5. Show "Meet Sam" button
+      // 5. Show "Meet [Next Editor]" button
       setShowMeetNextEditorButton(true)
 
     } catch (error) {
@@ -1013,7 +1026,6 @@ function StudioContent() {
     router.push(`/phase-transition?manuscriptId=${manuscript?.id}&fromPhase=${activePhase?.phase_number}&toPhase=${(activePhase?.phase_number || 0) + 1}`)
   }
 
-  // Get phase completion message
   function getPhaseCompletionMessage(phaseNumber: number, chapterCount: number): string {
     const firstName = authorFirstName || 'there'
 
@@ -1029,24 +1041,29 @@ function StudioContent() {
         `*— Alex, Your Developmental Editor* 👔`
     } else if (phaseNumber === 2) {
       return `✨ **Beautiful work, ${firstName}!**\n\n` +
-        `You've polished all ${chapterCount} chapters to perfection! Your prose sparkles, ` +
-        `your dialogue feels authentic, and every sentence has purpose and rhythm.\n\n` +
+        `You've successfully approved all ${chapterCount} chapters. Your prose is polished and every ` +
+        `sentence now sings with clarity and impact.\n\n` +
         `**What happens next?**\n` +
-        `You're ready for **Phase 3: Copy Editing with Jordan**. Jordan will give your manuscript ` +
-        `the final technical polish—grammar, punctuation, and consistency.\n\n` +
-        `Click the **"Meet Jordan"** button above when you're ready! 🔍\n\n` +
+        `You're ready for **Phase 3: Copy Editing with Jordan**. Jordan will ensure every technical ` +
+        `detail is perfect—grammar, punctuation, consistency, and professional polish.\n\n` +
+        `Click the **"Meet Jordan"** button above when you're ready for the handoff! 👋\n\n` +
         `*Your line-edited manuscript will be generated and emailed to you for safekeeping.*\n\n` +
         `*— Sam, Your Line Editor* ✨`
     } else if (phaseNumber === 3) {
       return `🔍 **Excellent work, ${firstName}!**\n\n` +
-        `Your manuscript is technically perfect. Grammar is tight, punctuation is precise, ` +
-        `and consistency is maintained throughout.\n\n` +
-        `**Next up: Phase 4 with Taylor** for publishing preparation!\n\n` +
+        `You've successfully approved all ${chapterCount} chapters. Your manuscript is now ` +
+        `technically flawless and ready for the next stage.\n\n` +
+        `**What happens next?**\n` +
+        `You're ready for **Phase 4: Publishing with Taylor**. Taylor will prepare your manuscript ` +
+        `for publication and guide you through the final steps.\n\n` +
+        `Click the **"Meet Taylor"** button above when you're ready! 👋\n\n` +
         `*Your copy-edited manuscript will be generated and emailed to you for safekeeping.*\n\n` +
         `*— Jordan, Your Copy Editor* 🔍`
     }
 
-    return `Phase ${phaseNumber} complete! Moving to next phase...`
+    // Default fallback
+    return `🎉 **Great work, ${firstName}!**\n\n` +
+      `You've completed this editing phase. Click the button above to meet your next editor!`
   }
 
   // Analyze chapter on demand
@@ -1624,9 +1641,17 @@ function StudioContent() {
               {showMeetNextEditorButton && (
                 <button
                   onClick={handleMeetNextEditor}
-                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg font-bold text-base hover:from-purple-700 hover:to-purple-800 transition-all shadow-lg animate-pulse"
+                  className={`px-6 py-3 bg-gradient-to-r text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse ${activePhase?.phase_number === 1
+                      ? 'from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800'
+                      : activePhase?.phase_number === 2
+                        ? 'from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800'
+                        : 'from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800'
+                    }`}
                 >
-                  👋 Meet Sam
+                  {activePhase?.phase_number === 1 && '👋 Meet Sam'}
+                  {activePhase?.phase_number === 2 && '👋 Meet Jordan'}
+                  {activePhase?.phase_number === 3 && '👋 Meet Taylor'}
+                  {(!activePhase || activePhase.phase_number > 3) && '👋 Continue'}
                 </button>
               )}
             </div>
