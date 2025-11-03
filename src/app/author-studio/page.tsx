@@ -767,7 +767,10 @@ function StudioContent() {
 
     try {
       // Determine which chat webhook to use
-      const chatWebhook = activePhase.phase_number === 2 ? WEBHOOKS.samChat : WEBHOOKS.alexChat
+      const chatWebhook =
+        activePhase.phase_number === 2 ? WEBHOOKS.samChat :
+          activePhase.phase_number === 3 ? WEBHOOKS.jordanChat :
+            WEBHOOKS.alexChat
 
       // Build the payload - include note context if discussing an issue
       const payload = {
@@ -1115,9 +1118,10 @@ function StudioContent() {
 
     try {
       // Trigger chapter analysis
-      const analysisWebhook = activePhase.phase_number === 2
-        ? WEBHOOKS.samChapterAnalysis
-        : WEBHOOKS.alexChapterAnalysis
+      const analysisWebhook =
+        activePhase.phase_number === 2 ? WEBHOOKS.samChapterAnalysis :
+          activePhase.phase_number === 3 ? WEBHOOKS.jordanChapterAnalysis :
+            WEBHOOKS.alexChapterAnalysis
 
       await fetch(analysisWebhook, {
         method: 'POST',
