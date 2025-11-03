@@ -96,6 +96,59 @@ export default function FAQPage() {
       ]
     },
     {
+      category: "Publishing & Phase 4",
+      questions: [
+        {
+          q: "Does AuthorsLab.ai publish my book for me?",
+          a: "No - and that's actually better for you! Taylor prepares everything you need to publish it YOURSELF, so you keep 100% ownership, control, and all royalties. Unlike traditional publishing services that take your rights and charge thousands, we give you professional-grade files and step-by-step guidance while you maintain complete control. Your book, your rights, your success."
+        },
+        {
+          q: "What exactly does Taylor prepare for me in Phase 4?",
+          a: "Taylor generates professionally formatted EPUB files for ebooks, print-ready PDFs in multiple trim sizes, AI-generated cover designs (both ebook and print with spine), optimized book descriptions and metadata, keyword research, category recommendations, and provides comprehensive file validation. You'll receive everything needed to upload to any major publishing platform."
+        },
+        {
+          q: "What publishing platforms can I use?",
+          a: "Taylor prepares files compatible with all major platforms including Amazon KDP (Kindle Direct Publishing), IngramSpark, Draft2Digital, Apple Books, Google Play Books, Kobo, Barnes & Noble Press, and Lulu. You can publish to as many or as few platforms as you choose."
+        },
+        {
+          q: "Do I keep ownership of my book?",
+          a: "Yes! 100% ownership stays with you. You retain all rights, set your own prices, control distribution territories, and can update or unpublish your book anytime. There are no contracts giving away ownership - your intellectual property remains entirely yours."
+        },
+        {
+          q: "What royalties will I earn when I publish?",
+          a: "You keep all royalties after platform fees. On Amazon KDP, for example, you earn 70% on ebooks priced $2.99-$9.99, and 60% on print books after printing costs. For a $2.99 ebook, you'd earn about $2.04 per sale. For a $14.99 print book, typically $5-7 per sale. These royalties go directly to you - we don't take a cut."
+        },
+        {
+          q: "How much does it cost to publish on these platforms?",
+          a: "Creating accounts on Amazon KDP, Draft2Digital, and most other platforms is completely free. There are no upfront costs to publish. Platforms take their fee (typically 30-40%) from each sale, but you pay nothing to upload and list your book."
+        },
+        {
+          q: "Will Taylor actually upload my book to Amazon for me?",
+          a: "No, you'll upload it yourself following Taylor's step-by-step video tutorials. This is important because: (1) it keeps you in control of your account and book, (2) platforms don't allow third-party uploading for security reasons, and (3) it's actually easier than you think! Taylor makes the process simple with detailed guides for each platform."
+        },
+        {
+          q: "Do I need an ISBN?",
+          a: "For ebooks: No, Amazon and most platforms provide free ISBNs. For print books: Amazon provides a free ISBN, or you can purchase your own for about $125 if you want your publishing imprint listed. Taylor will guide you through the best option for your goals."
+        },
+        {
+          q: "How long does the publishing process take once my manuscript is edited?",
+          a: "Taylor typically has your files ready (EPUB, PDFs, covers) within 3-5 days. Once you upload to platforms, books usually go live within 24-72 hours for ebooks and 5-10 days for print. The actual uploading takes about 30-60 minutes per platform once you have the files."
+        },
+        {
+          q: "What if I need help uploading to the platforms?",
+          a: "Taylor provides comprehensive video tutorials for each major platform, showing you exactly where to click and what to enter. If you get stuck, our support team is available via email to help troubleshoot. The process is designed to be beginner-friendly - thousands of first-time authors successfully self-publish every day."
+        },
+        {
+          q: "Can I publish to multiple platforms or just Amazon?",
+          a: "You can publish to as many platforms as you want! Many authors use Amazon KDP for Kindle and print, then use Draft2Digital to distribute to Apple Books, Kobo, Barnes & Noble, and others. Taylor prepares files that work on all platforms, and guides you through multi-platform publishing strategy."
+        },
+        {
+          q: "What if I want to traditionally publish instead of self-publish?",
+          a: "The editing quality from Phases 1-3 (Alex, Sam, Jordan) is professional-grade and suitable for traditional publishing submissions. Phase 4 is specifically for self-publishing preparation. If you're pursuing traditional publishing, you'll submit your edited manuscript to agents and publishers rather than using Phase 4."
+        }
+      ]
+    },
+    {
       category: "Technical Questions",
       questions: [
         {
@@ -125,27 +178,27 @@ export default function FAQPage() {
       ]
     },
     {
-      category: "Publishing & Beyond",
+      category: "Marketing & Beyond",
       questions: [
         {
-          q: "Does AuthorsLab.ai publish my book?",
-          a: "When Phase 4 launches in Q1 2025, Taylor will prepare your manuscript for publication by creating print-ready PDFs, e-book files, and providing publishing platform guidance. The actual uploading to Amazon KDP, IngramSpark, or other platforms is done by you, but Taylor will give you everything you need and step-by-step instructions."
-        },
-        {
-          q: "Will you help with marketing my book?",
-          a: "When Phase 5 launches in Q1 2025, Quinn will help you build your author platform, identify your target readers, create social media content calendars, and develop a strategic book launch campaign. This comprehensive marketing support is designed to help you connect with your readers."
+          q: "What will Phase 5 (Marketing with Quinn) include?",
+          a: "When Phase 5 launches in Q1 2025, Quinn will help you build your author platform, identify your target readers, create social media content calendars, develop email campaign strategies, and plan a strategic book launch campaign. This comprehensive marketing support is designed to help you connect with your ideal readers."
         },
         {
           q: "Can I use AuthorsLab.ai for multiple books?",
           a: "Yes! Each manuscript is a separate project with its own $299 fee for the 3-Phase Editing Package. Many authors use our service for their entire series or multiple books."
         },
         {
-          q: "Is the editing quality suitable for traditional publishing submissions?",
-          a: "Yes! The editing quality from Alex, Sam, and Jordan is professional-grade and suitable for traditional publishing submissions. Our AI editors are trained on published works and industry standards."
-        },
-        {
           q: "What if I want to start editing now but wait for publishing and marketing phases?",
           a: "Perfect! Start with the 3-Phase Editing Package ($299) now to work with Alex, Sam, and Jordan. When Phase 4 (Publishing) and Phase 5 (Marketing) launch in Q1 2025, you'll be notified and can add them to your completed manuscript."
+        },
+        {
+          q: "Do you help with book cover design?",
+          a: "Yes! When Phase 4 launches, Taylor will generate multiple AI-powered cover design options for both ebook and print formats. You'll be able to choose your favorite and customize it. For authors wanting human designer refinement, that will be available as an upgrade option."
+        },
+        {
+          q: "Can I make changes to my book after it's published?",
+          a: "Absolutely! One of the best parts of self-publishing is that you can update your book anytime. Upload a new version to your publishing platform, and the updated version will replace the old one within 24-72 hours. This is your book - you control everything."
         }
       ]
     },
