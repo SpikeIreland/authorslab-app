@@ -451,7 +451,7 @@ export default function HowItWorksPage() {
               {/* Coming Soon */}
               <div className="bg-white rounded-2xl p-8 shadow-xl border-2 border-teal-300 opacity-95">
                 <div className="inline-block bg-teal-500 text-white px-4 py-2 rounded-full text-sm font-bold mb-4">
-                  COMING Q1 2025
+                  COMING Q4 2025
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">Publishing & Marketing Hub</h3>
                 <p className="text-gray-600 mb-6">
