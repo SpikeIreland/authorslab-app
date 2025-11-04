@@ -52,11 +52,13 @@ function PhaseCompleteContent() {
             return
         }
 
-        // Load manuscript versions
+        // Load manuscript versions - only approved snapshots
         const { data: versionsData } = await supabase
             .from('manuscript_versions')
             .select('*')
             .eq('manuscript_id', manuscriptId)
+            .eq('version_type', 'approved_snapshot')  // ← Only show phase completions
+            .not('file_url', 'is', null)  // ← Only show versions with PDFs
             .order('phase_number', { ascending: true })
 
         setManuscript(manuscriptData)
