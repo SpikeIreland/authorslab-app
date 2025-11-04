@@ -134,10 +134,11 @@ export default function AdminDashboard() {
                 return
             }
 
+            // Check if user has admin role
             const { data: profile } = await supabase
                 .from('author_profiles')
                 .select('role, email')
-                .eq('id', user.id)
+                .eq('auth_user_id', user.id)
                 .single()
 
             console.log('🔍 Admin check - Profile:', profile)
