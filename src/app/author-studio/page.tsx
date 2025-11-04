@@ -1706,31 +1706,56 @@ function StudioContent() {
                   </button>
                 )}
 
-                {/* Meet Next Editor Button OR Completion Summary */}
+                {/* Meet Next Editor Button */}
                 {showMeetNextEditorButton && (
                   <>
-                    {activePhase?.phase_number === 3 ? (
-                      // Phase 3 complete - Show completion summary
+                    {activePhase?.phase_number === 1 && (
+                      // Phase 1 complete - Meet Sam (Line Editor)
+                      <button
+                        onClick={handleMeetNextEditor}
+                        className="px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse"
+                      >
+                        👋 Meet Sam
+                      </button>
+                    )}
+
+                    {activePhase?.phase_number === 2 && (
+                      // Phase 2 complete - Meet Jordan (Copy Editor)
+                      <button
+                        onClick={handleMeetNextEditor}
+                        className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse"
+                      >
+                        👋 Meet Jordan
+                      </button>
+                    )}
+
+                    {activePhase?.phase_number === 3 && (
+                      // Phase 3 complete - Go to Publishing Hub with Taylor
+                      <button
+                        onClick={() => router.push(`/publishing-hub?manuscriptId=${manuscript?.id}`)}
+                        className="px-6 py-3 bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse"
+                      >
+                        📚 Start Publishing with Taylor
+                      </button>
+                    )}
+
+                    {activePhase?.phase_number === 4 && (
+                      // Phase 4 complete - Go to Marketing Hub with Quinn
+                      <button
+                        onClick={() => router.push(`/marketing-hub?manuscriptId=${manuscript?.id}`)}
+                        className="px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse"
+                      >
+                        🚀 Start Marketing with Quinn
+                      </button>
+                    )}
+
+                    {activePhase?.phase_number === 5 && (
+                      // Phase 5 complete - All done! View completion summary
                       <button
                         onClick={() => router.push(`/phase-complete?manuscriptId=${manuscript?.id}`)}
                         className="px-6 py-3 bg-gradient-to-r from-green-600 via-purple-600 to-blue-600 text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse hover:shadow-xl"
                       >
                         🎉 View Completion Summary
-                      </button>
-                    ) : (
-                      // Phase 1 or 2 - Show meet next editor
-                      <button
-                        onClick={handleMeetNextEditor}
-                        className={`px-6 py-3 bg-gradient-to-r text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse ${activePhase?.phase_number === 1
-                          ? 'from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800'
-                          : activePhase?.phase_number === 2
-                            ? 'from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800'
-                            : 'from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800'
-                          }`}
-                      >
-                        {activePhase?.phase_number === 1 && '👋 Meet Sam'}
-                        {activePhase?.phase_number === 2 && '👋 Meet Jordan'}
-                        {activePhase?.phase_number === 3 && '👋 View Summary'}
                       </button>
                     )}
                   </>
