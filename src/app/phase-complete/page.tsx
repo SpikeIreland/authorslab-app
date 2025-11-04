@@ -15,7 +15,7 @@ interface Manuscript {
 interface ManuscriptVersion {
     id: string
     phase_number: number
-    editor_name: string
+    created_by_editor: string  // ← Correct field name!
     file_url: string | null
     created_at: string
 }
@@ -202,14 +202,14 @@ function PhaseCompleteContent() {
                             <div
                                 key={version.id}
                                 className={`p-6 rounded-xl border-2 ${version.phase_number === 1
-                                        ? 'bg-green-50 border-green-300'
-                                        : version.phase_number === 2
-                                            ? 'bg-purple-50 border-purple-300'
-                                            : 'bg-blue-50 border-blue-300'
+                                    ? 'bg-green-50 border-green-300'
+                                    : version.phase_number === 2
+                                        ? 'bg-purple-50 border-purple-300'
+                                        : 'bg-blue-50 border-blue-300'
                                     }`}
                             >
                                 <h3 className="font-bold text-gray-900 mb-2">
-                                    Phase {version.phase_number}: {version.editor_name}
+                                    Phase {version.phase_number}: {version.created_by_editor}
                                 </h3>
                                 <p className="text-sm text-gray-600 mb-4">
                                     {new Date(version.created_at).toLocaleDateString()}
