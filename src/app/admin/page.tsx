@@ -468,8 +468,8 @@ export default function AdminDashboard() {
                         </div>
                         <div className="flex items-center gap-4">
                             <span className="text-sm text-gray-600">{adminEmail}</span>
-                            <Link href="/dashboard">
-                                <Button variant="outline">User Dashboard</Button>
+                            <Link href="/author-studio">
+                                <Button variant="outline">Author Studio</Button>
                             </Link>
                         </div>
                     </div>
