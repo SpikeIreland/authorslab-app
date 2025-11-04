@@ -124,6 +124,7 @@ function StudioContent() {
   const [loadingMessage, setLoadingMessage] = useState('Loading your studio...')
   const [isSaving, setIsSaving] = useState(false)
   const pendingContentRef = useRef<string>('')
+  const [authorName, setAuthorName] = useState<string>('Author')
 
   // Phase/Editor State (derived from activePhase)
   const currentPhase = activePhase?.phase_number || 1
@@ -385,7 +386,7 @@ function StudioContent() {
       // Get author profile
       const { data: authorProfile } = await supabase
         .from('author_profiles')
-        .select('id, first_name')
+        .select('id, first_name, last_name')
         .eq('auth_user_id', user.id)
         .single()
 
@@ -396,6 +397,10 @@ function StudioContent() {
       }
 
       setAuthorFirstName(authorProfile.first_name || 'there')
+
+      // Set full author name for header
+      const fullName = `${authorProfile.first_name || ''} ${authorProfile.last_name || ''}`.trim()
+      setAuthorName(fullName || 'Author')
 
       // Load manuscript
       const { data: manuscriptData, error: manuscriptError } = await supabase
@@ -1265,6 +1270,30 @@ function StudioContent() {
       <div className="h-screen flex flex-col bg-gray-50">
         {/* Header */}
         <header className="bg-white border-b border-gray-200 p-4 shadow-sm">
+          {/* TOP ROW: Logo and User Menu */}
+          <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+            <Link href="/" className="text-lg font-bold bg-gradient-to-r from-blue-900 to-blue-700 bg-clip-text text-transparent hover:opacity-80 transition-opacity">
+              📚 AuthorsLab.ai
+            </Link>
+
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-600">
+                {authorName}
+              </span>
+              <button
+                onClick={async () => {
+                  const supabase = createClient()
+                  await supabase.auth.signOut()
+                  router.push('/login')
+                }}
+                className="text-sm px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition-colors"
+              >
+                Sign Out
+              </button>
+            </div>
+          </div>
+
+          {/* BOTTOM ROW: Manuscript Info (YOUR EXISTING CONTENT) */}
           <div className="flex items-center justify-between">
             {/* Left: Manuscript Title */}
             <div className="flex items-center gap-4">
