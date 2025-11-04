@@ -1238,699 +1238,724 @@ function StudioContent() {
   const currentEditingStatus = currentChapter ? chapterEditingStatus[currentChapter.chapter_number] : 'not_started'
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 p-4 shadow-sm">
-        <div className="flex items-center justify-between">
-          {/* Left: Manuscript Title */}
+    <>
+      {/* NEW: Fixed Navigation Header */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+        <div className="px-4 py-3 flex items-center justify-between">
+          <Link href="/" className="text-xl font-bold bg-gradient-to-r from-blue-900 to-blue-700 bg-clip-text text-transparent">
+            📚 AuthorsLab.ai
+          </Link>
+
           <div className="flex items-center gap-4">
-            <div className={`w-10 h-10 rounded-lg ${getEditorColorClasses(editorColor).bg} text-white flex items-center justify-center`}>
-              <BookOpen className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">{manuscript.title}</h1>
-              <p className={`text-sm ${getEditorColorClasses(editorColor).text} font-medium`}>
-                Phase {currentPhase}: {EDITOR_CONFIG[currentPhase as PhaseNumber].phaseName} with {editorName}
-              </p>
-            </div>
-          </div>
+            <span className="text-sm text-gray-600">{authorFirstName || 'Author'}</span>
 
-          {/* Right: Editor Progress & Report Buttons */}
-          <div className="flex items-center gap-6">
-
-            {/* Editor Progress Indicators */}
-            <div className="flex items-center gap-3">
-              {/* Alex (Phase 1) */}
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${currentPhase > 1
-                ? 'bg-green-600 text-white'
-                : currentPhase === 1
-                  ? 'bg-green-600 text-white ring-2 ring-green-300'
-                  : 'bg-gray-200 text-gray-400'
-                }`}>
-                A
-              </div>
-
-              {/* Sam (Phase 2) */}
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${currentPhase > 2
-                ? 'bg-purple-600 text-white'
-                : currentPhase === 2
-                  ? 'bg-purple-600 text-white ring-2 ring-purple-300'
-                  : 'bg-gray-200 text-gray-400'
-                }`}>
-                S
-              </div>
-
-              {/* Jordan (Phase 3) */}
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${currentPhase > 3
-                ? 'bg-blue-600 text-white'
-                : currentPhase === 3
-                  ? 'bg-blue-600 text-white ring-2 ring-blue-300'
-                  : 'bg-gray-200 text-gray-400'
-                }`}>
-                J
-              </div>
-            </div>
-
-            {/* PDF Report Buttons - Always Visible */}
-            <div className="flex items-center gap-2 border-l border-gray-200 pl-6">
-              {/* Alex's Report Button */}
-              {(() => {
-                const alexPhase = editorPhases.find(p => p.phase_number === 1)
-                const hasReport = alexPhase?.report_pdf_url
-                const isReading = alexPhase?.phase_status === 'active' && !alexPhase?.ai_read_completed_at
-                const phaseStarted = alexPhase?.phase_status !== 'pending'
-
-                if (!phaseStarted) {
-                  // Phase not started yet
-                  return (
-                    <button
-                      disabled
-                      className="px-3 py-1.5 bg-gray-200 text-gray-400 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
-                    >
-                      <span>📄</span>
-                      <span>Alex Report</span>
-                    </button>
-                  )
-                } else if (isReading) {
-                  // Alex is reading (PDF generating)
-                  return (
-                    <button
-                      disabled
-                      className="px-3 py-1.5 bg-green-100 text-green-600 text-xs rounded-lg cursor-wait flex items-center gap-1.5"
-                    >
-                      <div className="w-3 h-3 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
-                      <span>Generating...</span>
-                    </button>
-                  )
-                } else if (hasReport) {
-                  // Report is ready
-                  return (
-                    <button
-                      onClick={() => {
-                        if (alexPhase?.report_pdf_url) {
-                          window.open(alexPhase.report_pdf_url, '_blank')
-                        }
-                      }}
-                      className="px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1.5 shadow-sm"
-                    >
-                      <span>📄</span>
-                      <span>Alex Report</span>
-                    </button>
-                  )
-                } else {
-                  // Phase complete but no report (error state)
-                  return (
-                    <button
-                      disabled
-                      className="px-3 py-1.5 bg-gray-200 text-gray-500 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
-                    >
-                      <span>⚠️</span>
-                      <span>No Report</span>
-                    </button>
-                  )
-                }
-              })()}
-
-              {/* Sam's Report Button */}
-              {(() => {
-                const samPhase = editorPhases.find(p => p.phase_number === 2)
-                const hasReport = samPhase?.report_pdf_url
-                const isReading = samPhase?.phase_status === 'active' && !samPhase?.ai_read_completed_at
-                const phaseStarted = samPhase?.phase_status !== 'pending'
-
-                if (!phaseStarted) {
-                  return (
-                    <button
-                      disabled
-                      className="px-3 py-1.5 bg-gray-200 text-gray-400 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
-                    >
-                      <span>📄</span>
-                      <span>Sam Report</span>
-                    </button>
-                  )
-                } else if (isReading) {
-                  return (
-                    <button
-                      disabled
-                      className="px-3 py-1.5 bg-purple-100 text-purple-600 text-xs rounded-lg cursor-wait flex items-center gap-1.5"
-                    >
-                      <div className="w-3 h-3 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
-                      <span>Generating...</span>
-                    </button>
-                  )
-                } else if (hasReport) {
-                  return (
-                    <button
-                      onClick={() => {
-                        if (samPhase?.report_pdf_url) {
-                          window.open(samPhase.report_pdf_url, '_blank')
-                        }
-                      }}
-                      className="px-3 py-1.5 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-1.5 shadow-sm"
-                    >
-                      <span>📄</span>
-                      <span>Sam Report</span>
-                    </button>
-                  )
-                } else {
-                  return (
-                    <button
-                      disabled
-                      className="px-3 py-1.5 bg-gray-200 text-gray-500 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
-                    >
-                      <span>⚠️</span>
-                      <span>No Report</span>
-                    </button>
-                  )
-                }
-              })()}
-
-              {/* Jordan's Report Button */}
-              {(() => {
-                const jordanPhase = editorPhases.find(p => p.phase_number === 3)
-                const hasReport = jordanPhase?.report_pdf_url
-                const isReading = jordanPhase?.phase_status === 'active' && !jordanPhase?.ai_read_completed_at
-                const phaseStarted = jordanPhase?.phase_status !== 'pending'
-
-                if (!phaseStarted) {
-                  return (
-                    <button
-                      disabled
-                      className="px-3 py-1.5 bg-gray-200 text-gray-400 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
-                    >
-                      <span>📄</span>
-                      <span>Jordan Report</span>
-                    </button>
-                  )
-                } else if (isReading) {
-                  return (
-                    <button
-                      disabled
-                      className="px-3 py-1.5 bg-blue-100 text-blue-600 text-xs rounded-lg cursor-wait flex items-center gap-1.5"
-                    >
-                      <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                      <span>Generating...</span>
-                    </button>
-                  )
-                } else if (hasReport) {
-                  return (
-                    <button
-                      onClick={() => {
-                        if (jordanPhase?.report_pdf_url) {
-                          window.open(jordanPhase.report_pdf_url, '_blank')
-                        }
-                      }}
-                      className="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1.5 shadow-sm"
-                    >
-                      <span>📄</span>
-                      <span>Jordan Report</span>
-                    </button>
-                  )
-                } else {
-                  return (
-                    <button
-                      disabled
-                      className="px-3 py-1.5 bg-gray-200 text-gray-500 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
-                    >
-                      <span>⚠️</span>
-                      <span>No Report</span>
-                    </button>
-                  )
-                }
-              })()}
-            </div>
-
-            {/* NEW: Versions Dropdown */}
-            <div className="border-l border-gray-200 pl-6">
-              <VersionsDropdown
-                manuscriptId={manuscript.id}
-                currentPhaseNumber={currentPhase}
-              />
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Layout */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* LEFT: Chapter Navigation */}
-        <div className={`${isChapterSidebarCollapsed ? 'w-16' : 'w-64'} bg-white border-r border-gray-200 flex flex-col transition-all`}>
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center justify-between mb-2">
-              {!isChapterSidebarCollapsed && (
-                <h2 className="font-bold text-gray-900">Chapters ({chapters.length})</h2>
-              )}
-              <button
-                onClick={() => setIsChapterSidebarCollapsed(!isChapterSidebarCollapsed)}
-                className="p-2 hover:bg-gray-100 rounded"
-              >
-                {isChapterSidebarCollapsed ? '→' : '←'}
-              </button>
-            </div>
-
-            {/* Phase Badges */}
-            {!isChapterSidebarCollapsed && currentChapter && (
-              <div className="flex gap-2 mt-2">
-                {/* D - Developmental */}
-                <div className={`px-2 py-1 rounded text-xs font-bold ${currentChapter.phase_1_approved_at
-                  ? 'bg-green-600 text-white'
-                  : 'bg-gray-200 text-gray-400'
-                  }`}>
-                  D
-                </div>
-
-                {/* L - Line Editing */}
-                <div className={`px-2 py-1 rounded text-xs font-bold ${currentChapter.phase_2_approved_at
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-gray-200 text-gray-400'
-                  }`}>
-                  L
-                </div>
-
-                {/* C - Copy Editing */}
-                <div className={`px-2 py-1 rounded text-xs font-bold ${currentChapter.phase_3_approved_at
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-400'
-                  }`}>
-                  C
-                </div>
-              </div>
-            )}
-          </div>
-
-
-          <div className="flex-1 overflow-y-auto p-2">
-            {chapters.map((chapter, index) => {
-              const editStatus = chapterEditingStatus[chapter.chapter_number]
-              const phaseColumn = `phase_${currentPhase}_approved_at` as keyof Chapter
-              const isApproved = !!chapter[phaseColumn]
-
-              return (
-                <button
-                  key={chapter.id}
-                  onClick={() => !isLocked && loadChapter(index)}
-                  disabled={isLocked}
-                  className={`group w-full p-3 rounded-lg mb-2 text-left transition ${isLocked
-                    ? 'opacity-50 cursor-not-allowed'
-                    : index === currentChapterIndex
-                      ? `${getEditorColorClasses(editorColor).bgLight} border-2 ${getEditorColorClasses(editorColor).border}`
-                      : `bg-white border border-gray-200 ${getEditorColorClasses(editorColor).borderLight}`
-                    }`}
-                >
-                  {!isChapterSidebarCollapsed ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 flex items-center justify-center">
-                        {isApproved ? (
-                          <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>✓</span>
-                        ) : editStatus === 'analyzing' ? (
-                          <div className={`w-4 h-4 border-2 ${getEditorColorClasses(editorColor).border} border-t-transparent rounded-full animate-spin`}></div>
-                        ) : editStatus === 'ready' ? (
-                          <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>●</span>
-                        ) : unsavedChapters.has(chapter.chapter_number) ? (
-                          <span className="text-blue-600 text-lg">●</span>
-                        ) : (
-                          <span className="text-gray-300 text-lg">○</span>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-xs text-gray-500">
-                          {chapter.chapter_number === 0 ? 'Prologue' : `Chapter ${chapter.chapter_number}`}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <div className="font-semibold text-sm flex-1">{chapter.title}</div>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleEditChapterTitle(chapter)
-                            }}
-                            className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white rounded transition"
-                            title="Edit chapter title"
-                          >
-                            <svg className="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                            </svg>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-center">
-                      {chapter.chapter_number === 0 ? 'P' : chapter.chapter_number}
-                    </div>
-                  )}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* CENTER: Editor */}
-        <div className="flex-1 flex flex-col bg-white">
-          <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-            <h3 className="text-lg font-bold">{currentChapter?.title || 'Loading...'}</h3>
-            <div className="flex gap-2">
-              {/* Start Editing Button - Shows when not started */}
-              {(() => {
-                console.log('🔍 Start Editing button check:', {
-                  currentEditingStatus,
-                  analysisComplete,
-                  shouldShow: currentEditingStatus === 'not_started' && analysisComplete
-                })
-                return null
-              })()}
-              {currentEditingStatus === 'not_started' && analysisComplete && (
-                <button
-                  onClick={() => analyzeChapter(currentChapter.chapter_number)}
-                  className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg ${getEditorColorClasses(editorColor).bgHover}`}
-                >
-                  Start Editing
-                </button>
-              )}
-
-              {/* Retrieving Notes Button - Shows during analysis */}
-              {currentEditingStatus === 'analyzing' && (
-                <button
-                  disabled
-                  className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg opacity-75 cursor-wait flex items-center gap-2`}
-                >
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Retrieving Notes...
-                </button>
-              )}
-
-              {/* Notes Button - Shows when analysis complete and issues exist */}
-              {chapterIssues.length > 0 && (
-                <button
-                  onClick={() => setShowIssuesPanel(!showIssuesPanel)}
-                  className={`px-4 py-2 rounded-lg ${showIssuesPanel
-                    ? `${getEditorColorClasses(editorColor).bg} text-white`
-                    : `${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).text} border ${getEditorColorClasses(editorColor).borderLight}`
-                    }`}
-                >
-                  Notes ({chapterIssues.length})
-                </button>
-              )}
-
-              {/* Save Button - Always visible */}
-              <button
-                onClick={() => saveChanges(false)}
-                disabled={!hasUnsavedChanges}
-                className={`px-4 py-2 rounded-lg ${hasUnsavedChanges
-                  ? 'bg-blue-600 text-white hover:bg-blue-700'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
-              >
-                Save
-              </button>
-
-              {/* Approve Button - Shows when ready */}
-              {currentEditingStatus === 'ready' && !showMeetNextEditorButton && (
-                <button
-                  onClick={handleApproveChapter}
-                  className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg ${getEditorColorClasses(editorColor).bgHover}`}
-                >
-                  Approve
-                </button>
-              )}
-
-              {/* Meet Next Editor Button OR Completion Summary */}
-              {showMeetNextEditorButton && (
-                <>
-                  {activePhase?.phase_number === 3 ? (
-                    // Phase 3 complete - Show completion summary
-                    <button
-                      onClick={() => router.push(`/phase-complete?manuscriptId=${manuscript?.id}`)}
-                      className="px-6 py-3 bg-gradient-to-r from-green-600 via-purple-600 to-blue-600 text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse hover:shadow-xl"
-                    >
-                      🎉 View Completion Summary
-                    </button>
-                  ) : (
-                    // Phase 1 or 2 - Show meet next editor
-                    <button
-                      onClick={handleMeetNextEditor}
-                      className={`px-6 py-3 bg-gradient-to-r text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse ${activePhase?.phase_number === 1
-                        ? 'from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800'
-                        : activePhase?.phase_number === 2
-                          ? 'from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800'
-                          : 'from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800'
-                        }`}
-                    >
-                      {activePhase?.phase_number === 1 && '👋 Meet Sam'}
-                      {activePhase?.phase_number === 2 && '👋 Meet Jordan'}
-                      {activePhase?.phase_number === 3 && '👋 View Summary'}
-                    </button>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Toolbar Strip - Word Count and Status */}
-          <div className="px-4 py-2 bg-gray-50 border-b border-gray-200 flex items-center justify-between text-sm">
-            <div className="flex items-center gap-4">
-              <span className="text-gray-600">
-                Words: <span className="font-semibold text-gray-900">{wordCount.toLocaleString()}</span>
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              {hasUnsavedChanges && (
-                <span className="flex items-center gap-1 text-blue-600 font-medium">
-                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                  {isSaving ? 'Saving...' : 'Unsaved changes'}
-                </span>
-              )}
-            </div>
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-6">
-            <textarea
-              value={editorContent}
-              onChange={(e) => {
-                const newContent = e.target.value
-                setEditorContent(newContent)
-                pendingContentRef.current = newContent  // Store immediately
-                setHasUnsavedChanges(true)
-                setUnsavedChapters(prev => new Set(prev).add(currentChapter.chapter_number))
-
-                // Clear existing timer
-                if (autoSaveTimer) clearTimeout(autoSaveTimer)
-
-                // Set new auto-save timer (3 seconds)
-                const timer = setTimeout(() => {
-                  saveChanges(true)
-                }, 3000)
-
-                setAutoSaveTimer(timer)
+            <button
+              onClick={async () => {
+                const supabase = createClient()
+                await supabase.auth.signOut()
+                router.push('/login')
               }}
-              className={`w-full h-full min-h-[500px] p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 ${getEditorColorClasses(editorColor).ring} font-serif text-lg leading-relaxed`}
-              disabled={isLocked}
-            />
+              className="text-sm text-gray-700 hover:text-gray-900 font-medium"
+            >
+              Sign Out
+            </button>
           </div>
-        </div>
-
-        {/* RIGHT: Chat Panel */}
-        <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
-          {/* Editor Header */}
-          <div className={`p-4 ${getEditorColorClasses(editorColor).bg} text-white`}>
-            <h2 className="text-xl font-bold">{editorName}</h2>
-            <p className="text-sm opacity-90">{EDITOR_CONFIG[currentPhase as PhaseNumber].phaseName}</p>
-          </div>
-
-          {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-
-            {/* Show "Read my Manuscript" button if analysis not started */}
-            {!analysisComplete && !fullAnalysisInProgress && (
-              <div className="text-center py-8">
-                <div className="mb-6">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-3xl">
-                    📖
-                  </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">
-                    Hi! I&apos;m {editorName}
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4">
-                    Before we begin editing, I need to read your manuscript.
-                  </p>
-                </div>
-
-                <button
-                  onClick={triggerFullAnalysis}
-                  className={`w-full ${getEditorColorClasses(editorColor).bg} text-white px-6 py-4 rounded-xl font-bold text-base ${getEditorColorClasses(editorColor).bgHover} transition-all shadow-md hover:shadow-lg`}
-                >
-                  📖 Read My Manuscript
-                </button>
-
-                <p className="text-xs text-gray-500 mt-3">
-                  This takes about 5 minutes. You&apos;ll get a comprehensive report by email.
-                </p>
-              </div>
-            )}
-
-            {/* Chat Messages */}
-            {chatMessages.map((msg, index) => (
-              <div
-                key={index}
-                className={`${msg.sender === 'Author'
-                  ? 'bg-blue-50 border-blue-200 ml-8'
-                  : msg.sender === 'system'
-                    ? 'bg-amber-50 border-amber-300 border-dashed'
-                    : `${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} mr-8`
-                  } border rounded-lg p-3`}
-              >
-                {/* Only show sender name if not a system message */}
-                {msg.sender !== 'system' && (
-                  <div className="font-semibold text-sm mb-1">{msg.sender}</div>
-                )}
-                <div className="text-sm whitespace-pre-wrap">{msg.message}</div>
-              </div>
-            ))}
-
-            {/* Reading Progress Indicator */}
-            {fullAnalysisInProgress && (
-              <div className={`${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} border rounded-lg p-4 mr-8`}>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="relative">
-                    <div className="w-10 h-10 border-4 border-gray-200 border-t-gray-600 rounded-full animate-spin"></div>
-                    <div className="absolute inset-0 flex items-center justify-center text-lg">
-                      📖
-                    </div>
-                  </div>
-                  <div>
-                    <div className="font-semibold text-sm">{editorName}</div>
-                    <div className="text-xs text-gray-600">Reading your manuscript...</div>
-                  </div>
-                </div>
-                <div className="text-sm text-gray-700">{thinkingMessage}</div>
-              </div>
-            )}
-
-            {/* Thinking indicator for chat */}
-            {isThinking && !fullAnalysisInProgress && (
-              <div className={`${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} border rounded-lg p-3 mr-8`}>
-                <div className="font-semibold text-sm mb-1">{editorName}</div>
-                <div className="text-sm">Thinking...</div>
-              </div>
-            )}
-
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Chat Input */}
-          <form onSubmit={handleChatSubmit} className="p-4 border-t border-gray-200">
-            <div className="flex gap-2">
-              <input
-                ref={chatInputRef}  // ← ADD THIS LINE
-                type="text"
-                value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                placeholder={`Ask ${editorName}...`}
-                disabled={fullAnalysisInProgress}
-                className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 ${getEditorColorClasses(editorColor).ring} disabled:bg-gray-100 disabled:cursor-not-allowed`}
-              />
-              <button
-                type="submit"
-                disabled={!userInput.trim() || isThinking || fullAnalysisInProgress}
-                className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg ${getEditorColorClasses(editorColor).bgHover} disabled:opacity-50 disabled:cursor-not-allowed`}
-              >
-                Send
-              </button>
-            </div>
-          </form>
         </div>
       </div>
-
-      {/* Issues Panel Overlay */}
-      {
-        showIssuesPanel && (
-          <div className="absolute right-96 top-20 bottom-0 w-96 bg-white shadow-2xl border-l border-gray-200 flex flex-col">
-            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-              <h3 className="font-bold">Editor Notes</h3>
-              <button
-                onClick={() => setShowIssuesPanel(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ✕
-              </button>
+      <div className="h-screen flex flex-col bg-gray-50">
+        {/* Header */}
+        <header className="bg-white border-b border-gray-200 p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            {/* Left: Manuscript Title */}
+            <div className="flex items-center gap-4">
+              <div className={`w-10 h-10 rounded-lg ${getEditorColorClasses(editorColor).bg} text-white flex items-center justify-center`}>
+                <BookOpen className="w-6 h-6" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">{manuscript.title}</h1>
+                <p className={`text-sm ${getEditorColorClasses(editorColor).text} font-medium`}>
+                  Phase {currentPhase}: {EDITOR_CONFIG[currentPhase as PhaseNumber].phaseName} with {editorName}
+                </p>
+              </div>
             </div>
 
-            {/* Filters */}
-            <div className="p-3 border-b border-gray-200 flex gap-2 overflow-x-auto">
-              <button
-                onClick={() => setIssueFilter('all')}
-                className={`px-3 py-1 rounded-lg text-sm ${issueFilter === 'all'
-                  ? `${getEditorColorClasses(editorColor).bg} text-white`
-                  : 'bg-gray-200 text-gray-700'
-                  }`}
-              >
-                All ({chapterIssues.length})
-              </button>
+            {/* Right: Editor Progress & Report Buttons */}
+            <div className="flex items-center gap-6">
 
-              {ISSUE_CATEGORIES_BY_PHASE[currentPhase as PhaseNumber].map(category => (
+              {/* Editor Progress Indicators */}
+              <div className="flex items-center gap-3">
+                {/* Alex (Phase 1) */}
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${currentPhase > 1
+                  ? 'bg-green-600 text-white'
+                  : currentPhase === 1
+                    ? 'bg-green-600 text-white ring-2 ring-green-300'
+                    : 'bg-gray-200 text-gray-400'
+                  }`}>
+                  A
+                </div>
+
+                {/* Sam (Phase 2) */}
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${currentPhase > 2
+                  ? 'bg-purple-600 text-white'
+                  : currentPhase === 2
+                    ? 'bg-purple-600 text-white ring-2 ring-purple-300'
+                    : 'bg-gray-200 text-gray-400'
+                  }`}>
+                  S
+                </div>
+
+                {/* Jordan (Phase 3) */}
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${currentPhase > 3
+                  ? 'bg-blue-600 text-white'
+                  : currentPhase === 3
+                    ? 'bg-blue-600 text-white ring-2 ring-blue-300'
+                    : 'bg-gray-200 text-gray-400'
+                  }`}>
+                  J
+                </div>
+              </div>
+
+              {/* PDF Report Buttons - Always Visible */}
+              <div className="flex items-center gap-2 border-l border-gray-200 pl-6">
+                {/* Alex's Report Button */}
+                {(() => {
+                  const alexPhase = editorPhases.find(p => p.phase_number === 1)
+                  const hasReport = alexPhase?.report_pdf_url
+                  const isReading = alexPhase?.phase_status === 'active' && !alexPhase?.ai_read_completed_at
+                  const phaseStarted = alexPhase?.phase_status !== 'pending'
+
+                  if (!phaseStarted) {
+                    // Phase not started yet
+                    return (
+                      <button
+                        disabled
+                        className="px-3 py-1.5 bg-gray-200 text-gray-400 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
+                      >
+                        <span>📄</span>
+                        <span>Alex Report</span>
+                      </button>
+                    )
+                  } else if (isReading) {
+                    // Alex is reading (PDF generating)
+                    return (
+                      <button
+                        disabled
+                        className="px-3 py-1.5 bg-green-100 text-green-600 text-xs rounded-lg cursor-wait flex items-center gap-1.5"
+                      >
+                        <div className="w-3 h-3 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                        <span>Generating...</span>
+                      </button>
+                    )
+                  } else if (hasReport) {
+                    // Report is ready
+                    return (
+                      <button
+                        onClick={() => {
+                          if (alexPhase?.report_pdf_url) {
+                            window.open(alexPhase.report_pdf_url, '_blank')
+                          }
+                        }}
+                        className="px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1.5 shadow-sm"
+                      >
+                        <span>📄</span>
+                        <span>Alex Report</span>
+                      </button>
+                    )
+                  } else {
+                    // Phase complete but no report (error state)
+                    return (
+                      <button
+                        disabled
+                        className="px-3 py-1.5 bg-gray-200 text-gray-500 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
+                      >
+                        <span>⚠️</span>
+                        <span>No Report</span>
+                      </button>
+                    )
+                  }
+                })()}
+
+                {/* Sam's Report Button */}
+                {(() => {
+                  const samPhase = editorPhases.find(p => p.phase_number === 2)
+                  const hasReport = samPhase?.report_pdf_url
+                  const isReading = samPhase?.phase_status === 'active' && !samPhase?.ai_read_completed_at
+                  const phaseStarted = samPhase?.phase_status !== 'pending'
+
+                  if (!phaseStarted) {
+                    return (
+                      <button
+                        disabled
+                        className="px-3 py-1.5 bg-gray-200 text-gray-400 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
+                      >
+                        <span>📄</span>
+                        <span>Sam Report</span>
+                      </button>
+                    )
+                  } else if (isReading) {
+                    return (
+                      <button
+                        disabled
+                        className="px-3 py-1.5 bg-purple-100 text-purple-600 text-xs rounded-lg cursor-wait flex items-center gap-1.5"
+                      >
+                        <div className="w-3 h-3 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+                        <span>Generating...</span>
+                      </button>
+                    )
+                  } else if (hasReport) {
+                    return (
+                      <button
+                        onClick={() => {
+                          if (samPhase?.report_pdf_url) {
+                            window.open(samPhase.report_pdf_url, '_blank')
+                          }
+                        }}
+                        className="px-3 py-1.5 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-1.5 shadow-sm"
+                      >
+                        <span>📄</span>
+                        <span>Sam Report</span>
+                      </button>
+                    )
+                  } else {
+                    return (
+                      <button
+                        disabled
+                        className="px-3 py-1.5 bg-gray-200 text-gray-500 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
+                      >
+                        <span>⚠️</span>
+                        <span>No Report</span>
+                      </button>
+                    )
+                  }
+                })()}
+
+                {/* Jordan's Report Button */}
+                {(() => {
+                  const jordanPhase = editorPhases.find(p => p.phase_number === 3)
+                  const hasReport = jordanPhase?.report_pdf_url
+                  const isReading = jordanPhase?.phase_status === 'active' && !jordanPhase?.ai_read_completed_at
+                  const phaseStarted = jordanPhase?.phase_status !== 'pending'
+
+                  if (!phaseStarted) {
+                    return (
+                      <button
+                        disabled
+                        className="px-3 py-1.5 bg-gray-200 text-gray-400 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
+                      >
+                        <span>📄</span>
+                        <span>Jordan Report</span>
+                      </button>
+                    )
+                  } else if (isReading) {
+                    return (
+                      <button
+                        disabled
+                        className="px-3 py-1.5 bg-blue-100 text-blue-600 text-xs rounded-lg cursor-wait flex items-center gap-1.5"
+                      >
+                        <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                        <span>Generating...</span>
+                      </button>
+                    )
+                  } else if (hasReport) {
+                    return (
+                      <button
+                        onClick={() => {
+                          if (jordanPhase?.report_pdf_url) {
+                            window.open(jordanPhase.report_pdf_url, '_blank')
+                          }
+                        }}
+                        className="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1.5 shadow-sm"
+                      >
+                        <span>📄</span>
+                        <span>Jordan Report</span>
+                      </button>
+                    )
+                  } else {
+                    return (
+                      <button
+                        disabled
+                        className="px-3 py-1.5 bg-gray-200 text-gray-500 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
+                      >
+                        <span>⚠️</span>
+                        <span>No Report</span>
+                      </button>
+                    )
+                  }
+                })()}
+              </div>
+
+              {/* NEW: Versions Dropdown */}
+              <div className="border-l border-gray-200 pl-6">
+                <VersionsDropdown
+                  manuscriptId={manuscript.id}
+                  currentPhaseNumber={currentPhase}
+                />
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Layout */}
+        <div className="flex-1 flex overflow-hidden">
+          {/* LEFT: Chapter Navigation */}
+          <div className={`${isChapterSidebarCollapsed ? 'w-16' : 'w-64'} bg-white border-r border-gray-200 flex flex-col transition-all`}>
+            <div className="p-4 border-b border-gray-200">
+              <div className="flex items-center justify-between mb-2">
+                {!isChapterSidebarCollapsed && (
+                  <h2 className="font-bold text-gray-900">Chapters ({chapters.length})</h2>
+                )}
                 <button
-                  key={category}
-                  onClick={() => setIssueFilter(category)}
-                  className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap ${issueFilter === category
+                  onClick={() => setIsChapterSidebarCollapsed(!isChapterSidebarCollapsed)}
+                  className="p-2 hover:bg-gray-100 rounded"
+                >
+                  {isChapterSidebarCollapsed ? '→' : '←'}
+                </button>
+              </div>
+
+              {/* Phase Badges */}
+              {!isChapterSidebarCollapsed && currentChapter && (
+                <div className="flex gap-2 mt-2">
+                  {/* D - Developmental */}
+                  <div className={`px-2 py-1 rounded text-xs font-bold ${currentChapter.phase_1_approved_at
+                    ? 'bg-green-600 text-white'
+                    : 'bg-gray-200 text-gray-400'
+                    }`}>
+                    D
+                  </div>
+
+                  {/* L - Line Editing */}
+                  <div className={`px-2 py-1 rounded text-xs font-bold ${currentChapter.phase_2_approved_at
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-200 text-gray-400'
+                    }`}>
+                    L
+                  </div>
+
+                  {/* C - Copy Editing */}
+                  <div className={`px-2 py-1 rounded text-xs font-bold ${currentChapter.phase_3_approved_at
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-400'
+                    }`}>
+                    C
+                  </div>
+                </div>
+              )}
+            </div>
+
+
+            <div className="flex-1 overflow-y-auto p-2">
+              {chapters.map((chapter, index) => {
+                const editStatus = chapterEditingStatus[chapter.chapter_number]
+                const phaseColumn = `phase_${currentPhase}_approved_at` as keyof Chapter
+                const isApproved = !!chapter[phaseColumn]
+
+                return (
+                  <button
+                    key={chapter.id}
+                    onClick={() => !isLocked && loadChapter(index)}
+                    disabled={isLocked}
+                    className={`group w-full p-3 rounded-lg mb-2 text-left transition ${isLocked
+                      ? 'opacity-50 cursor-not-allowed'
+                      : index === currentChapterIndex
+                        ? `${getEditorColorClasses(editorColor).bgLight} border-2 ${getEditorColorClasses(editorColor).border}`
+                        : `bg-white border border-gray-200 ${getEditorColorClasses(editorColor).borderLight}`
+                      }`}
+                  >
+                    {!isChapterSidebarCollapsed ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 flex items-center justify-center">
+                          {isApproved ? (
+                            <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>✓</span>
+                          ) : editStatus === 'analyzing' ? (
+                            <div className={`w-4 h-4 border-2 ${getEditorColorClasses(editorColor).border} border-t-transparent rounded-full animate-spin`}></div>
+                          ) : editStatus === 'ready' ? (
+                            <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>●</span>
+                          ) : unsavedChapters.has(chapter.chapter_number) ? (
+                            <span className="text-blue-600 text-lg">●</span>
+                          ) : (
+                            <span className="text-gray-300 text-lg">○</span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs text-gray-500">
+                            {chapter.chapter_number === 0 ? 'Prologue' : `Chapter ${chapter.chapter_number}`}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <div className="font-semibold text-sm flex-1">{chapter.title}</div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleEditChapterTitle(chapter)
+                              }}
+                              className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white rounded transition"
+                              title="Edit chapter title"
+                            >
+                              <svg className="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        {chapter.chapter_number === 0 ? 'P' : chapter.chapter_number}
+                      </div>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* CENTER: Editor */}
+          <div className="flex-1 flex flex-col bg-white">
+            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+              <h3 className="text-lg font-bold">{currentChapter?.title || 'Loading...'}</h3>
+              <div className="flex gap-2">
+                {/* Start Editing Button - Shows when not started */}
+                {(() => {
+                  console.log('🔍 Start Editing button check:', {
+                    currentEditingStatus,
+                    analysisComplete,
+                    shouldShow: currentEditingStatus === 'not_started' && analysisComplete
+                  })
+                  return null
+                })()}
+                {currentEditingStatus === 'not_started' && analysisComplete && (
+                  <button
+                    onClick={() => analyzeChapter(currentChapter.chapter_number)}
+                    className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg ${getEditorColorClasses(editorColor).bgHover}`}
+                  >
+                    Start Editing
+                  </button>
+                )}
+
+                {/* Retrieving Notes Button - Shows during analysis */}
+                {currentEditingStatus === 'analyzing' && (
+                  <button
+                    disabled
+                    className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg opacity-75 cursor-wait flex items-center gap-2`}
+                  >
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Retrieving Notes...
+                  </button>
+                )}
+
+                {/* Notes Button - Shows when analysis complete and issues exist */}
+                {chapterIssues.length > 0 && (
+                  <button
+                    onClick={() => setShowIssuesPanel(!showIssuesPanel)}
+                    className={`px-4 py-2 rounded-lg ${showIssuesPanel
+                      ? `${getEditorColorClasses(editorColor).bg} text-white`
+                      : `${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).text} border ${getEditorColorClasses(editorColor).borderLight}`
+                      }`}
+                  >
+                    Notes ({chapterIssues.length})
+                  </button>
+                )}
+
+                {/* Save Button - Always visible */}
+                <button
+                  onClick={() => saveChanges(false)}
+                  disabled={!hasUnsavedChanges}
+                  className={`px-4 py-2 rounded-lg ${hasUnsavedChanges
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                >
+                  Save
+                </button>
+
+                {/* Approve Button - Shows when ready */}
+                {currentEditingStatus === 'ready' && !showMeetNextEditorButton && (
+                  <button
+                    onClick={handleApproveChapter}
+                    className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg ${getEditorColorClasses(editorColor).bgHover}`}
+                  >
+                    Approve
+                  </button>
+                )}
+
+                {/* Meet Next Editor Button OR Completion Summary */}
+                {showMeetNextEditorButton && (
+                  <>
+                    {activePhase?.phase_number === 3 ? (
+                      // Phase 3 complete - Show completion summary
+                      <button
+                        onClick={() => router.push(`/phase-complete?manuscriptId=${manuscript?.id}`)}
+                        className="px-6 py-3 bg-gradient-to-r from-green-600 via-purple-600 to-blue-600 text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse hover:shadow-xl"
+                      >
+                        🎉 View Completion Summary
+                      </button>
+                    ) : (
+                      // Phase 1 or 2 - Show meet next editor
+                      <button
+                        onClick={handleMeetNextEditor}
+                        className={`px-6 py-3 bg-gradient-to-r text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse ${activePhase?.phase_number === 1
+                          ? 'from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800'
+                          : activePhase?.phase_number === 2
+                            ? 'from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800'
+                            : 'from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800'
+                          }`}
+                      >
+                        {activePhase?.phase_number === 1 && '👋 Meet Sam'}
+                        {activePhase?.phase_number === 2 && '👋 Meet Jordan'}
+                        {activePhase?.phase_number === 3 && '👋 View Summary'}
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Toolbar Strip - Word Count and Status */}
+            <div className="px-4 py-2 bg-gray-50 border-b border-gray-200 flex items-center justify-between text-sm">
+              <div className="flex items-center gap-4">
+                <span className="text-gray-600">
+                  Words: <span className="font-semibold text-gray-900">{wordCount.toLocaleString()}</span>
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                {hasUnsavedChanges && (
+                  <span className="flex items-center gap-1 text-blue-600 font-medium">
+                    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                    {isSaving ? 'Saving...' : 'Unsaved changes'}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6">
+              <textarea
+                value={editorContent}
+                onChange={(e) => {
+                  const newContent = e.target.value
+                  setEditorContent(newContent)
+                  pendingContentRef.current = newContent  // Store immediately
+                  setHasUnsavedChanges(true)
+                  setUnsavedChapters(prev => new Set(prev).add(currentChapter.chapter_number))
+
+                  // Clear existing timer
+                  if (autoSaveTimer) clearTimeout(autoSaveTimer)
+
+                  // Set new auto-save timer (3 seconds)
+                  const timer = setTimeout(() => {
+                    saveChanges(true)
+                  }, 3000)
+
+                  setAutoSaveTimer(timer)
+                }}
+                className={`w-full h-full min-h-[500px] p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 ${getEditorColorClasses(editorColor).ring} font-serif text-lg leading-relaxed`}
+                disabled={isLocked}
+              />
+            </div>
+          </div>
+
+          {/* RIGHT: Chat Panel */}
+          <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
+            {/* Editor Header */}
+            <div className={`p-4 ${getEditorColorClasses(editorColor).bg} text-white`}>
+              <h2 className="text-xl font-bold">{editorName}</h2>
+              <p className="text-sm opacity-90">{EDITOR_CONFIG[currentPhase as PhaseNumber].phaseName}</p>
+            </div>
+
+            {/* Messages Area */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+
+              {/* Show "Read my Manuscript" button if analysis not started */}
+              {!analysisComplete && !fullAnalysisInProgress && (
+                <div className="text-center py-8">
+                  <div className="mb-6">
+                    <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-3xl">
+                      📖
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">
+                      Hi! I&apos;m {editorName}
+                    </h3>
+                    <p className="text-gray-600 text-sm mb-4">
+                      Before we begin editing, I need to read your manuscript.
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={triggerFullAnalysis}
+                    className={`w-full ${getEditorColorClasses(editorColor).bg} text-white px-6 py-4 rounded-xl font-bold text-base ${getEditorColorClasses(editorColor).bgHover} transition-all shadow-md hover:shadow-lg`}
+                  >
+                    📖 Read My Manuscript
+                  </button>
+
+                  <p className="text-xs text-gray-500 mt-3">
+                    This takes about 5 minutes. You&apos;ll get a comprehensive report by email.
+                  </p>
+                </div>
+              )}
+
+              {/* Chat Messages */}
+              {chatMessages.map((msg, index) => (
+                <div
+                  key={index}
+                  className={`${msg.sender === 'Author'
+                    ? 'bg-blue-50 border-blue-200 ml-8'
+                    : msg.sender === 'system'
+                      ? 'bg-amber-50 border-amber-300 border-dashed'
+                      : `${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} mr-8`
+                    } border rounded-lg p-3`}
+                >
+                  {/* Only show sender name if not a system message */}
+                  {msg.sender !== 'system' && (
+                    <div className="font-semibold text-sm mb-1">{msg.sender}</div>
+                  )}
+                  <div className="text-sm whitespace-pre-wrap">{msg.message}</div>
+                </div>
+              ))}
+
+              {/* Reading Progress Indicator */}
+              {fullAnalysisInProgress && (
+                <div className={`${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} border rounded-lg p-4 mr-8`}>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="relative">
+                      <div className="w-10 h-10 border-4 border-gray-200 border-t-gray-600 rounded-full animate-spin"></div>
+                      <div className="absolute inset-0 flex items-center justify-center text-lg">
+                        📖
+                      </div>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-sm">{editorName}</div>
+                      <div className="text-xs text-gray-600">Reading your manuscript...</div>
+                    </div>
+                  </div>
+                  <div className="text-sm text-gray-700">{thinkingMessage}</div>
+                </div>
+              )}
+
+              {/* Thinking indicator for chat */}
+              {isThinking && !fullAnalysisInProgress && (
+                <div className={`${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} border rounded-lg p-3 mr-8`}>
+                  <div className="font-semibold text-sm mb-1">{editorName}</div>
+                  <div className="text-sm">Thinking...</div>
+                </div>
+              )}
+
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Chat Input */}
+            <form onSubmit={handleChatSubmit} className="p-4 border-t border-gray-200">
+              <div className="flex gap-2">
+                <input
+                  ref={chatInputRef}  // ← ADD THIS LINE
+                  type="text"
+                  value={userInput}
+                  onChange={(e) => setUserInput(e.target.value)}
+                  placeholder={`Ask ${editorName}...`}
+                  disabled={fullAnalysisInProgress}
+                  className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 ${getEditorColorClasses(editorColor).ring} disabled:bg-gray-100 disabled:cursor-not-allowed`}
+                />
+                <button
+                  type="submit"
+                  disabled={!userInput.trim() || isThinking || fullAnalysisInProgress}
+                  className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg ${getEditorColorClasses(editorColor).bgHover} disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  Send
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        {/* Issues Panel Overlay */}
+        {
+          showIssuesPanel && (
+            <div className="absolute right-96 top-20 bottom-0 w-96 bg-white shadow-2xl border-l border-gray-200 flex flex-col">
+              <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+                <h3 className="font-bold">Editor Notes</h3>
+                <button
+                  onClick={() => setShowIssuesPanel(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Filters */}
+              <div className="p-3 border-b border-gray-200 flex gap-2 overflow-x-auto">
+                <button
+                  onClick={() => setIssueFilter('all')}
+                  className={`px-3 py-1 rounded-lg text-sm ${issueFilter === 'all'
                     ? `${getEditorColorClasses(editorColor).bg} text-white`
                     : 'bg-gray-200 text-gray-700'
                     }`}
                 >
-                  {category.replace('_', ' ')} ({chapterIssues.filter(i => i.element_type === category).length})
+                  All ({chapterIssues.length})
                 </button>
-              ))}
+
+                {ISSUE_CATEGORIES_BY_PHASE[currentPhase as PhaseNumber].map(category => (
+                  <button
+                    key={category}
+                    onClick={() => setIssueFilter(category)}
+                    className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap ${issueFilter === category
+                      ? `${getEditorColorClasses(editorColor).bg} text-white`
+                      : 'bg-gray-200 text-gray-700'
+                      }`}
+                  >
+                    {category.replace('_', ' ')} ({chapterIssues.filter(i => i.element_type === category).length})
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {filteredIssues.map(issue => (
+                  <div
+                    key={issue.id}
+                    className={`border-l-4 ${getEditorColorClasses(editorColor).border} bg-gray-50 p-3 rounded`}
+                  >
+                    {/* Category badge */}
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className={`px-2 py-0.5 rounded text-xs font-semibold ${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).text}`}>
+                        {issue.element_type.replace('_', ' ')}
+                      </span>
+                    </div>
+
+                    {/* Observation */}
+                    <div className="text-sm text-gray-700 mb-2 leading-relaxed">
+                      {issue.issue_description}
+                    </div>
+
+                    {/* Editor's question - styled as quote with color accent */}
+                    <div className={`${getEditorColorClasses(editorColor).text} italic text-sm mb-3 border-l-2 ${getEditorColorClasses(editorColor).border} pl-2 py-1`}>
+                      &quot;{issue.editor_suggestion}&quot;
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleDiscussIssue(issue)}
+                        className={`flex-1 px-3 py-1.5 ${getEditorColorClasses(editorColor).bg} text-white rounded text-xs font-medium ${getEditorColorClasses(editorColor).bgHover}`}
+                      >
+                        💬 Discuss
+                      </button>
+                      <button
+                        onClick={() => handleDismissIssue(issue)}
+                        className="flex-1 px-3 py-1.5 bg-gray-300 text-gray-700 rounded text-xs font-medium hover:bg-gray-400"
+                      >
+                        ✕ Dismiss
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                {filteredIssues.length === 0 && (
+                  <div className="text-center text-gray-500 py-8">
+                    No notes in this category
+                  </div>
+                )}
+              </div>
             </div>
-
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {filteredIssues.map(issue => (
-                <div
-                  key={issue.id}
-                  className={`border-l-4 ${getEditorColorClasses(editorColor).border} bg-gray-50 p-3 rounded`}
-                >
-                  {/* Category badge */}
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className={`px-2 py-0.5 rounded text-xs font-semibold ${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).text}`}>
-                      {issue.element_type.replace('_', ' ')}
-                    </span>
-                  </div>
-
-                  {/* Observation */}
-                  <div className="text-sm text-gray-700 mb-2 leading-relaxed">
-                    {issue.issue_description}
-                  </div>
-
-                  {/* Editor's question - styled as quote with color accent */}
-                  <div className={`${getEditorColorClasses(editorColor).text} italic text-sm mb-3 border-l-2 ${getEditorColorClasses(editorColor).border} pl-2 py-1`}>
-                    &quot;{issue.editor_suggestion}&quot;
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleDiscussIssue(issue)}
-                      className={`flex-1 px-3 py-1.5 ${getEditorColorClasses(editorColor).bg} text-white rounded text-xs font-medium ${getEditorColorClasses(editorColor).bgHover}`}
-                    >
-                      💬 Discuss
-                    </button>
-                    <button
-                      onClick={() => handleDismissIssue(issue)}
-                      className="flex-1 px-3 py-1.5 bg-gray-300 text-gray-700 rounded text-xs font-medium hover:bg-gray-400"
-                    >
-                      ✕ Dismiss
-                    </button>
-                  </div>
-                </div>
-              ))}
-
-              {filteredIssues.length === 0 && (
-                <div className="text-center text-gray-500 py-8">
-                  No notes in this category
-                </div>
-              )}
-            </div>
-          </div>
-        )
-      }
-    </div >
+          )
+        }
+      </div >
+    </>
   )
 }
 

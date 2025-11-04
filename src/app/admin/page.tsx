@@ -126,29 +126,34 @@ export default function AdminDashboard() {
     async function checkAdminAccess() {
         try {
             const { data: { user } } = await supabase.auth.getUser()
+            console.log('🔍 Admin check - User:', user?.id, user?.email)
 
             if (!user) {
+                console.log('❌ No user, redirecting to login')
                 router.push('/login')
                 return
             }
 
-            // Check if user has admin role
             const { data: profile } = await supabase
                 .from('author_profiles')
                 .select('role, email')
                 .eq('id', user.id)
                 .single()
 
+            console.log('🔍 Admin check - Profile:', profile)
+            console.log('🔍 Admin check - Role:', profile?.role)
+
             if (profile?.role === 'admin' || profile?.role === 'super_admin') {
+                console.log('✅ User is admin!')
                 setIsAdmin(true)
                 setAdminEmail(profile.email)
             } else {
-                // Not an admin, redirect
-                router.push('/dashboard')
+                console.log('❌ User is NOT admin, redirecting')
+                router.push('/author-studio')
             }
         } catch (error) {
             console.error('Admin access check failed:', error)
-            router.push('/dashboard')
+            router.push('/author-studio')
         } finally {
             setLoading(false)
         }
