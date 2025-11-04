@@ -50,7 +50,7 @@ export default function HowItWorksPage() {
             </span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            Our 5-phase AI-powered editing process transforms your manuscript into a published book. Three phases available now, with publishing and marketing launching Q1 2025.
+            Our 5-phase AI-powered editing process transforms your manuscript into a published book. Three phases available now, with publishing and marketing launching Q4 2025.
           </p>
         </div>
       </section>
@@ -412,7 +412,7 @@ export default function HowItWorksPage() {
 
                 <div className="mt-6 p-4 bg-white rounded-lg border border-teal-300">
                   <p className="text-sm text-gray-600">
-                    <strong>Status:</strong> Launching Q1 2025 | <strong>Publishing Specialist:</strong> Taylor | <strong>Estimated Timeline:</strong> Files ready in 3-5 days
+                    <strong>Status:</strong> Launching Q4 2025 | <strong>Publishing Specialist:</strong> Taylor | <strong>Estimated Timeline:</strong> Files ready in 3-5 days
                   </p>
                 </div>
               </div>
@@ -478,7 +478,7 @@ export default function HowItWorksPage() {
                 </div>
                 <div className="mt-6 p-4 bg-white rounded-lg border border-orange-300">
                   <p className="text-sm text-gray-600">
-                    <strong>Status:</strong> Launching Q1 2025 | <strong>Marketing Specialist:</strong> Quinn (Marketing Strategist)
+                    <strong>Status:</strong> Launching Q4 2025 | <strong>Marketing Specialist:</strong> Quinn (Marketing Strategist)
                   </p>
                 </div>
               </div>

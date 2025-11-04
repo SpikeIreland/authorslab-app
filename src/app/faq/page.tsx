@@ -34,11 +34,11 @@ export default function FAQPage() {
       questions: [
         {
           q: "What are the 5 editing phases?",
-          a: "Phase 1 (Developmental with Alex) focuses on story structure and character development. Phase 2 (Line Editing with Sam) refines your prose at the sentence level. Phase 3 (Copy Editing with Jordan) ensures technical accuracy and grammar. Phase 4 (Publishing with Taylor) formats your book for publication - launching Q1 2025. Phase 5 (Marketing with Quinn) helps you promote your book - launching Q1 2025. The first three phases are available now."
+          a: "Phase 1 (Developmental with Alex) focuses on story structure and character development. Phase 2 (Line Editing with Sam) refines your prose at the sentence level. Phase 3 (Copy Editing with Jordan) ensures technical accuracy and grammar. Phase 4 (Publishing with Taylor) formats your book for publication - launching Q4 2025. Phase 5 (Marketing with Quinn) helps you promote your book - launching Q4 2025. The first three phases are available now."
         },
         {
           q: "Which phases are available now?",
-          a: "Phases 1-3 (Alex, Sam, and Jordan) are fully available now. This covers complete developmental editing, line editing, and copy editing. Phase 4 (Publishing with Taylor) and Phase 5 (Marketing with Quinn) are launching in Q1 2025."
+          a: "Phases 1-3 (Alex, Sam, and Jordan) are fully available now. This covers complete developmental editing, line editing, and copy editing. Phase 4 (Publishing with Taylor) and Phase 5 (Marketing with Quinn) are launching in Q4 2025."
         },
         {
           q: "Can I skip phases or do them out of order?",
@@ -67,7 +67,7 @@ export default function FAQPage() {
         },
         {
           q: "How much does the complete editing package cost?",
-          a: "The 3-Phase Editing Package (Phases 1-3: Alex, Sam, and Jordan) is $299 as a one-time payment. This includes developmental editing, line editing, and copy editing. When Phase 4 (Publishing) and Phase 5 (Marketing) launch in Q1 2025, they'll be available as add-ons with pricing to be announced."
+          a: "The 3-Phase Editing Package (Phases 1-3: Alex, Sam, and Jordan) is $299 as a one-time payment. This includes developmental editing, line editing, and copy editing. When Phase 4 (Publishing) and Phase 5 (Marketing) launch in Q4 2025, they'll be available as add-ons with pricing to be announced."
         },
         {
           q: "Is the $299 package a one-time payment or subscription?",
@@ -83,7 +83,7 @@ export default function FAQPage() {
         },
         {
           q: "When will Phase 4 (Publishing) and Phase 5 (Marketing) be available?",
-          a: "Both Phase 4 with Taylor (Publishing Preparation) and Phase 5 with Quinn (Marketing Strategy) are launching in Q1 2025. If you purchase the 3-Phase Package now, you'll be first to know when they launch and receive special early access pricing."
+          a: "Both Phase 4 with Taylor (Publishing Preparation) and Phase 5 with Quinn (Marketing Strategy) are launching in Q4 2025. If you purchase the 3-Phase Package now, you'll be first to know when they launch and receive special early access pricing."
         },
         {
           q: "Do you offer refunds?",
@@ -182,7 +182,7 @@ export default function FAQPage() {
       questions: [
         {
           q: "What will Phase 5 (Marketing with Quinn) include?",
-          a: "When Phase 5 launches in Q1 2025, Quinn will help you build your author platform, identify your target readers, create social media content calendars, develop email campaign strategies, and plan a strategic book launch campaign. This comprehensive marketing support is designed to help you connect with your ideal readers."
+          a: "When Phase 5 launches in Q4 2025, Quinn will help you build your author platform, identify your target readers, create social media content calendars, develop email campaign strategies, and plan a strategic book launch campaign. This comprehensive marketing support is designed to help you connect with your ideal readers."
         },
         {
           q: "Can I use AuthorsLab.ai for multiple books?",
@@ -190,7 +190,7 @@ export default function FAQPage() {
         },
         {
           q: "What if I want to start editing now but wait for publishing and marketing phases?",
-          a: "Perfect! Start with the 3-Phase Editing Package ($299) now to work with Alex, Sam, and Jordan. When Phase 4 (Publishing) and Phase 5 (Marketing) launch in Q1 2025, you'll be notified and can add them to your completed manuscript."
+          a: "Perfect! Start with the 3-Phase Editing Package ($299) now to work with Alex, Sam, and Jordan. When Phase 4 (Publishing) and Phase 5 (Marketing) launch in Q4 2025, you'll be notified and can add them to your completed manuscript."
         },
         {
           q: "Do you help with book cover design?",

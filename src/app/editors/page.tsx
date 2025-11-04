@@ -50,7 +50,7 @@ export default function EditorsPage() {
             </span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            Five AI specialists, each trained in their craft, working together to transform your manuscript from first draft to published, promoted book. Three available now, two launching Q1 2025.
+            Five AI specialists, each trained in their craft, working together to transform your manuscript from first draft to published, promoted book. Three available now, two launching Q4 2025.
           </p>
         </div>
       </section>
@@ -358,7 +358,7 @@ export default function EditorsPage() {
       {/* Taylor - Publishing - COMING SOON */}
       <section className="py-20 bg-gray-50 relative opacity-95">
         <div className="absolute top-8 right-8 bg-teal-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
-          COMING Q1 2025
+          COMING Q4 2025
         </div>
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
@@ -458,7 +458,7 @@ export default function EditorsPage() {
       {/* Quinn - Marketing - COMING SOON */}
       <section className="py-20 relative opacity-95">
         <div className="absolute top-8 right-8 bg-orange-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
-          COMING Q1 2025
+          COMING Q4 2025
         </div>
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
@@ -563,7 +563,7 @@ export default function EditorsPage() {
               Your Complete Editorial & Publishing Team
             </h2>
             <p className="text-xl text-gray-600">
-              Five specialists working in sequence to take your manuscript from first draft to published, promoted book. The first three editors are available now, with publishing and marketing launching Q1 2025.
+              Five specialists working in sequence to take your manuscript from first draft to published, promoted book. The first three editors are available now, with publishing and marketing launching Q4 2025.
             </p>
           </div>
 
@@ -613,7 +613,7 @@ export default function EditorsPage() {
             <div className="bg-gradient-to-r from-teal-50 to-orange-50 rounded-2xl shadow-xl p-8 md:p-12 border-2 border-teal-300 opacity-95">
               <div className="text-center mb-8">
                 <span className="inline-block px-4 py-2 bg-teal-100 text-teal-800 rounded-full text-sm font-bold mb-2">
-                  COMING Q1 2025
+                  COMING Q4 2025
                 </span>
                 <h3 className="text-2xl font-bold text-gray-900">Publishing & Marketing</h3>
               </div>
