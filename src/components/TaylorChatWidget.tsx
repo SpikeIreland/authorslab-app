@@ -55,17 +55,63 @@ export default function TaylorChatWidget({ manuscriptId }: TaylorChatWidgetProps
     }
 
     async function addTaylorGreeting() {
+        // Fetch manuscript details for personalized greeting
+        const supabase = createClient()
+        const { data: manuscript } = await supabase
+            .from('manuscripts')
+            .select('title, genre, current_word_count, author_profiles!inner(first_name)')
+            .eq('id', manuscriptId)
+            .single()
+
+        const authorProfile = Array.isArray(manuscript?.author_profiles)
+            ? manuscript.author_profiles[0]
+            : manuscript?.author_profiles
+
+        const authorName = authorProfile?.first_name || 'there'
+        const title = manuscript?.title || 'your manuscript'
+        const genre = manuscript?.genre || 'your genre'
+        const wordCount = manuscript?.current_word_count?.toLocaleString() || 'your word count'
+
         const greetingMessage = {
             id: 'greeting-' + Date.now(),
             sender: 'taylor' as const,
-            message: "👋 Hey there! I'm Taylor, your publishing specialist. I'm here to help you navigate the publishing process, from cover design to platform setup. What would you like to know about bringing your book to market?",
+            message: `👋 Welcome to your Publishing Hub, ${authorName}!
+
+I'm Taylor, your publishing specialist. Congratulations on completing the editing for "${title}"! That's a huge accomplishment.
+
+📚 **Your Manuscript:**
+• Genre: ${genre}
+• Length: ${wordCount} words
+• Status: Edited and ready for publishing
+
+**What I'll Help You With:**
+
+🎯 **Strategy & Planning**
+• Choosing the right publishing platforms for your goals
+• Understanding the publishing timeline
+• Setting realistic expectations
+
+🎨 **Professional Presentation**
+• AI-generated cover design concepts
+• Optimized book descriptions and metadata
+• All the file formats you'll need (EPUB, Kindle, Print PDF)
+
+📖 **Platform Setup**
+• Step-by-step guides for Amazon KDP, Draft2Digital, and more
+• Account setup assistance
+• Upload walkthroughs with screenshots
+
+**Let's Get Started!**
+
+I'll begin with a quick assessment (3-5 minutes) to create your personalized publishing plan. Or if you have specific questions, just ask away!
+
+Type "let's start" to begin the assessment, or ask me anything about publishing your book.`,
             created_at: new Date().toISOString()
         }
 
         setMessages([greetingMessage])
 
         // Save greeting to database
-        const supabase = createClient()
         await supabase.from('editor_chat_messages').insert({
             manuscript_id: manuscriptId,
             phase_number: 4,
@@ -197,8 +243,8 @@ export default function TaylorChatWidget({ manuscriptId }: TaylorChatWidgetProps
                             >
                                 <div
                                     className={`max-w-[80%] rounded-2xl px-4 py-2 ${msg.sender === 'user'
-                                            ? 'bg-teal-600 text-white'
-                                            : 'bg-white border-2 border-teal-200 text-gray-800'
+                                        ? 'bg-teal-600 text-white'
+                                        : 'bg-white border-2 border-teal-200 text-gray-800'
                                         }`}
                                 >
                                     <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
