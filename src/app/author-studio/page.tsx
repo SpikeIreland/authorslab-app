@@ -32,6 +32,65 @@ import {
 
 import { EDITOR_CONFIG, ISSUE_CATEGORIES_BY_PHASE } from '@/types/database'
 
+// Utility to highlight text in the editor
+function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null) {
+  if (!editorRef || !quotedText) return false;
+
+  // Remove any existing highlights
+  const existingHighlights = editorRef.querySelectorAll('.issue-highlight');
+  existingHighlights.forEach(el => {
+    const parent = el.parentNode;
+    if (parent) {
+      parent.replaceChild(document.createTextNode(el.textContent || ''), el);
+      parent.normalize(); // Merge adjacent text nodes
+    }
+  });
+
+  // Find the text to highlight
+  const walker = document.createTreeWalker(
+    editorRef,
+    NodeFilter.SHOW_TEXT,
+    null
+  );
+
+  let node;
+  let found = false;
+
+  while ((node = walker.nextNode())) {
+    const text = node.textContent || '';
+    const index = text.indexOf(quotedText);
+
+    if (index !== -1) {
+      const range = document.createRange();
+      range.setStart(node, index);
+      range.setEnd(node, index + quotedText.length);
+
+      // Create highlight span
+      const highlight = document.createElement('span');
+      highlight.className = 'issue-highlight';
+      highlight.style.backgroundColor = '#fef3c7'; // yellow-100
+      highlight.style.borderRadius = '2px';
+      highlight.style.padding = '2px 0';
+      highlight.style.boxShadow = '0 0 0 2px #fbbf24'; // yellow-400 border
+
+      range.surroundContents(highlight);
+
+      // Scroll to highlight with offset for header
+      setTimeout(() => {
+        highlight.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }, 100);
+
+      found = true;
+      break;
+    }
+  }
+
+  return found;
+}
+
 function getEditorColorClasses(color: string) {
   const colorMap = {
     green: {
@@ -88,6 +147,40 @@ function getEditorColorClasses(color: string) {
   return colorMap[color as keyof typeof colorMap] || colorMap.green
 }
 
+// Helper function to get category color classes
+function getCategoryColor(category: string): string {
+  const colors: Record<string, string> = {
+    // Phase 1 (Alex)
+    'character': 'bg-green-100 text-green-700',
+    'plot': 'bg-green-100 text-green-700',
+    'pacing': 'bg-green-100 text-green-700',
+    'structure': 'bg-green-100 text-green-700',
+    'theme': 'bg-green-100 text-green-700',
+    // Phase 2 (Sam)
+    'word_choice': 'bg-purple-100 text-purple-700',
+    'sentence_flow': 'bg-purple-100 text-purple-700',
+    'dialogue': 'bg-purple-100 text-purple-700',
+    'voice': 'bg-purple-100 text-purple-700',
+    'clarity': 'bg-purple-100 text-purple-700',
+    // Phase 3 (Jordan)
+    'grammar': 'bg-blue-100 text-blue-700',
+    'punctuation': 'bg-blue-100 text-blue-700',
+    'consistency': 'bg-blue-100 text-blue-700',
+    'formatting': 'bg-blue-100 text-blue-700',
+  }
+  return colors[category] || 'bg-gray-100 text-gray-700'
+}
+
+// Helper function to get severity color classes
+function getSeverityColor(severity: string): string {
+  const colors: Record<string, string> = {
+    'minor': 'text-gray-600',
+    'moderate': 'text-orange-600 font-medium',
+    'major': 'text-red-600 font-bold',
+  }
+  return colors[severity] || 'text-gray-600'
+}
+
 const WEBHOOKS = {
   alexFullAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-full-manuscript-analysis',
   alexChapterAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/alex-chapter-analysis',
@@ -138,6 +231,9 @@ function StudioContent() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [isLocked, setIsLocked] = useState(false)
   const [editorPhases, setEditorPhases] = useState<EditingPhase[]>([])
+
+  const editorPanelRef = useRef<HTMLTextAreaElement>(null);
+
 
   // Chapter Editing Status
   const [chapterEditingStatus, setChapterEditingStatus] = useState<{ [key: number]: ChapterEditingStatus }>({})
@@ -1837,6 +1933,7 @@ function StudioContent() {
 
             <div className="flex-1 overflow-y-auto p-6">
               <textarea
+                ref={editorPanelRef}
                 value={editorContent}
                 onChange={(e) => {
                   const newContent = e.target.value
@@ -1978,13 +2075,36 @@ function StudioContent() {
           showIssuesPanel && (
             <div className="absolute right-96 top-20 bottom-0 w-96 bg-white shadow-2xl border-l border-gray-200 flex flex-col">
               <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-                <h3 className="font-bold">Editor Notes</h3>
-                <button
-                  onClick={() => setShowIssuesPanel(false)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  ✕
-                </button>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold">Editor Notes</h3>
+                  <span className="text-xs text-gray-500">
+                    ({filteredIssues.length})
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      // Clear all highlights
+                      const existingHighlights = document.querySelectorAll('.issue-highlight');
+                      existingHighlights.forEach(el => {
+                        const parent = el.parentNode;
+                        if (parent) {
+                          parent.replaceChild(document.createTextNode(el.textContent || ''), el);
+                          parent.normalize();
+                        }
+                      });
+                    }}
+                    className="text-xs text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                  >
+                    Clear highlights
+                  </button>
+                  <button
+                    onClick={() => setShowIssuesPanel(false)}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
 
               {/* Filters */}
@@ -2014,29 +2134,59 @@ function StudioContent() {
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {filteredIssues.map(issue => (
+                {filteredIssues.map((issue) => (
                   <div
                     key={issue.id}
-                    className={`border-l-4 ${getEditorColorClasses(editorColor).border} bg-gray-50 p-3 rounded`}
+                    className={`p-4 border-b border-gray-200 ${issue.status === 'in_progress' ? 'bg-yellow-50' : ''}`}
                   >
-                    {/* Category badge */}
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className={`px-2 py-0.5 rounded text-xs font-semibold ${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).text}`}>
-                        {issue.element_type.replace('_', ' ')}
-                      </span>
+                    {/* NEW: Clickable header to highlight text */}
+                    <div
+                      onClick={() => {
+                        if (issue.quoted_text && editorPanelRef.current) {
+                          highlightTextInEditor(
+                            issue.quoted_text,
+                            editorPanelRef.current.parentElement
+                          );
+                        }
+                      }}
+                      className="cursor-pointer hover:bg-blue-50 -m-2 p-2 rounded-lg transition-colors"
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${getCategoryColor(issue.element_type)}`}>
+                          {issue.element_type}
+                        </span>
+                        <span className={`text-xs ${getSeverityColor(issue.severity)}`}>
+                          {issue.severity}
+                        </span>
+                        <span className="text-xs text-blue-600 font-medium ml-auto">
+                          👆 Click to highlight
+                        </span>
+                      </div>
+
+                      {/* Show quoted text if available */}
+                      {issue.quoted_text && (
+                        <div className="mb-2 p-2 bg-gray-50 rounded border-l-2 border-blue-400">
+                          <div className="text-xs text-gray-600 mb-1 font-medium">Original text:</div>
+                          <div className="text-sm italic text-gray-700">
+                            &quot;{issue.quoted_text}&quot;
+                          </div>
+                        </div>
+                      )}
                     </div>
 
-                    {/* Observation */}
-                    <div className="text-sm text-gray-700 mb-2 leading-relaxed">
-                      {issue.issue_description}
+                    {/* Issue description */}
+                    <div className="text-sm text-gray-700 mb-3">
+                      <strong>Issue:</strong> {issue.issue_description}
                     </div>
 
-                    {/* Editor's question - styled as quote with color accent */}
-                    <div className={`${getEditorColorClasses(editorColor).text} italic text-sm mb-3 border-l-2 ${getEditorColorClasses(editorColor).border} pl-2 py-1`}>
-                      &quot;{issue.editor_suggestion}&quot;
-                    </div>
+                    {/* Editor suggestion */}
+                    {issue.editor_suggestion && (
+                      <div className="text-sm text-gray-700 mb-3 p-2 bg-green-50 rounded border-l-2 border-green-400">
+                        <strong>Suggestion:</strong> {issue.editor_suggestion}
+                      </div>
+                    )}
 
-                    {/* Action Buttons */}
+                    {/* Action buttons */}
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleDiscussIssue(issue)}
