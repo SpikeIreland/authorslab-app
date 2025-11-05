@@ -295,7 +295,7 @@ function StudioContent() {
 
     console.log('📡 Subscribing to report updates for manuscript:', manuscript.id)
 
-    const supabase = createClient() // ← CREATE SUPABASE CLIENT HERE
+    const supabase = createClient()
 
     const channel = supabase
       .channel('report-updates')
@@ -307,19 +307,26 @@ function StudioContent() {
           table: 'editing_phases',
           filter: `manuscript_id=eq.${manuscript.id}`
         },
-        (payload) => {
+        async (payload) => {
           console.log('🔔 Editing phase update received:', payload)
 
           if (payload.new.report_pdf_url && payload.new.ai_read_completed_at) {
             console.log('✅ PDF Report ready (realtime)')
 
-            // Update manuscript state with report URL
-            setManuscript(prev => prev ? {
-              ...prev,
-              report_pdf_url: payload.new.report_pdf_url
-            } : null)
+            // Reload ALL phases to update button states
+            const { data: allPhases } = await supabase
+              .from('editing_phases')
+              .select('*')
+              .eq('manuscript_id', manuscript.id)
+              .order('phase_number', { ascending: true })
+
+            if (allPhases) {
+              setEditorPhases(allPhases)
+              console.log('🔄 Updated phases with new report data')
+            }
 
             // Add chat message when report is ready
+            const editorName = payload.new.editor_name || 'Your editor'
             addChatMessage(
               editorName,
               `📧 Your comprehensive PDF report is ready! Check your email or click "${editorName}'s Report" above.`
@@ -333,7 +340,7 @@ function StudioContent() {
       console.log('🔌 Unsubscribing from report updates')
       supabase.removeChannel(channel)
     }
-  }, [manuscript?.id, editorName])
+  }, [manuscript?.id])
 
   // Auto-scroll chat
   useEffect(() => {
