@@ -4,6 +4,7 @@ import { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import TaylorChatWidget from '@/components/TaylorChatWidget'
 
 function PublishingHubContent() {
   const router = useRouter()
@@ -69,9 +70,6 @@ function PublishingHubContent() {
               📚 AuthorsLab.ai
             </Link>
             <nav className="hidden md:flex items-center gap-8">
-              <Link href="/dashboard" className="text-gray-700 hover:text-blue-900 font-medium">
-                Dashboard
-              </Link>
               <Link href="/author-studio" className="text-gray-700 hover:text-blue-900 font-medium">
                 Writing Studio
               </Link>
@@ -333,6 +331,9 @@ function PublishingHubContent() {
           </div>
         </section>
       </main>
+
+      {/* Taylor Chat Widget */}
+      {manuscriptId && <TaylorChatWidget manuscriptId={manuscriptId} />}
     </div>
   )
 }
