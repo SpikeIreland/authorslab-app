@@ -2139,54 +2139,76 @@ function StudioContent() {
                     key={issue.id}
                     className={`p-4 border-b border-gray-200 ${issue.status === 'in_progress' ? 'bg-yellow-50' : ''}`}
                   >
-                    {/* NEW: Clickable header to highlight text */}
-                    <div
-                      onClick={() => {
-                        if (issue.quoted_text && editorPanelRef.current) {
-                          highlightTextInEditor(
-                            issue.quoted_text,
-                            editorPanelRef.current.parentElement
-                          );
-                        }
-                      }}
-                      className="cursor-pointer hover:bg-blue-50 -m-2 p-2 rounded-lg transition-colors"
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${getCategoryColor(issue.element_type)}`}>
-                          {issue.element_type}
-                        </span>
-                        <span className={`text-xs ${getSeverityColor(issue.severity)}`}>
-                          {issue.severity}
-                        </span>
-                        <span className="text-xs text-blue-600 font-medium ml-auto">
-                          👆 Click to highlight
-                        </span>
-                      </div>
+                    {/* Conditional: Only show highlighting for Sam (Phase 2) and Jordan (Phase 3) */}
+                    {(currentPhase === 2 || currentPhase === 3) && issue.quoted_text ? (
+                      <div
+                        onClick={() => {
+                          if (issue.quoted_text && editorPanelRef.current) {
+                            highlightTextInEditor(
+                              issue.quoted_text,
+                              editorPanelRef.current.parentElement
+                            );
+                          }
+                        }}
+                        className="cursor-pointer hover:bg-blue-50 -m-2 p-2 rounded-lg transition-colors"
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${getCategoryColor(issue.element_type)}`}>
+                            {issue.element_type}
+                          </span>
+                          <span className={`text-xs ${getSeverityColor(issue.severity)}`}>
+                            {issue.severity}
+                          </span>
+                          <span className="text-xs text-blue-600 font-medium ml-auto">
+                            👆 Click to highlight
+                          </span>
+                        </div>
 
-                      {/* Show quoted text if available */}
-                      {issue.quoted_text && (
+                        {/* Show quoted text */}
                         <div className="mb-2 p-2 bg-gray-50 rounded border-l-2 border-blue-400">
                           <div className="text-xs text-gray-600 mb-1 font-medium">Original text:</div>
                           <div className="text-sm italic text-gray-700">
                             &quot;{issue.quoted_text}&quot;
                           </div>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    ) : (
+                      // Non-clickable header for Alex (Phase 1) or issues without quoted_text
+                      <div className="mb-2">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${getCategoryColor(issue.element_type)}`}>
+                            {issue.element_type}
+                          </span>
+                          <span className={`text-xs ${getSeverityColor(issue.severity)}`}>
+                            {issue.severity}
+                          </span>
+                        </div>
 
-                    {/* Issue description */}
+                        {/* Show quoted text if available (for Sam) but not clickable */}
+                        {issue.quoted_text && (
+                          <div className="mb-2 p-2 bg-gray-50 rounded border-l-2 border-gray-400">
+                            <div className="text-xs text-gray-600 mb-1 font-medium">Reference:</div>
+                            <div className="text-sm italic text-gray-700">
+                              &quot;{issue.quoted_text}&quot;
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Issue description - always shown */}
                     <div className="text-sm text-gray-700 mb-3">
                       <strong>Issue:</strong> {issue.issue_description}
                     </div>
 
-                    {/* Editor suggestion */}
+                    {/* Editor suggestion - always shown */}
                     {issue.editor_suggestion && (
                       <div className="text-sm text-gray-700 mb-3 p-2 bg-green-50 rounded border-l-2 border-green-400">
                         <strong>Suggestion:</strong> {issue.editor_suggestion}
                       </div>
                     )}
 
-                    {/* Action buttons */}
+                    {/* Action buttons - always shown */}
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleDiscussIssue(issue)}
