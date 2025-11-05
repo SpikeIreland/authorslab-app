@@ -1737,9 +1737,57 @@ function StudioContent() {
                     )}
 
                     {activePhase?.phase_number === 3 && (
-                      // Phase 3 complete - View completion summary
+                      // Phase 3 complete - Generate version then view summary
                       <button
-                        onClick={() => router.push(`/phase-complete?manuscriptId=${manuscript?.id}`)}
+                        onClick={async () => {
+                          // Generate Phase 3 manuscript version
+                          try {
+                            console.log('📦 Generating Phase 3 manuscript version...')
+
+                            // Get author info
+                            const supabase = createClient()
+                            const { data: manuscriptData } = await supabase
+                              .from('manuscripts')
+                              .select(`
+            id,
+            title,
+            author_id,
+            author_profiles!inner (
+              email,
+              first_name
+            )
+          `)
+                              .eq('id', manuscript?.id)
+                              .single()
+
+                            const authorProfile = Array.isArray(manuscriptData?.author_profiles)
+                              ? manuscriptData.author_profiles[0]
+                              : manuscriptData?.author_profiles
+
+                            await fetch(
+                              'https://spikeislandstudios.app.n8n.cloud/webhook/generate-manuscript-version',
+                              {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  manuscriptId: manuscript?.id,
+                                  phaseNumber: 3,
+                                  editorName: 'Jordan',
+                                  authorEmail: authorProfile?.email,
+                                  authorFirstName: authorProfile?.first_name,
+                                  manuscriptTitle: manuscript?.title
+                                })
+                              }
+                            )
+
+                            console.log('✅ Phase 3 version generation triggered')
+                          } catch (error) {
+                            console.error('Version generation error:', error)
+                          }
+
+                          // Navigate to completion page
+                          router.push(`/phase-complete?manuscriptId=${manuscript?.id}`)
+                        }}
                         className="px-6 py-3 bg-gradient-to-r from-green-600 via-purple-600 to-blue-600 text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse hover:shadow-xl"
                       >
                         🎉 View Completion Summary
