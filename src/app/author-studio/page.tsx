@@ -1737,12 +1737,12 @@ function StudioContent() {
                     )}
 
                     {activePhase?.phase_number === 3 && (
-                      // Phase 3 complete - Go to Publishing Hub with Taylor
+                      // Phase 3 complete - View completion summary
                       <button
-                        onClick={() => router.push(`/publishing-hub?manuscriptId=${manuscript?.id}`)}
-                        className="px-6 py-3 bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse"
+                        onClick={() => router.push(`/phase-complete?manuscriptId=${manuscript?.id}`)}
+                        className="px-6 py-3 bg-gradient-to-r from-green-600 via-purple-600 to-blue-600 text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse hover:shadow-xl"
                       >
-                        📚 Start Publishing with Taylor
+                        🎉 View Completion Summary
                       </button>
                     )}
 

@@ -4,400 +4,419 @@ import { Suspense, useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-
-interface Manuscript {
-    id: string
-    title: string
-    current_word_count: number
-}
 
 interface ManuscriptVersion {
-    id: string
-    phase_number: number
-    created_by_editor: string  // ← Correct field name!
-    file_url: string | null
-    created_at: string
+  id: string
+  manuscript_id: string
+  phase_number: number
+  version_type: string
+  word_count: number
+  file_url: string | null
+  created_by_editor: string
+  created_at: string
+}
+
+interface Manuscript {
+  id: string
+  title: string
+  current_phase_number: number
 }
 
 function PhaseCompleteContent() {
-    const router = useRouter()
-    const searchParams = useSearchParams()
-    const manuscriptId = searchParams.get('manuscriptId')
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const manuscriptId = searchParams.get('manuscriptId')
 
-    const [manuscript, setManuscript] = useState<Manuscript | null>(null)
-    const [versions, setVersions] = useState<ManuscriptVersion[]>([])
-    const [isLoading, setIsLoading] = useState(true)
-    const [feedback, setFeedback] = useState('')
-    const [feedbackSubmitted, setFeedbackSubmitted] = useState(false)
+  const [manuscript, setManuscript] = useState<Manuscript | null>(null)
+  const [versions, setVersions] = useState<ManuscriptVersion[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-    const loadData = useCallback(async () => {
-        if (!manuscriptId) {
-            router.push('/author-studio')
-            return
-        }
-
-        const supabase = createClient()
-
-        // Load manuscript
-        const { data: manuscriptData, error: manuscriptError } = await supabase
-            .from('manuscripts')
-            .select('*')
-            .eq('id', manuscriptId)
-            .single()
-
-        if (manuscriptError || !manuscriptData) {
-            console.error('Error loading manuscript:', manuscriptError)
-            router.push('/author-studio')
-            return
-        }
-
-        // Load manuscript versions - only approved snapshots
-        const { data: versionsData } = await supabase
-            .from('manuscript_versions')
-            .select('*')
-            .eq('manuscript_id', manuscriptId)
-            .eq('version_type', 'approved_snapshot')  // ← Only show phase completions
-            .not('file_url', 'is', null)  // ← Only show versions with PDFs
-            .order('phase_number', { ascending: true })
-
-        setManuscript(manuscriptData)
-        setVersions(versionsData || [])
-        setIsLoading(false)
-    }, [manuscriptId, router])
-
-    useEffect(() => {
-        loadData()
-    }, [loadData])
-
-    async function handleFeedbackSubmit() {
-        if (!feedback.trim()) return
-
-        // Here you could save feedback to a database table
-        console.log('Beta Feedback:', feedback)
-
-        // For now, just show success
-        setFeedbackSubmitted(true)
-
-        // You could add a feedback table and insert here
-        // const supabase = createClient()
-        // await supabase.from('beta_feedback').insert({
-        //   manuscript_id: manuscriptId,
-        //   feedback: feedback,
-        //   submitted_at: new Date().toISOString()
-        // })
+  const loadData = useCallback(async () => {
+    if (!manuscriptId) {
+      router.push('/author-studio')
+      return
     }
 
-    function handleContinueEditing(phase: number) {
-        router.push(`/author-studio?manuscriptId=${manuscriptId}&phase=${phase}`)
+    const supabase = createClient()
+
+    // Load manuscript
+    const { data: manuscriptData, error: manuscriptError } = await supabase
+      .from('manuscripts')
+      .select('id, title, current_phase_number')
+      .eq('id', manuscriptId)
+      .single()
+
+    if (manuscriptError || !manuscriptData) {
+      console.error('Error loading manuscript:', manuscriptError)
+      router.push('/author-studio')
+      return
     }
 
-    if (isLoading) {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-green-50 flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading...</p>
-                </div>
-            </div>
-        )
+    setManuscript(manuscriptData)
+
+    // Load approved versions with PDFs only
+    const { data: versionsData, error: versionsError } = await supabase
+      .from('manuscript_versions')
+      .select('*')
+      .eq('manuscript_id', manuscriptId)
+      .eq('version_type', 'approved_snapshot')
+      .not('file_url', 'is', null)
+      .order('phase_number', { ascending: true })
+
+    if (!versionsError && versionsData) {
+      setVersions(versionsData)
     }
 
+    setIsLoading(false)
+  }, [manuscriptId, router])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
+
+  if (isLoading) {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-green-50">
-            {/* Header */}
-            <header className="bg-white border-b border-gray-200 shadow-sm">
-                <div className="container mx-auto px-4 py-4">
-                    <Link href="/" className="text-2xl font-bold text-gray-900">
-                        AuthorsLab.ai
-                    </Link>
-                </div>
-            </header>
-
-            {/* Main Content */}
-            <div className="container mx-auto px-4 py-12 max-w-6xl">
-                {/* Celebration Header */}
-                <div className="text-center mb-12">
-                    <div className="inline-block bg-gradient-to-r from-green-100 via-purple-100 to-blue-100 px-6 py-3 rounded-full text-lg font-bold mb-6 border-2 border-blue-400">
-                        🎉 All 3 Editing Phases Complete!
-                    </div>
-
-                    <h1 className="text-5xl font-bold text-gray-900 mb-4">
-                        Your Manuscript is Professionally Edited
-                    </h1>
-
-                    <p className="text-2xl text-gray-600 mb-2">
-                        {manuscript?.title}
-                    </p>
-
-                    <p className="text-lg text-gray-500">
-                        {manuscript?.current_word_count.toLocaleString()} words of polished, publication-ready content
-                    </p>
-                </div>
-
-                {/* Achievement Summary */}
-                <div className="bg-white rounded-2xl shadow-xl p-8 mb-12 border-2 border-blue-200">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-                        What You&apos;ve Accomplished
-                    </h2>
-
-                    <div className="grid md:grid-cols-3 gap-8">
-                        {/* Phase 1 - Alex */}
-                        <div className="text-center">
-                            <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-4">
-                                👔
-                            </div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Phase 1: Alex</h3>
-                            <p className="text-green-600 font-semibold mb-3">Developmental Editing</p>
-                            <ul className="text-sm text-gray-600 space-y-1 text-left">
-                                <li>✓ Story structure refined</li>
-                                <li>✓ Character arcs developed</li>
-                                <li>✓ Plot tightened</li>
-                                <li>✓ Pacing optimized</li>
-                            </ul>
-                        </div>
-
-                        {/* Phase 2 - Sam */}
-                        <div className="text-center">
-                            <div className="w-20 h-20 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-4">
-                                ✨
-                            </div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Phase 2: Sam</h3>
-                            <p className="text-purple-600 font-semibold mb-3">Line Editing</p>
-                            <ul className="text-sm text-gray-600 space-y-1 text-left">
-                                <li>✓ Word choice refined</li>
-                                <li>✓ Rhythm perfected</li>
-                                <li>✓ Dialogue polished</li>
-                                <li>✓ Voice strengthened</li>
-                            </ul>
-                        </div>
-
-                        {/* Phase 3 - Jordan */}
-                        <div className="text-center">
-                            <div className="w-20 h-20 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-4">
-                                🔍
-                            </div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Phase 3: Jordan</h3>
-                            <p className="text-blue-600 font-semibold mb-3">Copy Editing</p>
-                            <ul className="text-sm text-gray-600 space-y-1 text-left">
-                                <li>✓ Grammar perfected</li>
-                                <li>✓ Punctuation accurate</li>
-                                <li>✓ Consistency verified</li>
-                                <li>✓ Technical polish complete</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Download Manuscript Versions */}
-                <div className="bg-white rounded-2xl shadow-xl p-8 mb-12 border-2 border-purple-200">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">
-                        📥 Download Your Manuscript Versions
-                    </h2>
-
-                    <p className="text-gray-600 text-center mb-8">
-                        We&apos;ve saved a version of your manuscript at each editing milestone
-                    </p>
-
-                    <div className="grid md:grid-cols-3 gap-6">
-                        {versions.map((version) => (
-                            <div
-                                key={version.id}
-                                className={`p-6 rounded-xl border-2 ${version.phase_number === 1
-                                    ? 'bg-green-50 border-green-300'
-                                    : version.phase_number === 2
-                                        ? 'bg-purple-50 border-purple-300'
-                                        : 'bg-blue-50 border-blue-300'
-                                    }`}
-                            >
-                                <h3 className="font-bold text-gray-900 mb-2">
-                                    Phase {version.phase_number}: {version.created_by_editor}
-                                </h3>
-                                <p className="text-sm text-gray-600 mb-4">
-                                    {new Date(version.created_at).toLocaleDateString()}
-                                </p>
-                                {version.file_url ? (
-                                    <a
-                                        href={version.file_url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="block w-full text-center px-4 py-2 bg-white border-2 border-gray-300 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
-                                    >
-                                        Download PDF
-                                    </a>
-                                ) : (
-                                    <button
-                                        disabled
-                                        className="block w-full text-center px-4 py-2 bg-gray-100 border-2 border-gray-200 rounded-lg font-semibold text-gray-400 cursor-not-allowed"
-                                    >
-                                        Processing...
-                                    </button>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Continue Editing */}
-                <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-xl p-8 mb-12 border-2 border-gray-200">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-4 text-center">
-                        Want to Continue Editing?
-                    </h2>
-
-                    <p className="text-gray-600 text-center mb-8 max-w-2xl mx-auto">
-                        Return to any of your editors to review, refine, or discuss your manuscript further. All your progress is saved.
-                    </p>
-
-                    <div className="grid md:grid-cols-3 gap-6">
-                        {/* Return to Alex */}
-                        <button
-                            onClick={() => handleContinueEditing(1)}
-                            className="p-6 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all shadow-lg hover:shadow-xl group"
-                        >
-                            <div className="text-4xl mb-3">👔</div>
-                            <h3 className="text-xl font-bold mb-2">Return to Alex</h3>
-                            <p className="text-sm text-green-100">
-                                Review story structure & character development
-                            </p>
-                        </button>
-
-                        {/* Return to Sam */}
-                        <button
-                            onClick={() => handleContinueEditing(2)}
-                            className="p-6 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl group"
-                        >
-                            <div className="text-4xl mb-3">✨</div>
-                            <h3 className="text-xl font-bold mb-2">Return to Sam</h3>
-                            <p className="text-sm text-purple-100">
-                                Polish more prose & refine your voice
-                            </p>
-                        </button>
-
-                        {/* Return to Jordan */}
-                        <button
-                            onClick={() => handleContinueEditing(3)}
-                            className="p-6 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl group"
-                        >
-                            <div className="text-4xl mb-3">🔍</div>
-                            <h3 className="text-xl font-bold mb-2">Return to Jordan</h3>
-                            <p className="text-sm text-blue-100">
-                                Fine-tune grammar & technical details
-                            </p>
-                        </button>
-                    </div>
-                </div>
-
-                {/* What's Coming Next */}
-                <div className="bg-gradient-to-br from-teal-50 to-orange-50 rounded-2xl shadow-xl p-8 mb-12 border-2 border-teal-300">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">
-                        🚀 What&apos;s Coming Next
-                    </h2>
-
-                    <p className="text-lg text-gray-600 text-center mb-8 max-w-3xl mx-auto">
-                        We&apos;re building two more phases to take your manuscript from edited to published and marketed!
-                    </p>
-
-                    <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                        {/* Phase 4 - Taylor */}
-                        <div className="bg-white rounded-xl p-6 border-2 border-teal-300">
-                            <div className="flex items-center gap-4 mb-4">
-                                <div className="w-16 h-16 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center text-3xl">
-                                    📚
-                                </div>
-                                <div>
-                                    <h3 className="text-2xl font-bold text-gray-900">Phase 4: Taylor</h3>
-                                    <p className="text-teal-600 font-semibold">Publishing Preparation</p>
-                                </div>
-                            </div>
-                            <p className="text-gray-600 mb-4">
-                                Taylor will help you format your manuscript for publication, prepare cover copy, and guide you through publishing options (traditional, indie, hybrid).
-                            </p>
-                            <div className="bg-teal-50 rounded-lg p-3 border border-teal-200">
-                                <p className="text-sm font-semibold text-teal-700">
-                                    🎯 Coming in ~1 week
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Phase 5 - Quinn */}
-                        <div className="bg-white rounded-xl p-6 border-2 border-orange-300">
-                            <div className="flex items-center gap-4 mb-4">
-                                <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center text-3xl">
-                                    🚀
-                                </div>
-                                <div>
-                                    <h3 className="text-2xl font-bold text-gray-900">Phase 5: Quinn</h3>
-                                    <p className="text-orange-600 font-semibold">Marketing Strategy</p>
-                                </div>
-                            </div>
-                            <p className="text-gray-600 mb-4">
-                                Quinn will help you build your author platform, create a book marketing plan, and connect with your target readers through strategic promotion.
-                            </p>
-                            <div className="bg-orange-50 rounded-lg p-3 border border-orange-200">
-                                <p className="text-sm font-semibold text-orange-700">
-                                    🎯 Coming in ~2 weeks
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Beta Feedback */}
-                <div className="bg-white rounded-2xl shadow-xl p-8 border-2 border-yellow-300">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-4 text-center">
-                        💬 Help Us Improve
-                    </h2>
-
-                    <p className="text-gray-600 text-center mb-6">
-                        As a beta tester, your feedback is invaluable. How was your experience with Alex, Sam, and Jordan?
-                    </p>
-
-                    {!feedbackSubmitted ? (
-                        <div className="max-w-2xl mx-auto">
-                            <textarea
-                                value={feedback}
-                                onChange={(e) => setFeedback(e.target.value)}
-                                placeholder="Share your thoughts: What worked well? What could be better? Any bugs or issues?"
-                                className="w-full h-32 p-4 border-2 border-gray-300 rounded-xl resize-none focus:outline-none focus:border-blue-500 mb-4"
-                            />
-                            <button
-                                onClick={handleFeedbackSubmit}
-                                disabled={!feedback.trim()}
-                                className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-bold hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                Submit Feedback
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="max-w-2xl mx-auto text-center">
-                            <div className="bg-green-50 border-2 border-green-300 rounded-xl p-6">
-                                <div className="text-4xl mb-3">✅</div>
-                                <p className="text-lg font-semibold text-green-800 mb-2">
-                                    Thank you for your feedback!
-                                </p>
-                                <p className="text-gray-600">
-                                    Your insights help us build a better writing platform for all authors.
-                                </p>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-purple-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your achievements...</p>
         </div>
+      </div>
     )
+  }
+
+  if (!manuscript) {
+    return null
+  }
+
+  const getEditorName = (phaseNumber: number): string => {
+    const editors = ['', 'Alex', 'Sam', 'Jordan', 'Taylor', 'Quinn']
+    return editors[phaseNumber] || 'Editor'
+  }
+
+  const getEditorColor = (phaseNumber: number): string => {
+    const colors = ['', 'green', 'purple', 'blue', 'teal', 'orange']
+    return colors[phaseNumber] || 'gray'
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-purple-50 to-blue-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm sticky top-0 z-50">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <Link href="/" className="text-2xl font-extrabold bg-gradient-to-r from-green-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
+              📚 AuthorsLab.ai
+            </Link>
+            <Link
+              href={`/author-studio?manuscriptId=${manuscriptId}`}
+              className="text-gray-700 hover:text-gray-900 font-medium"
+            >
+              ← Back to Studio
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-6 py-12">
+        {/* Hero Celebration */}
+        <section className="text-center mb-12">
+          <div className="inline-block animate-bounce text-8xl mb-6">🎉</div>
+          <h1 className="text-6xl font-extrabold mb-4 bg-gradient-to-r from-green-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
+            Congratulations!
+          </h1>
+          <p className="text-2xl text-gray-700 mb-4">
+            You&apos;ve completed all three editing phases
+          </p>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Your manuscript &quot;<strong>{manuscript.title}</strong>&quot; has been professionally edited by Alex, Sam, and Jordan. 
+            It&apos;s now polished, refined, and ready for the next chapter of your publishing journey.
+          </p>
+        </section>
+
+        {/* Download Versions */}
+        <section className="bg-white rounded-3xl p-12 mb-12 shadow-xl">
+          <h2 className="text-4xl font-bold text-gray-900 mb-3 text-center">
+            📖 Your Manuscript Versions
+          </h2>
+          <p className="text-gray-600 text-lg mb-8 text-center max-w-2xl mx-auto">
+            Download your professionally edited manuscripts from each phase. Perfect for backup, sharing with beta readers, or comparing your progress.
+          </p>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {versions.map((version) => {
+              const editorName = getEditorName(version.phase_number)
+              const color = getEditorColor(version.phase_number)
+              
+              return (
+                <div
+                  key={version.id}
+                  className={`border-2 border-${color}-500 bg-${color}-50 rounded-2xl p-6 hover:shadow-2xl transition-all hover:-translate-y-1`}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-bold text-gray-900">
+                      Phase {version.phase_number}: {editorName}
+                    </h3>
+                    <div className={`w-12 h-12 bg-${color}-500 rounded-full flex items-center justify-center text-white text-2xl font-bold`}>
+                      {version.phase_number}
+                    </div>
+                  </div>
+                  
+                  <p className="text-gray-600 text-sm mb-4">
+                    {version.word_count.toLocaleString()} words
+                  </p>
+                  
+                  <p className="text-gray-500 text-xs mb-6">
+                    Completed: {new Date(version.created_at).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric'
+                    })}
+                  </p>
+
+                  {version.file_url && (
+                    <a
+                      href={version.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`block w-full bg-${color}-600 text-white px-6 py-3 rounded-xl font-bold text-center hover:bg-${color}-700 transition-all`}
+                    >
+                      📄 Download PDF
+                    </a>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </section>
+
+        {/* Continue Editing */}
+        <section className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl p-12 mb-12 shadow-xl">
+          <div className="text-center mb-8">
+            <h2 className="text-4xl font-bold text-gray-900 mb-3">
+              ✏️ Continue Refining
+            </h2>
+            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+              Want to make more changes? You can always return to any editor and continue working on your manuscript.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Alex */}
+            <div className="bg-white rounded-2xl p-6 border-2 border-green-500 hover:shadow-xl transition-all">
+              <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-3xl mb-4 mx-auto">
+                🌳
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 text-center mb-2">Alex</h3>
+              <p className="text-gray-600 text-sm text-center mb-6">Developmental Editor</p>
+              <button
+                onClick={() => router.push(`/author-studio?manuscriptId=${manuscriptId}&phase=1`)}
+                className="w-full bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all"
+              >
+                Work with Alex
+              </button>
+            </div>
+
+            {/* Sam */}
+            <div className="bg-white rounded-2xl p-6 border-2 border-purple-500 hover:shadow-xl transition-all">
+              <div className="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center text-3xl mb-4 mx-auto">
+                ✨
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 text-center mb-2">Sam</h3>
+              <p className="text-gray-600 text-sm text-center mb-6">Line Editor</p>
+              <button
+                onClick={() => router.push(`/author-studio?manuscriptId=${manuscriptId}&phase=2`)}
+                className="w-full bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-all"
+              >
+                Work with Sam
+              </button>
+            </div>
+
+            {/* Jordan */}
+            <div className="bg-white rounded-2xl p-6 border-2 border-blue-500 hover:shadow-xl transition-all">
+              <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-3xl mb-4 mx-auto">
+                📝
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 text-center mb-2">Jordan</h3>
+              <p className="text-gray-600 text-sm text-center mb-6">Copy Editor</p>
+              <button
+                onClick={() => router.push(`/author-studio?manuscriptId=${manuscriptId}&phase=3`)}
+                className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-all"
+              >
+                Work with Jordan
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Upgrade Options - Publishing & Marketing */}
+        <section className="bg-gradient-to-br from-teal-50 to-orange-50 rounded-3xl p-12 shadow-xl border-2 border-teal-300">
+          <div className="text-center mb-8">
+            <h2 className="text-4xl font-bold text-gray-900 mb-3">
+              🚀 Ready to Publish?
+            </h2>
+            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+              Your manuscript is professionally edited and ready for the next phase. Choose how you want to bring your book to market.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Publishing Only */}
+            <div className="bg-white rounded-2xl p-8 border-2 border-teal-500 hover:shadow-2xl transition-all">
+              <div className="text-4xl mb-4">📚</div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Phase 4: Publishing</h3>
+              <div className="text-4xl font-bold text-teal-600 mb-4">$299</div>
+              <ul className="space-y-3 mb-6 text-gray-700 text-sm">
+                <li className="flex items-start gap-2">
+                  <span className="text-teal-600">✓</span>
+                  <span>AI cover design (3 options)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-teal-600">✓</span>
+                  <span>Multi-format conversion (Kindle, EPUB, Print)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-teal-600">✓</span>
+                  <span>Platform setup guides (KDP, IngramSpark)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-teal-600">✓</span>
+                  <span>Metadata optimization</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-teal-600">✓</span>
+                  <span>ISBN assignment</span>
+                </li>
+              </ul>
+              <button 
+                onClick={() => {
+                  const stripeUrl = `https://buy.stripe.com/aFa14g1fycWtgX00NS1wY08?client_reference_id=${manuscriptId}`
+                  window.location.href = stripeUrl
+                }}
+                className="w-full bg-teal-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-teal-700 transition-all"
+              >
+                Get Publishing Package
+              </button>
+            </div>
+
+            {/* Bundle - Recommended */}
+            <div className="bg-white rounded-2xl p-8 border-4 border-orange-500 hover:shadow-2xl transition-all transform md:scale-105 relative">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-orange-500 text-white px-6 py-2 rounded-full text-sm font-bold">
+                BEST VALUE
+              </div>
+              <div className="text-4xl mb-4 mt-4">🎁</div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Complete Package</h3>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="text-4xl font-bold text-orange-600">$449</div>
+                <div className="text-gray-500 text-sm line-through">$498</div>
+              </div>
+              <p className="text-green-600 font-semibold mb-4">Save $49!</p>
+              <ul className="space-y-3 mb-6 text-gray-700 text-sm">
+                <li className="flex items-start gap-2">
+                  <span className="text-orange-600">✓</span>
+                  <span><strong>Everything in Publishing</strong></span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-orange-600">✓</span>
+                  <span>Marketing strategy with Quinn</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-orange-600">✓</span>
+                  <span>Social media campaign plan</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-orange-600">✓</span>
+                  <span>Email marketing templates</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-orange-600">✓</span>
+                  <span>Launch timeline & checklist</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-orange-600">✓</span>
+                  <span>Author platform guidance</span>
+                </li>
+              </ul>
+              <button 
+                onClick={() => {
+                  const stripeUrl = `https://buy.stripe.com/3cI8wI5vOg8FeOS0NS1wY09?client_reference_id=${manuscriptId}`
+                  window.location.href = stripeUrl
+                }}
+                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-3 rounded-xl font-bold hover:from-orange-600 hover:to-orange-700 transition-all"
+              >
+                Get Complete Package
+              </button>
+            </div>
+
+            {/* Marketing Only */}
+            <div className="bg-white rounded-2xl p-8 border-2 border-orange-500 hover:shadow-2xl transition-all">
+              <div className="text-4xl mb-4">🚀</div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Phase 5: Marketing</h3>
+              <div className="text-4xl font-bold text-orange-600 mb-4">$199</div>
+              <ul className="space-y-3 mb-6 text-gray-700 text-sm">
+                <li className="flex items-start gap-2">
+                  <span className="text-orange-600">✓</span>
+                  <span>Marketing strategy consultation</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-orange-600">✓</span>
+                  <span>Social media content calendar</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-orange-600">✓</span>
+                  <span>Email campaign templates</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-orange-600">✓</span>
+                  <span>Launch timeline creation</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-orange-600">✓</span>
+                  <span>Target audience identification</span>
+                </li>
+              </ul>
+              <button 
+                onClick={() => {
+                  const stripeUrl = `https://buy.stripe.com/cNi14g9M4bSp5eicwA1wY0a?client_reference_id=${manuscriptId}`
+                  window.location.href = stripeUrl
+                }}
+                className="w-full bg-orange-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-orange-700 transition-all"
+              >
+                Get Marketing Package
+              </button>
+            </div>
+          </div>
+
+          <p className="text-center text-gray-600 mt-8">
+            Not ready yet? You can always purchase these later from your dashboard.
+          </p>
+        </section>
+
+        {/* Final CTA */}
+        <section className="text-center">
+          <Link
+            href="/dashboard"
+            className="inline-block bg-gradient-to-r from-green-600 via-purple-600 to-blue-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:shadow-2xl transition-all"
+          >
+            Return to Dashboard
+          </Link>
+        </section>
+      </main>
+    </div>
+  )
 }
 
 export default function PhaseCompletePage() {
-    return (
-        <Suspense fallback={
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-green-50 flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading...</p>
-                </div>
-            </div>
-        }>
-            <PhaseCompleteContent />
-        </Suspense>
-    )
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-purple-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <PhaseCompleteContent />
+    </Suspense>
+  )
 }
