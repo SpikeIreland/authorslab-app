@@ -48,11 +48,17 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
     return false;
   }
 
-  // Normalize quotes in the search text
-  const normalizedSearch = quotedText
-    .replace(/['']/g, "'")  // Smart single quotes → straight
-    .replace(/[""]/g, '"')  // Smart double quotes → straight
-    .trim();
+  // Comprehensive normalization function
+  const normalize = (text: string) => {
+    return text
+      .replace(/['']/g, "'")       // Smart apostrophes → straight
+      .replace(/[""]/g, '"')       // Smart double quotes → straight  
+      .replace(/[–—]/g, '-')       // En-dash & em-dash → hyphen
+      .replace(/\s+/g, ' ')        // Multiple spaces → single space
+      .trim();
+  };
+
+  const normalizedSearch = normalize(quotedText);
 
   console.log('🔍 Original:', quotedText);
   console.log('🔍 Normalized:', normalizedSearch);
@@ -67,12 +73,12 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
       // Highlight with acrossElements enabled
       markInstance.mark(normalizedSearch, {
         className: 'issue-highlight',
-        accuracy: 'partially',
+        accuracy: 'complementary',  // Changed to complementary for better fuzzy matching
         separateWordSearch: false,
         caseSensitive: false,
         ignoreJoiners: true,
+        ignorePunctuation: ['.', ',', ':', ';', '!', '?'],  // Ignore punctuation differences
         acrossElements: true,
-        wildcards: 'enabled',  // ← Also enable wildcards for better fuzzy matching
         done: (counter: number) => {
           console.log('✅ Mark.js done, found:', counter, 'matches');
 
