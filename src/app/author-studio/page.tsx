@@ -471,18 +471,17 @@ function StudioContent() {
 
   // Remove or comment out the old sync useEffect
 
-  // Add this new useEffect instead:
   useEffect(() => {
     if (editorPanelRef.current) {
-      // Convert line breaks to <br> tags for display
-      const htmlContent = editorContent.replace(/\n/g, '<br>');
+      // Convert line breaks to <br> tags WITH spaces for proper word separation
+      const htmlContent = editorContent.replace(/\n/g, ' <br> ');
 
-      // Only update if content is different (prevents cursor jumping)
+      // Only update if content is different
       if (editorPanelRef.current.innerHTML !== htmlContent) {
         editorPanelRef.current.innerHTML = htmlContent;
       }
     }
-  }, [currentChapterIndex]); // Only update when chapter changes
+  }, [currentChapterIndex]);
 
   // Initialize Studio
   const initializeStudio = useCallback(async () => {
