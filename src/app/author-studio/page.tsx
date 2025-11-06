@@ -2245,18 +2245,6 @@ function StudioContent() {
                             👆 Click to highlight
                           </span>
                         </div>
-                        
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${getCategoryColor(issue.element_type)}`}>
-                            {issue.element_type}
-                          </span>
-                          <span className={`text-xs ${getSeverityColor(issue.severity)}`}>
-                            {issue.severity}
-                          </span>
-                          <span className="text-xs text-blue-600 font-medium ml-auto">
-                            👆 Click to highlight
-                          </span>
-                        </div>
 
                         {/* Show quoted text */}
                         <div className="mb-2 p-2 bg-gray-50 rounded border-l-2 border-blue-400">
