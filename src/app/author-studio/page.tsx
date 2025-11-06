@@ -48,8 +48,9 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
     return false;
   }
 
-  console.log('🔍 Highlighting:', quotedText.substring(0, 50));
-  console.log('📝 Editor element:', editorRef);
+  console.log('🔍 Searching for:', quotedText);
+  console.log('📝 Editor HTML:', editorRef.innerHTML.substring(0, 200));
+  console.log('📝 Editor text:', editorRef.textContent?.substring(0, 200));
 
   const markInstance = new Mark(editorRef);
 
@@ -58,18 +59,22 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
     done: () => {
       console.log('✅ Cleared old highlights');
 
-      // Highlight with fuzzy matching
+      // Try different accuracy settings
+      console.log('🔍 Trying to mark with "partially" accuracy...');
+
       markInstance.mark(quotedText, {
         className: 'issue-highlight',
-        accuracy: 'complementary',
+        accuracy: 'partially', // Changed from 'complementary'
         separateWordSearch: false,
+        caseSensitive: false,
+        ignoreJoiners: true,
         done: (counter: number) => {
           console.log('✅ Mark.js done, found:', counter, 'matches');
 
           if (counter > 0) {
             const highlight = editorRef.querySelector('.issue-highlight') as HTMLElement;
             if (highlight) {
-              // Apply inline styles to ensure visibility
+              // Apply inline styles
               highlight.style.backgroundColor = '#fef3c7';
               highlight.style.borderRadius = '2px';
               highlight.style.padding = '2px 0';
@@ -80,7 +85,8 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
               }, 100);
             }
           } else {
-            console.log('❌ No matches found by mark.js');
+            console.log('❌ No matches found');
+            console.log('🔍 Full editor text:', editorRef.textContent);
           }
         }
       });
