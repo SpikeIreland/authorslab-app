@@ -51,10 +51,10 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
   // Comprehensive normalization function
   const normalize = (text: string) => {
     return text
-      .replace(/['']/g, "'")       // Smart apostrophes → straight
-      .replace(/[""]/g, '"')       // Smart double quotes → straight  
-      .replace(/[–—]/g, '-')       // En-dash & em-dash → hyphen
-      .replace(/\s+/g, ' ')        // Multiple spaces → single space
+      .replace(/[''`]/g, "'")      // All apostrophe variants → straight
+      .replace(/[""]/g, '"')        // Smart double quotes → straight  
+      .replace(/[–—]/g, '-')        // En-dash & em-dash → hyphen
+      .replace(/\s+/g, ' ')         // Multiple spaces → single space
       .trim();
   };
 
@@ -70,15 +70,22 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
     done: () => {
       console.log('✅ Cleared old highlights');
 
-      // Highlight with acrossElements enabled
       markInstance.mark(normalizedSearch, {
         className: 'issue-highlight',
-        accuracy: 'complementary',  // Changed to complementary for better fuzzy matching
+        accuracy: 'complementary',
         separateWordSearch: false,
         caseSensitive: false,
         ignoreJoiners: true,
-        ignorePunctuation: ['.', ',', ':', ';', '!', '?'],  // Ignore punctuation differences
+        ignorePunctuation: ['.', ',', ':', ';', '!', '?'],
         acrossElements: true,
+        // Normalize the content AS IT'S BEING SEARCHED
+        filter: (textNode: Text, foundTerm: string, totalCounter: number) => {
+          const normalizedNode = normalize(textNode.textContent || '');
+          const normalizedFound = normalize(foundTerm);
+          const shouldMatch = normalizedNode.includes(normalizedFound);
+          console.log('🔍 Filter check:', shouldMatch, normalizedFound.substring(0, 30));
+          return shouldMatch;
+        },
         done: (counter: number) => {
           console.log('✅ Mark.js done, found:', counter, 'matches');
 
