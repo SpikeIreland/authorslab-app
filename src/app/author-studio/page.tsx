@@ -232,7 +232,7 @@ function StudioContent() {
   const [isLocked, setIsLocked] = useState(false)
   const [editorPhases, setEditorPhases] = useState<EditingPhase[]>([])
 
-  const editorPanelRef = useRef<HTMLTextAreaElement>(null);
+  const editorPanelRef = useRef<HTMLDivElement>(null);
 
 
   // Chapter Editing Status
@@ -463,6 +463,13 @@ function StudioContent() {
     const words = text.trim().split(/\s+/).filter(w => w.length > 0)
     setWordCount(words.length)
   }, [editorContent])
+
+  // Sync contentEditable when chapter changes
+  useEffect(() => {
+    if (editorPanelRef.current && editorContent !== editorPanelRef.current.textContent) {
+      editorPanelRef.current.textContent = editorContent
+    }
+  }, [currentChapterIndex, editorContent])
 
   // Initialize Studio
   const initializeStudio = useCallback(async () => {
@@ -1932,7 +1939,7 @@ function StudioContent() {
             </div>
 
             <div className="flex-1 overflow-y-auto p-6">
-              <textarea
+              <div
                 ref={editorPanelRef}
                 contentEditable={!isLocked}
                 suppressContentEditableWarning
@@ -2157,7 +2164,7 @@ function StudioContent() {
                           if (issue.quoted_text && editorPanelRef.current) {
                             highlightTextInEditor(
                               issue.quoted_text,
-                              editorPanelRef.current  // Remove .parentElement
+                              editorPanelRef.current  // Changed from .parentElement
                             );
                           }
                         }}
