@@ -2197,18 +2197,31 @@ function StudioContent() {
                     {(currentPhase === 2 || currentPhase === 3) && issue.quoted_text ? (
                       <div
                         onClick={(e) => {
-                          e.stopPropagation(); // Prevent the click from bubbling
-                          if (issue.quoted_text && editorPanelRef.current) {
-                            console.log('🔍 Looking for text:', issue.quoted_text);
-                            console.log('📝 Editor ref:', editorPanelRef.current);
-                            console.log('📄 Editor content:', editorPanelRef.current.textContent?.substring(0, 100));
+                          e.stopPropagation();
 
+                          // First, check if we're on the right chapter
+                          if (currentChapter && issue.chapter_number !== currentChapter.chapter_number) {
+                            // Find the chapter index
+                            const targetChapterIndex = chapters.findIndex(ch => ch.chapter_number === issue.chapter_number);
+                            if (targetChapterIndex !== -1) {
+                              // Navigate to the chapter first
+                              loadChapter(targetChapterIndex);
+                              // Then highlight after a short delay
+                              setTimeout(() => {
+                                if (editorPanelRef.current) {
+                                  highlightTextInEditor(issue.quoted_text!, editorPanelRef.current);
+                                }
+                              }, 500);
+                            }
+                            return;
+                          }
+
+                          // We're on the right chapter, highlight now
+                          if (issue.quoted_text && editorPanelRef.current) {
                             const found = highlightTextInEditor(
                               issue.quoted_text,
                               editorPanelRef.current
                             );
-
-                            console.log('✅ Text found:', found);
 
                             if (!found) {
                               alert(`Could not find this text in the chapter:\n\n"${issue.quoted_text}"\n\nThis might be because the text has been edited.`);
@@ -2217,6 +2230,22 @@ function StudioContent() {
                         }}
                         className="cursor-pointer hover:bg-blue-50 -m-2 p-2 rounded-lg transition-colors"
                       >
+                        <div className="flex items-center gap-2 mb-2">
+                          {/* Add chapter badge */}
+                          <span className="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
+                            Ch. {issue.chapter_number}
+                          </span>
+                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${getCategoryColor(issue.element_type)}`}>
+                            {issue.element_type}
+                          </span>
+                          <span className={`text-xs ${getSeverityColor(issue.severity)}`}>
+                            {issue.severity}
+                          </span>
+                          <span className="text-xs text-blue-600 font-medium ml-auto">
+                            👆 Click to highlight
+                          </span>
+                        </div>
+                        
                         <div className="flex items-center gap-2 mb-2">
                           <span className={`px-2 py-0.5 rounded text-xs font-medium ${getCategoryColor(issue.element_type)}`}>
                             {issue.element_type}
