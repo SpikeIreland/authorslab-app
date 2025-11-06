@@ -2160,12 +2160,23 @@ function StudioContent() {
                     {/* Conditional: Only show highlighting for Sam (Phase 2) and Jordan (Phase 3) */}
                     {(currentPhase === 2 || currentPhase === 3) && issue.quoted_text ? (
                       <div
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent the click from bubbling
                           if (issue.quoted_text && editorPanelRef.current) {
-                            highlightTextInEditor(
+                            console.log('🔍 Looking for text:', issue.quoted_text);
+                            console.log('📝 Editor ref:', editorPanelRef.current);
+                            console.log('📄 Editor content:', editorPanelRef.current.textContent?.substring(0, 100));
+
+                            const found = highlightTextInEditor(
                               issue.quoted_text,
-                              editorPanelRef.current  // Changed from .parentElement
+                              editorPanelRef.current
                             );
+
+                            console.log('✅ Text found:', found);
+
+                            if (!found) {
+                              alert(`Could not find this text in the chapter:\n\n"${issue.quoted_text}"\n\nThis might be because the text has been edited.`);
+                            }
                           }
                         }}
                         className="cursor-pointer hover:bg-blue-50 -m-2 p-2 rounded-lg transition-colors"
