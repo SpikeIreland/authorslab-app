@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { BookOpen } from 'lucide-react'
 import { VersionsDropdown } from '@/components/VersionsDropdown'
+import Mark from 'mark.js'
 
 // Import types and helpers
 import type {
@@ -32,99 +33,32 @@ import {
 
 import { EDITOR_CONFIG, ISSUE_CATEGORIES_BY_PHASE } from '@/types/database'
 
-// Utility to highlight text in the editor
 function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null) {
   if (!editorRef || !quotedText) return false;
 
-  // Remove any existing highlights
-  const existingHighlights = editorRef.querySelectorAll('.issue-highlight');
-  existingHighlights.forEach(el => {
-    const parent = el.parentNode;
-    if (parent) {
-      parent.replaceChild(document.createTextNode(el.textContent || ''), el);
-      parent.normalize();
+  const markInstance = new Mark(editorRef);
+
+  // Clear previous highlights
+  markInstance.unmark();
+
+  // Highlight with fuzzy matching
+  markInstance.mark(quotedText, {
+    className: 'issue-highlight',
+    accuracy: 'complementary', // Handles smart quotes, whitespace, etc.
+    separateWordSearch: false,
+    done: (counter: number) => {
+      if (counter > 0) {
+        const highlight = editorRef.querySelector('.issue-highlight');
+        if (highlight) {
+          setTimeout(() => {
+            highlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 100);
+        }
+      }
     }
   });
 
-  // Normalize the search text (handle smart quotes and whitespace)
-  const normalizeText = (text: string) => {
-    return text
-      .replace(/[""]/g, '"')  // Smart quotes to straight quotes
-      .replace(/['']/g, "'")  // Smart apostrophes to straight
-      .replace(/\s+/g, ' ')   // Normalize whitespace
-      .trim();
-  };
-
-  const normalizedSearch = normalizeText(quotedText);
-  const editorText = editorRef.textContent || '';
-  const normalizedEditorText = normalizeText(editorText);
-
-  console.log('🔍 Normalized search:', normalizedSearch.substring(0, 50));
-  console.log('📄 Normalized editor:', normalizedEditorText.substring(0, 100));
-
-  // Find the text position in normalized content
-  const index = normalizedEditorText.indexOf(normalizedSearch);
-
-  if (index === -1) {
-    console.log('❌ Text not found after normalization');
-    return false;
-  }
-
-  console.log('✅ Found at index:', index);
-
-  // Now find and highlight in the actual DOM
-  const walker = document.createTreeWalker(
-    editorRef,
-    NodeFilter.SHOW_TEXT,
-    null
-  );
-
-  let currentPos = 0;
-  let node;
-
-  while ((node = walker.nextNode())) {
-    const text = node.textContent || '';
-    const nodeLength = normalizeText(text).length;
-
-    if (currentPos <= index && currentPos + nodeLength > index) {
-      // This node contains the start of our text
-      try {
-        const range = document.createRange();
-        const startOffset = index - currentPos;
-        const endOffset = Math.min(startOffset + normalizedSearch.length, text.length);
-
-        range.setStart(node, startOffset);
-        range.setEnd(node, endOffset);
-
-        // Create highlight span
-        const highlight = document.createElement('span');
-        highlight.className = 'issue-highlight';
-        highlight.style.backgroundColor = '#fef3c7'; // yellow-100
-        highlight.style.borderRadius = '2px';
-        highlight.style.padding = '2px 0';
-        highlight.style.boxShadow = '0 0 0 2px #fbbf24'; // yellow-400 border
-
-        range.surroundContents(highlight);
-
-        // Scroll to highlight
-        setTimeout(() => {
-          highlight.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center'
-          });
-        }, 100);
-
-        return true;
-      } catch (err) {
-        console.error('Error highlighting:', err);
-        return false;
-      }
-    }
-
-    currentPos += nodeLength;
-  }
-
-  return false;
+  return true;
 }
 
 function getEditorColorClasses(color: string) {
