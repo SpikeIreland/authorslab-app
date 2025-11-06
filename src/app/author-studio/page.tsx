@@ -42,53 +42,89 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
     const parent = el.parentNode;
     if (parent) {
       parent.replaceChild(document.createTextNode(el.textContent || ''), el);
-      parent.normalize(); // Merge adjacent text nodes
+      parent.normalize();
     }
   });
 
-  // Find the text to highlight
+  // Normalize the search text (handle smart quotes and whitespace)
+  const normalizeText = (text: string) => {
+    return text
+      .replace(/[""]/g, '"')  // Smart quotes to straight quotes
+      .replace(/['']/g, "'")  // Smart apostrophes to straight
+      .replace(/\s+/g, ' ')   // Normalize whitespace
+      .trim();
+  };
+
+  const normalizedSearch = normalizeText(quotedText);
+  const editorText = editorRef.textContent || '';
+  const normalizedEditorText = normalizeText(editorText);
+
+  console.log('🔍 Normalized search:', normalizedSearch.substring(0, 50));
+  console.log('📄 Normalized editor:', normalizedEditorText.substring(0, 100));
+
+  // Find the text position in normalized content
+  const index = normalizedEditorText.indexOf(normalizedSearch);
+
+  if (index === -1) {
+    console.log('❌ Text not found after normalization');
+    return false;
+  }
+
+  console.log('✅ Found at index:', index);
+
+  // Now find and highlight in the actual DOM
   const walker = document.createTreeWalker(
     editorRef,
     NodeFilter.SHOW_TEXT,
     null
   );
 
+  let currentPos = 0;
   let node;
-  let found = false;
 
   while ((node = walker.nextNode())) {
     const text = node.textContent || '';
-    const index = text.indexOf(quotedText);
+    const nodeLength = normalizeText(text).length;
 
-    if (index !== -1) {
-      const range = document.createRange();
-      range.setStart(node, index);
-      range.setEnd(node, index + quotedText.length);
+    if (currentPos <= index && currentPos + nodeLength > index) {
+      // This node contains the start of our text
+      try {
+        const range = document.createRange();
+        const startOffset = index - currentPos;
+        const endOffset = Math.min(startOffset + normalizedSearch.length, text.length);
 
-      // Create highlight span
-      const highlight = document.createElement('span');
-      highlight.className = 'issue-highlight';
-      highlight.style.backgroundColor = '#fef3c7'; // yellow-100
-      highlight.style.borderRadius = '2px';
-      highlight.style.padding = '2px 0';
-      highlight.style.boxShadow = '0 0 0 2px #fbbf24'; // yellow-400 border
+        range.setStart(node, startOffset);
+        range.setEnd(node, endOffset);
 
-      range.surroundContents(highlight);
+        // Create highlight span
+        const highlight = document.createElement('span');
+        highlight.className = 'issue-highlight';
+        highlight.style.backgroundColor = '#fef3c7'; // yellow-100
+        highlight.style.borderRadius = '2px';
+        highlight.style.padding = '2px 0';
+        highlight.style.boxShadow = '0 0 0 2px #fbbf24'; // yellow-400 border
 
-      // Scroll to highlight with offset for header
-      setTimeout(() => {
-        highlight.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center'
-        });
-      }, 100);
+        range.surroundContents(highlight);
 
-      found = true;
-      break;
+        // Scroll to highlight
+        setTimeout(() => {
+          highlight.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+          });
+        }, 100);
+
+        return true;
+      } catch (err) {
+        console.error('Error highlighting:', err);
+        return false;
+      }
     }
+
+    currentPos += nodeLength;
   }
 
-  return found;
+  return false;
 }
 
 function getEditorColorClasses(color: string) {
