@@ -434,12 +434,20 @@ function StudioContent() {
     setWordCount(words.length)
   }, [editorContent])
 
-  // Sync contentEditable when chapter changes
+  // Remove or comment out the old sync useEffect
+
+  // Add this new useEffect instead:
   useEffect(() => {
-    if (editorPanelRef.current && editorContent !== editorPanelRef.current.textContent) {
-      editorPanelRef.current.textContent = editorContent
+    if (editorPanelRef.current) {
+      // Convert line breaks to <br> tags for display
+      const htmlContent = editorContent.replace(/\n/g, '<br>');
+
+      // Only update if content is different (prevents cursor jumping)
+      if (editorPanelRef.current.innerHTML !== htmlContent) {
+        editorPanelRef.current.innerHTML = htmlContent;
+      }
     }
-  }, [currentChapterIndex, editorContent])
+  }, [currentChapterIndex]); // Only update when chapter changes
 
   // Initialize Studio
   const initializeStudio = useCallback(async () => {
@@ -1914,16 +1922,15 @@ function StudioContent() {
                 contentEditable={!isLocked}
                 suppressContentEditableWarning
                 onInput={(e) => {
-                  const newContent = e.currentTarget.textContent || '';
+                  // Get text content (strips HTML)
+                  const newContent = e.currentTarget.innerText || '';
                   setEditorContent(newContent);
-                  pendingContentRef.current = newContent;  // Store immediately
+                  pendingContentRef.current = newContent;
                   setHasUnsavedChanges(true);
                   setUnsavedChapters(prev => new Set(prev).add(currentChapter.chapter_number));
 
-                  // Clear existing timer
                   if (autoSaveTimer) clearTimeout(autoSaveTimer);
 
-                  // Set new auto-save timer (3 seconds)
                   const timer = setTimeout(() => {
                     saveChanges(true);
                   }, 3000);
@@ -1931,13 +1938,11 @@ function StudioContent() {
                   setAutoSaveTimer(timer);
                 }}
                 onPaste={(e) => {
-                  // Paste as plain text only (prevents formatting issues)
                   e.preventDefault();
                   const text = e.clipboardData.getData('text/plain');
                   document.execCommand('insertText', false, text);
                 }}
                 className={`w-full h-full min-h-[500px] p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 ${getEditorColorClasses(editorColor).ring} font-serif text-lg leading-relaxed overflow-auto whitespace-pre-wrap ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
-                dangerouslySetInnerHTML={{ __html: editorContent.replace(/\n/g, '<br>').replace(/  /g, ' &nbsp;') }}
                 style={{ minHeight: '500px' }}
               />
             </div>
