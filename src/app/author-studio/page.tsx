@@ -48,20 +48,10 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
     return false;
   }
 
-  // Comprehensive normalization function
-  const normalize = (text: string) => {
-    return text
-      .replace(/[''`]/g, "'")      // All apostrophe variants → straight
-      .replace(/[""]/g, '"')        // Smart double quotes → straight  
-      .replace(/[–—]/g, '-')        // En-dash & em-dash → hyphen
-      .replace(/\s+/g, ' ')         // Multiple spaces → single space
-      .trim();
-  };
-
-  const normalizedSearch = normalize(quotedText);
-
   console.log('🔍 Original:', quotedText);
-  console.log('🔍 Normalized:', normalizedSearch);
+
+  // Log character codes to see what we're actually dealing with
+  console.log('🔍 Char codes:', quotedText.split('').slice(0, 30).map(c => c.charCodeAt(0)).join(','));
 
   const markInstance = new Mark(editorRef);
 
@@ -70,43 +60,56 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
     done: () => {
       console.log('✅ Cleared old highlights');
 
-      markInstance.mark(normalizedSearch, {
-        className: 'issue-highlight',
-        accuracy: 'complementary',
-        separateWordSearch: false,
-        caseSensitive: false,
-        ignoreJoiners: true,
-        ignorePunctuation: ['.', ',', ':', ';', '!', '?'],
-        acrossElements: true,
-        // Normalize the content AS IT'S BEING SEARCHED
-        filter: (textNode: Text, foundTerm: string, totalCounter: number) => {
-          const normalizedNode = normalize(textNode.textContent || '');
-          const normalizedFound = normalize(foundTerm);
-          const shouldMatch = normalizedNode.includes(normalizedFound);
-          console.log('🔍 Filter check:', shouldMatch, normalizedFound.substring(0, 30));
-          return shouldMatch;
-        },
-        done: (counter: number) => {
-          console.log('✅ Mark.js done, found:', counter, 'matches');
+      // Create variations with different quote styles
+      const variations = [
+        quotedText,                                           // Original
+        quotedText.replace(/'/g, "'"),                       // Straight apostrophe
+        quotedText.replace(/'/g, "'"),                       // Smart apostrophe right
+        quotedText.replace(/'/g, "'"),                       // Smart apostrophe left
+        quotedText.replace(/"/g, '"').replace(/"/g, '"'),    // Smart quotes
+      ];
 
-          if (counter > 0) {
-            const highlights = editorRef.querySelectorAll('.issue-highlight');
-            highlights.forEach((highlight: Element) => {
-              const el = highlight as HTMLElement;
-              el.style.backgroundColor = '#fef3c7';
-              el.style.borderRadius = '2px';
-              el.style.padding = '2px 0';
-              el.style.boxShadow = '0 0 0 2px #fbbf24';
-            });
+      console.log('🔍 Trying', variations.length, 'variations');
 
-            setTimeout(() => {
-              highlights[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 100);
-          } else {
-            console.log('❌ No matches found');
+      let foundMatch = false;
+
+      // Try each variation
+      variations.forEach((variation, index) => {
+        if (foundMatch) return; // Already found
+
+        markInstance.mark(variation, {
+          className: 'issue-highlight',
+          accuracy: 'exactly',  // Changed to 'exactly' for precise matching
+          separateWordSearch: false,
+          caseSensitive: false,
+          acrossElements: true,
+          done: (counter: number) => {
+            if (counter > 0 && !foundMatch) {
+              foundMatch = true;
+              console.log(`✅ Found with variation ${index}:`, variation.substring(0, 50));
+
+              const highlights = editorRef.querySelectorAll('.issue-highlight');
+              highlights.forEach((highlight: Element) => {
+                const el = highlight as HTMLElement;
+                el.style.backgroundColor = '#fef3c7';
+                el.style.borderRadius = '2px';
+                el.style.padding = '2px 0';
+                el.style.boxShadow = '0 0 0 2px #fbbf24';
+              });
+
+              setTimeout(() => {
+                highlights[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }, 100);
+            }
           }
-        }
+        });
       });
+
+      setTimeout(() => {
+        if (!foundMatch) {
+          console.log('❌ No matches found with any variation');
+        }
+      }, 500);
     }
   });
 
