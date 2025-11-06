@@ -33,28 +33,57 @@ import {
 
 import { EDITOR_CONFIG, ISSUE_CATEGORIES_BY_PHASE } from '@/types/database'
 
+const highlightStyles = `
+  .issue-highlight {
+    background-color: #fef3c7 !important;
+    border-radius: 2px !important;
+    padding: 2px 0 !important;
+    box-shadow: 0 0 0 2px #fbbf24 !important;
+  }
+`;
+
 function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null) {
-  if (!editorRef || !quotedText) return false;
+  if (!editorRef || !quotedText) {
+    console.log('❌ Missing ref or text');
+    return false;
+  }
+
+  console.log('🔍 Highlighting:', quotedText.substring(0, 50));
+  console.log('📝 Editor element:', editorRef);
 
   const markInstance = new Mark(editorRef);
 
   // Clear previous highlights
-  markInstance.unmark();
+  markInstance.unmark({
+    done: () => {
+      console.log('✅ Cleared old highlights');
 
-  // Highlight with fuzzy matching
-  markInstance.mark(quotedText, {
-    className: 'issue-highlight',
-    accuracy: 'complementary', // Handles smart quotes, whitespace, etc.
-    separateWordSearch: false,
-    done: (counter: number) => {
-      if (counter > 0) {
-        const highlight = editorRef.querySelector('.issue-highlight');
-        if (highlight) {
-          setTimeout(() => {
-            highlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }, 100);
+      // Highlight with fuzzy matching
+      markInstance.mark(quotedText, {
+        className: 'issue-highlight',
+        accuracy: 'complementary',
+        separateWordSearch: false,
+        done: (counter: number) => {
+          console.log('✅ Mark.js done, found:', counter, 'matches');
+
+          if (counter > 0) {
+            const highlight = editorRef.querySelector('.issue-highlight') as HTMLElement;
+            if (highlight) {
+              // Apply inline styles to ensure visibility
+              highlight.style.backgroundColor = '#fef3c7';
+              highlight.style.borderRadius = '2px';
+              highlight.style.padding = '2px 0';
+              highlight.style.boxShadow = '0 0 0 2px #fbbf24';
+
+              setTimeout(() => {
+                highlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }, 100);
+            }
+          } else {
+            console.log('❌ No matches found by mark.js');
+          }
         }
-      }
+      });
     }
   });
 
@@ -1332,6 +1361,7 @@ function StudioContent() {
 
   return (
     <>
+      <style dangerouslySetInnerHTML={{ __html: highlightStyles }} />
       {/* NEW: Fixed Navigation Header */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
         <div className="px-4 py-3 flex items-center justify-between">
