@@ -469,8 +469,6 @@ function StudioContent() {
     setWordCount(words.length)
   }, [editorContent])
 
-  // Remove or comment out the old sync useEffect
-
   useEffect(() => {
     if (editorPanelRef.current) {
       // Convert line breaks to <br> tags WITH spaces for proper word separation
