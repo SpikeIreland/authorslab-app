@@ -2082,22 +2082,25 @@ function StudioContent() {
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => {
-                      // Clear all highlights
-                      const existingHighlights = document.querySelectorAll('.issue-highlight');
-                      existingHighlights.forEach(el => {
-                        const parent = el.parentNode;
-                        if (parent) {
-                          parent.replaceChild(document.createTextNode(el.textContent || ''), el);
-                          parent.normalize();
-                        }
-                      });
-                    }}
-                    className="text-xs text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition-colors"
-                  >
-                    Clear highlights
-                  </button>
+                  {/* Only show Clear highlights button for Sam (Phase 2) and Jordan (Phase 3) */}
+                  {(currentPhase === 2 || currentPhase === 3) && (
+                    <button
+                      onClick={() => {
+                        // Clear all highlights
+                        const existingHighlights = document.querySelectorAll('.issue-highlight');
+                        existingHighlights.forEach(el => {
+                          const parent = el.parentNode;
+                          if (parent) {
+                            parent.replaceChild(document.createTextNode(el.textContent || ''), el);
+                            parent.normalize();
+                          }
+                        });
+                      }}
+                      className="text-xs text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                    >
+                      Clear highlights
+                    </button>
+                  )}
                   <button
                     onClick={() => setShowIssuesPanel(false)}
                     className="text-gray-500 hover:text-gray-700"
