@@ -1934,26 +1934,34 @@ function StudioContent() {
             <div className="flex-1 overflow-y-auto p-6">
               <textarea
                 ref={editorPanelRef}
-                value={editorContent}
-                onChange={(e) => {
-                  const newContent = e.target.value
-                  setEditorContent(newContent)
-                  pendingContentRef.current = newContent  // Store immediately
-                  setHasUnsavedChanges(true)
-                  setUnsavedChapters(prev => new Set(prev).add(currentChapter.chapter_number))
+                contentEditable={!isLocked}
+                suppressContentEditableWarning
+                onInput={(e) => {
+                  const newContent = e.currentTarget.textContent || '';
+                  setEditorContent(newContent);
+                  pendingContentRef.current = newContent;  // Store immediately
+                  setHasUnsavedChanges(true);
+                  setUnsavedChapters(prev => new Set(prev).add(currentChapter.chapter_number));
 
                   // Clear existing timer
-                  if (autoSaveTimer) clearTimeout(autoSaveTimer)
+                  if (autoSaveTimer) clearTimeout(autoSaveTimer);
 
                   // Set new auto-save timer (3 seconds)
                   const timer = setTimeout(() => {
-                    saveChanges(true)
-                  }, 3000)
+                    saveChanges(true);
+                  }, 3000);
 
-                  setAutoSaveTimer(timer)
+                  setAutoSaveTimer(timer);
                 }}
-                className={`w-full h-full min-h-[500px] p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 ${getEditorColorClasses(editorColor).ring} font-serif text-lg leading-relaxed`}
-                disabled={isLocked}
+                onPaste={(e) => {
+                  // Paste as plain text only (prevents formatting issues)
+                  e.preventDefault();
+                  const text = e.clipboardData.getData('text/plain');
+                  document.execCommand('insertText', false, text);
+                }}
+                className={`w-full h-full min-h-[500px] p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 ${getEditorColorClasses(editorColor).ring} font-serif text-lg leading-relaxed overflow-auto whitespace-pre-wrap ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
+                dangerouslySetInnerHTML={{ __html: editorContent.replace(/\n/g, '<br>').replace(/  /g, ' &nbsp;') }}
+                style={{ minHeight: '500px' }}
               />
             </div>
           </div>
@@ -2149,7 +2157,7 @@ function StudioContent() {
                           if (issue.quoted_text && editorPanelRef.current) {
                             highlightTextInEditor(
                               issue.quoted_text,
-                              editorPanelRef.current.parentElement
+                              editorPanelRef.current  // Remove .parentElement
                             );
                           }
                         }}
