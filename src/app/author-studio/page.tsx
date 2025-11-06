@@ -48,7 +48,14 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
     return false;
   }
 
-  console.log('🔍 Searching for:', quotedText);
+  // Normalize quotes in the search text
+  const normalizedSearch = quotedText
+    .replace(/['']/g, "'")  // Smart single quotes → straight
+    .replace(/[""]/g, '"')  // Smart double quotes → straight
+    .trim();
+
+  console.log('🔍 Original:', quotedText);
+  console.log('🔍 Normalized:', normalizedSearch);
 
   const markInstance = new Mark(editorRef);
 
@@ -58,13 +65,14 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
       console.log('✅ Cleared old highlights');
 
       // Highlight with acrossElements enabled
-      markInstance.mark(quotedText, {
+      markInstance.mark(normalizedSearch, {
         className: 'issue-highlight',
         accuracy: 'partially',
         separateWordSearch: false,
         caseSensitive: false,
         ignoreJoiners: true,
-        acrossElements: true,  // ← KEY FIX: allows matching across <br> tags!
+        acrossElements: true,
+        wildcards: 'enabled',  // ← Also enable wildcards for better fuzzy matching
         done: (counter: number) => {
           console.log('✅ Mark.js done, found:', counter, 'matches');
 
