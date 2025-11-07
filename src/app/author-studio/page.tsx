@@ -541,18 +541,18 @@ function StudioContent() {
     setWordCount(words.length)
   }, [editorContent])
 
-  // Sync contentEditable when chapter changes OR content loads
+  // Sync contentEditable when chapter changes
   useEffect(() => {
-    if (editorPanelRef.current && editorContent) {
-      // Convert line breaks to <br> tags for display
-      const htmlContent = editorContent.replace(/\n/g, '<br>');
+    if (editorPanelRef.current) {
+      // Convert line breaks to <br> tags WITH spaces for proper word separation
+      const htmlContent = editorContent.replace(/\n/g, ' <br> ');
 
-      // Always update on mount or when content/chapter changes
-      editorPanelRef.current.innerHTML = htmlContent;
-
-      console.log('📝 Loaded chapter content:', editorContent.substring(0, 50) + '...');
+      // Only update if content is different
+      if (editorPanelRef.current.innerHTML !== htmlContent) {
+        editorPanelRef.current.innerHTML = htmlContent;
+      }
     }
-  }, [currentChapterIndex, editorContent]);
+  }, [currentChapterIndex]); // ← KEY: Only depends on currentChapterIndex, NOT editorContent
 
   // Initialize Studio
   const initializeStudio = useCallback(async () => {
