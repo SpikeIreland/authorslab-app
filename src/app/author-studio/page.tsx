@@ -1438,42 +1438,30 @@ function StudioContent() {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: highlightStyles }} />
-      {/* NEW: Fixed Navigation Header */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-        <div className="px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="text-xl font-bold bg-gradient-to-r from-blue-900 to-blue-700 bg-clip-text text-transparent">
-            📚 AuthorsLab.ai
-          </Link>
-
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">{authorFirstName || 'Author'}</span>
-
-            <button
-              onClick={async () => {
-                const supabase = createClient()
-                await supabase.auth.signOut()
-                router.push('/login')
-              }}
-              className="text-sm text-gray-700 hover:text-gray-900 font-medium"
-            >
-              Sign Out
-            </button>
-          </div>
-        </div>
-      </div>
       <div className="h-screen flex flex-col bg-gray-50">
         {/* Header */}
         <header className="bg-white border-b border-gray-200 p-4 shadow-sm">
-          {/* TOP ROW: Logo and User Menu */}
+          {/* TOP ROW: Logo, Beta Feedback, and User Menu */}
           <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
             <Link href="/" className="text-lg font-bold bg-gradient-to-r from-blue-900 to-blue-700 bg-clip-text text-transparent hover:opacity-80 transition-opacity">
               📚 AuthorsLab.ai
             </Link>
 
             <div className="flex items-center gap-4">
+              {/* Beta Feedback Button */}
+              <button
+                onClick={() => {
+                  window.open('https://forms.gle/your-feedback-form', '_blank')
+                }}
+                className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-semibold"
+              >
+                📝 Beta Feedback
+              </button>
+
               <span className="text-sm text-gray-600">
                 {authorName}
               </span>
+
               <button
                 onClick={async () => {
                   const supabase = createClient()
@@ -1487,7 +1475,7 @@ function StudioContent() {
             </div>
           </div>
 
-          {/* BOTTOM ROW: Manuscript Info (YOUR EXISTING CONTENT) */}
+          {/* BOTTOM ROW: Manuscript Info */}
           <div className="flex items-center justify-between">
             {/* Left: Manuscript Title */}
             <div className="flex items-center gap-4">
@@ -1548,7 +1536,6 @@ function StudioContent() {
                   const phaseStarted = alexPhase?.phase_status !== 'pending'
 
                   if (!phaseStarted) {
-                    // Phase not started yet
                     return (
                       <button
                         disabled
@@ -1559,7 +1546,6 @@ function StudioContent() {
                       </button>
                     )
                   } else if (isReading) {
-                    // Alex is reading (PDF generating)
                     return (
                       <button
                         disabled
@@ -1570,7 +1556,6 @@ function StudioContent() {
                       </button>
                     )
                   } else if (hasReport) {
-                    // Report is ready
                     return (
                       <button
                         onClick={() => {
@@ -1585,7 +1570,6 @@ function StudioContent() {
                       </button>
                     )
                   } else {
-                    // Phase complete but no report (error state)
                     return (
                       <button
                         disabled
@@ -1707,23 +1691,13 @@ function StudioContent() {
                 })()}
               </div>
 
-              {/* NEW: Versions Dropdown */}
+              {/* Versions Dropdown */}
               <div className="border-l border-gray-200 pl-6">
                 <VersionsDropdown
                   manuscriptId={manuscript.id}
                   currentPhaseNumber={currentPhase}
                 />
               </div>
-              {/* Add this in your header, near the versions dropdown */}
-              <button
-                onClick={() => {
-                  window.open('https://forms.gle/your-feedback-form', '_blank')
-                  // Or trigger an in-app feedback modal
-                }}
-                className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-semibold"
-              >
-                📝 Beta Feedback
-              </button>
             </div>
           </div>
         </header>
