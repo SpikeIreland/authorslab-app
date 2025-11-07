@@ -88,6 +88,19 @@ export async function POST(request: Request) {
             )
         }
 
+        // ADD BETA TESTER UPDATE HERE ↓
+        // Mark as beta tester (gives free access to all phases)
+        const { error: updateError } = await supabaseAdmin
+            .from('author_profiles')
+            .update({ is_beta_tester: true })
+            .eq('auth_user_id', newUser.user.id)
+
+        if (updateError) {
+            console.error('Error marking as beta tester:', updateError)
+        } else {
+            console.log('✅ Marked user as beta tester:', email)
+        }
+
         // Update author_profiles with beta tester status and admin info
         const { error: profileError } = await supabaseAdmin
             .from('author_profiles')
