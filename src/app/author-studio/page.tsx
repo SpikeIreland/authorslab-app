@@ -9,6 +9,7 @@ import Link from 'next/link'
 import { BookOpen } from 'lucide-react'
 import { VersionsDropdown } from '@/components/VersionsDropdown'
 import Mark from 'mark.js'
+import { FeedbackModal } from '@/components/FeedbackModal'
 
 // Import types and helpers
 import type {
@@ -232,6 +233,8 @@ function StudioContent() {
   const searchParams = useSearchParams()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatInputRef = useRef<HTMLInputElement>(null)
+
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false)
 
   // Core State
   const [manuscript, setManuscript] = useState<Manuscript | null>(null)
@@ -1454,9 +1457,7 @@ function StudioContent() {
             <div className="flex items-center gap-4">
               {/* Beta Feedback Button */}
               <button
-                onClick={() => {
-                  window.open('https://forms.gle/your-feedback-form', '_blank')
-                }}
+                onClick={() => setShowFeedbackModal(true)}
                 className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-semibold"
               >
                 📝 Beta Feedback
@@ -2351,6 +2352,12 @@ function StudioContent() {
           )
         }
       </div >
+      {/* Beta Feedback Modal */}
+      <FeedbackModal
+        isOpen={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+        manuscriptId={manuscript?.id}
+      />
     </>
   )
 }
