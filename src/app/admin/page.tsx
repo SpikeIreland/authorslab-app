@@ -181,10 +181,19 @@ export default function AdminDashboard() {
 
         try {
             // 1. Create auth user via Supabase Admin API
-            // Note: This requires admin privileges - we'll use a serverless function
+            const { data: { session } } = await supabase.auth.getSession()
+
+            if (!session) {
+                alert('❌ Session expired. Please refresh the page.')
+                return
+            }
+
             const response = await fetch('/api/admin/create-user', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}` // ← ADD THIS
+                },
                 body: JSON.stringify({
                     email: createForm.email,
                     password: generatedPassword,
