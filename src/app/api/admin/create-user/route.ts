@@ -52,7 +52,7 @@ export async function POST(request: Request) {
         const { data: profile } = await supabaseAdmin
             .from('author_profiles')
             .select('role')
-            .eq('id', user.id)
+            .eq('auth_user_id', user.id)  // ← FIXED: Query by auth_user_id
             .single()
 
         if (profile?.role !== 'admin' && profile?.role !== 'super_admin') {
