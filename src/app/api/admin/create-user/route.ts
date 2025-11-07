@@ -2,7 +2,6 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 
 // Initialize Supabase Admin client (has elevated privileges)
-// This uses the SERVICE_ROLE_KEY which bypasses RLS
 const supabaseAdmin = createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -28,7 +27,6 @@ export async function POST(request: Request) {
         }
 
         // Verify the requesting user is an admin
-        // Get the auth token from the request
         const authHeader = request.headers.get('authorization')
         if (!authHeader) {
             return NextResponse.json(
@@ -37,7 +35,7 @@ export async function POST(request: Request) {
             )
         }
 
-        // Verify admin status using the regular client
+        // Verify admin status
         const token = authHeader.replace('Bearer ', '')
         const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
 
@@ -52,7 +50,7 @@ export async function POST(request: Request) {
         const { data: profile } = await supabaseAdmin
             .from('author_profiles')
             .select('role')
-            .eq('auth_user_id', user.id)  // ← FIXED: Query by auth_user_id
+            .eq('auth_user_id', user.id)
             .single()
 
         if (profile?.role !== 'admin' && profile?.role !== 'super_admin') {
@@ -66,7 +64,7 @@ export async function POST(request: Request) {
         const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
             email,
             password,
-            email_confirm: true, // Auto-confirm email
+            email_confirm: true,
             user_metadata: {
                 first_name: firstName,
                 last_name: lastName
@@ -88,31 +86,27 @@ export async function POST(request: Request) {
             )
         }
 
-        // ADD BETA TESTER UPDATE HERE ↓
-        // Mark as beta tester (gives free access to all phases)
+        console.log('✅ Auth user created:', newUser.user.id)
+
+        // Wait a moment for the trigger to create the author_profiles record
+        await new Promise(resolve => setTimeout(resolve, 500))
+
+        // Update author_profiles with all details in ONE query
         const { error: updateError } = await supabaseAdmin
             .from('author_profiles')
-            .update({ is_beta_tester: true })
-            .eq('auth_user_id', newUser.user.id)
-
-        if (updateError) {
-            console.error('Error marking as beta tester:', updateError)
-        } else {
-            console.log('✅ Marked user as beta tester:', email)
-        }
-
-        // Update author_profiles with beta tester status and admin info
-        const { error: profileError } = await supabaseAdmin
-            .from('author_profiles')
             .update({
+                first_name: firstName,      // ← ADD THIS
+                last_name: lastName,         // ← ADD THIS
                 is_beta_tester: true,
                 created_by_admin_id: user.id
             })
-            .eq('id', newUser.user.id)
+            .eq('auth_user_id', newUser.user.id)  // ← FIXED: use auth_user_id instead of id
 
-        if (profileError) {
-            console.error('Error updating profile:', profileError)
+        if (updateError) {
+            console.error('Error updating profile:', updateError)
             // Don't fail the request, user is created
+        } else {
+            console.log('✅ Profile updated with beta tester status and names:', email)
         }
 
         return NextResponse.json({
