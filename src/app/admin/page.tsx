@@ -67,6 +67,29 @@ interface PhaseFeedbackWithDetails extends PhaseFeedback {
     }
 }
 
+interface BetaFeedback {
+    id: string
+    author_id: string
+    manuscript_id: string | null
+    feedback_text: string
+    page_url: string | null
+    rating: number | null
+    created_at: string
+    reviewed_at: string | null
+    admin_notes: string | null
+}
+
+interface BetaFeedbackWithDetails extends BetaFeedback {
+    author?: {
+        first_name: string
+        last_name: string
+        email: string
+    }
+    manuscript?: {
+        title: string
+    }
+}
+
 export default function AdminDashboard() {
     const router = useRouter()
     const supabase = createClient()
@@ -98,6 +121,8 @@ export default function AdminDashboard() {
     // Feedback state
     const [allFeedback, setAllFeedback] = useState<PhaseFeedbackWithDetails[]>([])
     const [feedbackFilter, setFeedbackFilter] = useState<'all' | 'flagged' | 'unreviewed'>('all')
+    const [feedbackType, setFeedbackType] = useState<'phase' | 'beta'>('beta') // Default to beta
+    const [betaFeedback, setBetaFeedback] = useState<BetaFeedbackWithDetails[]>([])
 
     // Stats state
     const [stats, setStats] = useState({
@@ -340,26 +365,75 @@ export default function AdminDashboard() {
     // Load all feedback
     async function loadAllFeedback() {
         try {
-            let query = supabase
-                .from('phase_feedback')
-                .select(`
-          *,
-          author:author_profiles(first_name, last_name, email),
-          manuscript:manuscripts(title)
-        `)
-                .order('created_at', { ascending: false })
+            if (feedbackType === 'phase') {
+                // Existing phase feedback logic
+                let query = supabase
+                    .from('phase_feedback')
+                    .select(`
+                    *,
+                    author:author_profiles(first_name, last_name, email),
+                    manuscript:manuscripts(title)
+                `)
+                    .order('created_at', { ascending: false })
 
-            if (feedbackFilter === 'flagged') {
-                query = query.eq('is_flagged', true)
-            } else if (feedbackFilter === 'unreviewed') {
-                query = query.is('reviewed_at', null)
+                if (feedbackFilter === 'flagged') {
+                    query = query.eq('is_flagged', true)
+                } else if (feedbackFilter === 'unreviewed') {
+                    query = query.is('reviewed_at', null)
+                }
+
+                const { data } = await query
+                setAllFeedback(data || [])
+
+            } else {
+                // NEW: Beta feedback logic
+                const query = supabase
+                    .from('beta_feedback')
+                    .select(`
+                    *,
+                    author:author_profiles(first_name, last_name, email),
+                    manuscript:manuscripts(title)
+                `)
+                    .order('created_at', { ascending: false })
+
+                const { data } = await query
+                setBetaFeedback(data || [])
             }
-
-            const { data } = await query
-
-            setAllFeedback(data || [])
         } catch (error) {
             console.error('Error loading feedback:', error)
+        }
+    }
+
+    // Add toggle function for beta feedback flag:
+    async function toggleBetaFeedbackFlag(feedbackId: string, currentFlag: boolean) {
+        try {
+            await supabase
+                .from('beta_feedback')
+                .update({ is_flagged: !currentFlag })
+                .eq('id', feedbackId)
+
+            loadAllFeedback()
+        } catch (error) {
+            console.error('Error toggling flag:', error)
+        }
+    }
+
+    // Add mark beta feedback as reviewed:
+    async function markBetaFeedbackReviewed(feedbackId: string, notes?: string) {
+        try {
+            const adminUser = await supabase.auth.getUser()
+
+            await supabase
+                .from('beta_feedback')
+                .update({
+                    reviewed_at: new Date().toISOString(),
+                    admin_notes: notes || null
+                })
+                .eq('id', feedbackId)
+
+            loadAllFeedback()
+        } catch (error) {
+            console.error('Error marking reviewed:', error)
         }
     }
 
@@ -783,41 +857,150 @@ export default function AdminDashboard() {
                     <div className="max-w-4xl mx-auto">
                         <div className="bg-white rounded-2xl shadow-lg p-6">
                             <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-2xl font-bold text-gray-900">All Feedback</h2>
+                                <h2 className="text-2xl font-bold text-gray-900">Feedback</h2>
 
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => setFeedbackFilter('all')}
-                                        className={`px-4 py-2 rounded-lg font-semibold transition-colors ${feedbackFilter === 'all'
-                                            ? 'bg-blue-600 text-white'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                            }`}
-                                    >
-                                        All
-                                    </button>
-                                    <button
-                                        onClick={() => setFeedbackFilter('flagged')}
-                                        className={`px-4 py-2 rounded-lg font-semibold transition-colors ${feedbackFilter === 'flagged'
-                                            ? 'bg-red-600 text-white'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                            }`}
-                                    >
-                                        🚩 Flagged
-                                    </button>
-                                    <button
-                                        onClick={() => setFeedbackFilter('unreviewed')}
-                                        className={`px-4 py-2 rounded-lg font-semibold transition-colors ${feedbackFilter === 'unreviewed'
-                                            ? 'bg-yellow-600 text-white'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                            }`}
-                                    >
-                                        ⏳ Unreviewed
-                                    </button>
+                                <div className="flex gap-4">
+                                    {/* Feedback Type Toggle */}
+                                    <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
+                                        <button
+                                            onClick={() => {
+                                                setFeedbackType('beta')
+                                                loadAllFeedback()
+                                            }}
+                                            className={`px-4 py-2 rounded-lg font-semibold transition-colors ${feedbackType === 'beta'
+                                                ? 'bg-white shadow text-gray-900'
+                                                : 'text-gray-600 hover:text-gray-900'
+                                                }`}
+                                        >
+                                            💬 Beta Feedback
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setFeedbackType('phase')
+                                                loadAllFeedback()
+                                            }}
+                                            className={`px-4 py-2 rounded-lg font-semibold transition-colors ${feedbackType === 'phase'
+                                                ? 'bg-white shadow text-gray-900'
+                                                : 'text-gray-600 hover:text-gray-900'
+                                                }`}
+                                        >
+                                            📊 Phase Feedback
+                                        </button>
+                                    </div>
+
+                                    {/* Existing filter buttons (only for phase feedback) */}
+                                    {feedbackType === 'phase' && (
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => {
+                                                    setFeedbackFilter('all')
+                                                    loadAllFeedback()
+                                                }}
+                                                className={`px-4 py-2 rounded-lg font-semibold transition-colors ${feedbackFilter === 'all'
+                                                    ? 'bg-blue-600 text-white'
+                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                    }`}
+                                            >
+                                                All
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setFeedbackFilter('flagged')
+                                                    loadAllFeedback()
+                                                }}
+                                                className={`px-4 py-2 rounded-lg font-semibold transition-colors ${feedbackFilter === 'flagged'
+                                                    ? 'bg-red-600 text-white'
+                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                    }`}
+                                            >
+                                                🚩 Flagged
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setFeedbackFilter('unreviewed')
+                                                    loadAllFeedback()
+                                                }}
+                                                className={`px-4 py-2 rounded-lg font-semibold transition-colors ${feedbackFilter === 'unreviewed'
+                                                    ? 'bg-yellow-600 text-white'
+                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                    }`}
+                                            >
+                                                ⏳ Unreviewed
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
                             <div className="space-y-4 max-h-[700px] overflow-y-auto">
-                                {allFeedback.map(fb => (
+                                {/* BETA FEEDBACK */}
+                                {feedbackType === 'beta' && betaFeedback.map(fb => (
+                                    <div
+                                        key={fb.id}
+                                        className={`p-4 rounded-lg border-2 ${fb.reviewed_at
+                                            ? 'bg-gray-50 border-gray-200'
+                                            : 'bg-white border-blue-200'
+                                            }`}
+                                    >
+                                        <div className="flex items-start justify-between mb-2">
+                                            <div>
+                                                <p className="font-semibold text-gray-900">
+                                                    {fb.author?.first_name || 'Unknown'} {fb.author?.last_name || 'User'}
+                                                </p>
+                                                <p className="text-sm text-gray-600">
+                                                    {fb.author?.email}
+                                                </p>
+                                                {fb.manuscript?.title && (
+                                                    <p className="text-xs text-gray-500 mt-1">
+                                                        📚 {fb.manuscript.title}
+                                                    </p>
+                                                )}
+                                                {fb.page_url && (
+                                                    <p className="text-xs text-blue-600 mt-1">
+                                                        📍 {new URL(fb.page_url).pathname}
+                                                    </p>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                {fb.rating && (
+                                                    <span className="text-sm text-yellow-600">
+                                                        {'⭐'.repeat(fb.rating)}
+                                                    </span>
+                                                )}
+                                                {fb.reviewed_at && <span className="text-green-600">✅</span>}
+                                            </div>
+                                        </div>
+
+                                        <p className="text-gray-700 mb-3">{fb.feedback_text}</p>
+
+                                        {fb.admin_notes && (
+                                            <div className="p-2 bg-yellow-50 border border-yellow-200 rounded mb-3">
+                                                <p className="text-xs font-semibold text-yellow-900">Admin Notes:</p>
+                                                <p className="text-sm text-yellow-800">{fb.admin_notes}</p>
+                                            </div>
+                                        )}
+
+                                        <div className="flex items-center justify-between">
+                                            <p className="text-xs text-gray-500">
+                                                {new Date(fb.created_at).toLocaleDateString()} at {new Date(fb.created_at).toLocaleTimeString()}
+                                            </p>
+
+                                            <div className="flex gap-2">
+                                                {!fb.reviewed_at && (
+                                                    <button
+                                                        onClick={() => markBetaFeedbackReviewed(fb.id)}
+                                                        className="text-sm px-3 py-1 bg-green-100 hover:bg-green-200 text-green-700 rounded font-semibold"
+                                                    >
+                                                        ✅ Mark Reviewed
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+
+                                {/* PHASE FEEDBACK (existing code) */}
+                                {feedbackType === 'phase' && allFeedback.map(fb => (
                                     <div
                                         key={fb.id}
                                         className={`p-4 rounded-lg border-2 ${fb.is_flagged
@@ -874,10 +1057,17 @@ export default function AdminDashboard() {
                                     </div>
                                 ))}
 
-                                {allFeedback.length === 0 && (
+                                {feedbackType === 'beta' && betaFeedback.length === 0 && (
                                     <div className="text-center py-12">
                                         <div className="text-6xl mb-4">💬</div>
-                                        <p className="text-gray-600">No feedback yet</p>
+                                        <p className="text-gray-600">No beta feedback yet</p>
+                                    </div>
+                                )}
+
+                                {feedbackType === 'phase' && allFeedback.length === 0 && (
+                                    <div className="text-center py-12">
+                                        <div className="text-6xl mb-4">📊</div>
+                                        <p className="text-gray-600">No phase feedback yet</p>
                                     </div>
                                 )}
                             </div>
