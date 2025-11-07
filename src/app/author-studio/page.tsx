@@ -265,6 +265,7 @@ function StudioContent() {
   const [analyzingMessage, setAnalyzingMessage] = useState('')
   const [unsavedChapters, setUnsavedChapters] = useState<Set<number>>(new Set())
 
+
   // Chat State
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
   const [userInput, setUserInput] = useState('')
@@ -541,28 +542,21 @@ function StudioContent() {
     setWordCount(words.length)
   }, [editorContent])
 
-  // Sync contentEditable when chapter changes OR when editor content is first loaded
-  useEffect(() => {
-    if (!editorPanelRef.current || !editorContent) {
-      console.log('⏳ Waiting for editor panel or content...', {
-        hasRef: !!editorPanelRef.current,
-        hasContent: !!editorContent,
-        contentLength: editorContent?.length
-      });
-      return;
-    }
+  // Remove the isInitialized state I suggested - we don't need it
 
-    // Small delay to ensure DOM is fully ready
+  // Instead, just use a single useEffect that runs when editorContent changes
+  useEffect(() => {
+    // Add a small delay to ensure the ref is mounted after the loading screen disappears
     const timer = setTimeout(() => {
       if (editorPanelRef.current && editorContent) {
         const htmlContent = editorContent.replace(/\n/g, ' <br> ');
         editorPanelRef.current.innerHTML = htmlContent;
-        console.log('✅ Loaded chapter content into editor:', editorContent.substring(0, 50) + '...');
+        console.log('✅ Editor populated with:', editorContent.substring(0, 50) + '...');
       }
-    }, 100); // Small delay to ensure ref is mounted
+    }, 300); // Slightly longer delay
 
     return () => clearTimeout(timer);
-  }, [currentChapterIndex, editorContent]); // Watch BOTH
+  }, [editorContent, currentChapterIndex]);
 
   // Initialize Studio
   const initializeStudio = useCallback(async () => {
