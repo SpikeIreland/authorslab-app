@@ -115,19 +115,17 @@ export default function PricingPage() {
             <div className="bg-gradient-to-br from-blue-900 to-purple-900 rounded-2xl p-8 shadow-2xl border-2 border-green-400 relative transform md:scale-105">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                 <span className="bg-gradient-to-r from-green-400 to-blue-400 text-gray-900 px-6 py-2 rounded-full text-sm font-bold shadow-lg">
-                  ⭐ AVAILABLE NOW
+                  ⭐ BETA EARLY ACCESS
                 </span>
               </div>
 
-              <div className="text-center mb-6 mt-4">
-                <div className="inline-block px-4 py-2 bg-white/20 text-white rounded-full text-sm font-bold mb-4">
-                  Professional Editing
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-2">3-Phase Editing Package</h3>
-                <div className="flex items-baseline justify-center gap-2 mb-2">
-                  <span className="text-5xl font-extrabold text-white">$299</span>
-                </div>
-                <p className="text-blue-100">Complete professional editing for your manuscript</p>
+              {/* Add this new section after the price */}
+              <div className="bg-blue-800/50 rounded-lg p-4 mb-6 border border-blue-400">
+                <p className="text-sm text-blue-100 leading-relaxed">
+                  <strong className="text-white">🎉 Beta Pricing:</strong> Be an early adopter!
+                  This special $299 rate won&apos;t last - help us refine AuthorsLab with your feedback
+                  and lock in this price before we launch publicly.
+                </p>
               </div>
 
               <ul className="space-y-4 mb-8">

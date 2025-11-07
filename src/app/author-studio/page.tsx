@@ -541,9 +541,10 @@ function StudioContent() {
     setWordCount(words.length)
   }, [editorContent])
 
+  // Sync contentEditable when chapter changes OR content loads
   useEffect(() => {
     if (editorPanelRef.current) {
-      // Convert line breaks to <br> tags WITH spaces for proper word separation
+      // Convert line breaks to <br> tags for display
       const htmlContent = editorContent.replace(/\n/g, ' <br> ');
 
       // Only update if content is different
@@ -551,7 +552,7 @@ function StudioContent() {
         editorPanelRef.current.innerHTML = htmlContent;
       }
     }
-  }, [currentChapterIndex]);
+  }, [currentChapterIndex, editorContent]); // ← FIXED: Added editorContent
 
   // Initialize Studio
   const initializeStudio = useCallback(async () => {
