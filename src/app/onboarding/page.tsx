@@ -100,6 +100,56 @@ function OnboardingContent() {
         fetchProfileId()
     }, [searchParams])
 
+    useEffect(() => {
+        async function checkAccess() {
+            const { createClient } = await import('@/lib/supabase/client')
+            const supabase = createClient()
+
+            const { data: { user } } = await supabase.auth.getUser()
+
+            if (!user) {
+                router.push('/login')
+                return
+            }
+
+            const { data: profile } = await supabase
+                .from('author_profiles')
+                .select('id, is_beta_tester')
+                .eq('auth_user_id', user.id)
+                .single()
+
+            if (!profile) {
+                router.push('/signup')
+                return
+            }
+
+            // Beta testers bypass payment check
+            if (profile.is_beta_tester) {
+                console.log('✅ Beta tester - access granted')
+                return
+            }
+
+            // Check for active subscription
+            const { data: subscription } = await supabase
+                .from('subscriptions')
+                .select('*')
+                .eq('author_id', profile.id)
+                .eq('status', 'active')
+                .single()
+
+            if (!subscription) {
+                // No payment, redirect to checkout
+                console.log('❌ No active subscription - redirecting to checkout')
+                router.push('/checkout')
+                return
+            }
+
+            console.log('✅ Subscription verified - access granted')
+        }
+
+        checkAccess()
+    }, [router])
+
     const generateManuscriptId = () => {
         // Generate a proper UUID v4
         const uuid = crypto.randomUUID()

@@ -31,18 +31,53 @@ export async function POST(req: NextRequest) {
     if (event.type === 'checkout.session.completed') {
         const session = event.data.object as Stripe.Checkout.Session
 
-        const manuscriptId = session.client_reference_id
+        const authorId = session.client_reference_id || session.metadata?.author_id
+        const manuscriptId = session.metadata?.manuscript_id
         const packageType = session.metadata?.package
 
-        if (!manuscriptId || !packageType) {
-            console.error('Missing manuscript ID or package type')
-            return NextResponse.json({ error: 'Missing data' }, { status: 400 })
+        console.log(`✅ Payment successful - Author: ${authorId}, Package: ${packageType}`)
+
+        // Handle THREE-PHASE PACKAGE (Phases 1-3 access)
+        if (packageType === 'three-phase' && authorId) {
+            // Create subscription record to grant access
+            const { data: subscription, error: subError } = await supabase
+                .from('subscriptions')
+                .insert({
+                    author_id: authorId,
+                    plan_type: 'pay_per_manuscript',
+                    status: 'active',
+                    manuscripts_allowed: 1,
+                    manuscripts_used: 0,
+                    stripe_customer_id: session.customer as string,
+                    current_period_start: new Date().toISOString(),
+                    current_period_end: null // One-time payment, no expiration
+                })
+                .select()
+                .single()
+
+            if (subError) {
+                console.error('❌ Failed to create subscription:', subError)
+            } else {
+                console.log('✅ Created subscription for three-phase package:', subscription.id)
+            }
+
+            // Optional: Record the payment
+            await supabase.from('payments').insert({
+                author_id: authorId,
+                subscription_id: subscription?.id,
+                amount_cents: 29900, // $299
+                currency: 'usd',
+                payment_type: 'one_time',
+                stripe_payment_intent_id: session.payment_intent as string,
+                status: 'succeeded',
+                succeeded_at: new Date().toISOString()
+            })
+
+            console.log('✅ Three-phase package activated for author:', authorId)
         }
 
-        console.log(`✅ Payment successful for manuscript ${manuscriptId}, package: ${packageType}`)
-
-        // Activate Phase 4 (Publishing)
-        if (packageType === 'publishing' || packageType === 'complete') {
+        // Handle PHASE 4 (Publishing) - existing logic
+        if ((packageType === 'publishing' || packageType === 'complete') && manuscriptId) {
             await supabase
                 .from('editing_phases')
                 .update({
@@ -52,11 +87,11 @@ export async function POST(req: NextRequest) {
                 .eq('manuscript_id', manuscriptId)
                 .eq('phase_number', 4)
 
-            console.log('✅ Activated Phase 4 (Publishing)')
+            console.log('✅ Activated Phase 4 (Publishing) for manuscript:', manuscriptId)
         }
 
-        // Activate Phase 5 (Marketing)
-        if (packageType === 'marketing' || packageType === 'complete') {
+        // Handle PHASE 5 (Marketing) - existing logic
+        if ((packageType === 'marketing' || packageType === 'complete') && manuscriptId) {
             await supabase
                 .from('editing_phases')
                 .update({
@@ -66,7 +101,7 @@ export async function POST(req: NextRequest) {
                 .eq('manuscript_id', manuscriptId)
                 .eq('phase_number', 5)
 
-            console.log('✅ Activated Phase 5 (Marketing)')
+            console.log('✅ Activated Phase 5 (Marketing) for manuscript:', manuscriptId)
         }
     }
 

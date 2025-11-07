@@ -463,6 +463,58 @@ function StudioContent() {
     }
   }, [manuscript?.id])
 
+  // Add this new useEffect FIRST, before all other useEffects
+  useEffect(() => {
+    async function checkPaymentAccess() {
+      const supabase = createClient()
+
+      const { data: { user } } = await supabase.auth.getUser()
+
+      if (!user) {
+        router.push('/login')
+        return
+      }
+
+      const { data: profile } = await supabase
+        .from('author_profiles')
+        .select('id, is_beta_tester')
+        .eq('auth_user_id', user.id)
+        .single()
+
+      if (!profile) {
+        router.push('/signup')
+        return
+      }
+
+      // Beta testers bypass payment check
+      if (profile.is_beta_tester) {
+        console.log('✅ Beta tester - author studio access granted')
+        return
+      }
+
+      // Check for active subscription
+      const { data: subscription } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('author_id', profile.id)
+        .eq('status', 'active')
+        .single()
+
+      if (!subscription) {
+        // No payment, redirect to checkout
+        console.log('❌ No active subscription - redirecting to checkout')
+        router.push('/checkout')
+        return
+      }
+
+      console.log('✅ Subscription verified - author studio access granted')
+    }
+
+    checkPaymentAccess()
+  }, [router])
+
+  // Then your existing useEffect for initializeStudio...
+
   // Auto-scroll chat
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -1661,6 +1713,16 @@ function StudioContent() {
                   currentPhaseNumber={currentPhase}
                 />
               </div>
+              {/* Add this in your header, near the versions dropdown */}
+              <button
+                onClick={() => {
+                  window.open('https://forms.gle/your-feedback-form', '_blank')
+                  // Or trigger an in-app feedback modal
+                }}
+                className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-semibold"
+              >
+                📝 Beta Feedback
+              </button>
             </div>
           </div>
         </header>

@@ -96,7 +96,21 @@ export default function SignupPage() {
         console.warn('⚠️ Profile not found after all retries, continuing anyway')
       }
 
-      // Step 3: Store user data in localStorage
+      // Step 3: Check if user is beta tester
+      let isBetaTester = false
+
+      if (profileId) {
+        const { data: profile } = await supabase
+          .from('author_profiles')
+          .select('is_beta_tester')
+          .eq('id', profileId)
+          .single()
+
+        isBetaTester = profile?.is_beta_tester || false
+        console.log('🔍 Beta tester status:', isBetaTester)
+      }
+
+      // Step 4: Store user data in localStorage
       localStorage.setItem('currentUserId', authData.user.id)
       localStorage.setItem('currentUserEmail', email)
       localStorage.setItem('currentUserFirstName', firstName)
@@ -107,15 +121,17 @@ export default function SignupPage() {
         console.log('✅ Stored authorProfileId:', profileId)
       }
 
-      // Step 4: Redirect to onboarding
-      const redirectUrl = profileId
-        ? `/onboarding?userId=${authData.user.id}&authorProfileId=${profileId}&firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&email=${encodeURIComponent(email)}`
-        : `/onboarding?userId=${authData.user.id}&firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&email=${encodeURIComponent(email)}`
-
-      // In signup/page.tsx, replace the final redirect with:
-
-      console.log('✅ Signup successful, redirecting to verification page')
-      router.push(`/verify-email?email=${encodeURIComponent(email)}`)
+      // Step 5: Redirect based on beta tester status
+      if (isBetaTester) {
+        // Beta testers go straight to onboarding (free access)
+        console.log('✅ Beta tester - redirecting to onboarding')
+        const redirectUrl = `/onboarding?userId=${authData.user.id}&authorProfileId=${profileId}&firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&email=${encodeURIComponent(email)}`
+        router.push(redirectUrl)
+      } else {
+        // Regular users must pay first
+        console.log('✅ Regular user - redirecting to checkout')
+        router.push('/checkout')
+      }
 
     } catch (error: unknown) {
       console.error('❌ Signup error:', error)

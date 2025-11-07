@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { BetaBanner } from '@/components/BetaBanner'  // ← ADD THIS
 
 export const metadata: Metadata = {
   title: 'AuthorLab.ai - AI-Powered Author Services',
@@ -13,7 +14,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <BetaBanner />  {/* ← ADD THIS */}
+        {children}
+      </body>
     </html>
   )
 }
