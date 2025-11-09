@@ -197,12 +197,42 @@ function getCategoryColor(category: string): string {
   return colors[category] || 'bg-gray-100 text-gray-700'
 }
 
-// Helper function to get severity color classes
+// Severity display helpers
+function getSeverityIcon(severity: string): string {
+  const icons: Record<string, string> = {
+    'low': '🟢',
+    'medium': '🟡',
+    'high': '🔴',
+    // Backward compatibility for old values
+    'minor': '🟢',
+    'moderate': '🟡',
+    'major': '🔴',
+  }
+  return icons[severity] || '⚪'
+}
+
+function getSeverityLabel(severity: string): string {
+  const labels: Record<string, string> = {
+    'low': 'Low Priority',
+    'medium': 'Medium Priority',
+    'high': 'High Priority',
+    // Backward compatibility
+    'minor': 'Low Priority',
+    'moderate': 'Medium Priority',
+    'major': 'High Priority',
+  }
+  return labels[severity] || severity
+}
+
 function getSeverityColor(severity: string): string {
   const colors: Record<string, string> = {
-    'minor': 'text-gray-600',
-    'moderate': 'text-orange-600 font-medium',
-    'major': 'text-red-600 font-bold',
+    'low': 'text-green-600',
+    'medium': 'text-orange-600',
+    'high': 'text-red-600',
+    // Backward compatibility
+    'minor': 'text-green-600',
+    'moderate': 'text-orange-600',
+    'major': 'text-red-600',
   }
   return colors[severity] || 'text-gray-600'
 }
@@ -2272,8 +2302,8 @@ function StudioContent() {
                           <span className={`px-2 py-0.5 rounded text-xs font-medium ${getCategoryColor(issue.element_type)}`}>
                             {issue.element_type}
                           </span>
-                          <span className={`text-xs ${getSeverityColor(issue.severity)}`}>
-                            {issue.severity}
+                          <span className={`text-xs font-semibold ${getSeverityColor(issue.severity)}`}>
+                            {getSeverityIcon(issue.severity)} {getSeverityLabel(issue.severity)}
                           </span>
                           <span className="text-xs text-blue-600 font-medium ml-auto">
                             👆 Click to highlight
@@ -2296,7 +2326,7 @@ function StudioContent() {
                             {issue.element_type}
                           </span>
                           <span className={`text-xs ${getSeverityColor(issue.severity)}`}>
-                            {issue.severity}
+                            {getSeverityIcon(issue.severity)} {getSeverityLabel(issue.severity)}
                           </span>
                         </div>
 
