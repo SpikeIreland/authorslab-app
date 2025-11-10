@@ -32,7 +32,7 @@ export default function TaylorChatWidget({ manuscriptId }: TaylorChatWidgetProps
         const supabase = createClient()
 
         const { data, error } = await supabase
-            .from('editor_chat_messages')
+            .from('editor_chat_history')
             .select('*')
             .eq('manuscript_id', manuscriptId)
             .eq('phase_number', 4)
@@ -112,7 +112,7 @@ Type "let's start" to begin the assessment, or ask me anything about publishing 
         setMessages([greetingMessage])
 
         // Save greeting to database
-        await supabase.from('editor_chat_messages').insert({
+        await supabase.from('editor_chat_history').insert({
             manuscript_id: manuscriptId,
             phase_number: 4,
             sender: 'taylor',
@@ -138,7 +138,7 @@ Type "let's start" to begin the assessment, or ask me anything about publishing 
         try {
             // Save user message to database
             const supabase = createClient()
-            await supabase.from('editor_chat_messages').insert({
+            await supabase.from('editor_chat_history').insert({
                 manuscript_id: manuscriptId,
                 phase_number: 4,
                 sender: 'user',
@@ -172,7 +172,7 @@ Type "let's start" to begin the assessment, or ask me anything about publishing 
                 setMessages(prev => [...prev, taylorMessage])
 
                 // Save Taylor's response to database
-                await supabase.from('editor_chat_messages').insert({
+                await supabase.from('editor_chat_history').insert({
                     manuscript_id: manuscriptId,
                     phase_number: 4,
                     sender: 'taylor',
