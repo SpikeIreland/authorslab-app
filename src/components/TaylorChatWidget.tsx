@@ -20,6 +20,7 @@ export default function TaylorChatWidget({ manuscriptId }: TaylorChatWidgetProps
     const [inputMessage, setInputMessage] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const messagesEndRef = useRef<HTMLDivElement>(null)
+    const inputRef = useRef<HTMLInputElement>(null)  // ← Add this
 
     // Load chat history
     useEffect(() => {
@@ -27,6 +28,13 @@ export default function TaylorChatWidget({ manuscriptId }: TaylorChatWidgetProps
 
         loadChatHistory()
     }, [isOpen, manuscriptId])
+
+    // Auto-focus input when chat opens
+    useEffect(() => {
+        if (isOpen && inputRef.current) {
+            inputRef.current.focus()
+        }
+    }, [isOpen])
 
     async function loadChatHistory() {
         const supabase = createClient()
@@ -192,6 +200,8 @@ Type "let's start" to begin the assessment, or ask me anything about publishing 
             setMessages(prev => [...prev, errorMessage])
         } finally {
             setIsLoading(false)
+            // Re-focus input after sending
+            setTimeout(() => inputRef.current?.focus(), 100)
         }
     }
 
@@ -274,6 +284,7 @@ Type "let's start" to begin the assessment, or ask me anything about publishing 
                     <div className="p-4 border-t border-gray-200 bg-white rounded-b-2xl">
                         <div className="flex gap-2">
                             <input
+                                ref={inputRef}
                                 type="text"
                                 value={inputMessage}
                                 onChange={(e) => setInputMessage(e.target.value)}
