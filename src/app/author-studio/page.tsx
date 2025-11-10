@@ -686,6 +686,18 @@ function StudioContent() {
           throw new Error('No phase found')
         }
 
+        if (phaseToLoad.phase_number === 4) {
+          console.log('📚 Phase 4 active - redirecting to Publishing Hub')
+          router.push(`/publishing-hub?manuscriptId=${manuscriptId}`)
+          return
+        }
+
+        if (phaseToLoad.phase_number === 5) {
+          console.log('📢 Phase 5 active - redirecting to Marketing Hub')
+          router.push(`/marketing-hub?manuscriptId=${manuscriptId}`)
+          return
+        }
+
         setActivePhase(phaseToLoad)
         console.log(`✅ Loaded phase: ${phaseToLoad.phase_name} (${phaseToLoad.editor_name})`)
       } else {
