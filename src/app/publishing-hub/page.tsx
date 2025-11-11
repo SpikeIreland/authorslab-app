@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import TaylorChatWidget from '@/components/TaylorChatWidget'
+import CoverDesignerPanel from '@/components/CoverDesignerPanel'
 
 interface PublishingPlan {
   publishing_plan: string | null
@@ -68,6 +69,43 @@ function PublishingHubContent() {
 
     loadPublishingPlan()
   }, [manuscriptId])
+
+  const [showCoverDesigner, setShowCoverDesigner] = useState(false)
+
+  useEffect(() => {
+    async function checkProgress() {
+      if (!manuscriptId) return
+
+      const supabase = createClient()
+      const { data } = await supabase
+        .from('publishing_progress')
+        .select('current_step, completed_steps')
+        .eq('manuscript_id', manuscriptId)
+        .single()
+
+      if (data) {
+        // Show cover designer if on cover-design step or if already completed
+        const show =
+          data.current_step === 'cover-design' ||
+          data.completed_steps?.includes('cover-design')
+
+        setShowCoverDesigner(show)
+      }
+    }
+
+    checkProgress()
+  }, [manuscriptId])
+
+  // In the JSX, add the panel
+  {
+    {
+      showCoverDesigner && manuscriptId && (
+        <section className="mb-8">
+          <CoverDesignerPanel manuscriptId={manuscriptId} />
+        </section>
+      )
+    }
+  }
 
   // Show loading while checking access
   if (isChecking) {

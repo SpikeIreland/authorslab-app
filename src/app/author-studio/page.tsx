@@ -1561,10 +1561,10 @@ function StudioContent() {
                       }}
                       disabled={!isAvailable}
                       className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${isActive
-                          ? 'bg-green-600 text-white ring-2 ring-green-300 hover:bg-green-700 cursor-pointer'
-                          : isAvailable
-                            ? 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'
-                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        ? 'bg-green-600 text-white ring-2 ring-green-300 hover:bg-green-700 cursor-pointer'
+                        : isAvailable
+                          ? 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'
+                          : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                         }`}
                       title={isAvailable ? 'Work with Alex' : 'Alex (Locked)'}
                     >
@@ -1588,10 +1588,10 @@ function StudioContent() {
                       }}
                       disabled={!isAvailable}
                       className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${isActive
-                          ? 'bg-purple-600 text-white ring-2 ring-purple-300 hover:bg-purple-700 cursor-pointer'
-                          : isAvailable
-                            ? 'bg-purple-600 text-white hover:bg-purple-700 cursor-pointer'
-                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        ? 'bg-purple-600 text-white ring-2 ring-purple-300 hover:bg-purple-700 cursor-pointer'
+                        : isAvailable
+                          ? 'bg-purple-600 text-white hover:bg-purple-700 cursor-pointer'
+                          : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                         }`}
                       title={isAvailable ? 'Work with Sam' : 'Sam (Locked)'}
                     >
@@ -1615,10 +1615,10 @@ function StudioContent() {
                       }}
                       disabled={!isAvailable}
                       className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${isActive
-                          ? 'bg-blue-600 text-white ring-2 ring-blue-300 hover:bg-blue-700 cursor-pointer'
-                          : isAvailable
-                            ? 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer'
-                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        ? 'bg-blue-600 text-white ring-2 ring-blue-300 hover:bg-blue-700 cursor-pointer'
+                        : isAvailable
+                          ? 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer'
+                          : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                         }`}
                       title={isAvailable ? 'Work with Jordan' : 'Jordan (Locked)'}
                     >
@@ -1642,10 +1642,10 @@ function StudioContent() {
                       }}
                       disabled={!isAvailable}
                       className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${isActive
-                          ? 'bg-teal-600 text-white ring-2 ring-teal-300 hover:bg-teal-700 cursor-pointer'
-                          : isAvailable
-                            ? 'bg-teal-600 text-white hover:bg-teal-700 cursor-pointer'
-                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        ? 'bg-teal-600 text-white ring-2 ring-teal-300 hover:bg-teal-700 cursor-pointer'
+                        : isAvailable
+                          ? 'bg-teal-600 text-white hover:bg-teal-700 cursor-pointer'
+                          : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                         }`}
                       title={isAvailable ? 'Go to Publishing Hub' : 'Publishing (Locked)'}
                     >
@@ -1669,10 +1669,10 @@ function StudioContent() {
                       }}
                       disabled={!isAvailable}
                       className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${isActive
-                          ? 'bg-orange-600 text-white ring-2 ring-orange-300 hover:bg-orange-700 cursor-pointer'
-                          : isAvailable
-                            ? 'bg-orange-600 text-white hover:bg-orange-700 cursor-pointer'
-                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        ? 'bg-orange-600 text-white ring-2 ring-orange-300 hover:bg-orange-700 cursor-pointer'
+                        : isAvailable
+                          ? 'bg-orange-600 text-white hover:bg-orange-700 cursor-pointer'
+                          : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                         }`}
                       title={isAvailable ? 'Go to Marketing Hub' : 'Marketing (Locked)'}
                     >

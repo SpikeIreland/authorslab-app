@@ -146,15 +146,33 @@ Type "let's start" to begin the assessment, or ask me anything about publishing 
     async function sendMessage() {
         if (!inputMessage.trim() || isLoading) return
 
-        const userMessage: ChatMessage = {
+        const userMessage = inputMessage.trim()
+        const lowerMessage = userMessage.toLowerCase()
+
+        // Detect cover creation request
+        const wantsCover =
+            (lowerMessage.includes('create') && lowerMessage.includes('cover')) ||
+            (lowerMessage.includes('design') && lowerMessage.includes('cover')) ||
+            (lowerMessage.includes('generate') && lowerMessage.includes('cover')) ||
+            lowerMessage.includes("let's create my cover") ||
+            lowerMessage.includes('make my cover')
+
+        if (wantsCover) {
+            // Handle cover generation request
+            await handleCoverRequest(userMessage)
+            return
+        }
+
+        // Normal chat flow continues below
+        const userMessageObj: ChatMessage = {
             id: 'temp-' + Date.now(),
             sender: 'user',
-            message: inputMessage,
+            message: userMessage,
             created_at: new Date().toISOString()
         }
 
         // Add user message to UI
-        setMessages(prev => [...prev, userMessage])
+        setMessages(prev => [...prev, userMessageObj])
         setInputMessage('')
         setIsLoading(true)
 
@@ -165,7 +183,7 @@ Type "let's start" to begin the assessment, or ask me anything about publishing 
                 manuscript_id: manuscriptId,
                 phase_number: 4,
                 sender: 'user',
-                message: userMessage.message
+                message: userMessageObj.message
             })
 
             // Call Taylor chat workflow
@@ -176,7 +194,7 @@ Type "let's start" to begin the assessment, or ask me anything about publishing 
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         manuscriptId: manuscriptId,
-                        userMessage: userMessage.message,
+                        userMessage: userMessageObj.message,
                         conversationHistory: messages.slice(-10) // Last 10 messages for context
                     })
                 }
@@ -213,6 +231,93 @@ Type "let's start" to begin the assessment, or ask me anything about publishing 
                 created_at: new Date().toISOString()
             }
             setMessages(prev => [...prev, errorMessage])
+        } finally {
+            setIsLoading(false)
+            // Re-focus input after sending
+            setTimeout(() => inputRef.current?.focus(), 100)
+        }
+    }
+
+    async function handleCoverRequest(userMessage: string) {
+        // Add user message to UI
+        const userMsg: ChatMessage = {
+            id: 'temp-' + Date.now(),
+            sender: 'user',
+            message: userMessage,
+            created_at: new Date().toISOString()
+        }
+        setMessages(prev => [...prev, userMsg])
+        setInputMessage('')
+        setIsLoading(true)
+
+        try {
+            const supabase = createClient()
+
+            // Save user message
+            await supabase.from('editor_chat_history').insert({
+                manuscript_id: manuscriptId,
+                phase_number: 4,
+                sender: 'user',
+                message: userMessage
+            })
+
+            // Get manuscript data
+            const { data: manuscript } = await supabase
+                .from('manuscripts')
+                .select('title, genre, current_word_count')
+                .eq('id', manuscriptId)
+                .single()
+
+            // Call intent detection workflow
+            const response = await fetch(
+                'https://spikeislandstudios.app.n8n.cloud/webhook/taylor-detect-cover-intent',
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        manuscriptId,
+                        userMessage,
+                        manuscriptData: {
+                            title: manuscript?.title,
+                            genre: manuscript?.genre,
+                            wordCount: manuscript?.current_word_count
+                        }
+                    })
+                }
+            )
+
+            if (response.ok) {
+                const data = await response.json()
+
+                // Add Taylor's response
+                const taylorMsg: ChatMessage = {
+                    id: 'taylor-' + Date.now(),
+                    sender: 'taylor',
+                    message: data.response,
+                    created_at: new Date().toISOString()
+                }
+
+                setMessages(prev => [...prev, taylorMsg])
+
+                // Save Taylor's response
+                await supabase.from('editor_chat_history').insert({
+                    manuscript_id: manuscriptId,
+                    phase_number: 4,
+                    sender: 'taylor',
+                    message: data.response
+                })
+            }
+        } catch (error) {
+            console.error('Error handling cover request:', error)
+
+            // Add error message
+            const errorMsg: ChatMessage = {
+                id: 'error-' + Date.now(),
+                sender: 'taylor',
+                message: "I'm having trouble starting the cover generation. Please try again in a moment!",
+                created_at: new Date().toISOString()
+            }
+            setMessages(prev => [...prev, errorMsg])
         } finally {
             setIsLoading(false)
             // Re-focus input after sending
