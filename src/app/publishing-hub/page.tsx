@@ -61,6 +61,7 @@ function PublishingHubContent() {
         .single()
 
       if (data) {
+        console.log('📊 Loaded publishing plan:', data) // Add this to debug
         setPublishingPlan(data)
       }
     }
