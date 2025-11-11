@@ -467,3 +467,273 @@ export async function createApprovedSnapshot(
 
 // Backward compatibility alias
 export const ISSUE_CATEGORIES = ISSUE_CATEGORIES_BY_PHASE
+
+export type PublishingStep =
+  | 'assessment'
+  | 'cover-design'
+  | 'formatting'
+  | 'metadata'
+  | 'platform-setup'
+  | 'complete'
+
+export interface AssessmentAnswers {
+  publishing_goal?: 'self-publish-all' | 'self-publish-amazon' | 'traditional-query' | 'hybrid' | 'undecided'
+  experience?: 'first-time' | 'published-before' | 'self-published' | 'traditionally-published'
+  platforms?: string[] // ['amazon-kdp', 'draft2digital', 'ingramspark', etc.]
+  timeline?: '1-month' | '1-3-months' | '3-6-months' | '6-12-months' | 'no-rush'
+  budget?: 'under-500' | '500-1000' | '1000-2500' | '2500-plus' | 'flexible'
+}
+
+export interface CoverDesign {
+  id: number
+  url: string
+  prompt: string
+  selected: boolean
+  created_at: string
+}
+
+export interface FormattedFiles {
+  epub?: string
+  kindle?: string
+  print_pdf?: string
+  pdf_6x9?: string
+  pdf_5x8?: string
+}
+
+export interface PublishingMetadata {
+  title?: string
+  subtitle?: string
+  description?: string
+  keywords?: string[]
+  categories?: string[]
+  author_bio?: string
+  pricing?: {
+    ebook?: number
+    print?: number
+  }
+}
+
+// FIXED: Replace Record<string, any> with specific type
+export interface StepData {
+  [key: string]: string | number | boolean | null | undefined | string[] | number[]
+}
+
+export interface PublishingProgress {
+  id: string
+  manuscript_id: string
+
+  // Progress Tracking
+  current_step: PublishingStep
+  completed_steps: PublishingStep[]
+
+  // Assessment
+  assessment_completed: boolean
+  assessment_answers: AssessmentAnswers
+  publishing_plan: string | null
+  plan_pdf_url: string | null
+
+  // Cover Design
+  cover_designs: CoverDesign[]
+  selected_cover_id: number | null
+
+  // Formatted Files
+  formatted_files: FormattedFiles
+
+  // Metadata
+  metadata: PublishingMetadata
+
+  // Flexible Step Data - FIXED: No 'any'
+  step_data: StepData
+
+  // Timestamps
+  created_at: string
+  updated_at: string
+  assessment_completed_at: string | null
+  cover_selected_at: string | null
+  formatting_completed_at: string | null
+  metadata_completed_at: string | null
+  all_steps_completed_at: string | null
+}
+
+// ============================================
+// Helper Types for Frontend
+// ============================================
+
+export interface PublishingStepInfo {
+  step: PublishingStep
+  title: string
+  description: string
+  isComplete: boolean
+  isActive: boolean
+  icon: string
+}
+
+export interface CoverGenerationRequest {
+  manuscriptId: string
+  genre: string
+  mood: string
+  colors?: string
+  elements?: string
+  additionalPrompt?: string
+}
+
+export interface FormattingRequest {
+  manuscriptId: string
+  formats: ('epub' | 'kindle' | 'print')[]
+  trim_size?: '6x9' | '5x8' | '5.5x8.5'
+  chapter_header_style?: 'centered' | 'left' | 'decorative'
+  font_family?: 'serif' | 'sans-serif'
+}
+
+// ============================================
+// Assessment Questions Data Structure
+// ============================================
+
+export interface AssessmentQuestionOption {
+  value: string
+  label: string
+  description?: string
+}
+
+export interface AssessmentQuestion {
+  id: string
+  question: string
+  options: AssessmentQuestionOption[]
+  followUp?: string // Optional follow-up clarification
+}
+
+export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
+  {
+    id: 'publishing_goal',
+    question: 'What\'s your primary publishing goal?',
+    options: [
+      {
+        value: 'self-publish-all',
+        label: 'Self-publish on multiple platforms',
+        description: 'Maximum reach and control'
+      },
+      {
+        value: 'self-publish-amazon',
+        label: 'Start with Amazon KDP only',
+        description: 'Test the waters first'
+      },
+      {
+        value: 'traditional-query',
+        label: 'Query traditional publishers',
+        description: 'I want traditional publishing representation'
+      },
+      {
+        value: 'hybrid',
+        label: 'Hybrid approach',
+        description: 'Self-publish while querying agents'
+      },
+      {
+        value: 'undecided',
+        label: 'I\'m not sure yet',
+        description: 'Help me decide'
+      }
+    ]
+  },
+  {
+    id: 'experience',
+    question: 'What\'s your publishing experience?',
+    options: [
+      {
+        value: 'first-time',
+        label: 'First-time author',
+        description: 'This is my first book'
+      },
+      {
+        value: 'self-published',
+        label: 'Previously self-published',
+        description: 'I\'ve self-published before'
+      },
+      {
+        value: 'traditionally-published',
+        label: 'Previously traditionally published',
+        description: 'I\'ve worked with traditional publishers'
+      },
+      {
+        value: 'published-before',
+        label: 'Published before (any format)',
+        description: 'I have publishing experience'
+      }
+    ]
+  },
+  {
+    id: 'platforms',
+    question: 'Which platforms interest you? (Select all that apply)',
+    options: [
+      { value: 'amazon-kdp', label: 'Amazon KDP (Kindle)' },
+      { value: 'draft2digital', label: 'Draft2Digital' },
+      { value: 'ingramspark', label: 'IngramSpark' },
+      { value: 'apple-books', label: 'Apple Books' },
+      { value: 'google-play', label: 'Google Play Books' },
+      { value: 'kobo', label: 'Kobo' },
+      { value: 'barnes-noble', label: 'Barnes & Noble Press' },
+      { value: 'unsure', label: 'I\'m not sure yet' }
+    ]
+  },
+  {
+    id: 'timeline',
+    question: 'What\'s your ideal publishing timeline?',
+    options: [
+      {
+        value: '1-month',
+        label: 'Within 1 month',
+        description: 'I want to launch soon'
+      },
+      {
+        value: '1-3-months',
+        label: '1-3 months',
+        description: 'Taking it steady'
+      },
+      {
+        value: '3-6-months',
+        label: '3-6 months',
+        description: 'No immediate rush'
+      },
+      {
+        value: '6-12-months',
+        label: '6-12 months',
+        description: 'Long-term preparation'
+      },
+      {
+        value: 'no-rush',
+        label: 'No specific timeline',
+        description: 'I\'m flexible'
+      }
+    ]
+  },
+  {
+    id: 'budget',
+    question: 'What\'s your publishing budget?',
+    options: [
+      {
+        value: 'under-500',
+        label: 'Under $500',
+        description: 'Bootstrap approach'
+      },
+      {
+        value: '500-1000',
+        label: '$500 - $1,000',
+        description: 'Moderate investment'
+      },
+      {
+        value: '1000-2500',
+        label: '$1,000 - $2,500',
+        description: 'Professional setup'
+      },
+      {
+        value: '2500-plus',
+        label: '$2,500+',
+        description: 'Premium approach'
+      },
+      {
+        value: 'flexible',
+        label: 'Flexible / Depends on ROI',
+        description: 'I\'ll spend what makes sense'
+      }
+    ]
+  }
+]
