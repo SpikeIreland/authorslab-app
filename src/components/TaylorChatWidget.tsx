@@ -20,7 +20,7 @@ export default function TaylorChatWidget({ manuscriptId }: TaylorChatWidgetProps
     const [inputMessage, setInputMessage] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const messagesEndRef = useRef<HTMLDivElement>(null)
-    const inputRef = useRef<HTMLInputElement>(null)  // ← Add this
+    const inputRef = useRef<HTMLInputElement>(null)
 
     // Load chat history
     useEffect(() => {
@@ -63,12 +63,18 @@ export default function TaylorChatWidget({ manuscriptId }: TaylorChatWidgetProps
     }
 
     async function addTaylorGreeting() {
-        // Fetch manuscript details for personalized greeting
+        // Fetch manuscript details and assessment status
         const supabase = createClient()
         const { data: manuscript } = await supabase
             .from('manuscripts')
             .select('title, genre, current_word_count, author_profiles!inner(first_name)')
             .eq('id', manuscriptId)
+            .single()
+
+        const { data: publishingProgress } = await supabase
+            .from('publishing_progress')
+            .select('assessment_completed')
+            .eq('manuscript_id', manuscriptId)
             .single()
 
         const authorProfile = Array.isArray(manuscript?.author_profiles)
@@ -80,10 +86,19 @@ export default function TaylorChatWidget({ manuscriptId }: TaylorChatWidgetProps
         const genre = manuscript?.genre || 'your genre'
         const wordCount = manuscript?.current_word_count?.toLocaleString() || 'your word count'
 
+        // Check if assessment is already completed
+        const assessmentCompleted = publishingProgress?.assessment_completed || false
+
         const greetingMessage = {
             id: 'greeting-' + Date.now(),
             sender: 'taylor' as const,
-            message: `👋 Welcome to your Publishing Hub, ${authorName}!
+            message: assessmentCompleted
+                ? `👋 Hi ${authorName}! 
+
+I'm here to help with your publishing journey for "${title}". 
+
+Your publishing plan is ready - you can view it by clicking the button above, or ask me any questions about publishing your book!`
+                : `👋 Welcome to your Publishing Hub, ${authorName}!
 
 I'm Taylor, your publishing specialist. Congratulations on completing the editing for "${title}"! That's a huge accomplishment.
 

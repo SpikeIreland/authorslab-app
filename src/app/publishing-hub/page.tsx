@@ -61,7 +61,7 @@ function PublishingHubContent() {
         .single()
 
       if (data) {
-        console.log('📊 Loaded publishing plan:', data) // Add this to debug
+        console.log('📊 Loaded publishing plan:', data)
         setPublishingPlan(data)
       }
     }
@@ -95,19 +95,19 @@ function PublishingHubContent() {
               📚 AuthorsLab.ai
             </Link>
             <nav className="hidden md:flex items-center gap-8">
-              <Link href="/author-studio" className="text-gray-700 hover:text-blue-900 font-medium">
-                Writing Studio
+              <Link
+                href={`/author-studio?manuscriptId=${manuscriptId}`}
+                className="text-gray-700 hover:text-blue-900 font-medium"
+              >
+                Author Studio
               </Link>
-              <Link href="/publishing-hub" className="text-blue-900 font-semibold border-b-2 border-blue-900">
+              <Link href={`/publishing-hub?manuscriptId=${manuscriptId}`} className="text-blue-900 font-semibold border-b-2 border-blue-900">
                 Publishing
               </Link>
               <Link href="/marketing-hub" className="text-gray-700 hover:text-blue-900 font-medium">
                 Marketing
               </Link>
             </nav>
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-900 to-blue-700 rounded-full flex items-center justify-center text-white font-semibold">
-              JS
-            </div>
           </div>
         </div>
       </header>
@@ -310,12 +310,6 @@ function PublishingHubContent() {
                 className="bg-teal-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg"
               >
                 Return to Author Studio
-              </Link>
-              <Link
-                href="/dashboard"
-                className="bg-white text-teal-600 border-2 border-teal-600 px-8 py-3 rounded-xl font-bold hover:bg-teal-50 transition-all"
-              >
-                Go to Dashboard
               </Link>
             </div>
           </div>
