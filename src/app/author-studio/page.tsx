@@ -1544,7 +1544,7 @@ function StudioContent() {
             {/* Right: Editor Progress & Report Buttons */}
             <div className="flex items-center gap-6">
 
-              {/* Name Icons - Phase Progress - ADD THIS TO AUTHOR STUDIO HEADER */}
+              {/* Name Icons - Phase Progress - FIXED VERSION */}
               <div className="flex items-center gap-2">
                 {/* Alex (Phase 1) */}
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${currentPhase > 1
@@ -1576,43 +1576,65 @@ function StudioContent() {
                   J
                 </div>
 
-                {/* Taylor (Phase 4) - Clickable */}
-                <button
-                  onClick={() => {
-                    if (currentPhase >= 4) {
-                      router.push(`/publishing-hub?manuscriptId=${manuscript?.id}`)
-                    }
-                  }}
-                  disabled={currentPhase < 4}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${currentPhase > 4
-                      ? 'bg-teal-600 text-white hover:bg-teal-700 cursor-pointer'
-                      : currentPhase === 4
-                        ? 'bg-teal-600 text-white ring-2 ring-teal-300 hover:bg-teal-700 cursor-pointer'
-                        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                    }`}
-                  title={currentPhase >= 4 ? 'Go to Publishing Hub' : 'Publishing (Locked)'}
-                >
-                  T
-                </button>
+                {/* Taylor (Phase 4) - Clickable - FIXED */}
+                {(() => {
+                  const taylorPhase = editorPhases.find(p => p.phase_number === 4)
+                  const isAvailable = taylorPhase && taylorPhase.phase_status !== 'pending'
+                  const isActive = currentPhase === 4
+                  const isCompleted = taylorPhase && (taylorPhase.phase_status === 'complete' || currentPhase > 4)
 
-                {/* Quinn (Phase 5) - Clickable */}
-                <button
-                  onClick={() => {
-                    if (currentPhase >= 5) {
-                      router.push(`/marketing-hub?manuscriptId=${manuscript?.id}`)
-                    }
-                  }}
-                  disabled={currentPhase < 5}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${currentPhase > 5
-                      ? 'bg-orange-600 text-white hover:bg-orange-700 cursor-pointer'
-                      : currentPhase === 5
-                        ? 'bg-orange-600 text-white ring-2 ring-orange-300 hover:bg-orange-700 cursor-pointer'
-                        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                    }`}
-                  title={currentPhase >= 5 ? 'Go to Marketing Hub' : 'Marketing (Locked)'}
-                >
-                  Q
-                </button>
+                  return (
+                    <button
+                      onClick={() => {
+                        if (isAvailable) {
+                          router.push(`/publishing-hub?manuscriptId=${manuscript?.id}`)
+                        }
+                      }}
+                      disabled={!isAvailable}
+                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${isCompleted
+                          ? 'bg-teal-600 text-white hover:bg-teal-700 cursor-pointer'
+                          : isActive
+                            ? 'bg-teal-600 text-white ring-2 ring-teal-300 hover:bg-teal-700 cursor-pointer'
+                            : isAvailable
+                              ? 'bg-teal-600 text-white hover:bg-teal-700 cursor-pointer'
+                              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        }`}
+                      title={isAvailable ? 'Go to Publishing Hub' : 'Publishing (Locked)'}
+                    >
+                      T
+                    </button>
+                  )
+                })()}
+
+                {/* Quinn (Phase 5) - Clickable - FIXED */}
+                {(() => {
+                  const quinnPhase = editorPhases.find(p => p.phase_number === 5)
+                  const isAvailable = quinnPhase && quinnPhase.phase_status !== 'pending'
+                  const isActive = currentPhase === 5
+                  const isCompleted = quinnPhase && (quinnPhase.phase_status === 'complete' || currentPhase > 5)
+
+                  return (
+                    <button
+                      onClick={() => {
+                        if (isAvailable) {
+                          router.push(`/marketing-hub?manuscriptId=${manuscript?.id}`)
+                        }
+                      }}
+                      disabled={!isAvailable}
+                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${isCompleted
+                          ? 'bg-orange-600 text-white hover:bg-orange-700 cursor-pointer'
+                          : isActive
+                            ? 'bg-orange-600 text-white ring-2 ring-orange-300 hover:bg-orange-700 cursor-pointer'
+                            : isAvailable
+                              ? 'bg-orange-600 text-white hover:bg-orange-700 cursor-pointer'
+                              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        }`}
+                      title={isAvailable ? 'Go to Marketing Hub' : 'Marketing (Locked)'}
+                    >
+                      Q
+                    </button>
+                  )
+                })()}
               </div>
 
               {/* PDF Report Buttons - Always Visible */}
