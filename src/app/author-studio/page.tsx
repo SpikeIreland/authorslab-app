@@ -1544,44 +1544,94 @@ function StudioContent() {
             {/* Right: Editor Progress & Report Buttons */}
             <div className="flex items-center gap-6">
 
-              {/* Name Icons - Phase Progress - FIXED VERSION */}
+              {/* Name Icons - Phase Progress - ALL CLICKABLE */}
               <div className="flex items-center gap-2">
-                {/* Alex (Phase 1) */}
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${currentPhase > 1
-                  ? 'bg-green-600 text-white'
-                  : currentPhase === 1
-                    ? 'bg-green-600 text-white ring-2 ring-green-300'
-                    : 'bg-gray-200 text-gray-400'
-                  }`}>
-                  A
-                </div>
+                {/* Alex (Phase 1) - Clickable */}
+                {(() => {
+                  const alexPhase = editorPhases.find(p => p.phase_number === 1)
+                  const isAvailable = alexPhase && alexPhase.phase_status !== 'pending'
+                  const isActive = currentPhase === 1
 
-                {/* Sam (Phase 2) */}
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${currentPhase > 2
-                  ? 'bg-purple-600 text-white'
-                  : currentPhase === 2
-                    ? 'bg-purple-600 text-white ring-2 ring-purple-300'
-                    : 'bg-gray-200 text-gray-400'
-                  }`}>
-                  S
-                </div>
+                  return (
+                    <button
+                      onClick={() => {
+                        if (isAvailable) {
+                          router.push(`/author-studio?manuscriptId=${manuscript?.id}&phase=1`)
+                        }
+                      }}
+                      disabled={!isAvailable}
+                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${isActive
+                          ? 'bg-green-600 text-white ring-2 ring-green-300 hover:bg-green-700 cursor-pointer'
+                          : isAvailable
+                            ? 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'
+                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        }`}
+                      title={isAvailable ? 'Work with Alex' : 'Alex (Locked)'}
+                    >
+                      A
+                    </button>
+                  )
+                })()}
 
-                {/* Jordan (Phase 3) */}
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${currentPhase > 3
-                  ? 'bg-blue-600 text-white'
-                  : currentPhase === 3
-                    ? 'bg-blue-600 text-white ring-2 ring-blue-300'
-                    : 'bg-gray-200 text-gray-400'
-                  }`}>
-                  J
-                </div>
+                {/* Sam (Phase 2) - Clickable */}
+                {(() => {
+                  const samPhase = editorPhases.find(p => p.phase_number === 2)
+                  const isAvailable = samPhase && samPhase.phase_status !== 'pending'
+                  const isActive = currentPhase === 2
 
-                {/* Taylor (Phase 4) - Clickable - FIXED */}
+                  return (
+                    <button
+                      onClick={() => {
+                        if (isAvailable) {
+                          router.push(`/author-studio?manuscriptId=${manuscript?.id}&phase=2`)
+                        }
+                      }}
+                      disabled={!isAvailable}
+                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${isActive
+                          ? 'bg-purple-600 text-white ring-2 ring-purple-300 hover:bg-purple-700 cursor-pointer'
+                          : isAvailable
+                            ? 'bg-purple-600 text-white hover:bg-purple-700 cursor-pointer'
+                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        }`}
+                      title={isAvailable ? 'Work with Sam' : 'Sam (Locked)'}
+                    >
+                      S
+                    </button>
+                  )
+                })()}
+
+                {/* Jordan (Phase 3) - Clickable */}
+                {(() => {
+                  const jordanPhase = editorPhases.find(p => p.phase_number === 3)
+                  const isAvailable = jordanPhase && jordanPhase.phase_status !== 'pending'
+                  const isActive = currentPhase === 3
+
+                  return (
+                    <button
+                      onClick={() => {
+                        if (isAvailable) {
+                          router.push(`/author-studio?manuscriptId=${manuscript?.id}&phase=3`)
+                        }
+                      }}
+                      disabled={!isAvailable}
+                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${isActive
+                          ? 'bg-blue-600 text-white ring-2 ring-blue-300 hover:bg-blue-700 cursor-pointer'
+                          : isAvailable
+                            ? 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer'
+                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        }`}
+                      title={isAvailable ? 'Work with Jordan' : 'Jordan (Locked)'}
+                    >
+                      J
+                    </button>
+                  )
+                })()}
+
+                {/* Taylor (Phase 4) - Clickable */}
                 {(() => {
                   const taylorPhase = editorPhases.find(p => p.phase_number === 4)
                   const isAvailable = taylorPhase && taylorPhase.phase_status !== 'pending'
                   const isActive = currentPhase === 4
-                  const isCompleted = taylorPhase && (taylorPhase.phase_status === 'complete' || currentPhase > 4)
 
                   return (
                     <button
@@ -1591,13 +1641,11 @@ function StudioContent() {
                         }
                       }}
                       disabled={!isAvailable}
-                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${isCompleted
-                          ? 'bg-teal-600 text-white hover:bg-teal-700 cursor-pointer'
-                          : isActive
-                            ? 'bg-teal-600 text-white ring-2 ring-teal-300 hover:bg-teal-700 cursor-pointer'
-                            : isAvailable
-                              ? 'bg-teal-600 text-white hover:bg-teal-700 cursor-pointer'
-                              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${isActive
+                          ? 'bg-teal-600 text-white ring-2 ring-teal-300 hover:bg-teal-700 cursor-pointer'
+                          : isAvailable
+                            ? 'bg-teal-600 text-white hover:bg-teal-700 cursor-pointer'
+                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                         }`}
                       title={isAvailable ? 'Go to Publishing Hub' : 'Publishing (Locked)'}
                     >
@@ -1606,12 +1654,11 @@ function StudioContent() {
                   )
                 })()}
 
-                {/* Quinn (Phase 5) - Clickable - FIXED */}
+                {/* Quinn (Phase 5) - Clickable */}
                 {(() => {
                   const quinnPhase = editorPhases.find(p => p.phase_number === 5)
                   const isAvailable = quinnPhase && quinnPhase.phase_status !== 'pending'
                   const isActive = currentPhase === 5
-                  const isCompleted = quinnPhase && (quinnPhase.phase_status === 'complete' || currentPhase > 5)
 
                   return (
                     <button
@@ -1621,13 +1668,11 @@ function StudioContent() {
                         }
                       }}
                       disabled={!isAvailable}
-                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${isCompleted
-                          ? 'bg-orange-600 text-white hover:bg-orange-700 cursor-pointer'
-                          : isActive
-                            ? 'bg-orange-600 text-white ring-2 ring-orange-300 hover:bg-orange-700 cursor-pointer'
-                            : isAvailable
-                              ? 'bg-orange-600 text-white hover:bg-orange-700 cursor-pointer'
-                              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${isActive
+                          ? 'bg-orange-600 text-white ring-2 ring-orange-300 hover:bg-orange-700 cursor-pointer'
+                          : isAvailable
+                            ? 'bg-orange-600 text-white hover:bg-orange-700 cursor-pointer'
+                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                         }`}
                       title={isAvailable ? 'Go to Marketing Hub' : 'Marketing (Locked)'}
                     >
