@@ -686,17 +686,21 @@ function StudioContent() {
           throw new Error('No phase found')
         }
 
-        if (phaseToLoad.phase_number === 4) {
-          console.log('📚 Phase 4 active - redirecting to Publishing Hub')
-          router.push(`/publishing-hub?manuscriptId=${manuscriptId}`)
-          return
-        }
+        // Only redirect to Publishing/Marketing Hub if user didn't explicitly request a phase
+        if (!phaseParam) {
+          if (phaseToLoad.phase_number === 4) {
+            console.log('📚 Phase 4 active - redirecting to Publishing Hub')
+            router.push(`/publishing-hub?manuscriptId=${manuscriptId}`)
+            return
+          }
 
-        if (phaseToLoad.phase_number === 5) {
-          console.log('📢 Phase 5 active - redirecting to Marketing Hub')
-          router.push(`/marketing-hub?manuscriptId=${manuscriptId}`)
-          return
+          if (phaseToLoad.phase_number === 5) {
+            console.log('📢 Phase 5 active - redirecting to Marketing Hub')
+            router.push(`/marketing-hub?manuscriptId=${manuscriptId}`)
+            return
+          }
         }
+        // If phaseParam exists, user explicitly wants to work with a specific editor - allow it
 
         setActivePhase(phaseToLoad)
         console.log(`✅ Loaded phase: ${phaseToLoad.phase_name} (${phaseToLoad.editor_name})`)

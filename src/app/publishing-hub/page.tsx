@@ -96,7 +96,7 @@ function PublishingHubContent() {
             </Link>
             <nav className="hidden md:flex items-center gap-8">
               <Link
-                href={`/author-studio?manuscriptId=${manuscriptId}`}
+                href={`/author-studio?manuscriptId=${manuscriptId}&phase=3`}
                 className="text-gray-700 hover:text-blue-900 font-medium"
               >
                 Author Studio
@@ -306,7 +306,7 @@ function PublishingHubContent() {
             </p>
             <div className="flex gap-4 justify-center flex-wrap">
               <Link
-                href={`/author-studio?manuscriptId=${manuscriptId}`}
+                href={`/author-studio?manuscriptId=${manuscriptId}&phase=3`}
                 className="bg-teal-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg"
               >
                 Return to Author Studio
