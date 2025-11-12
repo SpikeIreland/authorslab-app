@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import TaylorChatWidget from '@/components/TaylorChatWidget'
 import CoverDesignerPanel from '@/components/CoverDesignerPanel'
+import BookBuilderPanel from '@/components/BookBuilderPanel'
 
 interface PublishingPlan {
   publishing_plan: string | null
@@ -180,43 +181,12 @@ function PublishingHubContent() {
       </header>
 
       <main className="container mx-auto px-6 py-12">
-        {/* Hero Section */}
-        <section className="bg-gradient-to-br from-blue-900 to-blue-700 text-white rounded-3xl p-12 mb-12 relative overflow-hidden">
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute inset-0" style={{
-              backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
-              backgroundSize: '30px 30px'
-            }}></div>
-          </div>
-          <div className="relative z-10 text-center max-w-3xl mx-auto">
-            <h1 className="text-5xl font-extrabold mb-4">Publishing Hub</h1>
-            <p className="text-xl opacity-95 mb-8">
-              Transform your polished manuscript into a professionally published book across multiple platforms
-            </p>
-            <div className="inline-flex items-center gap-3 bg-yellow-400/20 border-2 border-yellow-400 text-yellow-400 px-6 py-3 rounded-full font-semibold">
-              📖 Ready for Publishing Phase
-            </div>
-
-            {/* View Plan Button */}
-            {publishingPlan?.assessment_completed && publishingPlan?.plan_pdf_url && (
-              <div className="mt-8">
-                <a
-                  href={publishingPlan.plan_pdf_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-3 bg-teal-500 hover:bg-teal-600 text-white px-8 py-4 rounded-xl font-bold transition-all shadow-lg hover:shadow-xl"
-                >
-                  <span className="text-2xl">📄</span>
-                  <span>View Your Publishing Plan</span>
-                </a>
-              </div>
-            )}
-          </div>
-        </section>
+        {/* Book Builder Panel - Always at top */}
+        {manuscriptId && <BookBuilderPanel manuscriptId={manuscriptId} />}
 
         {/* Cover Designer Panel - Only shows when covers are ready */}
         {showCoverDesigner && manuscriptId && (
-          <section className="mb-12">
+          <section id="cover-designer-panel" className="mb-12">
             <div className="bg-white rounded-3xl p-12 shadow-xl border-2 border-purple-300">
               <div className="flex items-center gap-4 mb-8">
                 <div className="w-16 h-16 bg-purple-500 rounded-xl flex items-center justify-center text-3xl">
