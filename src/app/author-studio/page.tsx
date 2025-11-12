@@ -579,6 +579,9 @@ function StudioContent() {
 
   // Instead, just use a single useEffect that runs when editorContent changes
   useEffect(() => {
+    // Only populate if we're not loading and we have content
+    if (isLoading) return
+
     // Add a small delay to ensure the ref is mounted after the loading screen disappears
     const timer = setTimeout(() => {
       if (editorPanelRef.current && editorContent) {
@@ -589,7 +592,7 @@ function StudioContent() {
     }, 300); // Slightly longer delay
 
     return () => clearTimeout(timer);
-  }, [editorContent, currentChapterIndex]);
+  }, [editorContent, currentChapterIndex, isLoading]);
 
   // Initialize Studio
   const initializeStudio = useCallback(async () => {
@@ -732,7 +735,7 @@ function StudioContent() {
         console.error('Chapters error:', chaptersError)
       }
 
-      // Load first chapter
+      // Load chapters
       if (chaptersData && chaptersData.length > 0) {
         setChapters(chaptersData)
 
@@ -744,13 +747,14 @@ function StudioContent() {
         setChapterEditingStatus(initialStatus)
         console.log('✅ Initialized editing status for', chaptersData.length, 'chapters')
 
-        // Load the first chapter in the array
+        // Set the first chapter's content and index
         setCurrentChapterIndex(0)
         const firstChapter = chaptersData[0]
 
         setEditorContent(firstChapter.content)
         setWordCount(firstChapter.content.split(/\s+/).filter((w: string) => w.length > 0).length)
         setHasUnsavedChanges(false)
+        console.log('✅ First chapter content set:', firstChapter.chapter_number)
       }
 
       // Load chat history for active phase
