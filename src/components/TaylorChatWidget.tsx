@@ -317,53 +317,79 @@ Type "let's start" to begin the assessment, or ask me anything about publishing 
                 .eq('id', manuscriptId)
                 .single()
 
-            // Call intent detection workflow
-            const response = await fetch(
-                'https://spikeislandstudios.app.n8n.cloud/webhook/taylor-detect-cover-intent',
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        manuscriptId,
-                        userMessage,
-                        manuscriptData: {
-                            title: manuscript?.title,
-                            genre: manuscript?.genre,
-                            wordCount: manuscript?.current_word_count
-                        }
+            console.log('🎨 Calling cover intent detection workflow...')
+            console.log('Manuscript data:', manuscript)
+
+            // Create abort controller for timeout
+            const controller = new AbortController()
+            const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+
+            try {
+                // Call intent detection workflow
+                const response = await fetch(
+                    'https://spikeislandstudios.app.n8n.cloud/webhook/taylor-detect-cover-intent',
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            manuscriptId,
+                            userMessage,
+                            manuscriptData: {
+                                title: manuscript?.title,
+                                genre: manuscript?.genre,
+                                wordCount: manuscript?.current_word_count
+                            }
+                        }),
+                        signal: controller.signal
+                    }
+                )
+
+                clearTimeout(timeoutId)
+
+                console.log('✅ Response received:', response.status, response.statusText)
+
+                if (response.ok) {
+                    const data = await response.json()
+                    console.log('📦 Response data:', data)
+
+                    // Add Taylor's response
+                    const taylorMsg: ChatMessage = {
+                        id: 'taylor-' + Date.now(),
+                        sender: 'taylor',
+                        message: data.response || "🎨 I'm generating your cover designs now! This will take 2-3 minutes. I'll let you know when they're ready!",
+                        created_at: new Date().toISOString()
+                    }
+
+                    setMessages(prev => [...prev, taylorMsg])
+
+                    // Save Taylor's response
+                    await supabase.from('editor_chat_history').insert({
+                        manuscript_id: manuscriptId,
+                        phase_number: 4,
+                        sender: 'taylor',
+                        message: taylorMsg.message
                     })
+                } else {
+                    const errorText = await response.text()
+                    console.error('❌ Response not OK:', response.status, errorText)
+                    throw new Error(`Workflow returned ${response.status}: ${errorText}`)
                 }
-            )
-
-            if (response.ok) {
-                const data = await response.json()
-
-                // Add Taylor's response
-                const taylorMsg: ChatMessage = {
-                    id: 'taylor-' + Date.now(),
-                    sender: 'taylor',
-                    message: data.response,
-                    created_at: new Date().toISOString()
+            } catch (fetchError) {
+                clearTimeout(timeoutId)
+                if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+                    console.error('⏱️ Request timeout after 30 seconds')
+                    throw new Error('Request timeout')
                 }
-
-                setMessages(prev => [...prev, taylorMsg])
-
-                // Save Taylor's response
-                await supabase.from('editor_chat_history').insert({
-                    manuscript_id: manuscriptId,
-                    phase_number: 4,
-                    sender: 'taylor',
-                    message: data.response
-                })
+                throw fetchError
             }
         } catch (error) {
-            console.error('Error handling cover request:', error)
+            console.error('💥 Error handling cover request:', error)
 
-            // Add error message
+            // Add error message with more context
             const errorMsg: ChatMessage = {
                 id: 'error-' + Date.now(),
                 sender: 'taylor',
-                message: "I'm having trouble starting the cover generation. Please try again in a moment!",
+                message: "I'm having trouble starting the cover generation right now. Please try again in a moment, or let me know if you need help!",
                 created_at: new Date().toISOString()
             }
             setMessages(prev => [...prev, errorMsg])
