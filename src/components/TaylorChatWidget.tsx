@@ -36,6 +36,55 @@ export default function TaylorChatWidget({ manuscriptId }: TaylorChatWidgetProps
         }
     }, [isOpen])
 
+    // Add this useEffect for realtime message updates
+    useEffect(() => {
+        if (!manuscriptId) return
+
+        const supabase = createClient()
+
+        const channel = supabase
+            .channel(`taylor-messages-${manuscriptId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'editor_chat_history',
+                    filter: `manuscript_id=eq.${manuscriptId}`
+                },
+                (payload) => {
+                    console.log('New Taylor message received:', payload.new)
+
+                    // Only add if it's from Taylor (avoid duplicates from user messages)
+                    if (payload.new.sender === 'taylor') {
+                        const newMessage: ChatMessage = {
+                            id: payload.new.id,
+                            sender: 'taylor',
+                            message: payload.new.message,
+                            created_at: payload.new.created_at
+                        }
+
+                        setMessages(prev => {
+                            // Check if message already exists to avoid duplicates
+                            const exists = prev.some(m => m.id === newMessage.id)
+                            if (exists) return prev
+                            return [...prev, newMessage]
+                        })
+
+                        // Auto-scroll to new message
+                        setTimeout(() => {
+                            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+                        }, 100)
+                    }
+                }
+            )
+            .subscribe()
+
+        return () => {
+            supabase.removeChannel(channel)
+        }
+    }, [manuscriptId])
+
     async function loadChatHistory() {
         const supabase = createClient()
 
