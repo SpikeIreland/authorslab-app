@@ -12,7 +12,7 @@ interface CoverDesignerPanelProps {
 export default function CoverDesignerPanel({ manuscriptId }: CoverDesignerPanelProps) {
     const [covers, setCovers] = useState<CoverDesign[]>([])
     const [isLoading, setIsLoading] = useState(true)
-    const [selectedCoverId, setSelectedCoverId] = useState<number | null>(null)
+    const [selectedCoverId, setSelectedCoverId] = useState<string | null>(null)
     const [isSelecting, setIsSelecting] = useState(false)
 
     // Load covers on mount
@@ -37,7 +37,7 @@ export default function CoverDesignerPanel({ manuscriptId }: CoverDesignerPanelP
                 (payload) => {
                     if (payload.new.cover_designs) {
                         setCovers(payload.new.cover_designs as CoverDesign[])
-                        setSelectedCoverId(payload.new.selected_cover_id)
+                        setSelectedCoverId(payload.new.selected_cover_url)
                     }
                 }
             )
@@ -55,7 +55,7 @@ export default function CoverDesignerPanel({ manuscriptId }: CoverDesignerPanelP
 
         const { data, error } = await supabase
             .from('publishing_progress')
-            .select('cover_concepts, selected_cover_id')
+            .select('cover_concepts, selected_cover_url')  // ✅ Correct column
             .eq('manuscript_id', manuscriptId)
             .single()
 
@@ -68,22 +68,33 @@ export default function CoverDesignerPanel({ manuscriptId }: CoverDesignerPanelP
             console.log('📦 Is Array:', Array.isArray(data.cover_concepts))
 
             setCovers((data.cover_concepts as CoverDesign[]) || [])
-            setSelectedCoverId(data.selected_cover_id)
+            setSelectedCoverId(data.selected_cover_url)
         }
 
         setIsLoading(false)
     }
 
-    async function handleSelectCover(coverId: number) {
+    async function handleSelectCover(coverUrl: string) {
         setIsSelecting(true)
 
-        const success = await selectCover(manuscriptId, coverId)
+        const supabase = createClient()
 
-        if (success) {
-            setSelectedCoverId(coverId)
+        // Update the selected cover in the database
+        const { error } = await supabase
+            .from('publishing_progress')
+            .update({
+                selected_cover_url: coverUrl
+            })
+            .eq('manuscript_id', manuscriptId)
+
+        if (!error) {
+            // Update local state
+            setSelectedCoverId(coverUrl)
+
             // Show success message
-            alert('Cover selected! Moving to formatting step...')
+            alert('Cover selected successfully! 🎨')
         } else {
+            console.error('Error selecting cover:', error)
             alert('Error selecting cover. Please try again.')
         }
 
@@ -138,58 +149,63 @@ export default function CoverDesignerPanel({ manuscriptId }: CoverDesignerPanelP
 
             {/* Cover Grid */}
             <div className="grid grid-cols-2 gap-6">
-                {covers.map((cover) => (
-                    <div
-                        key={cover.id}
-                        className={`
-              relative group rounded-xl overflow-hidden border-4 transition-all
-              ${cover.selected ? 'border-teal-600 shadow-2xl' : 'border-gray-200 hover:border-teal-400'}
-            `}
-                    >
-                        {/* Cover Image */}
-                        <div className="aspect-[2/3] relative">
-                            <img
-                                src={cover.url}
-                                alt={`Cover option ${cover.id}`}
-                                className="w-full h-full object-cover"
-                            />
+                {covers.map((cover) => {
+                    // ✅ Add this line at the top of the map function
+                    const isSelected = cover.url === selectedCoverId
 
-                            {/* Selected Badge */}
-                            {cover.selected && (
-                                <div className="absolute top-4 right-4 bg-teal-600 text-white px-4 py-2 rounded-full font-bold shadow-lg">
-                                    ✓ Selected
-                                </div>
-                            )}
-                        </div>
+                    return (
+                        <div
+                            key={cover.id}
+                            className={`
+                    relative group rounded-xl overflow-hidden border-4 transition-all
+                    ${isSelected ? 'border-teal-600 shadow-2xl' : 'border-gray-200 hover:border-teal-400'}
+                `}
+                        >
+                            {/* Cover Image */}
+                            <div className="aspect-[2/3] relative">
+                                <img
+                                    src={cover.url}
+                                    alt={`Cover option ${cover.id}`}
+                                    className="w-full h-full object-cover"
+                                />
 
-                        {/* Hover Overlay with Button */}
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            {!cover.selected && (
-                                <button
-                                    onClick={() => handleSelectCover(cover.id)}
-                                    disabled={isSelecting}
-                                    className="px-6 py-3 bg-teal-600 text-white rounded-lg font-bold hover:bg-teal-700 transition-all shadow-lg disabled:opacity-50"
-                                >
-                                    {isSelecting ? 'Selecting...' : 'Select This Cover'}
-                                </button>
-                            )}
-                            {cover.selected && (
-                                <button
-                                    onClick={() => handleSelectCover(cover.id)}
-                                    disabled={isSelecting}
-                                    className="px-6 py-3 bg-white text-teal-600 rounded-lg font-bold hover:bg-gray-100 transition-all shadow-lg"
-                                >
-                                    Selected ✓
-                                </button>
-                            )}
-                        </div>
+                                {/* Selected Badge */}
+                                {isSelected && (
+                                    <div className="absolute top-4 right-4 bg-teal-600 text-white px-4 py-2 rounded-full font-bold shadow-lg">
+                                        ✓ Selected
+                                    </div>
+                                )}
+                            </div>
 
-                        {/* Cover Number */}
-                        <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-semibold text-gray-900">
-                            Option {cover.id}
+                            {/* Hover Overlay with Button */}
+                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                {!isSelected && (
+                                    <button
+                                        onClick={() => handleSelectCover(cover.url)}
+                                        disabled={isSelecting}
+                                        className="px-6 py-3 bg-teal-600 text-white rounded-lg font-bold hover:bg-teal-700 transition-all shadow-lg disabled:opacity-50"
+                                    >
+                                        {isSelecting ? 'Selecting...' : 'Select This Cover'}
+                                    </button>
+                                )}
+                                {isSelected && (
+                                    <button
+                                        onClick={() => handleSelectCover(cover.url)}
+                                        disabled={isSelecting}
+                                        className="px-6 py-3 bg-white text-teal-600 rounded-lg font-bold hover:bg-gray-100 transition-all shadow-lg"
+                                    >
+                                        Selected ✓
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Cover Number */}
+                            <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-semibold text-gray-900">
+                                Option {cover.id}
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    )
+                })}
             </div>
 
             {/* Regenerate Button */}
