@@ -49,16 +49,25 @@ export default function CoverDesignerPanel({ manuscriptId }: CoverDesignerPanelP
     }, [manuscriptId])
 
     async function loadCovers() {
+        console.log('🎨 CoverDesignerPanel: Loading covers for', manuscriptId)
+
         const supabase = createClient()
 
         const { data, error } = await supabase
             .from('publishing_progress')
-            .select('cover_designs, selected_cover_id')
+            .select('cover_concepts, selected_cover_id')
             .eq('manuscript_id', manuscriptId)
             .single()
 
+        console.log('🎨 CoverDesignerPanel data:', data)
+        console.log('🎨 CoverDesignerPanel error:', error)
+
         if (data) {
-            setCovers((data.cover_designs as CoverDesign[]) || [])
+            console.log('📦 Raw cover_concepts:', data.cover_concepts)
+            console.log('📦 Type:', typeof data.cover_concepts)
+            console.log('📦 Is Array:', Array.isArray(data.cover_concepts))
+
+            setCovers((data.cover_concepts as CoverDesign[]) || [])
             setSelectedCoverId(data.selected_cover_id)
         }
 

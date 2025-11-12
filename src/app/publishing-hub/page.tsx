@@ -77,19 +77,22 @@ function PublishingHubContent() {
       if (!manuscriptId) return
 
       const supabase = createClient()
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('publishing_progress')
-        .select('current_step, completed_steps')
+        .select('current_step, cover_concepts')
         .eq('manuscript_id', manuscriptId)
         .single()
 
-      if (data) {
-        // Show cover designer if on cover-design step or if already completed
-        const show =
-          data.current_step === 'cover-design' ||
-          data.completed_steps?.includes('cover-design')
+      console.log('📊 Publishing progress data:', data)
+      console.log('📊 Error:', error)
+      console.log('📊 cover_concepts:', data?.cover_concepts)
+      console.log('📊 cover_concepts length:', data?.cover_concepts?.length)
 
-        setShowCoverDesigner(show)
+      if (data && data.cover_concepts && data.cover_concepts.length > 0) {
+        console.log('✅ Setting showCoverDesigner to TRUE')
+        setShowCoverDesigner(true)
+      } else {
+        console.log('❌ NOT showing cover designer')
       }
     }
 
@@ -98,13 +101,12 @@ function PublishingHubContent() {
 
   // In the JSX, add the panel
   {
-    {
-      showCoverDesigner && manuscriptId && (
-        <section className="mb-8">
-          <CoverDesignerPanel manuscriptId={manuscriptId} />
-        </section>
-      )
-    }
+    showCoverDesigner && manuscriptId && (
+      <section className="mb-8">
+        <h2>Cover Designer Section</h2>
+        <CoverDesignerPanel manuscriptId={manuscriptId} />
+      </section>
+    )
   }
 
   // Show loading while checking access

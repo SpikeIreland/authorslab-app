@@ -42,6 +42,8 @@ export default function TaylorChatWidget({ manuscriptId }: TaylorChatWidgetProps
 
         const supabase = createClient()
 
+        console.log('🔌 Setting up Taylor message subscription for:', manuscriptId)
+
         const channel = supabase
             .channel(`taylor-messages-${manuscriptId}`)
             .on(
@@ -53,10 +55,10 @@ export default function TaylorChatWidget({ manuscriptId }: TaylorChatWidgetProps
                     filter: `manuscript_id=eq.${manuscriptId}`
                 },
                 (payload) => {
-                    console.log('New Taylor message received:', payload.new)
+                    console.log('🎨 New chat message received:', payload.new)
 
                     // Only add if it's from Taylor (avoid duplicates from user messages)
-                    if (payload.new.sender === 'taylor') {
+                    if (payload.new.sender === 'Taylor') {
                         const newMessage: ChatMessage = {
                             id: payload.new.id,
                             sender: 'taylor',
@@ -67,7 +69,11 @@ export default function TaylorChatWidget({ manuscriptId }: TaylorChatWidgetProps
                         setMessages(prev => {
                             // Check if message already exists to avoid duplicates
                             const exists = prev.some(m => m.id === newMessage.id)
-                            if (exists) return prev
+                            if (exists) {
+                                console.log('⚠️ Message already exists, skipping')
+                                return prev
+                            }
+                            console.log('✅ Adding new Taylor message to chat')
                             return [...prev, newMessage]
                         })
 
@@ -78,9 +84,12 @@ export default function TaylorChatWidget({ manuscriptId }: TaylorChatWidgetProps
                     }
                 }
             )
-            .subscribe()
+            .subscribe((status) => {
+                console.log('📡 Taylor messages subscription status:', status)
+            })
 
         return () => {
+            console.log('🔌 Cleaning up Taylor messages subscription')
             supabase.removeChannel(channel)
         }
     }, [manuscriptId])
