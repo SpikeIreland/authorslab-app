@@ -99,15 +99,6 @@ function PublishingHubContent() {
     checkProgress()
   }, [manuscriptId])
 
-  // In the JSX, add the panel
-  {
-    showCoverDesigner && manuscriptId && (
-      <section className="mb-8">
-        <h2>Cover Designer Section</h2>
-        <CoverDesignerPanel manuscriptId={manuscriptId} />
-      </section>
-    )
-  }
 
   // Show loading while checking access
   if (isChecking) {
@@ -186,6 +177,24 @@ function PublishingHubContent() {
             )}
           </div>
         </section>
+
+        {/* Cover Designer Panel - Only shows when covers are ready */}
+        {showCoverDesigner && manuscriptId && (
+          <section className="mb-12">
+            <div className="bg-white rounded-3xl p-12 shadow-xl border-2 border-purple-300">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-16 h-16 bg-purple-500 rounded-xl flex items-center justify-center text-3xl">
+                  🎨
+                </div>
+                <div>
+                  <h2 className="text-4xl font-bold text-gray-900">Your Cover Designs</h2>
+                  <p className="text-gray-600 text-lg">Select your favorite professional cover concept</p>
+                </div>
+              </div>
+              <CoverDesignerPanel manuscriptId={manuscriptId} />
+            </div>
+          </section>
+        )}
 
         {/* Publishing Tools */}
         <section className="mb-12">
