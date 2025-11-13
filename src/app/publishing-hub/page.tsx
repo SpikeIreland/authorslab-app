@@ -35,7 +35,6 @@ function PublishingHubContent() {
     setIsTaylorChatOpen(true)
   }
 
-  // Check if user has access to Phase 4
   useEffect(() => {
     async function checkAccess() {
       if (!manuscriptId) {
@@ -44,6 +43,25 @@ function PublishingHubContent() {
       }
 
       const supabase = createClient()
+
+      // Check if user is admin
+      const { data: { user } } = await supabase.auth.getUser()
+      const { data: profile } = await supabase
+        .from('author_profiles')
+        .select('role')
+        .eq('user_id', user?.id)
+        .single()
+
+      const isAdmin = profile?.role === 'admin'
+
+      if (isAdmin) {
+        console.log('👑 Admin access granted - bypassing phase check')
+        setHasAccess(true)
+        setIsChecking(false)
+        return
+      }
+
+      // Regular user - check phase access
       const { data: phase4 } = await supabase
         .from('editing_phases')
         .select('phase_status')
