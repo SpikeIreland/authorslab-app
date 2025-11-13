@@ -243,7 +243,7 @@ Ready to start? Just say "I'm ready" or "let's begin"! 📚`,
                 message.toLowerCase() === "yes"
 
             // If no progress row exists and user wants to start
-            if (hasNoProgress && isStartingAssessment) {
+            if (!assessmentCompleted && isStartingAssessment) {
                 console.log('🎯 Routing to taylor-assessment workflow...')
 
                 // CLEAR old incomplete assessment attempts
