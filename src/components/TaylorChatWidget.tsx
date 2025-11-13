@@ -42,10 +42,14 @@ export default function TaylorChatWidget({
             console.log('📨 Processing initial message:', initialMessage)
             setHasProcessedInitialMessage(true)
 
+            // Show the message immediately, then send it
+            setInputMessage(initialMessage)
+
             // Wait a moment for chat to fully load, then send
             setTimeout(() => {
                 handleSendMessage(initialMessage)
-            }, 800)
+                setInputMessage('')  // Clear after sending
+            }, 500)  // Reduced from 800ms to 500ms for snappier feel
         }
     }, [initialMessage, isOpen, messages.length, hasProcessedInitialMessage])
 
@@ -123,6 +127,16 @@ export default function TaylorChatWidget({
             supabase.removeChannel(channel)
         }
     }, [manuscriptId])
+
+    // Auto-scroll to bottom when messages change
+    useEffect(() => {
+        if (messages.length > 0) {
+            setTimeout(() => {
+                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+            }, 100)
+        }
+    }, [messages])
+
 
     async function loadChatHistory() {
         const supabase = createClient()
@@ -521,6 +535,23 @@ Ready to start? Just say "I'm ready" or "let's begin"! 📚`,
                                 </div>
                             </div>
                         ))}
+
+                        {/* Loading indicator when Taylor is typing */}
+                        {isLoading && (
+                            <div className="flex justify-start">
+                                <div className="max-w-[80%] px-4 py-3 rounded-2xl bg-gray-100">
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex gap-1">
+                                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                                        </div>
+                                        <span className="text-sm text-gray-500">Taylor is typing...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         <div ref={messagesEndRef} />
                     </div>
 
