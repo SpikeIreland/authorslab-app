@@ -324,6 +324,35 @@ function StudioContent() {
   // Sidebar collapsed
   const [isChapterSidebarCollapsed, setIsChapterSidebarCollapsed] = useState(false)
 
+  // Manual refresh function for phases (useful if real-time subscription fails)
+  const refreshPhases = async () => {
+    if (!manuscript?.id) return
+
+    console.log('🔄 Manually refreshing phases...')
+    const supabase = createClient()
+
+    const { data: allPhases, error } = await supabase
+      .from('editing_phases')
+      .select('*')
+      .eq('manuscript_id', manuscript.id)
+      .order('phase_number', { ascending: true })
+
+    if (error) {
+      console.error('❌ Error refreshing phases:', error)
+      return
+    }
+
+    if (allPhases) {
+      setEditorPhases(allPhases)
+      console.log('✅ Phases refreshed manually')
+      console.log('📊 Updated phases:', allPhases.map(p => ({
+        phase: p.phase_number,
+        editor: p.editor_name,
+        hasReport: !!p.report_pdf_url
+      })))
+    }
+  }
+
   const triggerFullAnalysis = async () => {
     if (!manuscript) return
 
@@ -487,17 +516,28 @@ function StudioContent() {
         },
         async (payload) => {
           console.log('🔔 Editing phase update received:', payload)
+          console.log('🔔 Updated phase:', payload.new.phase_number, payload.new.editor_name)
 
           // Reload ALL phases whenever any phase updates
-          const { data: allPhases } = await supabase
+          const { data: allPhases, error } = await supabase
             .from('editing_phases')
             .select('*')
             .eq('manuscript_id', manuscript.id)
             .order('phase_number', { ascending: true })
 
+          if (error) {
+            console.error('❌ Error reloading phases:', error)
+            return
+          }
+
           if (allPhases) {
             setEditorPhases(allPhases)
             console.log('🔄 Updated phases with new report data')
+            console.log('🔄 Phases now in state:', allPhases.map(p => ({
+              phase: p.phase_number,
+              editor: p.editor_name,
+              hasReport: !!p.report_pdf_url
+            })))
 
             // Check if the report just became ready
             const updatedPhase = allPhases.find(p => p.id === payload.new.id)
@@ -516,7 +556,12 @@ function StudioContent() {
           }
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('📡 Subscription status:', status)
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Successfully subscribed to report updates')
+        }
+      })
 
     return () => {
       console.log('🔌 Unsubscribing from report updates')
@@ -1909,6 +1954,16 @@ function StudioContent() {
                     )
                   }
                 })()}
+
+                {/* Manual Refresh Button - Debug/Workaround */}
+                <button
+                  onClick={refreshPhases}
+                  className="px-3 py-1.5 bg-gray-100 text-gray-600 text-xs rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-1.5"
+                  title="Refresh reports (if not updating automatically)"
+                >
+                  <span>🔄</span>
+                  <span>Refresh</span>
+                </button>
               </div>
 
               {/* Versions Dropdown */}
