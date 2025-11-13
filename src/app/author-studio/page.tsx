@@ -697,6 +697,16 @@ function StudioContent() {
         setEditorPhases(allPhases)
         console.log(`✅ Loaded ${allPhases.length} editing phases`)
 
+        // DEBUG: Log phase details to help diagnose missing reports
+        allPhases.forEach(phase => {
+          console.log(`📊 Phase ${phase.phase_number} (${phase.editor_name}):`, {
+            phase_status: phase.phase_status,
+            ai_read_started_at: phase.ai_read_started_at,
+            ai_read_completed_at: phase.ai_read_completed_at,
+            report_pdf_url: phase.report_pdf_url ? '✅ EXISTS' : '❌ MISSING'
+          })
+        })
+
         // Check if user requested a specific phase via URL parameter
         const phaseParam = searchParams.get('phase')
         let phaseToLoad
@@ -1778,6 +1788,16 @@ function StudioContent() {
                   const isReading = samPhase?.ai_read_started_at && !samPhase?.ai_read_completed_at
                   const phaseStarted = samPhase?.phase_status !== 'pending'
 
+                  // DEBUG: Log Sam button state
+                  console.log('🔍 Sam Report Button State:', {
+                    samPhaseExists: !!samPhase,
+                    hasReport: !!hasReport,
+                    isReading,
+                    phaseStarted,
+                    phase_status: samPhase?.phase_status,
+                    report_url: samPhase?.report_pdf_url
+                  })
+
                   if (!phaseStarted) {
                     return (
                       <button
@@ -1832,6 +1852,16 @@ function StudioContent() {
                   // Only show "Generating..." if analysis has been started (ai_read_started_at exists) and not completed yet
                   const isReading = jordanPhase?.ai_read_started_at && !jordanPhase?.ai_read_completed_at
                   const phaseStarted = jordanPhase?.phase_status !== 'pending'
+
+                  // DEBUG: Log Jordan button state
+                  console.log('🔍 Jordan Report Button State:', {
+                    jordanPhaseExists: !!jordanPhase,
+                    hasReport: !!hasReport,
+                    isReading,
+                    phaseStarted,
+                    phase_status: jordanPhase?.phase_status,
+                    report_url: jordanPhase?.report_pdf_url
+                  })
 
                   if (!phaseStarted) {
                     return (
