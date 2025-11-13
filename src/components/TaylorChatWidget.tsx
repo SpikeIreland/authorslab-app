@@ -178,7 +178,11 @@ export default function TaylorChatWidget({
             sender: 'taylor' as const,
             message: assessmentCompleted
                 ? `👋 Hi ${authorName}! Welcome back! I'm ready to help you with the next steps for "${title}". What would you like to work on today?`
-                : `👋 Hi ${authorName}! I'm Taylor, your publishing specialist. I'm excited to help you bring "${title}" to life! Let's start by understanding your publishing goals. What's your vision for this book?`,
+                : `👋 Hi ${authorName}! I'm Taylor, your publishing specialist. I'm excited to help you bring "${title}" to life! 
+
+Before we can design your cover or dive into publishing, I need to understand your goals. Let me ask you a few quick questions to create a personalized publishing plan.
+
+Ready to start? Just say "I'm ready" or "let's begin"! 📚`,
             created_at: new Date().toISOString()
         }
 
@@ -193,7 +197,6 @@ export default function TaylorChatWidget({
         })
     }
 
-    // NEW: General conversational chat handler
     async function handleSendMessage(message: string) {
         if (!message.trim() || isLoading) return
 
@@ -218,6 +221,41 @@ export default function TaylorChatWidget({
                 sender: 'user',
                 message: message.trim()
             })
+
+            // Check if assessment is completed
+            const { data: progress } = await supabase
+                .from('publishing_progress')
+                .select('assessment_completed')
+                .eq('manuscript_id', manuscriptId)
+                .single()
+
+            const assessmentCompleted = progress?.assessment_completed || false
+
+            // If assessment not complete and user wants to do cover stuff, redirect
+            const wantsCover = message.toLowerCase().includes('cover') ||
+                message.toLowerCase().includes('design')
+
+            if (!assessmentCompleted && wantsCover) {
+                // Add Taylor's redirect message
+                const taylorMsg: ChatMessage = {
+                    id: 'taylor-' + Date.now(),
+                    sender: 'taylor',
+                    message: "I'd love to help you with your cover! But first, we need to complete your publishing assessment so I can create a personalized plan. It only takes a few minutes.\n\nShall we start the assessment now? 📋",
+                    created_at: new Date().toISOString()
+                }
+                setMessages(prev => [...prev, taylorMsg])
+
+                await supabase.from('editor_chat_history').insert({
+                    manuscript_id: manuscriptId,
+                    phase_number: 4,
+                    sender: 'Taylor',
+                    message: taylorMsg.message
+                })
+
+                setIsLoading(false)
+                setTimeout(() => inputRef.current?.focus(), 100)
+                return
+            }
 
             // Get author first name
             const { data: profile } = await supabase
@@ -446,8 +484,8 @@ export default function TaylorChatWidget({
                             >
                                 <div
                                     className={`max-w-[80%] px-4 py-3 rounded-2xl ${msg.sender === 'user'
-                                            ? 'bg-blue-600 text-white'
-                                            : 'bg-gray-100 text-gray-900'
+                                        ? 'bg-blue-600 text-white'
+                                        : 'bg-gray-100 text-gray-900'
                                         }`}
                                 >
                                     <p className="whitespace-pre-wrap">{msg.message}</p>

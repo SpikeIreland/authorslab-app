@@ -30,10 +30,42 @@ export default function BookBuilderPanel({
     const [isLoading, setIsLoading] = useState(true)
     const [readinessScore, setReadinessScore] = useState(0)
     const [nextStep, setNextStep] = useState<AssemblyStep>('cover')
+    const [assessmentCompleted, setAssessmentCompleted] = useState(false)  // NEW
 
     useEffect(() => {
         loadBookData()
     }, [manuscriptId])
+
+    async function loadBookData() {
+        const supabase = createClient()
+
+        // Load manuscript data
+        const { data: manuscriptData } = await supabase
+            .from('manuscripts')
+            .select('title, current_word_count, total_chapters')
+            .eq('id', manuscriptId)
+            .single()
+
+        // Load publishing progress
+        const { data: progressData } = await supabase
+            .from('publishing_progress')
+            .select('selected_cover_url, assessment_completed')  // ADDED assessment_completed
+            .eq('manuscript_id', manuscriptId)
+            .single()
+
+        if (manuscriptData) {
+            setManuscript(manuscriptData)
+        }
+
+        if (progressData) {
+            setCoverUrl(progressData.selected_cover_url)
+            setAssessmentCompleted(progressData.assessment_completed || false)  // NEW
+        }
+
+        // Calculate readiness
+        calculateReadiness(manuscriptData, progressData)
+        setIsLoading(false)
+    }
 
     // Realtime subscription for cover updates
     useEffect(() => {
@@ -69,36 +101,6 @@ export default function BookBuilderPanel({
             supabase.removeChannel(channel)
         }
     }, [manuscriptId, manuscript, coverUrl])
-
-    async function loadBookData() {
-        const supabase = createClient()
-
-        // Load manuscript data
-        const { data: manuscriptData } = await supabase
-            .from('manuscripts')
-            .select('title, current_word_count, total_chapters')
-            .eq('id', manuscriptId)
-            .single()
-
-        // Load publishing progress
-        const { data: progressData } = await supabase
-            .from('publishing_progress')
-            .select('selected_cover_url')
-            .eq('manuscript_id', manuscriptId)
-            .single()
-
-        if (manuscriptData) {
-            setManuscript(manuscriptData)
-        }
-
-        if (progressData) {
-            setCoverUrl(progressData.selected_cover_url)
-        }
-
-        // Calculate readiness
-        calculateReadiness(manuscriptData, progressData)
-        setIsLoading(false)
-    }
 
     function calculateReadiness(
         manuscript: ManuscriptData | null,
@@ -216,7 +218,7 @@ export default function BookBuilderPanel({
                         <div>
                             <h3 className="font-bold text-gray-900">Cover Design</h3>
                             <p className={`text-sm ${coverUrl ? 'text-purple-600' : 'text-gray-500'}`}>
-                                {coverUrl ? 'Selected' : 'Pending'}
+                                {coverUrl ? 'Selected' : assessmentCompleted ? 'Pending' : 'Assessment Required'}
                             </p>
                         </div>
                     </div>
@@ -233,7 +235,9 @@ export default function BookBuilderPanel({
                             </div>
                             <button
                                 onClick={() => {
-                                    onOpenTaylorChat?.("Hi Taylor! I'd like to design my book cover")
+                                    document.getElementById('cover-designer-panel')?.scrollIntoView({
+                                        behavior: 'smooth'
+                                    })
                                 }}
                                 className="block text-center w-full px-4 py-2 bg-purple-100 text-purple-700 rounded-lg font-semibold hover:bg-purple-200 transition-all text-sm"
                             >
@@ -243,17 +247,30 @@ export default function BookBuilderPanel({
                     ) : (
                         <>
                             <div className="mb-4 text-center py-8 bg-gray-50 rounded-lg">
-                                <p className="text-gray-500 text-sm">
-                                    No cover selected yet
-                                </p>
+                                {assessmentCompleted ? (
+                                    <p className="text-gray-500 text-sm">
+                                        No cover selected yet
+                                    </p>
+                                ) : (
+                                    <p className="text-amber-600 text-sm font-semibold">
+                                        Complete your publishing assessment first
+                                    </p>
+                                )}
                             </div>
                             <button
                                 onClick={() => {
-                                    onOpenTaylorChat?.("Hi Taylor! I'd like to design my book cover")
+                                    if (assessmentCompleted) {
+                                        onOpenTaylorChat?.("Hi Taylor! I'd like to design my book cover")
+                                    } else {
+                                        onOpenTaylorChat?.("Hi Taylor! I'm ready to start")
+                                    }
                                 }}
-                                className="block text-center w-full px-4 py-2 bg-purple-500 text-white rounded-lg font-semibold hover:bg-purple-600 transition-all text-sm"
+                                className={`block text-center w-full px-4 py-2 rounded-lg font-semibold transition-all text-sm ${assessmentCompleted
+                                    ? 'bg-purple-500 text-white hover:bg-purple-600'
+                                    : 'bg-amber-500 text-white hover:bg-amber-600'
+                                    }`}
                             >
-                                Select Cover
+                                {assessmentCompleted ? 'Select Cover' : 'Start Assessment'}
                             </button>
                         </>
                     )}
@@ -297,27 +314,39 @@ export default function BookBuilderPanel({
                 <div className="flex items-center justify-between">
                     <div>
                         <h3 className="font-bold text-gray-900 mb-1">
-                            Next Step: {nextStep === 'cover' ? 'Select Your Cover' : 'Interior Formatting'}
+                            Next Step: {!assessmentCompleted
+                                ? 'Complete Publishing Assessment'
+                                : nextStep === 'cover'
+                                    ? 'Select Your Cover'
+                                    : 'Interior Formatting'}
                         </h3>
                         <p className="text-sm text-gray-600">
-                            {nextStep === 'cover'
-                                ? 'Choose your favorite cover design from the options below'
-                                : 'Format your manuscript for Kindle, print, and EPUB (Coming in Phase C)'}
+                            {!assessmentCompleted
+                                ? 'Answer a few questions about your publishing goals to get a personalized plan'
+                                : nextStep === 'cover'
+                                    ? 'Choose your favorite cover design from the options below'
+                                    : 'Format your manuscript for Kindle, print, and EPUB (Coming in Phase C)'}
                         </p>
                     </div>
                     <button
                         onClick={() => {
-                            if (nextStep === 'cover') {
+                            if (!assessmentCompleted) {
+                                onOpenTaylorChat?.("Hi Taylor! I'm ready to start")
+                            } else if (nextStep === 'cover') {
                                 onOpenTaylorChat?.("Hi Taylor! I'd like to design my book cover")
                             }
                         }}
-                        disabled={nextStep !== 'cover'}
-                        className={`px-6 py-3 rounded-xl font-bold transition-all ${nextStep === 'cover'
-                                ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg'
-                                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        disabled={assessmentCompleted && nextStep !== 'cover'}
+                        className={`px-6 py-3 rounded-xl font-bold transition-all ${!assessmentCompleted || nextStep === 'cover'
+                            ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg'
+                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                             }`}
                     >
-                        {nextStep === 'cover' ? 'Get Started →' : 'Coming Soon'}
+                        {!assessmentCompleted
+                            ? 'Start Assessment →'
+                            : nextStep === 'cover'
+                                ? 'Get Started →'
+                                : 'Coming Soon'}
                     </button>
                 </div>
             </div>
