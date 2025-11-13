@@ -343,15 +343,38 @@ function StudioContent() {
     )
 
     try {
-      // Update database status
+      // Update database status for manuscripts table
       const supabase = createClient()
+      const startedAt = new Date().toISOString()
+
       await supabase
         .from('manuscripts')
         .update({
-          analysis_started_at: new Date().toISOString(),
+          analysis_started_at: startedAt,
           status: 'analyzing'
         })
         .eq('id', manuscript.id)
+
+      // Update editing_phases table to mark AI read as started for Phase 1 (Alex)
+      await supabase
+        .from('editing_phases')
+        .update({
+          ai_read_started_at: startedAt
+        })
+        .eq('manuscript_id', manuscript.id)
+        .eq('phase_number', 1)
+
+      // Immediately reload phases to update button state
+      const { data: allPhases } = await supabase
+        .from('editing_phases')
+        .select('*')
+        .eq('manuscript_id', manuscript.id)
+        .order('phase_number', { ascending: true })
+
+      if (allPhases) {
+        setEditorPhases(allPhases)
+        console.log('✅ Updated phases - analysis started')
+      }
 
       // Trigger all THREE workflows simultaneously
       await Promise.all([
@@ -465,27 +488,31 @@ function StudioContent() {
         async (payload) => {
           console.log('🔔 Editing phase update received:', payload)
 
-          if (payload.new.report_pdf_url && payload.new.ai_read_completed_at) {
-            console.log('✅ PDF Report ready (realtime)')
+          // Reload ALL phases whenever any phase updates
+          const { data: allPhases } = await supabase
+            .from('editing_phases')
+            .select('*')
+            .eq('manuscript_id', manuscript.id)
+            .order('phase_number', { ascending: true })
 
-            // Reload ALL phases to update button states
-            const { data: allPhases } = await supabase
-              .from('editing_phases')
-              .select('*')
-              .eq('manuscript_id', manuscript.id)
-              .order('phase_number', { ascending: true })
+          if (allPhases) {
+            setEditorPhases(allPhases)
+            console.log('🔄 Updated phases with new report data')
 
-            if (allPhases) {
-              setEditorPhases(allPhases)
-              console.log('🔄 Updated phases with new report data')
+            // Check if the report just became ready
+            const updatedPhase = allPhases.find(p => p.id === payload.new.id)
+            if (updatedPhase?.report_pdf_url && updatedPhase?.ai_read_completed_at) {
+              console.log('✅ PDF Report ready (realtime)')
+
+              // Add chat message when report is ready
+              addChatMessage(
+                updatedPhase.editor_name,
+                `📧 Your comprehensive PDF report is ready! Check your email or click "${updatedPhase.editor_name}'s Report" above.`
+              )
+
+              // Stop the progress indicator
+              setFullAnalysisInProgress(false)
             }
-
-            // Add chat message when report is ready
-            const editorName = payload.new.editor_name || 'Your editor'
-            addChatMessage(
-              editorName,
-              `📧 Your comprehensive PDF report is ready! Check your email or click "${editorName}'s Report" above.`
-            )
           }
         }
       )
@@ -1692,7 +1719,8 @@ function StudioContent() {
                 {(() => {
                   const alexPhase = editorPhases.find(p => p.phase_number === 1)
                   const hasReport = alexPhase?.report_pdf_url
-                  const isReading = alexPhase?.phase_status === 'active' && !alexPhase?.ai_read_completed_at
+                  // Only show "Generating..." if analysis has been started (ai_read_started_at exists) and not completed yet
+                  const isReading = alexPhase?.ai_read_started_at && !alexPhase?.ai_read_completed_at
                   const phaseStarted = alexPhase?.phase_status !== 'pending'
 
                   if (!phaseStarted) {
@@ -1746,7 +1774,8 @@ function StudioContent() {
                 {(() => {
                   const samPhase = editorPhases.find(p => p.phase_number === 2)
                   const hasReport = samPhase?.report_pdf_url
-                  const isReading = samPhase?.phase_status === 'active' && !samPhase?.ai_read_completed_at
+                  // Only show "Generating..." if analysis has been started (ai_read_started_at exists) and not completed yet
+                  const isReading = samPhase?.ai_read_started_at && !samPhase?.ai_read_completed_at
                   const phaseStarted = samPhase?.phase_status !== 'pending'
 
                   if (!phaseStarted) {
@@ -1800,7 +1829,8 @@ function StudioContent() {
                 {(() => {
                   const jordanPhase = editorPhases.find(p => p.phase_number === 3)
                   const hasReport = jordanPhase?.report_pdf_url
-                  const isReading = jordanPhase?.phase_status === 'active' && !jordanPhase?.ai_read_completed_at
+                  // Only show "Generating..." if analysis has been started (ai_read_started_at exists) and not completed yet
+                  const isReading = jordanPhase?.ai_read_started_at && !jordanPhase?.ai_read_completed_at
                   const phaseStarted = jordanPhase?.phase_status !== 'pending'
 
                   if (!phaseStarted) {

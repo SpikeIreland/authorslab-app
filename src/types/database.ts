@@ -71,6 +71,7 @@ export interface EditingPhase {
   // Timestamps
   started_at: string | null
   completed_at: string | null
+  ai_read_started_at: string | null
   ai_read_completed_at: string | null
 
   // Progress Tracking
