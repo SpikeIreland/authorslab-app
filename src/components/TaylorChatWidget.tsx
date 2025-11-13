@@ -227,14 +227,75 @@ Ready to start? Just say "I'm ready" or "let's begin"! 📚`,
                 .from('publishing_progress')
                 .select('assessment_completed')
                 .eq('manuscript_id', manuscriptId)
-                .maybeSingle()  // Use maybeSingle instead of single to avoid error if row doesn't exist
+                .maybeSingle()
 
             const assessmentCompleted = progress?.assessment_completed || false
-            const hasNoProgress = !progress  // Row doesn't exist yet
+            const hasNoProgress = !progress
 
             console.log('📋 Assessment status:', { assessmentCompleted, hasNoProgress })
 
-            // Only block if no progress row exists AND user is trying to do cover stuff
+            // Detect if user is trying to START the assessment
+            const isStartingAssessment =
+                message.toLowerCase().includes("ready") ||
+                message.toLowerCase().includes("start") ||
+                message.toLowerCase().includes("begin") ||
+                message.toLowerCase().includes("let's") ||
+                message.toLowerCase() === "yes"
+
+            // If no progress row exists and user wants to start
+            if (hasNoProgress && isStartingAssessment) {
+                console.log('🎯 Routing to taylor-assessment workflow...')
+
+                // Get author first name
+                const { data: profile } = await supabase
+                    .from('author_profiles')
+                    .select('first_name')
+                    .single()
+
+                // Call taylor-assessment workflow to start the assessment
+                const response = await fetch(
+                    'https://spikeislandstudios.app.n8n.cloud/webhook/taylor-assessment',
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            manuscriptId,
+                            userMessage: message.trim(),
+                            authorFirstName: profile?.first_name || 'there'
+                        })
+                    }
+                )
+
+                if (response.ok) {
+                    const data = await response.json()
+                    console.log('✅ Assessment workflow started:', data)
+
+                    // Add Taylor's response to UI
+                    const taylorMsg: ChatMessage = {
+                        id: 'taylor-' + Date.now(),
+                        sender: 'taylor',
+                        message: data.response || "Great! Let's start your publishing assessment. First question: What's your primary goal for publishing this book?\n\n1️⃣ Wide distribution (available everywhere)\n2️⃣ Amazon exclusive (KDP Select/Kindle Unlimited)\n3️⃣ Traditional publishing path",
+                        created_at: new Date().toISOString()
+                    }
+                    setMessages(prev => [...prev, taylorMsg])
+
+                    // Save Taylor's response to database
+                    await supabase.from('editor_chat_history').insert({
+                        manuscript_id: manuscriptId,
+                        phase_number: 4,
+                        sender: 'Taylor',
+                        message: taylorMsg.message
+                    })
+                } else {
+                    throw new Error(`Assessment workflow failed: ${response.status}`)
+                }
+
+                setIsLoading(false)
+                setTimeout(() => inputRef.current?.focus(), 100)
+                return
+            }
+
+            // Only block if trying to skip to covers without assessment
             const wantsCover = message.toLowerCase().includes('cover') ||
                 message.toLowerCase().includes('design')
 
@@ -243,7 +304,7 @@ Ready to start? Just say "I'm ready" or "let's begin"! 📚`,
                 const redirectMsg: ChatMessage = {
                     id: 'taylor-' + Date.now(),
                     sender: 'taylor',
-                    message: "I'd love to help you design an amazing cover! 🎨\n\nBut first, I need to understand your publishing goals through a quick assessment. You can start it by chatting with me or by clicking 'Start Assessment' in the Book Builder panel above.\n\nReady to begin?",
+                    message: "I'd love to help you design an amazing cover! 🎨\n\nBut first, I need to understand your publishing goals through a quick assessment. You can start it by saying 'I'm ready to start' or by clicking 'Start Assessment' in the Book Builder panel above.\n\nReady to begin?",
                     created_at: new Date().toISOString()
                 }
                 setMessages(prev => [...prev, redirectMsg])
@@ -260,7 +321,7 @@ Ready to start? Just say "I'm ready" or "let's begin"! 📚`,
                 return
             }
 
-            // Get author first name
+            // Assessment is complete OR in progress - use taylor-chat workflow
             const { data: profile } = await supabase
                 .from('author_profiles')
                 .select('first_name')
