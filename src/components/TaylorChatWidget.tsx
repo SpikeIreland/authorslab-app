@@ -36,22 +36,20 @@ export default function TaylorChatWidget({
         setIsOpen(externalIsOpen)
     }, [externalIsOpen])
 
-    // Handle initial message when chat opens
     useEffect(() => {
-        if (initialMessage && isOpen && messages.length > 0 && !hasProcessedInitialMessage) {
+        if (initialMessage && isOpen && !hasProcessedInitialMessage) {
             console.log('📨 Processing initial message:', initialMessage)
             setHasProcessedInitialMessage(true)
 
-            // Show the message immediately, then send it
-            setInputMessage(initialMessage)
+            // Send immediately if no history to load
+            // Otherwise wait briefly for greeting to appear
+            const delay = messages.length === 0 ? 0 : 300
 
-            // Wait a moment for chat to fully load, then send
             setTimeout(() => {
                 handleSendMessage(initialMessage)
-                setInputMessage('')  // Clear after sending
-            }, 500)  // Reduced from 800ms to 500ms for snappier feel
+            }, delay)
         }
-    }, [initialMessage, isOpen, messages.length, hasProcessedInitialMessage])
+    }, [initialMessage, isOpen, hasProcessedInitialMessage])
 
     // Reset initial message flag when chat closes
     useEffect(() => {
@@ -157,9 +155,11 @@ export default function TaylorChatWidget({
             }))
             setMessages(formattedMessages)
 
-            // If no messages, add Taylor's greeting
-            if (formattedMessages.length === 0) {
+            // Only add greeting if no messages AND no initial message to send
+            if (formattedMessages.length === 0 && !initialMessage) {
                 addTaylorGreeting()
+            } else if (formattedMessages.length === 0 && initialMessage) {
+                console.log('📨 Skipping greeting - will send initial message instead')
             }
         }
     }

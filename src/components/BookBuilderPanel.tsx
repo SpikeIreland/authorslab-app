@@ -269,11 +269,15 @@ export default function BookBuilderPanel({
                                     } else {
                                         // Clear any existing incomplete assessment chat history
                                         const supabase = createClient()
+                                        console.log('🧹 Clearing incomplete assessment chat history...')
+
                                         await supabase
                                             .from('editor_chat_history')
                                             .delete()
                                             .eq('manuscript_id', manuscriptId)
                                             .eq('phase_number', 4)
+
+                                        console.log('✅ Chat history cleared, starting fresh assessment')
 
                                         // Open chat to start fresh
                                         onOpenTaylorChat?.("Hi Taylor! I'm ready to start")
