@@ -3,6 +3,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
+interface TaylorChatWidgetProps {
+    manuscriptId: string
+    isOpen?: boolean
+    onClose?: () => void
+    initialMessage?: string
+}
+
 interface ChatMessage {
     id: string
     sender: 'user' | 'taylor'
@@ -10,22 +17,48 @@ interface ChatMessage {
     created_at: string
 }
 
-interface TaylorChatWidgetProps {
-    manuscriptId: string
-}
-
-export default function TaylorChatWidget({ manuscriptId }: TaylorChatWidgetProps) {
-    const [isOpen, setIsOpen] = useState(false)
+export default function TaylorChatWidget({
+    manuscriptId,
+    isOpen: externalIsOpen = false,
+    onClose,
+    initialMessage
+}: TaylorChatWidgetProps) {
+    const [isOpen, setIsOpen] = useState(externalIsOpen)
     const [messages, setMessages] = useState<ChatMessage[]>([])
     const [inputMessage, setInputMessage] = useState('')
     const [isLoading, setIsLoading] = useState(false)
+    const [hasProcessedInitialMessage, setHasProcessedInitialMessage] = useState(false)
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const inputRef = useRef<HTMLInputElement>(null)
+
+    // Sync with external isOpen prop
+    useEffect(() => {
+        setIsOpen(externalIsOpen)
+    }, [externalIsOpen])
+
+    // Handle initial message when chat opens
+    useEffect(() => {
+        if (initialMessage && isOpen && messages.length > 0 && !hasProcessedInitialMessage) {
+            console.log('📨 Processing initial message:', initialMessage)
+            setHasProcessedInitialMessage(true)
+
+            // Wait a moment for chat to fully load, then send
+            setTimeout(() => {
+                handleSendMessage(initialMessage)
+            }, 800)
+        }
+    }, [initialMessage, isOpen, messages.length, hasProcessedInitialMessage])
+
+    // Reset initial message flag when chat closes
+    useEffect(() => {
+        if (!isOpen) {
+            setHasProcessedInitialMessage(false)
+        }
+    }, [isOpen])
 
     // Load chat history
     useEffect(() => {
         if (!isOpen || !manuscriptId) return
-
         loadChatHistory()
     }, [isOpen, manuscriptId])
 
@@ -36,12 +69,11 @@ export default function TaylorChatWidget({ manuscriptId }: TaylorChatWidgetProps
         }
     }, [isOpen])
 
-    // Add this useEffect for realtime message updates
+    // Realtime message updates
     useEffect(() => {
         if (!manuscriptId) return
 
         const supabase = createClient()
-
         console.log('🔌 Setting up Taylor message subscription for:', manuscriptId)
 
         const channel = supabase
@@ -67,7 +99,6 @@ export default function TaylorChatWidget({ manuscriptId }: TaylorChatWidgetProps
                         }
 
                         setMessages(prev => {
-                            // Check if message already exists to avoid duplicates
                             const exists = prev.some(m => m.id === newMessage.id)
                             if (exists) {
                                 console.log('⚠️ Message already exists, skipping')
@@ -77,7 +108,6 @@ export default function TaylorChatWidget({ manuscriptId }: TaylorChatWidgetProps
                             return [...prev, newMessage]
                         })
 
-                        // Auto-scroll to new message
                         setTimeout(() => {
                             messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
                         }, 100)
@@ -107,7 +137,7 @@ export default function TaylorChatWidget({ manuscriptId }: TaylorChatWidgetProps
         if (!error && data) {
             const formattedMessages = data.map(msg => ({
                 id: msg.id,
-                sender: msg.sender as 'user' | 'taylor',
+                sender: msg.sender.toLowerCase() === 'taylor' ? 'taylor' as const : 'user' as const,
                 message: msg.message,
                 created_at: msg.created_at
             }))
@@ -121,8 +151,8 @@ export default function TaylorChatWidget({ manuscriptId }: TaylorChatWidgetProps
     }
 
     async function addTaylorGreeting() {
-        // Fetch manuscript details and assessment status
         const supabase = createClient()
+
         const { data: manuscript } = await supabase
             .from('manuscripts')
             .select('title, genre, current_word_count, author_profiles!inner(first_name)')
@@ -141,52 +171,14 @@ export default function TaylorChatWidget({ manuscriptId }: TaylorChatWidgetProps
 
         const authorName = authorProfile?.first_name || 'there'
         const title = manuscript?.title || 'your manuscript'
-        const genre = manuscript?.genre || 'your genre'
-        const wordCount = manuscript?.current_word_count?.toLocaleString() || 'your word count'
-
-        // Check if assessment is already completed
         const assessmentCompleted = publishingProgress?.assessment_completed || false
 
         const greetingMessage = {
             id: 'greeting-' + Date.now(),
             sender: 'taylor' as const,
             message: assessmentCompleted
-                ? `👋 Hi ${authorName}! 
-
-I'm here to help with your publishing journey for "${title}". 
-
-Your publishing plan is ready - you can view it by clicking the button above, or ask me any questions about publishing your book!`
-                : `👋 Welcome to your Publishing Hub, ${authorName}!
-
-I'm Taylor, your publishing specialist. Congratulations on completing the editing for "${title}"! That's a huge accomplishment.
-
-📚 **Your Manuscript:**
-• Genre: ${genre}
-• Length: ${wordCount} words
-• Status: Edited and ready for publishing
-
-**What I'll Help You With:**
-
-🎯 **Strategy & Planning**
-• Choosing the right publishing platforms for your goals
-• Understanding the publishing timeline
-• Setting realistic expectations
-
-🎨 **Professional Presentation**
-• AI-generated cover design concepts
-• Optimized book descriptions and metadata
-• All the file formats you'll need (EPUB, Kindle, Print PDF)
-
-📖 **Platform Setup**
-• Step-by-step guides for Amazon KDP, Draft2Digital, and more
-• Account setup assistance
-• Upload walkthroughs with screenshots
-
-**Let's Get Started!**
-
-I'll begin with a quick assessment (3-5 minutes) to create your personalized publishing plan. Or if you have specific questions, just ask away!
-
-Type "let's start" to begin the assessment, or ask me anything about publishing your book.`,
+                ? `👋 Hi ${authorName}! Welcome back! I'm ready to help you with the next steps for "${title}". What would you like to work on today?`
+                : `👋 Hi ${authorName}! I'm Taylor, your publishing specialist. I'm excited to help you bring "${title}" to life! Let's start by understanding your publishing goals. What's your vision for this book?`,
             created_at: new Date().toISOString()
         }
 
@@ -196,112 +188,20 @@ Type "let's start" to begin the assessment, or ask me anything about publishing 
         await supabase.from('editor_chat_history').insert({
             manuscript_id: manuscriptId,
             phase_number: 4,
-            sender: 'taylor',
+            sender: 'Taylor',
             message: greetingMessage.message
         })
     }
 
-    async function sendMessage() {
-        if (!inputMessage.trim() || isLoading) return
+    // NEW: General conversational chat handler
+    async function handleSendMessage(message: string) {
+        if (!message.trim() || isLoading) return
 
-        const userMessage = inputMessage.trim()
-        const lowerMessage = userMessage.toLowerCase()
-
-        // Detect cover creation request
-        const wantsCover =
-            (lowerMessage.includes('create') && lowerMessage.includes('cover')) ||
-            (lowerMessage.includes('design') && lowerMessage.includes('cover')) ||
-            (lowerMessage.includes('generate') && lowerMessage.includes('cover')) ||
-            lowerMessage.includes("let's create my cover") ||
-            lowerMessage.includes('make my cover')
-
-        if (wantsCover) {
-            // Handle cover generation request
-            await handleCoverRequest(userMessage)
-            return
-        }
-
-        // Normal chat flow continues below
-        const userMessageObj: ChatMessage = {
-            id: 'temp-' + Date.now(),
-            sender: 'user',
-            message: userMessage,
-            created_at: new Date().toISOString()
-        }
-
-        // Add user message to UI
-        setMessages(prev => [...prev, userMessageObj])
-        setInputMessage('')
-        setIsLoading(true)
-
-        try {
-            // Save user message to database
-            const supabase = createClient()
-            await supabase.from('editor_chat_history').insert({
-                manuscript_id: manuscriptId,
-                phase_number: 4,
-                sender: 'user',
-                message: userMessageObj.message
-            })
-
-            // Call Taylor chat workflow
-            const response = await fetch(
-                'https://spikeislandstudios.app.n8n.cloud/webhook/taylor-chat',
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        manuscriptId: manuscriptId,
-                        userMessage: userMessageObj.message,
-                        conversationHistory: messages.slice(-10) // Last 10 messages for context
-                    })
-                }
-            )
-
-            if (response.ok) {
-                const data = await response.json()
-
-                const taylorMessage: ChatMessage = {
-                    id: 'taylor-' + Date.now(),
-                    sender: 'taylor',
-                    message: data.response || "I'm here to help with your publishing questions!",
-                    created_at: new Date().toISOString()
-                }
-
-                setMessages(prev => [...prev, taylorMessage])
-
-                // Save Taylor's response to database
-                await supabase.from('editor_chat_history').insert({
-                    manuscript_id: manuscriptId,
-                    phase_number: 4,
-                    sender: 'taylor',
-                    message: taylorMessage.message
-                })
-            }
-        } catch (error) {
-            console.error('Error sending message:', error)
-
-            // Add error message
-            const errorMessage: ChatMessage = {
-                id: 'error-' + Date.now(),
-                sender: 'taylor',
-                message: "Sorry, I'm having trouble responding right now. Please try again in a moment.",
-                created_at: new Date().toISOString()
-            }
-            setMessages(prev => [...prev, errorMessage])
-        } finally {
-            setIsLoading(false)
-            // Re-focus input after sending
-            setTimeout(() => inputRef.current?.focus(), 100)
-        }
-    }
-
-    async function handleCoverRequest(userMessage: string) {
         // Add user message to UI
         const userMsg: ChatMessage = {
             id: 'temp-' + Date.now(),
             sender: 'user',
-            message: userMessage,
+            message: message.trim(),
             created_at: new Date().toISOString()
         }
         setMessages(prev => [...prev, userMsg])
@@ -311,13 +211,111 @@ Type "let's start" to begin the assessment, or ask me anything about publishing 
         try {
             const supabase = createClient()
 
-            // Save user message
+            // Save user message to database
             await supabase.from('editor_chat_history').insert({
                 manuscript_id: manuscriptId,
                 phase_number: 4,
                 sender: 'user',
-                message: userMessage
+                message: message.trim()
             })
+
+            // Get author first name
+            const { data: profile } = await supabase
+                .from('author_profiles')
+                .select('first_name')
+                .single()
+
+            console.log('💬 Calling taylor-chat workflow (conversational)...')
+
+            // Call taylor-chat workflow for conversation
+            const response = await fetch(
+                'https://spikeislandstudios.app.n8n.cloud/webhook/taylor-chat',
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        manuscriptId,
+                        message: message.trim(),
+                        authorFirstName: profile?.first_name || 'there'
+                    })
+                }
+            )
+
+            if (response.ok) {
+                const data = await response.json()
+                console.log('✅ Taylor responded:', data)
+
+                // Add Taylor's response to UI
+                const taylorMsg: ChatMessage = {
+                    id: 'taylor-' + Date.now(),
+                    sender: 'taylor',
+                    message: data.response,
+                    created_at: new Date().toISOString()
+                }
+                setMessages(prev => [...prev, taylorMsg])
+
+                // Save Taylor's response to database
+                await supabase.from('editor_chat_history').insert({
+                    manuscript_id: manuscriptId,
+                    phase_number: 4,
+                    sender: 'Taylor',
+                    message: data.response
+                })
+
+                // If Taylor indicates it's time to generate covers, trigger generation
+                if (data.shouldGenerateCovers) {
+                    console.log('🎨 Taylor wants to generate covers - triggering generation...')
+                    await handleCoverRequest('generate covers based on our discussion')
+                }
+            } else {
+                throw new Error(`Taylor chat failed: ${response.status}`)
+            }
+        } catch (error) {
+            console.error('💥 Error in Taylor chat:', error)
+
+            const errorMsg: ChatMessage = {
+                id: 'error-' + Date.now(),
+                sender: 'taylor',
+                message: "I'm having trouble responding right now. Please try again in a moment!",
+                created_at: new Date().toISOString()
+            }
+            setMessages(prev => [...prev, errorMsg])
+        } finally {
+            setIsLoading(false)
+            setTimeout(() => inputRef.current?.focus(), 100)
+        }
+    }
+
+    // EXISTING: Cover generation handler
+    async function handleCoverRequest(userMessage: string) {
+        // Don't add user message again if it came from handleSendMessage
+        const isFromConversation = userMessage === 'generate covers based on our discussion'
+
+        if (!isFromConversation) {
+            const userMsg: ChatMessage = {
+                id: 'temp-' + Date.now(),
+                sender: 'user',
+                message: userMessage,
+                created_at: new Date().toISOString()
+            }
+            setMessages(prev => [...prev, userMsg])
+            setInputMessage('')
+        }
+
+        setIsLoading(true)
+
+        try {
+            const supabase = createClient()
+
+            // Save user message if not from conversation
+            if (!isFromConversation) {
+                await supabase.from('editor_chat_history').insert({
+                    manuscript_id: manuscriptId,
+                    phase_number: 4,
+                    sender: 'user',
+                    message: userMessage
+                })
+            }
 
             // Get manuscript data
             const { data: manuscript } = await supabase
@@ -327,14 +325,11 @@ Type "let's start" to begin the assessment, or ask me anything about publishing 
                 .single()
 
             console.log('🎨 Calling cover intent detection workflow...')
-            console.log('Manuscript data:', manuscript)
 
-            // Create abort controller for timeout
             const controller = new AbortController()
-            const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+            const timeoutId = setTimeout(() => controller.abort(), 30000)
 
             try {
-                // Call intent detection workflow
                 const response = await fetch(
                     'https://spikeislandstudios.app.n8n.cloud/webhook/taylor-detect-cover-intent',
                     {
@@ -354,14 +349,12 @@ Type "let's start" to begin the assessment, or ask me anything about publishing 
                 )
 
                 clearTimeout(timeoutId)
-
-                console.log('✅ Response received:', response.status, response.statusText)
+                console.log('✅ Response received:', response.status)
 
                 if (response.ok) {
                     const data = await response.json()
                     console.log('📦 Response data:', data)
 
-                    // Add Taylor's response
                     const taylorMsg: ChatMessage = {
                         id: 'taylor-' + Date.now(),
                         sender: 'taylor',
@@ -371,17 +364,14 @@ Type "let's start" to begin the assessment, or ask me anything about publishing 
 
                     setMessages(prev => [...prev, taylorMsg])
 
-                    // Save Taylor's response
                     await supabase.from('editor_chat_history').insert({
                         manuscript_id: manuscriptId,
                         phase_number: 4,
-                        sender: 'taylor',
+                        sender: 'Taylor',
                         message: taylorMsg.message
                     })
                 } else {
-                    const errorText = await response.text()
-                    console.error('❌ Response not OK:', response.status, errorText)
-                    throw new Error(`Workflow returned ${response.status}: ${errorText}`)
+                    throw new Error(`Workflow returned ${response.status}`)
                 }
             } catch (fetchError) {
                 clearTimeout(timeoutId)
@@ -394,123 +384,108 @@ Type "let's start" to begin the assessment, or ask me anything about publishing 
         } catch (error) {
             console.error('💥 Error handling cover request:', error)
 
-            // Add error message with more context
             const errorMsg: ChatMessage = {
                 id: 'error-' + Date.now(),
                 sender: 'taylor',
-                message: "I'm having trouble starting the cover generation right now. Please try again in a moment, or let me know if you need help!",
+                message: "I'm having trouble starting the cover generation right now. Please try again in a moment!",
                 created_at: new Date().toISOString()
             }
             setMessages(prev => [...prev, errorMsg])
         } finally {
             setIsLoading(false)
-            // Re-focus input after sending
             setTimeout(() => inputRef.current?.focus(), 100)
         }
     }
 
-    // Auto-scroll to bottom when new messages arrive
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-    }, [messages])
+    // Handle close button - call parent onClose handler if provided
+    function handleClose() {
+        setIsOpen(false)
+        onClose?.()
+    }
 
     return (
-        <>
-            {/* Chat Bubble - Floating Button */}
+        <div className="fixed bottom-6 right-6 z-50">
+            {/* Chat Button */}
             {!isOpen && (
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-br from-teal-500 to-teal-600 text-white rounded-full shadow-2xl hover:scale-110 transition-all flex items-center justify-center text-3xl z-50 animate-bounce"
+                    className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-full shadow-2xl hover:scale-110 transition-transform flex items-center justify-center text-2xl"
                 >
-                    📚
+                    💬
                 </button>
             )}
 
             {/* Chat Window */}
             {isOpen && (
-                <div className="fixed bottom-6 right-6 w-96 h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col z-50 border-2 border-teal-500">
+                <div className="w-96 h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col border-2 border-blue-200">
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-teal-500 to-teal-600 text-white p-4 rounded-t-2xl flex items-center justify-between">
+                    <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-t-2xl flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-2xl">
                                 📚
                             </div>
                             <div>
-                                <h3 className="font-bold text-lg">Taylor</h3>
+                                <h3 className="font-bold">Taylor</h3>
                                 <p className="text-xs opacity-90">Publishing Specialist</p>
                             </div>
                         </div>
                         <button
-                            onClick={() => setIsOpen(false)}
-                            className="text-white hover:bg-teal-700 rounded-lg p-2 transition-all"
+                            onClick={handleClose}
+                            className="text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
                         >
                             ✕
                         </button>
                     </div>
 
                     {/* Messages */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4">
                         {messages.map((msg) => (
                             <div
                                 key={msg.id}
                                 className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                             >
                                 <div
-                                    className={`max-w-[80%] rounded-2xl px-4 py-2 ${msg.sender === 'user'
-                                        ? 'bg-teal-600 text-white'
-                                        : 'bg-white border-2 border-teal-200 text-gray-800'
+                                    className={`max-w-[80%] px-4 py-3 rounded-2xl ${msg.sender === 'user'
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-gray-100 text-gray-900'
                                         }`}
                                 >
-                                    <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
-                                    <p className={`text-xs mt-1 ${msg.sender === 'user' ? 'text-teal-200' : 'text-gray-400'}`}>
-                                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                    </p>
+                                    <p className="whitespace-pre-wrap">{msg.message}</p>
                                 </div>
                             </div>
                         ))}
-
-                        {isLoading && (
-                            <div className="flex justify-start">
-                                <div className="bg-white border-2 border-teal-200 rounded-2xl px-4 py-2">
-                                    <div className="flex gap-1">
-                                        <div className="w-2 h-2 bg-teal-600 rounded-full animate-bounce"></div>
-                                        <div className="w-2 h-2 bg-teal-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                                        <div className="w-2 h-2 bg-teal-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
                         <div ref={messagesEndRef} />
                     </div>
 
                     {/* Input */}
-                    <div className="p-4 border-t border-gray-200 bg-white rounded-b-2xl">
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault()
+                            handleSendMessage(inputMessage)
+                        }}
+                        className="p-4 border-t-2 border-gray-200"
+                    >
                         <div className="flex gap-2">
                             <input
                                 ref={inputRef}
                                 type="text"
                                 value={inputMessage}
                                 onChange={(e) => setInputMessage(e.target.value)}
-                                onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
                                 placeholder="Ask Taylor about publishing..."
                                 disabled={isLoading}
-                                className="flex-1 px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-teal-500 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
                             />
                             <button
-                                onClick={sendMessage}
-                                disabled={!inputMessage.trim() || isLoading}
-                                className="bg-teal-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-teal-700 transition-all disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                type="submit"
+                                disabled={isLoading || !inputMessage.trim()}
+                                className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
-                                Send
+                                {isLoading ? '...' : 'Send'}
                             </button>
                         </div>
-                        <p className="text-xs text-gray-500 mt-2 text-center">
-                            Taylor can help with publishing questions and guidance
-                        </p>
-                    </div>
+                    </form>
                 </div>
             )}
-        </>
+        </div>
     )
 }

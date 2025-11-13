@@ -21,6 +21,19 @@ function PublishingHubContent() {
   const [hasAccess, setHasAccess] = useState(false)
   const [isChecking, setIsChecking] = useState(true)
   const [publishingPlan, setPublishingPlan] = useState<PublishingPlan | null>(null)
+  const [showCoverDesigner, setShowCoverDesigner] = useState(false)
+
+  // NEW: State for Taylor chat control
+  const [isTaylorChatOpen, setIsTaylorChatOpen] = useState(false)
+  const [initialTaylorMessage, setInitialTaylorMessage] = useState('')
+
+  // NEW: Handler to open Taylor chat with optional pre-filled message
+  function handleOpenTaylorChat(message?: string) {
+    if (message) {
+      setInitialTaylorMessage(message)
+    }
+    setIsTaylorChatOpen(true)
+  }
 
   // Check if user has access to Phase 4
   useEffect(() => {
@@ -71,8 +84,7 @@ function PublishingHubContent() {
     loadPublishingPlan()
   }, [manuscriptId])
 
-  const [showCoverDesigner, setShowCoverDesigner] = useState(false)
-
+  // Check for covers and show Cover Designer Panel
   useEffect(() => {
     async function checkProgress() {
       if (!manuscriptId) return
@@ -100,6 +112,7 @@ function PublishingHubContent() {
     checkProgress()
   }, [manuscriptId])
 
+  // Realtime subscription for publishing progress updates
   useEffect(() => {
     if (!manuscriptId) return
 
@@ -107,7 +120,6 @@ function PublishingHubContent() {
 
     console.log('🔌 Setting up publishing progress subscription for:', manuscriptId)
 
-    // Subscribe to publishing_progress updates
     const channel = supabase
       .channel(`publishing-progress-${manuscriptId}`)
       .on(
@@ -153,6 +165,11 @@ function PublishingHubContent() {
     return null
   }
 
+  // NEW: TypeScript null check
+  if (!manuscriptId) {
+    return null
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -181,11 +198,14 @@ function PublishingHubContent() {
       </header>
 
       <main className="container mx-auto px-6 py-12">
-        {/* Book Builder Panel - Always at top */}
-        {manuscriptId && <BookBuilderPanel manuscriptId={manuscriptId} />}
+        {/* Book Builder Panel - Always at top - UPDATED */}
+        <BookBuilderPanel
+          manuscriptId={manuscriptId}
+          onOpenTaylorChat={handleOpenTaylorChat}
+        />
 
         {/* Cover Designer Panel - Only shows when covers are ready */}
-        {showCoverDesigner && manuscriptId && (
+        {showCoverDesigner && (
           <section id="cover-designer-panel" className="mb-12">
             <div className="bg-white rounded-3xl p-12 shadow-xl border-2 border-purple-300">
               <div className="flex items-center gap-4 mb-8">
@@ -371,8 +391,13 @@ function PublishingHubContent() {
         </section>
       </main>
 
-      {/* Taylor Chat Widget */}
-      {manuscriptId && <TaylorChatWidget manuscriptId={manuscriptId} />}
+      {/* Taylor Chat Widget - UPDATED */}
+      <TaylorChatWidget
+        manuscriptId={manuscriptId}
+        isOpen={isTaylorChatOpen}
+        onClose={() => setIsTaylorChatOpen(false)}
+        initialMessage={initialTaylorMessage}
+      />
     </div>
   )
 }

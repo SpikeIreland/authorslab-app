@@ -6,6 +6,7 @@ import Link from 'next/link'
 
 interface BookBuilderProps {
     manuscriptId: string
+    onOpenTaylorChat?: (message?: string) => void
 }
 
 interface ManuscriptData {
@@ -20,7 +21,10 @@ interface CoverData {
 
 type AssemblyStep = 'cover' | 'interior' | 'metadata' | 'ready'
 
-export default function BookBuilderPanel({ manuscriptId }: BookBuilderProps) {
+export default function BookBuilderPanel({
+    manuscriptId,
+    onOpenTaylorChat
+}: BookBuilderProps) {
     const [manuscript, setManuscript] = useState<ManuscriptData | null>(null)
     const [coverUrl, setCoverUrl] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -229,10 +233,7 @@ export default function BookBuilderPanel({ manuscriptId }: BookBuilderProps) {
                             </div>
                             <button
                                 onClick={() => {
-                                    // Scroll to Cover Designer Panel
-                                    document.getElementById('cover-designer-panel')?.scrollIntoView({
-                                        behavior: 'smooth'
-                                    })
+                                    onOpenTaylorChat?.("Hi Taylor! I'd like to design my book cover")
                                 }}
                                 className="block text-center w-full px-4 py-2 bg-purple-100 text-purple-700 rounded-lg font-semibold hover:bg-purple-200 transition-all text-sm"
                             >
@@ -248,9 +249,7 @@ export default function BookBuilderPanel({ manuscriptId }: BookBuilderProps) {
                             </div>
                             <button
                                 onClick={() => {
-                                    document.getElementById('cover-designer-panel')?.scrollIntoView({
-                                        behavior: 'smooth'
-                                    })
+                                    onOpenTaylorChat?.("Hi Taylor! I'd like to design my book cover")
                                 }}
                                 className="block text-center w-full px-4 py-2 bg-purple-500 text-white rounded-lg font-semibold hover:bg-purple-600 transition-all text-sm"
                             >
@@ -309,15 +308,13 @@ export default function BookBuilderPanel({ manuscriptId }: BookBuilderProps) {
                     <button
                         onClick={() => {
                             if (nextStep === 'cover') {
-                                document.getElementById('cover-designer-panel')?.scrollIntoView({
-                                    behavior: 'smooth'
-                                })
+                                onOpenTaylorChat?.("Hi Taylor! I'd like to design my book cover")
                             }
                         }}
                         disabled={nextStep !== 'cover'}
                         className={`px-6 py-3 rounded-xl font-bold transition-all ${nextStep === 'cover'
-                            ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg'
-                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg'
+                                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                             }`}
                     >
                         {nextStep === 'cover' ? 'Get Started →' : 'Coming Soon'}
