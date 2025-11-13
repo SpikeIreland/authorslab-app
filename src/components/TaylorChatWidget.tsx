@@ -223,90 +223,50 @@ Ready to start? Just say "I'm ready" or "let's begin"! 📚`,
             })
 
             // Check if publishing_progress exists and if assessment is completed
-            const { data: progress } = await supabase
+            const { data: progress, error: progressError } = await supabase
                 .from('publishing_progress')
                 .select('assessment_completed')
                 .eq('manuscript_id', manuscriptId)
-                .single()
+                .maybeSingle()  // Use maybeSingle instead of single to avoid error if row doesn't exist
 
             const assessmentCompleted = progress?.assessment_completed || false
+            const hasNoProgress = !progress  // Row doesn't exist yet
 
-            console.log('📋 Assessment status:', assessmentCompleted)
+            console.log('📋 Assessment status:', { assessmentCompleted, hasNoProgress })
 
-            // If assessment not complete, guide to assessment
-            if (!assessmentCompleted) {
-                console.log('🔀 Routing to assessment flow...')
+            // Only block if no progress row exists AND user is trying to do cover stuff
+            const wantsCover = message.toLowerCase().includes('cover') ||
+                message.toLowerCase().includes('design')
 
-                // Check if user is ready to start assessment
-                const isReadyToStart =
-                    message.toLowerCase().includes("ready") ||
-                    message.toLowerCase().includes("start") ||
-                    message.toLowerCase().includes("begin") ||
-                    message.toLowerCase().includes("yes") ||
-                    message.toLowerCase().includes("let's")
-
-                if (isReadyToStart) {
-                    // Add Taylor's "starting assessment" message
-                    const startMsg: ChatMessage = {
-                        id: 'taylor-' + Date.now(),
-                        sender: 'taylor',
-                        message: "Perfect! Let's get started with your publishing assessment. I'll ask you a few questions to understand your goals and create a personalized publishing plan.\n\nFirst question: What's your primary goal for publishing this book?\n\n1️⃣ Wide distribution (available everywhere)\n2️⃣ Amazon exclusive (KDP Select/Kindle Unlimited)\n3️⃣ Traditional publishing path",
-                        created_at: new Date().toISOString()
-                    }
-                    setMessages(prev => [...prev, startMsg])
-
-                    await supabase.from('editor_chat_history').insert({
-                        manuscript_id: manuscriptId,
-                        phase_number: 4,
-                        sender: 'Taylor',
-                        message: startMsg.message
-                    })
-                } else if (message.toLowerCase().includes('cover') || message.toLowerCase().includes('design')) {
-                    // User wants covers but assessment not done
-                    const redirectMsg: ChatMessage = {
-                        id: 'taylor-' + Date.now(),
-                        sender: 'taylor',
-                        message: "I'd love to help you design an amazing cover! 🎨\n\nBut first, I need to understand your publishing goals so I can create designs that match your strategy. This quick assessment takes about 2 minutes.\n\nReady to start? Just say 'I'm ready' or 'let's begin'!",
-                        created_at: new Date().toISOString()
-                    }
-                    setMessages(prev => [...prev, redirectMsg])
-
-                    await supabase.from('editor_chat_history').insert({
-                        manuscript_id: manuscriptId,
-                        phase_number: 4,
-                        sender: 'Taylor',
-                        message: redirectMsg.message
-                    })
-                } else {
-                    // General prompt to start assessment
-                    const promptMsg: ChatMessage = {
-                        id: 'taylor-' + Date.now(),
-                        sender: 'taylor',
-                        message: "Before we dive into publishing details, I need to complete a quick assessment to create your personalized publishing plan. It only takes a few minutes!\n\nReady to get started? 📋",
-                        created_at: new Date().toISOString()
-                    }
-                    setMessages(prev => [...prev, promptMsg])
-
-                    await supabase.from('editor_chat_history').insert({
-                        manuscript_id: manuscriptId,
-                        phase_number: 4,
-                        sender: 'Taylor',
-                        message: promptMsg.message
-                    })
+            if (hasNoProgress && wantsCover) {
+                // User wants covers but hasn't started assessment
+                const redirectMsg: ChatMessage = {
+                    id: 'taylor-' + Date.now(),
+                    sender: 'taylor',
+                    message: "I'd love to help you design an amazing cover! 🎨\n\nBut first, I need to understand your publishing goals through a quick assessment. You can start it by chatting with me or by clicking 'Start Assessment' in the Book Builder panel above.\n\nReady to begin?",
+                    created_at: new Date().toISOString()
                 }
+                setMessages(prev => [...prev, redirectMsg])
+
+                await supabase.from('editor_chat_history').insert({
+                    manuscript_id: manuscriptId,
+                    phase_number: 4,
+                    sender: 'Taylor',
+                    message: redirectMsg.message
+                })
 
                 setIsLoading(false)
                 setTimeout(() => inputRef.current?.focus(), 100)
                 return
             }
 
-            // Assessment is complete - proceed with normal conversational chat
+            // Get author first name
             const { data: profile } = await supabase
                 .from('author_profiles')
                 .select('first_name')
                 .single()
 
-            console.log('💬 Calling taylor-chat workflow (conversational)...')
+            console.log('💬 Calling taylor-chat workflow...')
 
             // Call taylor-chat workflow for conversation
             const response = await fetch(
