@@ -73,11 +73,13 @@ function PublishingHubContent() {
         .from('publishing_progress')
         .select('publishing_plan, assessment_completed, plan_pdf_url')
         .eq('manuscript_id', manuscriptId)
-        .single()
+        .maybeSingle()  // CHANGED from .single()
 
       if (data) {
         console.log('📊 Loaded publishing plan:', data)
         setPublishingPlan(data)
+      } else {
+        console.log('📊 No publishing progress yet (assessment not started)')
       }
     }
 
@@ -94,10 +96,14 @@ function PublishingHubContent() {
         .from('publishing_progress')
         .select('current_step, cover_concepts')
         .eq('manuscript_id', manuscriptId)
-        .single()
+        .maybeSingle()  // CHANGED from .single()
 
       console.log('📊 Publishing progress data:', data)
-      console.log('📊 Error:', error)
+
+      if (error && error.code !== 'PGRST116') {
+        console.log('📊 Error:', error)
+      }
+
       console.log('📊 cover_concepts:', data?.cover_concepts)
       console.log('📊 cover_concepts length:', data?.cover_concepts?.length)
 

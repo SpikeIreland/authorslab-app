@@ -44,14 +44,14 @@ export default function BookBuilderPanel({
             .from('manuscripts')
             .select('title, current_word_count, total_chapters')
             .eq('id', manuscriptId)
-            .single()
+            .single()  // Keep this one as .single() - manuscript always exists
 
-        // Load publishing progress
+        // Load publishing progress with assessment status
         const { data: progressData } = await supabase
             .from('publishing_progress')
-            .select('selected_cover_url, assessment_completed')  // ADDED assessment_completed
+            .select('selected_cover_url, assessment_completed')
             .eq('manuscript_id', manuscriptId)
-            .single()
+            .maybeSingle()  // CHANGED from .single()
 
         if (manuscriptData) {
             setManuscript(manuscriptData)
@@ -59,7 +59,12 @@ export default function BookBuilderPanel({
 
         if (progressData) {
             setCoverUrl(progressData.selected_cover_url)
-            setAssessmentCompleted(progressData.assessment_completed || false)  // NEW
+            setAssessmentCompleted(progressData.assessment_completed || false)
+        } else {
+            // No progress row yet - assessment not started
+            console.log('📊 No publishing progress yet')
+            setAssessmentCompleted(false)
+            setCoverUrl(null)
         }
 
         // Calculate readiness
