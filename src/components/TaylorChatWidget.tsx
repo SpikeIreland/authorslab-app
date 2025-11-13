@@ -247,17 +247,14 @@ Ready to start? Just say "I'm ready" or "let's begin"! 📚`,
 
             console.log('📋 Assessment status:', { assessmentCompleted })
 
-            // If assessment NOT complete, route ALL messages to taylor-assessment
             if (!assessmentCompleted) {
                 console.log('🎯 Assessment incomplete - routing to taylor-assessment workflow...')
 
-                // Get author first name
                 const { data: profile } = await supabase
                     .from('author_profiles')
                     .select('first_name')
                     .single()
 
-                // Call taylor-assessment workflow
                 const response = await fetch(
                     'https://spikeislandstudios.app.n8n.cloud/webhook/taylor-assessment',
                     {
@@ -275,22 +272,16 @@ Ready to start? Just say "I'm ready" or "let's begin"! 📚`,
                     const data = await response.json()
                     console.log('✅ Taylor-assessment responded:', data)
 
-                    // Add Taylor's response to UI
-                    const taylorMsg: ChatMessage = {
-                        id: 'taylor-' + Date.now(),
-                        sender: 'taylor',
-                        message: data.response,
-                        created_at: new Date().toISOString()
-                    }
-                    setMessages(prev => [...prev, taylorMsg])
-
-                    // Save Taylor's response to database
+                    // Save Taylor's response to database ONLY
+                    // The realtime subscription will add it to the UI automatically
                     await supabase.from('editor_chat_history').insert({
                         manuscript_id: manuscriptId,
                         phase_number: 4,
                         sender: 'Taylor',
                         message: data.response
                     })
+
+                    console.log('💾 Saved to database, waiting for realtime update...')
                 } else {
                     throw new Error(`Assessment workflow failed: ${response.status}`)
                 }
@@ -326,22 +317,16 @@ Ready to start? Just say "I'm ready" or "let's begin"! 📚`,
                 const data = await response.json()
                 console.log('✅ Taylor responded:', data)
 
-                // Add Taylor's response to UI
-                const taylorMsg: ChatMessage = {
-                    id: 'taylor-' + Date.now(),
-                    sender: 'taylor',
-                    message: data.response,
-                    created_at: new Date().toISOString()
-                }
-                setMessages(prev => [...prev, taylorMsg])
-
-                // Save Taylor's response to database
+                // Save Taylor's response to database ONLY
+                // The realtime subscription will add it to the UI automatically
                 await supabase.from('editor_chat_history').insert({
                     manuscript_id: manuscriptId,
                     phase_number: 4,
                     sender: 'Taylor',
                     message: data.response
                 })
+
+                console.log('💾 Saved to database, waiting for realtime update...')
 
                 // If Taylor indicates it's time to generate covers, trigger generation
                 if (data.shouldGenerateCovers) {
