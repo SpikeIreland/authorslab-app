@@ -263,16 +263,25 @@ export default function BookBuilderPanel({
                                 )}
                             </div>
                             <button
-                                onClick={() => {
+                                onClick={async () => {
                                     if (assessmentCompleted) {
                                         onOpenTaylorChat?.("Hi Taylor! I'd like to design my book cover")
                                     } else {
+                                        // Clear any existing incomplete assessment chat history
+                                        const supabase = createClient()
+                                        await supabase
+                                            .from('editor_chat_history')
+                                            .delete()
+                                            .eq('manuscript_id', manuscriptId)
+                                            .eq('phase_number', 4)
+
+                                        // Open chat to start fresh
                                         onOpenTaylorChat?.("Hi Taylor! I'm ready to start")
                                     }
                                 }}
                                 className={`block text-center w-full px-4 py-2 rounded-lg font-semibold transition-all text-sm ${assessmentCompleted
-                                    ? 'bg-purple-500 text-white hover:bg-purple-600'
-                                    : 'bg-amber-500 text-white hover:bg-amber-600'
+                                        ? 'bg-purple-500 text-white hover:bg-purple-600'
+                                        : 'bg-amber-500 text-white hover:bg-amber-600'
                                     }`}
                             >
                                 {assessmentCompleted ? 'Select Cover' : 'Start Assessment'}

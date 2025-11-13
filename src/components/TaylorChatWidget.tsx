@@ -230,37 +230,12 @@ Ready to start? Just say "I'm ready" or "let's begin"! 📚`,
                 .maybeSingle()
 
             const assessmentCompleted = progress?.assessment_completed || false
-            const hasNoProgress = !progress
 
-            console.log('📋 Assessment status:', { assessmentCompleted, hasNoProgress })
+            console.log('📋 Assessment status:', { assessmentCompleted })
 
-            // Detect if user is trying to START the assessment
-            const isStartingAssessment =
-                message.toLowerCase().includes("ready") ||
-                message.toLowerCase().includes("start") ||
-                message.toLowerCase().includes("begin") ||
-                message.toLowerCase().includes("let's") ||
-                message.toLowerCase() === "yes"
-
-            // If no progress row exists and user wants to start
-            if (!assessmentCompleted && isStartingAssessment) {
-                console.log('🎯 Routing to taylor-assessment workflow...')
-
-                // CLEAR old incomplete assessment attempts
-                console.log('🧹 Clearing old incomplete assessment chat history...')
-                const { error: deleteError } = await supabase
-                    .from('editor_chat_history')
-                    .delete()
-                    .eq('manuscript_id', manuscriptId)
-                    .eq('phase_number', 4)
-
-                if (deleteError) {
-                    console.error('⚠️ Error clearing old chat:', deleteError)
-                } else {
-                    console.log('✅ Old chat history cleared')
-                    // Clear local messages state too
-                    setMessages([])
-                }
+            // If assessment NOT complete, route ALL messages to taylor-assessment
+            if (!assessmentCompleted) {
+                console.log('🎯 Assessment incomplete - routing to taylor-assessment workflow...')
 
                 // Get author first name
                 const { data: profile } = await supabase
@@ -268,7 +243,7 @@ Ready to start? Just say "I'm ready" or "let's begin"! 📚`,
                     .select('first_name')
                     .single()
 
-                // Call taylor-assessment workflow to start the assessment
+                // Call taylor-assessment workflow
                 const response = await fetch(
                     'https://spikeislandstudios.app.n8n.cloud/webhook/taylor-assessment',
                     {
@@ -284,41 +259,24 @@ Ready to start? Just say "I'm ready" or "let's begin"! 📚`,
 
                 if (response.ok) {
                     const data = await response.json()
-                    console.log('✅ Assessment workflow started:', data)
-
-                    // Add user's start message to UI
-                    const userStartMsg: ChatMessage = {
-                        id: 'user-start-' + Date.now(),
-                        sender: 'user',
-                        message: message.trim(),
-                        created_at: new Date().toISOString()
-                    }
+                    console.log('✅ Taylor-assessment responded:', data)
 
                     // Add Taylor's response to UI
                     const taylorMsg: ChatMessage = {
                         id: 'taylor-' + Date.now(),
                         sender: 'taylor',
-                        message: data.response || "Great! Let's start your publishing assessment. First question: What's your primary goal for publishing this book?\n\n1️⃣ Wide distribution (available everywhere)\n2️⃣ Amazon exclusive (KDP Select/Kindle Unlimited)\n3️⃣ Traditional publishing path",
+                        message: data.response,
                         created_at: new Date().toISOString()
                     }
+                    setMessages(prev => [...prev, taylorMsg])
 
-                    setMessages([userStartMsg, taylorMsg])
-
-                    // Save both to database
-                    await supabase.from('editor_chat_history').insert([
-                        {
-                            manuscript_id: manuscriptId,
-                            phase_number: 4,
-                            sender: 'user',
-                            message: message.trim()
-                        },
-                        {
-                            manuscript_id: manuscriptId,
-                            phase_number: 4,
-                            sender: 'Taylor',
-                            message: taylorMsg.message
-                        }
-                    ])
+                    // Save Taylor's response to database
+                    await supabase.from('editor_chat_history').insert({
+                        manuscript_id: manuscriptId,
+                        phase_number: 4,
+                        sender: 'Taylor',
+                        message: data.response
+                    })
                 } else {
                     throw new Error(`Assessment workflow failed: ${response.status}`)
                 }
@@ -328,39 +286,13 @@ Ready to start? Just say "I'm ready" or "let's begin"! 📚`,
                 return
             }
 
-            // Only block if trying to skip to covers without assessment
-            const wantsCover = message.toLowerCase().includes('cover') ||
-                message.toLowerCase().includes('design')
-
-            if (hasNoProgress && wantsCover) {
-                // User wants covers but hasn't started assessment
-                const redirectMsg: ChatMessage = {
-                    id: 'taylor-' + Date.now(),
-                    sender: 'taylor',
-                    message: "I'd love to help you design an amazing cover! 🎨\n\nBut first, I need to understand your publishing goals through a quick assessment. You can start it by saying 'I'm ready to start' or by clicking 'Start Assessment' in the Book Builder panel above.\n\nReady to begin?",
-                    created_at: new Date().toISOString()
-                }
-                setMessages(prev => [...prev, redirectMsg])
-
-                await supabase.from('editor_chat_history').insert({
-                    manuscript_id: manuscriptId,
-                    phase_number: 4,
-                    sender: 'Taylor',
-                    message: redirectMsg.message
-                })
-
-                setIsLoading(false)
-                setTimeout(() => inputRef.current?.focus(), 100)
-                return
-            }
-
-            // Assessment is complete OR in progress - use taylor-chat workflow
+            // Assessment is complete - proceed with normal conversational chat via taylor-chat
             const { data: profile } = await supabase
                 .from('author_profiles')
                 .select('first_name')
                 .single()
 
-            console.log('💬 Calling taylor-chat workflow...')
+            console.log('💬 Assessment complete - calling taylor-chat workflow...')
 
             // Call taylor-chat workflow for conversation
             const response = await fetch(
