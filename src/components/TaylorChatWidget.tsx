@@ -246,6 +246,22 @@ Ready to start? Just say "I'm ready" or "let's begin"! 📚`,
             if (hasNoProgress && isStartingAssessment) {
                 console.log('🎯 Routing to taylor-assessment workflow...')
 
+                // CLEAR old incomplete assessment attempts
+                console.log('🧹 Clearing old incomplete assessment chat history...')
+                const { error: deleteError } = await supabase
+                    .from('editor_chat_history')
+                    .delete()
+                    .eq('manuscript_id', manuscriptId)
+                    .eq('phase_number', 4)
+
+                if (deleteError) {
+                    console.error('⚠️ Error clearing old chat:', deleteError)
+                } else {
+                    console.log('✅ Old chat history cleared')
+                    // Clear local messages state too
+                    setMessages([])
+                }
+
                 // Get author first name
                 const { data: profile } = await supabase
                     .from('author_profiles')
@@ -270,6 +286,14 @@ Ready to start? Just say "I'm ready" or "let's begin"! 📚`,
                     const data = await response.json()
                     console.log('✅ Assessment workflow started:', data)
 
+                    // Add user's start message to UI
+                    const userStartMsg: ChatMessage = {
+                        id: 'user-start-' + Date.now(),
+                        sender: 'user',
+                        message: message.trim(),
+                        created_at: new Date().toISOString()
+                    }
+
                     // Add Taylor's response to UI
                     const taylorMsg: ChatMessage = {
                         id: 'taylor-' + Date.now(),
@@ -277,15 +301,24 @@ Ready to start? Just say "I'm ready" or "let's begin"! 📚`,
                         message: data.response || "Great! Let's start your publishing assessment. First question: What's your primary goal for publishing this book?\n\n1️⃣ Wide distribution (available everywhere)\n2️⃣ Amazon exclusive (KDP Select/Kindle Unlimited)\n3️⃣ Traditional publishing path",
                         created_at: new Date().toISOString()
                     }
-                    setMessages(prev => [...prev, taylorMsg])
 
-                    // Save Taylor's response to database
-                    await supabase.from('editor_chat_history').insert({
-                        manuscript_id: manuscriptId,
-                        phase_number: 4,
-                        sender: 'Taylor',
-                        message: taylorMsg.message
-                    })
+                    setMessages([userStartMsg, taylorMsg])
+
+                    // Save both to database
+                    await supabase.from('editor_chat_history').insert([
+                        {
+                            manuscript_id: manuscriptId,
+                            phase_number: 4,
+                            sender: 'user',
+                            message: message.trim()
+                        },
+                        {
+                            manuscript_id: manuscriptId,
+                            phase_number: 4,
+                            sender: 'Taylor',
+                            message: taylorMsg.message
+                        }
+                    ])
                 } else {
                     throw new Error(`Assessment workflow failed: ${response.status}`)
                 }
