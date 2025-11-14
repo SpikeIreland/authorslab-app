@@ -75,7 +75,24 @@ function PublishingHubContent() {
 
       const supabase = createClient()
 
-      // Check Phase 4 access
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        router.push('/login')
+        return
+      }
+
+      // Check if user has access to Phase 4 (Publishing)
+      const { hasPhaseAccess } = await import('@/lib/accessControl')
+      const hasAccess = await hasPhaseAccess(user.id, 4)
+
+      if (!hasAccess) {
+        // User doesn't have access - redirect to upgrade page
+        router.push(`/phase-complete?manuscriptId=${manuscriptId}`)
+        return
+      }
+
+      // Check Phase 4 is active for this manuscript
       const { data: phase4 } = await supabase
         .from('editing_phases')
         .select('phase_status')
@@ -345,8 +362,8 @@ function PublishingHubContent() {
                 <button
                   onClick={() => setActiveSection(section.id)}
                   className={`w-full px-4 py-3 flex items-center gap-3 transition-colors ${activeSection === section.id
-                    ? 'bg-teal-50 border-l-4 border-teal-600'
-                    : 'hover:bg-gray-50 border-l-4 border-transparent'
+                      ? 'bg-teal-50 border-l-4 border-teal-600'
+                      : 'hover:bg-gray-50 border-l-4 border-transparent'
                     }`}
                 >
                   <span className="text-2xl">{section.icon}</span>
@@ -494,8 +511,8 @@ function CoverDesignSection({ progress, manuscriptId }: { progress: PublishingPr
                 <div
                   key={index}
                   className={`relative rounded-xl overflow-hidden border-4 transition-all ${selectedCover === cover.url
-                    ? 'border-teal-500 shadow-2xl'
-                    : 'border-gray-200 hover:border-teal-300'
+                      ? 'border-teal-500 shadow-2xl'
+                      : 'border-gray-200 hover:border-teal-300'
                     }`}
                 >
                   <img
