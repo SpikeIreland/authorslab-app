@@ -23,7 +23,7 @@ export async function getUserAccess(userId: string): Promise<UserAccess> {
     const { data: profile, error } = await supabase
         .from('author_profiles')
         .select('is_admin, is_beta_tester')
-        .eq('user_id', userId)
+        .eq('auth_user_id', userId)
         .single()
 
     if (error || !profile) {
@@ -36,26 +36,18 @@ export async function getUserAccess(userId: string): Promise<UserAccess> {
         }
     }
 
-    // For now, determine package from purchased phases
-    // TODO: Update this when package_type column is added to database
-    const { data: purchases } = await supabase
-        .from('user_purchases')
-        .select('phase_number')
-        .eq('user_id', userId)
-
-    let purchased_package: PackageType = null
-
-    if (purchases && purchases.length > 0) {
-        const phaseNumbers = purchases.map(p => p.phase_number)
-        // If they have phase 4 or 5, they have complete package
-        if (phaseNumbers.includes(4) || phaseNumbers.includes(5)) {
-            purchased_package = 'complete'
-        } else if (phaseNumbers.includes(1) || phaseNumbers.includes(2) || phaseNumbers.includes(3)) {
-            purchased_package = 'editing'
-        }
-    }
+    // For now, admin and beta testers get full access
+    // Package detection will be added when Complete Package is implemented in Stripe
+    const purchased_package: PackageType = null  // TODO: Implement package detection
 
     const hasFullAccess = profile.is_admin || profile.is_beta_tester || purchased_package === 'complete'
+
+    console.log('👤 User Access Check:', {
+        userId,
+        is_admin: profile.is_admin,
+        is_beta_tester: profile.is_beta_tester,
+        hasFullAccess
+    })
 
     return {
         is_admin: profile.is_admin || false,
@@ -86,16 +78,9 @@ export async function hasPhaseAccess(userId: string, phaseNumber: number): Promi
         return true
     }
 
-    // Otherwise, check if they specifically purchased this phase
-    const supabase = createClient()
-    const { data: purchase } = await supabase
-        .from('user_purchases')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('phase_number', phaseNumber)
-        .single()
-
-    return !!purchase
+    // For now, no package = no access
+    // TODO: Add proper package checking when Stripe integration is complete
+    return false
 }
 
 /**
