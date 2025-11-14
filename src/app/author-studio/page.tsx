@@ -874,14 +874,18 @@ function StudioContent() {
 
   function showInitialGreeting(phase: EditingPhase, manuscript: Manuscript, firstName: string, chapterCount: number) {
     if (phase.phase_number === 1) {
-      // Alex's greeting
+      // Alex's greeting - context-aware based on analysis state
       if (manuscript.full_analysis_text) {
-        addChatMessage('Alex', `Hi ${firstName}! Welcome back. What do you want to work on today? Click on any chapter and let's get started.`)
-      } else {
+        // Alex has already read the manuscript
         addChatMessage('Alex',
-          `Welcome! I'm Alex, your developmental editor. I can see you've uploaded "${manuscript.title}" with ${chapterCount} chapters.\n\n` +
-          `I'm ready to read your manuscript and create a comprehensive analysis. This will take about 5 minutes.\n\n` +
-          `When you're ready, click the "Read My Manuscript" button above to begin! 📖`
+          `Hi ${firstName}! I'm ready when you are. Want to dive into a specific chapter, or should we talk about the big-picture patterns I noticed in "${manuscript.title}"?`
+        )
+      } else {
+        // First time - Alex hasn't read yet
+        addChatMessage('Alex',
+          `Hi ${firstName}! I'm Alex. I can see you've uploaded "${manuscript.title}" with ${chapterCount} chapters—I'm excited to dig in.\n\n` +
+          `I'll need about 5 minutes to read through everything and identify the key story patterns. Once I'm done, we can explore what's working and where the real opportunities are.\n\n` +
+          `Hit "Read My Manuscript" when you're ready! 📖`
         )
       }
     } else if (phase.phase_number === 2) {
