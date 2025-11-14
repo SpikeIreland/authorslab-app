@@ -4,6 +4,7 @@ import { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import TaylorPanel from '@/components/TaylorPanel'
 import TaylorChatWidget from '@/components/TaylorChatWidget'
 
 // Publishing Journey Section Type
@@ -64,6 +65,23 @@ function PublishingHubContent() {
   const [activeSection, setActiveSection] = useState<PublishingSectionId>('cover-design')
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [authorFirstName, setAuthorFirstName] = useState('')
+
+  // Function to reload publishing progress (called after assessment complete)
+  async function loadPublishingProgress() {
+    if (!manuscriptId) return
+
+    const supabase = createClient()
+    const { data: progressData } = await supabase
+      .from('publishing_progress')
+      .select('*')
+      .eq('manuscript_id', manuscriptId)
+      .single()
+
+    if (progressData) {
+      console.log('📊 Reloaded publishing progress:', progressData)
+      setPublishingProgress(progressData)
+    }
+  }
 
   // Check access and load data
   useEffect(() => {
@@ -362,8 +380,8 @@ function PublishingHubContent() {
                 <button
                   onClick={() => setActiveSection(section.id)}
                   className={`w-full px-4 py-3 flex items-center gap-3 transition-colors ${activeSection === section.id
-                      ? 'bg-teal-50 border-l-4 border-teal-600'
-                      : 'hover:bg-gray-50 border-l-4 border-transparent'
+                    ? 'bg-teal-50 border-l-4 border-teal-600'
+                    : 'hover:bg-gray-50 border-l-4 border-transparent'
                     }`}
                 >
                   <span className="text-2xl">{section.icon}</span>
@@ -416,23 +434,14 @@ function PublishingHubContent() {
           </div>
         </div>
 
-        {/* RIGHT: Taylor Chat */}
-        <div className="w-96 border-l border-gray-200 bg-white flex flex-col">
-          <div className="p-4 border-b border-gray-200 bg-teal-50">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center text-2xl">
-                📚
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-900">Taylor</h3>
-                <p className="text-sm text-teal-600">Publishing Specialist</p>
-              </div>
-            </div>
-          </div>
-          <div className="flex-1 overflow-hidden">
-            <TaylorChatWidget manuscriptId={manuscriptId!} />
-          </div>
-        </div>
+        {/* RIGHT: Taylor Assessment or Chat (Conditional) */}
+        {publishingProgress?.assessment_completed ? (
+          // Show Chat if assessment is complete
+          <TaylorChatWidget manuscriptId={manuscriptId!} />
+        ) : (
+          // Show Assessment if not complete
+          <TaylorPanel manuscriptId={manuscriptId!} />
+        )}
       </div>
     </div>
   )
@@ -511,8 +520,8 @@ function CoverDesignSection({ progress, manuscriptId }: { progress: PublishingPr
                 <div
                   key={index}
                   className={`relative rounded-xl overflow-hidden border-4 transition-all ${selectedCover === cover.url
-                      ? 'border-teal-500 shadow-2xl'
-                      : 'border-gray-200 hover:border-teal-300'
+                    ? 'border-teal-500 shadow-2xl'
+                    : 'border-gray-200 hover:border-teal-300'
                     }`}
                 >
                   <img
