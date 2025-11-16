@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { selectCover } from '@/lib/publishing'
 import type { CoverDesign } from '@/types/database'
 
 interface CoverDesignerPanelProps {
@@ -24,8 +23,10 @@ export default function CoverDesignerPanel({ manuscriptId }: CoverDesignerPanelP
     useEffect(() => {
         const supabase = createClient()
 
+        console.log(`🔌 Setting up cover updates subscription for: ${manuscriptId}`)
+
         const channel = supabase
-            .channel('cover-updates')
+            .channel(`cover-updates-${manuscriptId}`)  // ✅ Unique channel per manuscript
             .on(
                 'postgres_changes',
                 {
@@ -35,15 +36,20 @@ export default function CoverDesignerPanel({ manuscriptId }: CoverDesignerPanelP
                     filter: `manuscript_id=eq.${manuscriptId}`
                 },
                 (payload) => {
-                    if (payload.new.cover_designs) {
-                        setCovers(payload.new.cover_designs as CoverDesign[])
-                        setSelectedCoverId(payload.new.selected_cover_url)
+                    console.log('📡 Realtime update received:', payload)
+
+                    if (payload.new.cover_concepts) {
+                        console.log('✅ New covers detected, reloading...')
+                        loadCovers()  // Reload from database to ensure correct structure
                     }
                 }
             )
-            .subscribe()
+            .subscribe((status) => {
+                console.log('📡 Subscription status:', status)
+            })
 
         return () => {
+            console.log('🔌 Cleaning up cover updates subscription')
             supabase.removeChannel(channel)
         }
     }, [manuscriptId])
@@ -55,19 +61,49 @@ export default function CoverDesignerPanel({ manuscriptId }: CoverDesignerPanelP
 
         const { data, error } = await supabase
             .from('publishing_progress')
-            .select('cover_concepts, selected_cover_url')  // ✅ Correct column
+            .select('cover_concepts, selected_cover_url')
             .eq('manuscript_id', manuscriptId)
             .single()
 
-        console.log('🎨 CoverDesignerPanel data:', data)
-        console.log('🎨 CoverDesignerPanel error:', error)
+        console.log('🎨 Query result - data:', data)
+        console.log('🎨 Query result - error:', error)
+
+        if (error) {
+            console.error('❌ Error loading covers:', error)
+            setIsLoading(false)
+            return
+        }
 
         if (data) {
-            console.log('📦 Raw cover_concepts:', data.cover_concepts)
-            console.log('📦 Type:', typeof data.cover_concepts)
+            console.log('📦 Raw cover_concepts value:', data.cover_concepts)
+            console.log('📦 Data type:', typeof data.cover_concepts)
             console.log('📦 Is Array:', Array.isArray(data.cover_concepts))
 
-            setCovers((data.cover_concepts as CoverDesign[]) || [])
+            // Handle different data structures
+            let coverArray: CoverDesign[] = []
+
+            if (Array.isArray(data.cover_concepts)) {
+                console.log('✅ cover_concepts is an array')
+                console.log('📦 Array length:', data.cover_concepts.length)
+                console.log('📦 First item:', data.cover_concepts[0])
+                coverArray = data.cover_concepts as CoverDesign[]
+            } else if (data.cover_concepts && typeof data.cover_concepts === 'object') {
+                console.log('⚠️ cover_concepts is an object, not array')
+                console.log('📦 Object keys:', Object.keys(data.cover_concepts))
+
+                // Check if it's wrapped in a "data" property
+                if ('data' in data.cover_concepts && Array.isArray(data.cover_concepts.data)) {
+                    console.log('📦 Found nested data array')
+                    coverArray = data.cover_concepts.data as CoverDesign[]
+                }
+            } else {
+                console.log('❌ cover_concepts is not in expected format')
+            }
+
+            console.log('📦 Final cover array:', coverArray)
+            console.log('📦 Final cover count:', coverArray.length)
+
+            setCovers(coverArray)
             setSelectedCoverId(data.selected_cover_url)
         }
 
@@ -125,47 +161,60 @@ export default function CoverDesignerPanel({ manuscriptId }: CoverDesignerPanelP
                         No Covers Yet
                     </h3>
                     <p className="text-gray-600 mb-6">
-                        Chat with Taylor and say &quot;create my cover&quot; to generate professional cover designs!
+                        Chat with Taylor and ask to create covers to generate professional cover designs!
                     </p>
+                    <button
+                        onClick={loadCovers}
+                        className="px-6 py-3 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition-all"
+                    >
+                        🔄 Refresh
+                    </button>
                 </div>
             </div>
         )
     }
 
     return (
-        <div className="bg-white rounded-2xl p-8 shadow-xl border-2 border-teal-300">
+        <div className="space-y-6">
             {/* Header */}
-            <div className="flex items-center gap-4 mb-6">
-                <div className="text-4xl">🎨</div>
-                <div>
-                    <h2 className="text-3xl font-bold text-gray-900">
-                        Your Cover Designs
-                    </h2>
-                    <p className="text-gray-600">
-                        {selectedCoverId ? 'Cover selected!' : 'Select your favorite design'}
-                    </p>
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <div className="text-4xl">🎨</div>
+                    <div>
+                        <h2 className="text-3xl font-bold text-gray-900">
+                            Your Cover Designs
+                        </h2>
+                        <p className="text-gray-600">
+                            {selectedCoverId ? 'Cover selected!' : 'Select your favorite design'}
+                        </p>
+                    </div>
                 </div>
+                <button
+                    onClick={loadCovers}
+                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-all text-sm"
+                >
+                    🔄 Refresh
+                </button>
             </div>
 
             {/* Cover Grid */}
             <div className="grid grid-cols-2 gap-6">
-                {covers.map((cover) => {
-                    // ✅ Add this line at the top of the map function
+                {covers.map((cover, index) => {
                     const isSelected = cover.url === selectedCoverId
 
                     return (
                         <div
-                            key={cover.id}
+                            key={cover.id || index}
                             className={`
-                    relative group rounded-xl overflow-hidden border-4 transition-all
-                    ${isSelected ? 'border-teal-600 shadow-2xl' : 'border-gray-200 hover:border-teal-400'}
-                `}
+                                relative group rounded-xl overflow-hidden border-4 transition-all
+                                ${isSelected ? 'border-teal-600 shadow-2xl' : 'border-gray-200 hover:border-teal-400'}
+                            `}
                         >
                             {/* Cover Image */}
                             <div className="aspect-[2/3] relative">
                                 <img
                                     src={cover.url}
-                                    alt={`Cover option ${cover.id}`}
+                                    alt={`Cover option ${index + 1}`}
                                     className="w-full h-full object-cover"
                                 />
 
@@ -188,41 +237,18 @@ export default function CoverDesignerPanel({ manuscriptId }: CoverDesignerPanelP
                                         {isSelecting ? 'Selecting...' : 'Select This Cover'}
                                     </button>
                                 )}
-                                {isSelected && (
-                                    <button
-                                        onClick={() => handleSelectCover(cover.url)}
-                                        disabled={isSelecting}
-                                        className="px-6 py-3 bg-white text-teal-600 rounded-lg font-bold hover:bg-gray-100 transition-all shadow-lg"
-                                    >
-                                        Selected ✓
-                                    </button>
-                                )}
                             </div>
 
-                            {/* Cover Number */}
-                            <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-semibold text-gray-900">
-                                Option {cover.id}
+                            {/* Cover Details */}
+                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                                <p className="text-white text-sm line-clamp-2">
+                                    {cover.prompt || `Cover Option ${index + 1}`}
+                                </p>
                             </div>
                         </div>
                     )
                 })}
             </div>
-
-            {/* Regenerate Button */}
-            {covers.length > 0 && !selectedCoverId && (
-                <div className="mt-6 text-center">
-                    <button
-                        onClick={() => {
-                            // Trigger Taylor chat to ask for regeneration
-                            // This could open chat with pre-filled message
-                            alert('Ask Taylor in the chat: "Can you generate more cover options?"')
-                        }}
-                        className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-all"
-                    >
-                        Not quite right? Ask Taylor for more options
-                    </button>
-                </div>
-            )}
         </div>
     )
 }
