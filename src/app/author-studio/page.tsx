@@ -649,22 +649,17 @@ function StudioContent() {
 
   // Remove the isInitialized state I suggested - we don't need it
 
-  // Instead, just use a single useEffect that runs when editorContent changes
+  // Only update editor innerHTML when loading a new chapter, not during user editing
   useEffect(() => {
-    // Only populate if we're not loading and we have content
-    if (isLoading) return
+    if (isLoading) return  // Keep your isLoading check
 
-    // Add a small delay to ensure the ref is mounted after the loading screen disappears
-    const timer = setTimeout(() => {
-      if (editorPanelRef.current && editorContent) {
-        const htmlContent = editorContent.replace(/\n/g, ' <br> ');
-        editorPanelRef.current.innerHTML = htmlContent;
-        console.log('✅ Editor populated with:', editorContent.substring(0, 50) + '...');
-      }
-    }, 300); // Slightly longer delay
-
-    return () => clearTimeout(timer);
-  }, [editorContent, currentChapterIndex, isLoading]);
+    if (editorPanelRef.current && editorContent) {
+      // Convert newlines to <br> tags (fixed: removed extra spaces)
+      const htmlContent = editorContent.replace(/\n/g, '<br>');  // ← No extra spaces
+      editorPanelRef.current.innerHTML = htmlContent;
+      console.log('✅ Editor populated with:', editorContent.substring(0, 50) + '...');
+    }
+  }, [currentChapterIndex, isLoading]);  // ← Only depends on chapter changes and loading state
 
   // Initialize Studio
   const initializeStudio = useCallback(async () => {
