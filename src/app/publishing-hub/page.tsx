@@ -7,6 +7,7 @@ import Link from 'next/link'
 import TaylorPanel from '@/components/TaylorPanel'
 import TaylorChatWidget from '@/components/TaylorChatWidget'
 import BookPreviewPanel from '@/components/BookPreviewPanel'
+import FrontMatterSection from '@/components/FrontMatterSection'
 
 // Publishing Journey Section Type
 type PublishingSectionId =
@@ -52,6 +53,15 @@ interface PublishingProgress {
   selected_cover_url?: string
   publishing_plan?: string
   plan_pdf_url?: string
+  front_matter?: {
+    title_page?: { title?: string; subtitle?: string; author?: string; completed?: boolean }
+    copyright_page?: { /* ... */ completed?: boolean }
+    dedication?: { text?: string; completed?: boolean }
+    acknowledgements?: { text?: string; completed?: boolean }
+    epigraph?: { quote?: string; attribution?: string; completed?: boolean }
+    preface?: { text?: string; completed?: boolean }
+  }
+
 }
 
 function PublishingHubContent() {
@@ -185,6 +195,11 @@ function PublishingHubContent() {
     }
   }, [manuscriptId])
 
+  function isFrontMatterComplete(frontMatter: any) {
+    if (!frontMatter) return false
+    return frontMatter.title_page?.completed && frontMatter.copyright_page?.completed
+  }
+
   // Define publishing sections based on questionnaire/progress
   const publishingSections: PublishingSection[] = [
     {
@@ -201,13 +216,13 @@ function PublishingHubContent() {
       id: 'front-matter',
       title: 'Front Matter',
       icon: '📄',
-      isComplete: false,
+      isComplete: isFrontMatterComplete(publishingProgress?.front_matter),
       items: [
-        { id: 'title-page', title: 'Title Page', isComplete: false },
-        { id: 'copyright', title: 'Copyright Page', isComplete: false },
-        { id: 'dedication', title: 'Dedication', isComplete: false },
-        { id: 'acknowledgements', title: 'Acknowledgements', isComplete: false },
-        { id: 'toc', title: 'Table of Contents', isComplete: false },
+        { id: 'title-page', title: 'Title Page', isComplete: publishingProgress?.front_matter?.title_page?.completed || false },
+        { id: 'copyright', title: 'Copyright Page', isComplete: publishingProgress?.front_matter?.copyright_page?.completed || false },
+        { id: 'dedication', title: 'Dedication', isComplete: publishingProgress?.front_matter?.dedication?.completed || false },
+        { id: 'acknowledgements', title: 'Acknowledgements', isComplete: publishingProgress?.front_matter?.acknowledgements?.completed || false },
+        { id: 'epigraph', title: 'Epigraph', isComplete: publishingProgress?.front_matter?.epigraph?.completed || false },
       ]
     },
     {
@@ -471,7 +486,14 @@ function renderSectionContent(
       return <CoverDesignSection progress={progress} manuscriptId={manuscriptId} />
 
     case 'front-matter':
-      return <FrontMatterSection manuscript={manuscript} />
+      return (
+        <FrontMatterSection
+          manuscript={manuscript}
+          publishingProgress={progress}
+          manuscriptId={manuscriptId}
+          authorFirstName={authorFirstName}
+        />
+      )
 
     case 'back-matter':
       return <BackMatterSection manuscript={manuscript} />
