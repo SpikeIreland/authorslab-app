@@ -494,10 +494,31 @@ function renderSectionContent(
   }
 }
 
-// Section Components
 function CoverDesignSection({ progress, manuscriptId }: { progress: PublishingProgress | null, manuscriptId: string }) {
+  const [isSelecting, setIsSelecting] = useState(false)
+
   const coverConcepts = progress?.cover_concepts || []
   const selectedCover = progress?.selected_cover_url
+
+  async function handleSelectCover(coverUrl: string) {
+    setIsSelecting(true)
+
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('publishing_progress')
+      .update({ selected_cover_url: coverUrl })
+      .eq('manuscript_id', manuscriptId)
+
+    if (error) {
+      console.error('Error selecting cover:', error)
+      alert('Error selecting cover. Please try again.')
+    } else {
+      // Success feedback
+      console.log('✅ Cover selected successfully')
+    }
+
+    setIsSelecting(false)
+  }
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -526,41 +547,40 @@ function CoverDesignSection({ progress, manuscriptId }: { progress: PublishingPr
         ) : (
           <div>
             <div className="grid grid-cols-2 gap-6 mb-6">
-              {coverConcepts.map((cover: CoverConcept, index: number) => (
-                <div
-                  key={index}
-                  className={`relative rounded-xl overflow-hidden border-4 transition-all ${selectedCover === cover.url
-                    ? 'border-teal-500 shadow-2xl'
-                    : 'border-gray-200 hover:border-teal-300'
-                    }`}
-                >
-                  <img
-                    src={cover.url}
-                    alt={`Cover concept ${index + 1}`}
-                    className="w-full aspect-[2/3] object-cover"
-                  />
-                  {selectedCover === cover.url && (
-                    <div className="absolute top-4 right-4 bg-teal-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
-                      <span>✓</span>
-                      <span>Selected</span>
-                    </div>
-                  )}
-                  {selectedCover !== cover.url && (
-                    <button
-                      onClick={async () => {
-                        const supabase = createClient()
-                        await supabase
-                          .from('publishing_progress')
-                          .update({ selected_cover_url: cover.url })
-                          .eq('manuscript_id', manuscriptId)
-                      }}
-                      className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-white text-teal-600 rounded-lg font-semibold hover:bg-teal-50 transition-all shadow-lg"
-                    >
-                      Select This Cover
-                    </button>
-                  )}
-                </div>
-              ))}
+              {coverConcepts.map((cover: CoverConcept, index: number) => {
+                const isThisCoverSelected = selectedCover === cover.url
+
+                return (
+                  <div
+                    key={index}
+                    className={`relative rounded-xl overflow-hidden border-4 transition-all ${isThisCoverSelected
+                        ? 'border-teal-500 shadow-2xl'
+                        : 'border-gray-200 hover:border-teal-300'
+                      }`}
+                  >
+                    <img
+                      src={cover.url}
+                      alt={`Cover concept ${index + 1}`}
+                      className="w-full aspect-[2/3] object-cover"
+                    />
+                    {isThisCoverSelected && (
+                      <div className="absolute top-4 right-4 bg-teal-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
+                        <span>✓</span>
+                        <span>Selected</span>
+                      </div>
+                    )}
+                    {!isThisCoverSelected && (
+                      <button
+                        onClick={() => handleSelectCover(cover.url)}
+                        disabled={isSelecting}
+                        className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-white text-teal-600 rounded-lg font-semibold hover:bg-teal-50 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isSelecting ? 'Selecting...' : 'Select This Cover'}
+                      </button>
+                    )}
+                  </div>
+                )
+              })}
             </div>
             {!selectedCover && (
               <div className="text-center py-4 bg-yellow-50 rounded-lg">
