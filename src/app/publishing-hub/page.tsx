@@ -7,7 +7,8 @@ import Link from 'next/link'
 import TaylorPanel from '@/components/TaylorPanel'
 import TaylorChatWidget from '@/components/TaylorChatWidget'
 import BookPreviewPanel from '@/components/BookPreviewPanel'
-import FrontMatterSection from '@/components/FrontMatterSection'
+import FrontMatterComponent from '@/components/FrontMatter'
+
 
 // Publishing Journey Section Type
 type PublishingSectionId =
@@ -62,6 +63,27 @@ interface PublishingProgress {
     preface?: { text?: string; completed?: boolean }
   }
 
+}
+
+interface FrontMatterData {
+  title_page?: {
+    completed?: boolean
+  }
+  copyright_page?: {
+    completed?: boolean
+  }
+  dedication?: {
+    completed?: boolean
+  }
+  acknowledgements?: {
+    completed?: boolean
+  }
+  epigraph?: {
+    completed?: boolean
+  }
+  preface?: {
+    completed?: boolean
+  }
 }
 
 function PublishingHubContent() {
@@ -195,9 +217,33 @@ function PublishingHubContent() {
     }
   }, [manuscriptId])
 
-  function isFrontMatterComplete(frontMatter: any) {
+  // Add this function in PublishingHubContent component (after the other useEffects)
+  async function handleCoverSelect(coverUrl: string) {
+    console.log('🎨 Selecting cover:', coverUrl)
+
+    const supabase = createClient()
+    const { data, error } = await supabase
+      .from('publishing_progress')
+      .update({ selected_cover_url: coverUrl })
+      .eq('manuscript_id', manuscriptId)
+      .select()
+
+    if (error) {
+      console.error('❌ Error selecting cover:', error)
+      alert('Error selecting cover. Please try again.')
+    } else {
+      console.log('✅ Cover updated in database:', data)
+
+      // Immediate state update (realtime will also update, but this is faster)
+      if (data && data[0]) {
+        setPublishingProgress(data[0] as PublishingProgress)
+      }
+    }
+  }
+
+  function isFrontMatterComplete(frontMatter: FrontMatterData | undefined): boolean {
     if (!frontMatter) return false
-    return frontMatter.title_page?.completed && frontMatter.copyright_page?.completed
+    return (frontMatter.title_page?.completed && frontMatter.copyright_page?.completed) || false
   }
 
   // Define publishing sections based on questionnaire/progress
@@ -456,7 +502,7 @@ function PublishingHubContent() {
 
             {/* Section Content */}
             <div className="px-8 pb-8">
-              {renderSectionContent(activeSection, publishingProgress, manuscript, manuscriptId!, handleCoverSelect)}
+              {renderSectionContent(activeSection, publishingProgress, manuscript, manuscriptId!, handleCoverSelect, authorFirstName)}
             </div>
           </div>
         </div>
@@ -479,15 +525,23 @@ function renderSectionContent(
   sectionId: PublishingSectionId,
   progress: PublishingProgress | null,
   manuscript: Manuscript,
-  manuscriptId: string
+  manuscriptId: string,
+  onCoverSelect: (coverUrl: string) => Promise<void>,
+  authorFirstName: string
 ) {
   switch (sectionId) {
     case 'cover-design':
-      return <CoverDesignSection progress={progress} manuscriptId={manuscriptId} />
+      return (
+        <CoverDesignSection
+          progress={progress}
+          manuscriptId={manuscriptId}
+          onCoverSelect={onCoverSelect}
+        />
+      )
 
     case 'front-matter':
       return (
-        <FrontMatterSection
+        <FrontMatterComponent
           manuscript={manuscript}
           publishingProgress={progress}
           manuscriptId={manuscriptId}
@@ -518,7 +572,15 @@ function renderSectionContent(
   }
 }
 
-function CoverDesignSection({ progress, manuscriptId }: { progress: PublishingProgress | null, manuscriptId: string }) {
+function CoverDesignSection({
+  progress,
+  manuscriptId,
+  onCoverSelect
+}: {
+  progress: PublishingProgress | null
+  manuscriptId: string
+  onCoverSelect: (coverUrl: string) => Promise<void>
+}) {
   const [isSelecting, setIsSelecting] = useState(false)
 
   const coverConcepts = progress?.cover_concepts || []
@@ -526,21 +588,7 @@ function CoverDesignSection({ progress, manuscriptId }: { progress: PublishingPr
 
   async function handleSelectCover(coverUrl: string) {
     setIsSelecting(true)
-
-    const supabase = createClient()
-    const { error } = await supabase
-      .from('publishing_progress')
-      .update({ selected_cover_url: coverUrl })
-      .eq('manuscript_id', manuscriptId)
-
-    if (error) {
-      console.error('Error selecting cover:', error)
-      alert('Error selecting cover. Please try again.')
-    } else {
-      // Success feedback
-      console.log('✅ Cover selected successfully')
-    }
-
+    await onCoverSelect(coverUrl)
     setIsSelecting(false)
   }
 
@@ -578,8 +626,8 @@ function CoverDesignSection({ progress, manuscriptId }: { progress: PublishingPr
                   <div
                     key={index}
                     className={`relative rounded-xl overflow-hidden border-4 transition-all ${isThisCoverSelected
-                      ? 'border-teal-500 shadow-2xl'
-                      : 'border-gray-200 hover:border-teal-300'
+                        ? 'border-teal-500 shadow-2xl'
+                        : 'border-gray-200 hover:border-teal-300'
                       }`}
                   >
                     <img
