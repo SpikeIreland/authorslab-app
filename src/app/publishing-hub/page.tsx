@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import TaylorPanel from '@/components/TaylorPanel'
 import TaylorChatWidget from '@/components/TaylorChatWidget'
+import BookPreviewPanel from '@/components/BookPreviewPanel'
 
 // Publishing Journey Section Type
 type PublishingSectionId =
@@ -428,9 +429,18 @@ function PublishingHubContent() {
 
         {/* CENTER: Content Display */}
         <div className="flex-1 flex flex-col overflow-hidden bg-gray-50">
-          <div className="flex-1 overflow-y-auto p-8">
-            {/* Content will be rendered based on activeSection */}
-            {renderSectionContent(activeSection, publishingProgress, manuscript, manuscriptId!)}
+          <div className="flex-1 overflow-y-auto">
+            {/* Book Preview Panel - Always visible at top */}
+            <BookPreviewPanel
+              manuscript={manuscript}
+              publishingProgress={publishingProgress}
+              publishingSections={publishingSections}
+            />
+
+            {/* Section Content */}
+            <div className="px-8 pb-8">
+              {renderSectionContent(activeSection, publishingProgress, manuscript, manuscriptId!)}
+            </div>
           </div>
         </div>
 
