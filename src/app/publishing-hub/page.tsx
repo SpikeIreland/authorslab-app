@@ -430,16 +430,18 @@ function PublishingHubContent() {
         {/* CENTER: Content Display */}
         <div className="flex-1 flex flex-col overflow-hidden bg-gray-50">
           <div className="flex-1 overflow-y-auto">
-            {/* Book Preview Panel - Always visible at top */}
-            <BookPreviewPanel
-              manuscript={manuscript}
-              publishingProgress={publishingProgress}
-              publishingSections={publishingSections}
-            />
+            {/* Book Preview Panel - Sticky at top */}
+            <div className="sticky top-0 z-10 bg-gray-50">
+              <BookPreviewPanel
+                manuscript={manuscript}
+                publishingProgress={publishingProgress}
+                publishingSections={publishingSections}
+              />
+            </div>
 
             {/* Section Content */}
             <div className="px-8 pb-8">
-              {renderSectionContent(activeSection, publishingProgress, manuscript, manuscriptId!)}
+              {renderSectionContent(activeSection, publishingProgress, manuscript, manuscriptId!, handleCoverSelect)}
             </div>
           </div>
         </div>
@@ -554,8 +556,8 @@ function CoverDesignSection({ progress, manuscriptId }: { progress: PublishingPr
                   <div
                     key={index}
                     className={`relative rounded-xl overflow-hidden border-4 transition-all ${isThisCoverSelected
-                        ? 'border-teal-500 shadow-2xl'
-                        : 'border-gray-200 hover:border-teal-300'
+                      ? 'border-teal-500 shadow-2xl'
+                      : 'border-gray-200 hover:border-teal-300'
                       }`}
                   >
                     <img
