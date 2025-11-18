@@ -8,7 +8,7 @@ import TaylorPanel from '@/components/TaylorPanel'
 import TaylorChatWidget from '@/components/TaylorChatWidget'
 import BookPreviewPanel from '@/components/BookPreviewPanel'
 import FrontMatterComponent from '@/components/FrontMatter'
-
+import BackMatterComponent from '@/components/BackMatterSection'
 
 // Publishing Journey Section Type
 type PublishingSectionId =
@@ -62,7 +62,20 @@ interface PublishingProgress {
     epigraph?: { quote?: string; attribution?: string; completed?: boolean }
     preface?: { text?: string; completed?: boolean }
   }
-
+  back_matter?: {  // ✅ ADD THIS
+    author_bio?: {
+      bio_text?: string
+      author_tagline?: string
+      profile_image_url?: string
+      completed?: boolean
+    }
+    author_note?: { text?: string; completed?: boolean }
+    next_book_preview?: {
+      title?: string
+      preview_text?: string
+      completed?: boolean
+    }
+  }
 }
 
 interface FrontMatterData {
@@ -246,6 +259,11 @@ function PublishingHubContent() {
     return (frontMatter.title_page?.completed && frontMatter.copyright_page?.completed) || false
   }
 
+  function isBackMatterComplete(backMatter: { author_bio?: { completed?: boolean } } | undefined): boolean {
+    if (!backMatter) return false
+    return backMatter.author_bio?.completed || false
+  }
+
   // Define publishing sections based on questionnaire/progress
   const publishingSections: PublishingSection[] = [
     {
@@ -275,11 +293,11 @@ function PublishingHubContent() {
       id: 'back-matter',
       title: 'Back Matter',
       icon: '📑',
-      isComplete: false,
+      isComplete: isBackMatterComplete(publishingProgress?.back_matter),
       items: [
-        { id: 'author-bio', title: 'Author Bio', isComplete: false },
-        { id: 'author-note', title: 'Author Note', isComplete: false },
-        { id: 'preview', title: 'Preview Next Book', isComplete: false },
+        { id: 'author-bio', title: 'Author Bio', isComplete: publishingProgress?.back_matter?.author_bio?.completed || false },
+        { id: 'author-note', title: 'Author Note', isComplete: publishingProgress?.back_matter?.author_note?.completed || false },
+        { id: 'preview', title: 'Preview Next Book', isComplete: publishingProgress?.back_matter?.next_book_preview?.completed || false },
       ]
     },
     {
@@ -550,7 +568,14 @@ function renderSectionContent(
       )
 
     case 'back-matter':
-      return <BackMatterSection manuscript={manuscript} />
+      return (
+        <BackMatterComponent
+          manuscript={manuscript}
+          publishingProgress={progress}
+          manuscriptId={manuscriptId}
+          authorFirstName={authorFirstName}
+        />
+      )
 
     case 'formatting':
       return <FormattingSection manuscript={manuscript} />
@@ -626,8 +651,8 @@ function CoverDesignSection({
                   <div
                     key={index}
                     className={`relative rounded-xl overflow-hidden border-4 transition-all ${isThisCoverSelected
-                        ? 'border-teal-500 shadow-2xl'
-                        : 'border-gray-200 hover:border-teal-300'
+                      ? 'border-teal-500 shadow-2xl'
+                      : 'border-gray-200 hover:border-teal-300'
                       }`}
                   >
                     <img
