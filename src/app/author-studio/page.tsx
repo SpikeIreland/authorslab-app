@@ -741,6 +741,9 @@ function StudioContent() {
         .eq('manuscript_id', manuscriptId)
         .order('phase_number', { ascending: true })
 
+      // Declare phaseToLoad at function level so it's accessible for chat history
+      let phaseToLoad: EditingPhase | undefined
+
       if (allPhases) {
         setEditorPhases(allPhases)
         console.log(`✅ Loaded ${allPhases.length} editing phases`)
@@ -757,7 +760,6 @@ function StudioContent() {
 
         // Check if user requested a specific phase via URL parameter
         const phaseParam = searchParams.get('phase')
-        let phaseToLoad
 
         if (phaseParam) {
           // User clicked "Return to [Editor]" from phase-complete page
@@ -842,23 +844,25 @@ function StudioContent() {
         console.log('✅ First chapter content set:', firstChapter.chapter_number)
       }
 
-      // Load chat history for active phase
+      // Load chat history for the loaded phase (not necessarily the active one)
       setLoadingMessage('Loading chat history...')
-      const activePhaseToUse = allPhases?.find(p => p.phase_status === 'active') || await getActivePhase(supabase, manuscriptId)
 
-      if (activePhaseToUse) {
-        const history = await getChatHistory(supabase, manuscriptId, activePhaseToUse.phase_number)
+      // Use phaseToLoad if available, otherwise fall back to active phase
+      const phaseForChat = phaseToLoad || await getActivePhase(supabase, manuscriptId)
+
+      if (phaseForChat) {
+        const history = await getChatHistory(supabase, manuscriptId, phaseForChat.phase_number)
 
         if (history && history.length > 0) {
           const messages: ChatMessage[] = history.map(msg => ({
-            sender: msg.sender === 'author' ? 'Author' : editorName,
+            sender: msg.sender === 'author' ? 'Author' : phaseForChat.editor_name,
             message: msg.message
-          })) as ChatMessage[]  // ← Add type assertion
+          })) as ChatMessage[]
           setChatMessages(messages)
-          console.log(`✅ Restored ${history.length} chat messages`)
+          console.log(`✅ Restored ${history.length} chat messages for ${phaseForChat.editor_name}`)
         } else {
           // Show initial greeting for this phase
-          showInitialGreeting(activePhaseToUse, manuscriptData, authorProfile.first_name, chaptersData?.length || 0)
+          showInitialGreeting(phaseForChat, manuscriptData, authorProfile.first_name, chaptersData?.length || 0)
         }
       }
 
