@@ -873,7 +873,7 @@ function StudioContent() {
 
   useEffect(() => {
     initializeStudio()
-  }, [initializeStudio])
+  }, [initializeStudio, searchParams])
 
   function showInitialGreeting(phase: EditingPhase, manuscript: Manuscript, firstName: string, chapterCount: number) {
     if (phase.phase_number === 1) {
