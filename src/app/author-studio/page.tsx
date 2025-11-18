@@ -320,6 +320,7 @@ function StudioContent() {
 
   // Author name
   const [authorFirstName, setAuthorFirstName] = useState<string>('')
+  const [authorProfile, setAuthorProfile] = useState<{ first_name: string; last_name: string; profile_image_url: string | null } | null>(null)
 
   // Sidebar collapsed
   const [isChapterSidebarCollapsed, setIsChapterSidebarCollapsed] = useState(false)
@@ -683,10 +684,10 @@ function StudioContent() {
         return
       }
 
-      // Get author profile
+      // Get author profile (including profile image)
       const { data: authorProfile } = await supabase
         .from('author_profiles')
-        .select('id, first_name, last_name')
+        .select('id, first_name, last_name, profile_image_url')
         .eq('auth_user_id', user.id)
         .single()
 
@@ -695,6 +696,13 @@ function StudioContent() {
         router.push('/onboarding')
         return
       }
+
+      // Store the full profile (including image)
+      setAuthorProfile({
+        first_name: authorProfile.first_name || '',
+        last_name: authorProfile.last_name || '',
+        profile_image_url: authorProfile.profile_image_url || null
+      })
 
       setAuthorFirstName(authorProfile.first_name || 'there')
 
@@ -1585,6 +1593,7 @@ function StudioContent() {
               📚 AuthorsLab.ai
             </Link>
 
+
             <div className="flex items-center gap-4">
               {/* Beta Feedback Button */}
               <button
@@ -1594,9 +1603,22 @@ function StudioContent() {
                 📝 Beta Feedback
               </button>
 
-              <span className="text-sm text-gray-600">
-                {authorName}
-              </span>
+              <div className="flex items-center gap-2">
+                {authorProfile?.profile_image_url ? (
+                  <img
+                    src={authorProfile.profile_image_url}
+                    alt={authorName}
+                    className="w-8 h-8 rounded-full object-cover border-2 border-gray-300"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold">
+                    {authorProfile?.first_name?.[0]}{authorProfile?.last_name?.[0]}
+                  </div>
+                )}
+                <span className="text-sm text-gray-600 font-medium">
+                  {authorName}
+                </span>
+              </div>
 
               <button
                 onClick={async () => {
@@ -1815,10 +1837,10 @@ function StudioContent() {
                     return (
                       <button
                         disabled
-                        className="px-3 py-1.5 bg-gray-200 text-gray-500 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
+                        className="px-3 py-1.5 bg-gray-200 text-gray-400 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
                       >
-                        <span>⚠️</span>
-                        <span>No Report</span>
+                        <span>📄</span>
+                        <span>Alex Report</span>
                       </button>
                     )
                   }
@@ -2351,22 +2373,55 @@ function StudioContent() {
                 </div>
               )}
 
-              {/* Chat Messages */}
               {chatMessages.map((msg, index) => (
                 <div
                   key={index}
                   className={`${msg.sender === 'Author'
-                    ? 'bg-blue-50 border-blue-200 ml-8'
+                    ? 'flex gap-3 items-start justify-end'
                     : msg.sender === 'system'
-                      ? 'bg-amber-50 border-amber-300 border-dashed'
-                      : `${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} mr-8`
-                    } border rounded-lg p-3`}
+                      ? ''
+                      : 'flex gap-3 items-start'
+                    }`}
                 >
-                  {/* Only show sender name if not a system message */}
-                  {msg.sender !== 'system' && (
-                    <div className="font-semibold text-sm mb-1">{msg.sender}</div>
+                  {/* Author messages - right side with profile picture */}
+                  {msg.sender === 'Author' ? (
+                    <>
+                      <div className="flex-1 flex justify-end">
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 max-w-[85%]">
+                          <div className="text-sm whitespace-pre-wrap">{msg.message}</div>
+                        </div>
+                      </div>
+                      {authorProfile?.profile_image_url ? (
+                        <img
+                          src={authorProfile.profile_image_url}
+                          alt="You"
+                          className="w-8 h-8 rounded-full object-cover border-2 border-blue-500 flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                          {authorProfile?.first_name?.[0]}{authorProfile?.last_name?.[0]}
+                        </div>
+                      )}
+                    </>
+                  ) : msg.sender === 'system' ? (
+                    /* System messages - center */
+                    <div className="bg-amber-50 border border-amber-300 border-dashed rounded-lg p-3">
+                      <div className="text-sm whitespace-pre-wrap">{msg.message}</div>
+                    </div>
+                  ) : (
+                    /* Editor messages - left side with editor initial */
+                    <>
+                      <div className={`w-8 h-8 rounded-full ${getEditorColorClasses(editorColor).bg} flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}>
+                        {editorName[0]}
+                      </div>
+                      <div className="flex-1">
+                        <div className={`${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} border rounded-lg p-3 max-w-[85%]`}>
+                          <div className="font-semibold text-sm mb-1">{msg.sender}</div>
+                          <div className="text-sm whitespace-pre-wrap">{msg.message}</div>
+                        </div>
+                      </div>
+                    </>
                   )}
-                  <div className="text-sm whitespace-pre-wrap">{msg.message}</div>
                 </div>
               ))}
 

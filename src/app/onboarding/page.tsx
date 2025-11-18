@@ -6,6 +6,7 @@ import { Suspense, useState, useEffect, useCallback, FormEvent, ChangeEvent, Dra
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createManuscript, updateAuthorProfile } from '@/lib/supabase/queries'
 import type { AuthorProfile } from '@/lib/supabase/queries'
+import { createClient } from '@/lib/supabase/client'
 
 function OnboardingContent() {
     const router = useRouter()
@@ -22,6 +23,8 @@ function OnboardingContent() {
     const [statusMessage, setStatusMessage] = useState('')
     const [dragOver, setDragOver] = useState(false)
     const isFormValid = file && wordCount > 0
+    const [profileImage, setProfileImage] = useState<File | null>(null)
+    const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null)
 
     const WORD_COUNT_WEBHOOK = 'https://spikeislandstudios.app.n8n.cloud/webhook/pdf-word-count'
     const ONBOARDING_WEBHOOK = 'https://spikeislandstudios.app.n8n.cloud/webhook/onboarding'
@@ -39,6 +42,59 @@ function OnboardingContent() {
             }
         }
     }, [searchParams])
+
+    // Image upload handler
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (file) {
+            // Validate file type and size
+            if (!file.type.startsWith('image/')) {
+                alert('Please upload an image file')
+                return
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Image must be under 5MB')
+                return
+            }
+
+            setProfileImage(file)
+
+            // Create preview
+            const reader = new FileReader()
+            reader.onloadend = () => {
+                setProfileImagePreview(reader.result as string)
+            }
+            reader.readAsDataURL(file)
+        }
+    }
+
+    // Upload to Supabase during profile creation
+    const uploadProfileImage = async (authorId: string) => {
+        if (!profileImage) return null
+
+        const supabase = createClient()
+        const fileExt = profileImage.name.split('.').pop()
+        const fileName = `${authorId}.${fileExt}`
+
+        const { data, error } = await supabase.storage
+            .from('author-profiles')
+            .upload(fileName, profileImage, {
+                upsert: true,
+                contentType: profileImage.type
+            })
+
+        if (error) {
+            console.error('Error uploading image:', error)
+            return null
+        }
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+            .from('author-profiles')
+            .getPublicUrl(fileName)
+
+        return publicUrl
+    }
 
     useEffect(() => {
         loadAuthorName()
@@ -340,6 +396,26 @@ function OnboardingContent() {
 
             console.log('Using manuscript ID:', finalManuscriptId)
 
+            // Upload profile image if provided
+            let profileImageUrl = null
+            if (profileImage) {
+                console.log('📸 Uploading profile image...')
+                profileImageUrl = await uploadProfileImage(authorProfileId)
+
+                if (profileImageUrl) {
+                    console.log('✅ Profile image uploaded:', profileImageUrl)
+
+                    // Update author profile with image URL
+                    const { createClient } = await import('@/lib/supabase/client')
+                    const supabase = createClient()
+
+                    await supabase
+                        .from('author_profiles')
+                        .update({ profile_image_url: profileImageUrl })
+                        .eq('id', authorProfileId)
+                }
+            }
+            
             // Prepare the payload for onboarding webhook
             const onboardingPayload = {
                 // User info
@@ -532,6 +608,59 @@ function OnboardingContent() {
                     </div>
 
                     <form onSubmit={handleSubmit}>
+                        {/* Profile Picture Upload - ADD HERE, BEFORE FILE UPLOAD */}
+                        <div className="mb-10">
+                            <div className="bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-500 rounded-2xl p-8">
+                                <div className="text-center mb-6">
+                                    <div className="text-4xl mb-2">👤</div>
+                                    <h3 className="text-xl font-bold text-purple-900 mb-2">Add Your Profile Picture</h3>
+                                    <p className="text-purple-800 text-sm">
+                                        Personalize your Author Studio and prepare your author bio for publishing
+                                    </p>
+                                </div>
+
+                                <div className="flex flex-col items-center gap-4">
+                                    {profileImagePreview ? (
+                                        <div className="relative">
+                                            <img
+                                                src={profileImagePreview}
+                                                alt="Preview"
+                                                className="w-32 h-32 rounded-full object-cover border-4 border-purple-500 shadow-lg"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setProfileImage(null)
+                                                    setProfileImagePreview(null)
+                                                }}
+                                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm hover:bg-red-600 shadow-lg"
+                                            >
+                                                ✕
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="w-32 h-32 rounded-full bg-white flex items-center justify-center border-4 border-dashed border-purple-400">
+                                            <span className="text-purple-400 text-5xl">📷</span>
+                                        </div>
+                                    )}
+
+                                    <label className="cursor-pointer px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-semibold shadow-lg">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleImageUpload}
+                                            className="hidden"
+                                        />
+                                        {profileImagePreview ? '✏️ Change Photo' : '📸 Upload Photo'}
+                                    </label>
+
+                                    <p className="text-xs text-purple-700 text-center max-w-md">
+                                        Optional but recommended - This will appear in your Author Studio and can be used for your book&apos;s author bio
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
                         {/* File Upload */}
                         <div className="mb-10">
                             <div
@@ -615,6 +744,7 @@ function OnboardingContent() {
                                 </div>
                             )}
                         </div>
+
 
                         {/* Manuscript Details */}
                         <div className="grid md:grid-cols-2 gap-6 mb-8">
