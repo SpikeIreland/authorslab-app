@@ -822,26 +822,53 @@ function StudioContent() {
         console.error('Chapters error:', chaptersError)
       }
 
-      // Load chapters
       if (chaptersData && chaptersData.length > 0) {
         setChapters(chaptersData)
 
-        // Initialize chapter editing status for all chapters
+        // Initialize chapter editing status by checking for existing issues
         const initialStatus: { [key: number]: ChapterEditingStatus } = {}
-        chaptersData.forEach(ch => {
-          initialStatus[ch.chapter_number] = 'not_started'
-        })
-        setChapterEditingStatus(initialStatus)
-        console.log('✅ Initialized editing status for', chaptersData.length, 'chapters')
 
-        // Set the first chapter's content and index
+        // Check each chapter for existing issues in the current phase
+        for (const ch of chaptersData) {
+          const { data: existingIssues } = await supabase
+            .from('manuscript_issues')
+            .select('id')
+            .eq('manuscript_id', manuscriptId)
+            .eq('chapter_number', ch.chapter_number)
+            .eq('phase_number', phaseToLoad!.phase_number)
+            .neq('status', 'dismissed')
+            .limit(1)
+
+          // If issues exist, chapter has been analyzed -> status = 'ready'
+          // Otherwise, chapter hasn't been analyzed yet -> status = 'not_started'
+          initialStatus[ch.chapter_number] = (existingIssues && existingIssues.length > 0) ? 'ready' : 'not_started'
+        }
+
+        setChapterEditingStatus(initialStatus)
+        console.log('✅ Initialized editing status for', chaptersData.length, 'chapters based on existing issues')
+
+        // Load the first chapter in the array
         setCurrentChapterIndex(0)
         const firstChapter = chaptersData[0]
 
         setEditorContent(firstChapter.content)
         setWordCount(firstChapter.content.split(/\s+/).filter((w: string) => w.length > 0).length)
         setHasUnsavedChanges(false)
-        console.log('✅ First chapter content set:', firstChapter.chapter_number)
+
+        // Load issues for first chapter if they exist
+        if (initialStatus[firstChapter.chapter_number] === 'ready') {
+          const { data: firstChapterIssues } = await supabase
+            .from('manuscript_issues')
+            .select('*')
+            .eq('manuscript_id', manuscriptId)
+            .eq('chapter_number', firstChapter.chapter_number)
+            .eq('phase_number', phaseToLoad!.phase_number)
+            .neq('status', 'dismissed')
+            .order('severity', { ascending: false })
+
+          setChapterIssues(firstChapterIssues || [])
+          console.log(`✅ Loaded ${firstChapterIssues?.length || 0} existing issues for first chapter`)
+        }
       }
 
       // Load chat history for the loaded phase (not necessarily the active one)
