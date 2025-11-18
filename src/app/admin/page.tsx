@@ -169,7 +169,7 @@ export default function AdminDashboard() {
             console.log('🔍 Admin check - Profile:', profile)
             console.log('🔍 Admin check - Role:', profile?.role)
 
-            if (profile?.role === 'admin' || profile?.role === 'super_admin') {
+            if (profile?.role === 'admin') {
                 console.log('✅ User is admin!')
                 setIsAdmin(true)
                 setAdminEmail(profile.email)

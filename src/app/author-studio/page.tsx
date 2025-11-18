@@ -2345,34 +2345,6 @@ function StudioContent() {
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
 
-              {/* Show "Read my Manuscript" button if analysis not started */}
-              {!analysisComplete && !fullAnalysisInProgress && (
-                <div className="text-center py-8">
-                  <div className="mb-6">
-                    <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-3xl">
-                      📖
-                    </div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">
-                      Hi! I&apos;m {editorName}
-                    </h3>
-                    <p className="text-gray-600 text-sm mb-4">
-                      Before we begin editing, I need to read your manuscript.
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={triggerFullAnalysis}
-                    className={`w-full ${getEditorColorClasses(editorColor).bg} text-white px-6 py-4 rounded-xl font-bold text-base ${getEditorColorClasses(editorColor).bgHover} transition-all shadow-md hover:shadow-lg`}
-                  >
-                    📖 Read My Manuscript
-                  </button>
-
-                  <p className="text-xs text-gray-500 mt-3">
-                    This takes about 5 minutes. You&apos;ll get a comprehensive report by email.
-                  </p>
-                </div>
-              )}
-
               {chatMessages.map((msg, index) => (
                 <div
                   key={index}
@@ -2455,27 +2427,58 @@ function StudioContent() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Chat Input */}
-            <form onSubmit={handleChatSubmit} className="p-4 border-t border-gray-200">
-              <div className="flex gap-2">
-                <input
-                  ref={chatInputRef}  // ← ADD THIS LINE
-                  type="text"
-                  value={userInput}
-                  onChange={(e) => setUserInput(e.target.value)}
-                  placeholder={`Ask ${editorName}...`}
-                  disabled={fullAnalysisInProgress}
-                  className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 ${getEditorColorClasses(editorColor).ring} disabled:bg-gray-100 disabled:cursor-not-allowed`}
-                />
+            {/* Chat Input OR Read My Manuscript Button */}
+            {!analysisComplete && !fullAnalysisInProgress ? (
+              /* Show "Read My Manuscript" button at bottom - always visible */
+              <div className="p-4 border-t border-gray-200 bg-gradient-to-br from-green-50 to-green-100">
+                <div className="text-center mb-3">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-lg">
+                      📖
+                    </div>
+                    <h3 className="font-bold text-gray-900">
+                      Ready to Start?
+                    </h3>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    {editorName} needs to read your manuscript before we can begin editing.
+                  </p>
+                </div>
+
                 <button
-                  type="submit"
-                  disabled={!userInput.trim() || isThinking || fullAnalysisInProgress}
-                  className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg ${getEditorColorClasses(editorColor).bgHover} disabled:opacity-50 disabled:cursor-not-allowed`}
+                  onClick={triggerFullAnalysis}
+                  className={`w-full ${getEditorColorClasses(editorColor).bg} text-white px-6 py-4 rounded-xl font-bold text-base ${getEditorColorClasses(editorColor).bgHover} transition-all shadow-lg hover:shadow-xl hover:scale-105 transform`}
                 >
-                  Send
+                  📖 Read My Manuscript
                 </button>
+
+                <p className="text-xs text-gray-500 mt-3 text-center">
+                  Takes about 5 minutes • You&apos;ll get a comprehensive report by email
+                </p>
               </div>
-            </form>
+            ) : (
+              /* Normal chat input when analysis is complete or in progress */
+              <form onSubmit={handleChatSubmit} className="p-4 border-t border-gray-200">
+                <div className="flex gap-2">
+                  <input
+                    ref={chatInputRef}
+                    type="text"
+                    value={userInput}
+                    onChange={(e) => setUserInput(e.target.value)}
+                    placeholder={`Ask ${editorName}...`}
+                    disabled={fullAnalysisInProgress}
+                    className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 ${getEditorColorClasses(editorColor).ring} disabled:bg-gray-100 disabled:cursor-not-allowed`}
+                  />
+                  <button
+                    type="submit"
+                    disabled={!userInput.trim() || isThinking || fullAnalysisInProgress}
+                    className={`px-4 py-2 ${getEditorColorClasses(editorColor).bg} text-white rounded-lg ${getEditorColorClasses(editorColor).bgHover} disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    Send
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
 
