@@ -66,8 +66,8 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
   // Normalize BOTH editor text AND issue text for quotes
   const normalizeQuotes = (text: string) => {
     return text
-      .replace(/[""]/g, '"')   // Smart double quotes to straight
-      .replace(/['']/g, "'")   // Smart single quotes to straight
+      .replace(/[\u201C\u201D]/g, '"')   // Smart double quotes (8220, 8221) to straight (34)
+      .replace(/[\u2018\u2019]/g, "'")   // Smart single quotes (8216, 8217) to straight (39)
   };
 
   editorText = normalizeQuotes(editorText);
@@ -81,7 +81,7 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
   console.log('🔬 Editor text char codes (first 50):',
     editorText.substring(0, 50).split('').map(c => c.charCodeAt(0)).join(',')
   );
-  
+
   // Check if text exists
   const textExists = editorText.includes(normalizedQuote);
   console.log('✅ Text exists in editor:', textExists);
