@@ -44,8 +44,8 @@ export default function BookPreviewPanel({
     if (isExpanded) {
         // Full preview modal
         return (
-            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-6">
-                <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-6">
+                <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative z-[101]">
                     <div className="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 flex items-center justify-between">
                         <h2 className="text-2xl font-bold text-gray-900">Your Book Preview</h2>
                         <button
@@ -213,7 +213,7 @@ export default function BookPreviewPanel({
                 {/* View Full Preview Button */}
                 <button
                     onClick={() => setIsExpanded(true)}
-                    className="px-4 py-2 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition-all shadow-sm flex items-center gap-2 text-sm"
+                    className="ml-6 px-4 py-2 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition-all shadow-sm flex items-center gap-2 text-sm"
                 >
                     <span>📖</span>
                     <span>View Full Preview</span>
