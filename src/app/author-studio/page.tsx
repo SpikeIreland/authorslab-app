@@ -49,40 +49,34 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
     return false;
   }
 
-  // Keep debug logging
   console.log('=== EDITOR DEBUG ===');
   console.log('🔍 Looking for issue text:', quotedText);
-  console.log('🔍 Issue text length:', quotedText.length);
 
-  // Get the HTML content and replace <br> tags with spaces for matching
+  // Get the HTML content and replace <br> tags with spaces
   const htmlContent = editorRef.innerHTML;
   const normalizedContent = htmlContent.replace(/<br\s*\/?>/gi, ' ');
-
-  console.log('📄 Editor innerHTML length:', editorRef.innerHTML.length);
-  console.log('📄 First 500 chars of innerHTML:', editorRef.innerHTML.substring(0, 500));
 
   // Create a temporary div to get clean text
   const tempDiv = document.createElement('div');
   tempDiv.innerHTML = normalizedContent;
   const editorText = tempDiv.textContent || '';
 
-  console.log('📄 Normalized editor text length:', editorText.length);
   console.log('📄 First 500 chars of normalized text:', editorText.substring(0, 500));
-  console.log('=== END DEBUG ===');
 
-  // Normalize the quoted text (remove extra whitespace)
+  // Normalize the quoted text - trim and normalize whitespace
   const normalizedQuote = quotedText.replace(/\s+/g, ' ').trim();
 
-  // Check if text exists in editor
+  // Check if the core text exists (ignoring what comes before/after)
   const textExists = editorText.includes(normalizedQuote);
   console.log('✅ Text exists in editor:', textExists);
+  console.log('=== END DEBUG ===');
 
   if (!textExists) {
     console.log('❌ Issue text not found in current chapter');
     return false;
   }
 
-  // Now use Mark.js with the editor element
+  // Use Mark.js with the editor element
   const markInstance = new Mark(editorRef);
 
   // Clear previous highlights
@@ -90,7 +84,7 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
     done: () => {
       console.log('✅ Cleared old highlights');
 
-      // Create variations with different quote styles and whitespace handling
+      // Create variations with different quote styles
       const variations = [
         normalizedQuote,
         normalizedQuote.replace(/'/g, "'"),
@@ -103,33 +97,33 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
 
       let foundMatch = false;
 
-      // Try each variation
+      // Try each variation with PARTIAL matching
       variations.forEach((variation, index) => {
         if (foundMatch) return;
 
-        // Use 'complementary' instead of 'exactly' to handle line breaks
+        // Use 'partially' to match even if text has no spaces around it
         markInstance.mark(variation, {
           className: 'issue-highlight',
-          accuracy: 'complementary',  // This handles whitespace variations
+          accuracy: 'partially',  // Most flexible - will find the text even stuck to other words
           separateWordSearch: false,
-          ignorePunctuation: [],
+          ignorePunctuation: ['.', ',', '!', '?', ';', ':'],  // Ignore punctuation at boundaries
           acrossElements: true,
+          each: (element) => {
+            // Style each highlight
+            const el = element as HTMLElement;
+            el.style.backgroundColor = '#fef3c7';
+            el.style.borderRadius = '2px';
+            el.style.padding = '2px 0';
+            el.style.boxShadow = '0 0 0 2px #fbbf24';
+          },
           done: (counter: number) => {
             if (counter > 0 && !foundMatch) {
               foundMatch = true;
-              console.log(`✅ Highlighted with variation ${index}`);
+              console.log(`✅ Highlighted ${counter} matches with variation ${index}`);
 
               const highlights = editorRef.querySelectorAll('.issue-highlight');
-              highlights.forEach((highlight: Element) => {
-                const el = highlight as HTMLElement;
-                el.style.backgroundColor = '#fef3c7';
-                el.style.borderRadius = '2px';
-                el.style.padding = '2px 0';
-                el.style.boxShadow = '0 0 0 2px #fbbf24';
-              });
-
               setTimeout(() => {
-                highlights[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                highlights[0]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
               }, 100);
             }
           }
@@ -139,7 +133,6 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
       setTimeout(() => {
         if (!foundMatch) {
           console.log('❌ No matches found with any variation');
-          console.log('💡 Try scrolling - the text might be in a different chapter section');
         }
       }, 500);
     }
