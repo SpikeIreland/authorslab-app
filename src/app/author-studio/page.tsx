@@ -49,6 +49,16 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
     return false;
   }
 
+  console.log('=== EDITOR DEBUG ===');
+  console.log('📄 Editor innerHTML length:', editorRef.innerHTML.length);
+  console.log('📄 First 500 chars of innerHTML:', editorRef.innerHTML.substring(0, 500));
+  console.log('📄 Editor textContent length:', editorRef.textContent?.length);
+  console.log('📄 First 300 chars of textContent:', editorRef.textContent?.substring(0, 300));
+  console.log('🔍 Looking for issue text:', quotedText);
+  console.log('🔍 Issue text length:', quotedText.length);
+  console.log('=== END DEBUG ===');
+  // END DEBUG BLOCK
+
   console.log('🔍 Original:', quotedText);
 
   // Log character codes to see what we're actually dealing with
