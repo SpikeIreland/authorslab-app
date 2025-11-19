@@ -673,19 +673,22 @@ function StudioContent() {
     setWordCount(words.length)
   }, [editorContent])
 
-  // Remove the isInitialized state I suggested - we don't need it
-
   // Only update editor innerHTML when loading a new chapter, not during user editing
   useEffect(() => {
-    if (isLoading) return  // Keep your isLoading check
+    if (isLoading) return
 
     if (editorPanelRef.current && editorContent) {
-      // Convert newlines to <br> tags (fixed: removed extra spaces)
-      const htmlContent = editorContent.replace(/\n/g, '<br>');  // ← No extra spaces
-      editorPanelRef.current.innerHTML = htmlContent;
-      console.log('✅ Editor populated with:', editorContent.substring(0, 50) + '...');
+      // Convert newlines to <br> tags WITH proper spacing to prevent word merging
+      const cleanedContent = editorContent
+        .replace(/([^\s])\n/g, '$1 \n')   // Add space before newline if character isn't whitespace
+        .replace(/\n([^\s])/g, '\n $1')   // Add space after newline if next character isn't whitespace
+        .replace(/\n/g, '<br>')           // Now convert to <br> tags
+
+      editorPanelRef.current.innerHTML = cleanedContent;
+      console.log('✅ Editor populated with cleaned content');
+      console.log('📄 First 200 chars:', cleanedContent.substring(0, 200));
     }
-  }, [currentChapterIndex, isLoading]);  // ← Only depends on chapter changes and loading state
+  }, [currentChapterIndex, isLoading]);
 
   // Initialize Studio
   const initializeStudio = useCallback(async () => {
