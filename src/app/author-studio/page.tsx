@@ -92,68 +92,51 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
     return false;
   }
 
-  // Use Mark.js with the editor element
+  // Use Mark.js with the editor element - but normalize HTML first
   const markInstance = new Mark(editorRef);
+
+  // Save original HTML in case we need to restore it
+  const originalHTML = editorRef.innerHTML;
+
+  // Temporarily normalize the HTML to straight quotes for Mark.js
+  editorRef.innerHTML = editorRef.innerHTML
+    .replace(/\u201C/g, '"')  // Left smart double quote to straight
+    .replace(/\u201D/g, '"')  // Right smart double quote to straight
+    .replace(/\u2018/g, "'")  // Left smart single quote to straight
+    .replace(/\u2019/g, "'"); // Right smart single quote to straight
 
   // Clear previous highlights
   markInstance.unmark({
     done: () => {
       console.log('✅ Cleared old highlights');
 
-      // Create variations - include BOTH straight AND smart quotes
-      const variations = [
-        normalizedQuote,                                      // Straight quotes (34)
-        normalizedQuote.replace(/"/g, '\u201C'),             // Left smart double quote (8220)
-        normalizedQuote.replace(/"/g, '\u201D'),             // Right smart double quote (8221)
-        normalizedQuote.replace(/'/g, '\u2018'),             // Left smart single quote (8216)
-        normalizedQuote.replace(/'/g, '\u2019'),             // Right smart single quote (8217)
-        normalizedQuote.replace(/"/g, '\u201C').replace(/"/g, '\u201D'),  // Mix of smart quotes
-        normalizedQuote.replace(/\s+/g, ' ')                 // Whitespace normalized
-      ];
+      // Now search with straight quotes in normalized HTML
+      markInstance.mark(normalizedQuote, {
+        className: 'issue-highlight',
+        accuracy: 'partially',
+        separateWordSearch: false,
+        ignorePunctuation: ['.', ',', '!', '?', ';', ':'],
+        acrossElements: true,
+        each: (element) => {
+          const el = element as HTMLElement;
+          el.style.backgroundColor = '#fef3c7';
+          el.style.borderRadius = '2px';
+          el.style.padding = '2px 0';
+          el.style.boxShadow = '0 0 0 2px #fbbf24';
+        },
+        done: (counter: number) => {
+          if (counter > 0) {
+            console.log(`✅ Highlighted ${counter} matches`);
 
-      console.log('🔍 Trying', variations.length, 'variations');
-      console.log('🔍 Variation samples:', variations.map(v => v.substring(0, 30)));
-
-      let foundMatch = false;
-
-      // Try each variation with PARTIAL matching
-      variations.forEach((variation, index) => {
-        if (foundMatch) return;
-
-        // Use 'partially' to match even if text has no spaces around it
-        markInstance.mark(variation, {
-          className: 'issue-highlight',
-          accuracy: 'partially',  // Most flexible - will find the text even stuck to other words
-          separateWordSearch: false,
-          ignorePunctuation: ['.', ',', '!', '?', ';', ':'],  // Ignore punctuation at boundaries
-          acrossElements: true,
-          each: (element) => {
-            // Style each highlight
-            const el = element as HTMLElement;
-            el.style.backgroundColor = '#fef3c7';
-            el.style.borderRadius = '2px';
-            el.style.padding = '2px 0';
-            el.style.boxShadow = '0 0 0 2px #fbbf24';
-          },
-          done: (counter: number) => {
-            if (counter > 0 && !foundMatch) {
-              foundMatch = true;
-              console.log(`✅ Highlighted ${counter} matches with variation ${index}`);
-
-              const highlights = editorRef.querySelectorAll('.issue-highlight');
-              setTimeout(() => {
-                highlights[0]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              }, 100);
-            }
+            const highlights = editorRef.querySelectorAll('.issue-highlight');
+            setTimeout(() => {
+              highlights[0]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+          } else {
+            console.log('❌ No matches found');
           }
-        });
-      });
-
-      setTimeout(() => {
-        if (!foundMatch) {
-          console.log('❌ No matches found with any variation');
         }
-      }, 500);
+      });
     }
   });
 
