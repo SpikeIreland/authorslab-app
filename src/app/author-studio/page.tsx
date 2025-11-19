@@ -55,18 +55,28 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
   // Get the HTML content and normalize for matching
   const htmlContent = editorRef.innerHTML;
   const normalizedContent = htmlContent
-    .replace(/<br\s*\/?>/gi, ' ')  // Convert ALL <br> to spaces
-    .replace(/\s+/g, ' ')           // Collapse multiple spaces
+    .replace(/<br\s*\/?>/gi, ' ')
+    .replace(/\s+/g, ' ')
 
   // Create a temporary div to get clean text
   const tempDiv = document.createElement('div');
   tempDiv.innerHTML = normalizedContent;
-  const editorText = (tempDiv.textContent || '').replace(/\s+/g, ' ').trim();
+  let editorText = (tempDiv.textContent || '').replace(/\s+/g, ' ').trim();
 
-  // ALSO normalize the issue text the same way
-  const normalizedQuote = quotedText.replace(/\s+/g, ' ').trim();
+  // Normalize BOTH editor text AND issue text for quotes
+  const normalizeQuotes = (text: string) => {
+    return text
+      .replace(/[""]/g, '"')   // Smart double quotes to straight
+      .replace(/['']/g, "'")   // Smart single quotes to straight
+  };
 
-  // Check if the core text exists (ignoring what comes before/after)
+  editorText = normalizeQuotes(editorText);
+  const normalizedQuote = normalizeQuotes(quotedText.replace(/\s+/g, ' ').trim());
+
+  console.log('📄 Normalized editor text (first 300):', editorText.substring(0, 300));
+  console.log('🔍 Normalized issue text:', normalizedQuote);
+
+  // Check if text exists
   const textExists = editorText.includes(normalizedQuote);
   console.log('✅ Text exists in editor:', textExists);
   console.log('=== END DEBUG ===');
