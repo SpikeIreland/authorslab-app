@@ -110,6 +110,7 @@ export default function TaylorPanel({ manuscriptId }: TaylorPanelProps) {
 function AssessmentView({ manuscriptId }: { manuscriptId: string }) {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
     const [answers, setAnswers] = useState<Partial<AssessmentAnswers>>({})
+    const [selectedMultiple, setSelectedMultiple] = useState<string[]>([])
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [authorName, setAuthorName] = useState('there')
     const [manuscriptTitle, setManuscriptTitle] = useState('your manuscript')
@@ -137,19 +138,63 @@ function AssessmentView({ manuscriptId }: { manuscriptId: string }) {
 
     const currentQuestion = ASSESSMENT_QUESTIONS[currentQuestionIndex]
     const isLastQuestion = currentQuestionIndex === ASSESSMENT_QUESTIONS.length - 1
+    const isMultiSelect = currentQuestion.multiSelect || false
 
     function handleAnswer(value: string) {
+        if (isMultiSelect) {
+            // Multi-select: toggle selection
+            const newSelected = selectedMultiple.includes(value)
+                ? selectedMultiple.filter(v => v !== value)
+                : [...selectedMultiple, value]
+
+            setSelectedMultiple(newSelected)
+        } else {
+            // Single select: move to next immediately
+            const newAnswers = {
+                ...answers,
+                [currentQuestion.id]: value
+            }
+            setAnswers(newAnswers)
+
+            if (isLastQuestion) {
+                submitAssessment(newAnswers)
+            } else {
+                setCurrentQuestionIndex(currentQuestionIndex + 1)
+            }
+        }
+    }
+
+    function handleMultiSelectNext() {
+        // Save multi-select answers and move to next question
         const newAnswers = {
             ...answers,
-            [currentQuestion.id]: value
+            [currentQuestion.id]: selectedMultiple
         }
         setAnswers(newAnswers)
+        setSelectedMultiple([]) // Reset for next multi-select question
 
-        // Move to next question or submit
         if (isLastQuestion) {
             submitAssessment(newAnswers)
         } else {
             setCurrentQuestionIndex(currentQuestionIndex + 1)
+        }
+    }
+
+    function handleBack() {
+        if (currentQuestionIndex > 0) {
+            const newIndex = currentQuestionIndex - 1
+            setCurrentQuestionIndex(newIndex)
+
+            // Restore previous multi-select if going back
+            const previousQuestion = ASSESSMENT_QUESTIONS[newIndex]
+            if (previousQuestion.multiSelect) {
+                // Fix TypeScript error by using type assertion
+                const previousAnswer = answers[previousQuestion.id as keyof AssessmentAnswers]
+                setSelectedMultiple(Array.isArray(previousAnswer) ? previousAnswer : [])
+            } else {
+                // Clear multi-select when going back to single-select question
+                setSelectedMultiple([])
+            }
         }
     }
 
@@ -180,12 +225,6 @@ function AssessmentView({ manuscriptId }: { manuscriptId: string }) {
             console.error('❌ Error submitting assessment:', error)
             setIsSubmitting(false)
             // TODO: Show error message to user
-        }
-    }
-
-    function handleBack() {
-        if (currentQuestionIndex > 0) {
-            setCurrentQuestionIndex(currentQuestionIndex - 1)
         }
     }
 
@@ -247,37 +286,81 @@ function AssessmentView({ manuscriptId }: { manuscriptId: string }) {
                     {currentQuestion.question}
                 </h3>
 
+                {isMultiSelect && (
+                    <p className="text-sm text-gray-600 mb-3">
+                        ✓ Select all that apply
+                    </p>
+                )}
+
                 <div className="space-y-3">
-                    {currentQuestion.options.map((option) => (
-                        <button
-                            key={option.value}
-                            onClick={() => handleAnswer(option.value)}
-                            className="w-full text-left p-4 border-2 border-gray-200 rounded-lg hover:border-teal-500 hover:bg-teal-50 transition-all group"
-                        >
-                            <div className="font-semibold text-gray-900 group-hover:text-teal-700">
-                                {option.label}
-                            </div>
-                            {option.description && (
-                                <div className="text-sm text-gray-600 mt-1">
-                                    {option.description}
+                    {currentQuestion.options.map((option) => {
+                        const isSelected = isMultiSelect && selectedMultiple.includes(option.value)
+
+                        return (
+                            <button
+                                key={option.value}
+                                onClick={() => handleAnswer(option.value)}
+                                className={`w-full text-left p-4 border-2 rounded-lg transition-all group ${isSelected
+                                        ? 'border-teal-500 bg-teal-50'
+                                        : 'border-gray-200 hover:border-teal-500 hover:bg-teal-50'
+                                    }`}
+                            >
+                                <div className="flex items-center gap-3">
+                                    {isMultiSelect && (
+                                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${isSelected
+                                                ? 'bg-teal-500 border-teal-500'
+                                                : 'border-gray-300'
+                                            }`}>
+                                            {isSelected && (
+                                                <span className="text-white text-sm">✓</span>
+                                            )}
+                                        </div>
+                                    )}
+                                    <div className="flex-1">
+                                        <div className={`font-semibold ${isSelected ? 'text-teal-700' : 'text-gray-900 group-hover:text-teal-700'
+                                            }`}>
+                                            {option.label}
+                                        </div>
+                                        {option.description && (
+                                            <div className="text-sm text-gray-600 mt-1">
+                                                {option.description}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                            )}
-                        </button>
-                    ))}
+                            </button>
+                        )
+                    })}
                 </div>
             </div>
 
-            {/* Back Button */}
-            {currentQuestionIndex > 0 && (
-                <div className="p-4 border-t border-gray-200">
-                    <button
-                        onClick={handleBack}
-                        className="text-sm text-gray-600 hover:text-gray-900"
-                    >
-                        ← Back to previous question
-                    </button>
+            {/* Footer with Back and Next buttons */}
+            <div className="p-4 border-t border-gray-200">
+                <div className="flex items-center justify-between">
+                    {/* Back Button */}
+                    {currentQuestionIndex > 0 ? (
+                        <button
+                            onClick={handleBack}
+                            className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                        >
+                            ← Back
+                        </button>
+                    ) : (
+                        <div></div> // Spacer for flexbox alignment
+                    )}
+
+                    {/* Next Button (only for multi-select questions) */}
+                    {isMultiSelect && (
+                        <button
+                            onClick={handleMultiSelectNext}
+                            disabled={selectedMultiple.length === 0}
+                            className="px-6 py-2 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                            {isLastQuestion ? 'Submit' : 'Next →'}
+                        </button>
+                    )}
                 </div>
-            )}
+            </div>
         </div>
     )
 }
@@ -471,8 +554,8 @@ What would you like to work on first?`
                     >
                         <div
                             className={`max-w-[85%] rounded-lg p-3 ${msg.sender === 'user'
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-100 text-gray-900 border border-gray-200'
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-100 text-gray-900 border border-gray-200'
                                 }`}
                         >
                             <div className="text-sm whitespace-pre-wrap">{msg.message}</div>

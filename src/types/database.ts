@@ -480,9 +480,9 @@ export type PublishingStep =
 export interface AssessmentAnswers {
   publishing_goal?: 'self-publish-all' | 'self-publish-amazon' | 'traditional-query' | 'hybrid' | 'undecided'
   experience?: 'first-time' | 'published-before' | 'self-published' | 'traditionally-published'
-  platforms?: string[] // ['amazon-kdp', 'draft2digital', 'ingramspark', etc.]
+  platforms?: string[] // Array for multi-select
   timeline?: '1-month' | '1-3-months' | '3-6-months' | '6-12-months' | 'no-rush'
-  budget?: 'under-500' | '500-1000' | '1000-2500' | '2500-plus' | 'flexible'
+  formats?: string[] // NEW: Array for multi-select
 }
 
 export interface CoverDesign {
@@ -600,7 +600,8 @@ export interface AssessmentQuestion {
   id: string
   question: string
   options: AssessmentQuestionOption[]
-  followUp?: string // Optional follow-up clarification
+  multiSelect?: boolean // ← ADD THIS
+  followUp?: string
 }
 
 export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
@@ -663,7 +664,8 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
   },
   {
     id: 'platforms',
-    question: 'Which platforms interest you? (Select all that apply)',
+    question: 'Which platforms interest you?',
+    multiSelect: true, // ← NEW FLAG
     options: [
       { value: 'amazon-kdp', label: 'Amazon KDP (Kindle)' },
       { value: 'draft2digital', label: 'Draft2Digital' },
@@ -707,33 +709,24 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
     ]
   },
   {
-    id: 'budget',
-    question: 'What\'s your publishing budget?',
+    id: 'formats',
+    question: 'Which formats do you want to publish?',
+    multiSelect: true, // ← NEW FLAG
     options: [
       {
-        value: 'under-500',
-        label: 'Under $500',
-        description: 'Bootstrap approach'
+        value: 'ebook',
+        label: 'eBook',
+        description: 'Digital reading (Kindle, EPUB)'
       },
       {
-        value: '500-1000',
-        label: '$500 - $1,000',
-        description: 'Moderate investment'
+        value: 'print',
+        label: 'Print',
+        description: 'Physical paperback or hardcover'
       },
       {
-        value: '1000-2500',
-        label: '$1,000 - $2,500',
-        description: 'Professional setup'
-      },
-      {
-        value: '2500-plus',
-        label: '$2,500+',
-        description: 'Premium approach'
-      },
-      {
-        value: 'flexible',
-        label: 'Flexible / Depends on ROI',
-        description: 'I\'ll spend what makes sense'
+        value: 'audiobook',
+        label: 'Audiobook',
+        description: 'Audio narration'
       }
     ]
   }
