@@ -49,19 +49,26 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
     return false;
   }
 
-  console.log('🔍 Looking for:', quotedText);
+  // Keep debug logging
+  console.log('=== EDITOR DEBUG ===');
+  console.log('🔍 Looking for issue text:', quotedText);
+  console.log('🔍 Issue text length:', quotedText.length);
 
   // Get the HTML content and replace <br> tags with spaces for matching
   const htmlContent = editorRef.innerHTML;
   const normalizedContent = htmlContent.replace(/<br\s*\/?>/gi, ' ');
+
+  console.log('📄 Editor innerHTML length:', editorRef.innerHTML.length);
+  console.log('📄 First 500 chars of innerHTML:', editorRef.innerHTML.substring(0, 500));
 
   // Create a temporary div to get clean text
   const tempDiv = document.createElement('div');
   tempDiv.innerHTML = normalizedContent;
   const editorText = tempDiv.textContent || '';
 
-  console.log('📄 Editor text length:', editorText.length);
-  console.log('📄 First 500 chars:', editorText.substring(0, 500));
+  console.log('📄 Normalized editor text length:', editorText.length);
+  console.log('📄 First 500 chars of normalized text:', editorText.substring(0, 500));
+  console.log('=== END DEBUG ===');
 
   // Normalize the quoted text (remove extra whitespace)
   const normalizedQuote = quotedText.replace(/\s+/g, ' ').trim();
