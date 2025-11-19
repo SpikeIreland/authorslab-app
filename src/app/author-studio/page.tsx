@@ -896,6 +896,7 @@ function StudioContent() {
       }
 
       setIsChatLoading(false)
+      setIsLoading(false)
 
     } catch (error) {
       console.error('Error initializing studio:', error)
