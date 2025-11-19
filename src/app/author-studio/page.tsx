@@ -303,6 +303,7 @@ function StudioContent() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
   const [userInput, setUserInput] = useState('')
   const [isThinking, setIsThinking] = useState(false)
+  const [isChatLoading, setIsChatLoading] = useState(false)
 
   // Issues State
   const [chapterIssues, setChapterIssues] = useState<ManuscriptIssue[]>([])
@@ -873,6 +874,7 @@ function StudioContent() {
 
       // Load chat history for the loaded phase (not necessarily the active one)
       setLoadingMessage('Loading chat history...')
+      setIsChatLoading(true)
 
       // Use phaseToLoad if available, otherwise fall back to active phase
       const phaseForChat = phaseToLoad || await getActivePhase(supabase, manuscriptId)
@@ -893,7 +895,7 @@ function StudioContent() {
         }
       }
 
-      setIsLoading(false)
+      setIsChatLoading(false)
 
     } catch (error) {
       console.error('Error initializing studio:', error)
@@ -2376,7 +2378,19 @@ function StudioContent() {
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
 
-              {chatMessages.map((msg, index) => (
+              {/* Chat Loading Indicator */}
+              {isChatLoading && (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-gray-600 font-medium">Loading chat history...</p>
+                    <p className="text-gray-500 text-sm mt-1">Retrieving your conversation with {editorName}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Chat Messages */}
+              {!isChatLoading && chatMessages.map((msg, index) => (
                 <div
                   key={index}
                   className={`${msg.sender === 'Author'
@@ -2429,7 +2443,7 @@ function StudioContent() {
               ))}
 
               {/* Reading Progress Indicator */}
-              {fullAnalysisInProgress && (
+              {!isChatLoading && fullAnalysisInProgress && (
                 <div className={`${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} border rounded-lg p-4 mr-8`}>
                   <div className="flex items-center gap-3 mb-3">
                     <div className="relative">
@@ -2448,7 +2462,7 @@ function StudioContent() {
               )}
 
               {/* Thinking indicator for chat */}
-              {isThinking && !fullAnalysisInProgress && (
+              {!isChatLoading && isThinking && !fullAnalysisInProgress && (
                 <div className={`${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} border rounded-lg p-3 mr-8`}>
                   <div className="font-semibold text-sm mb-1">{editorName}</div>
                   <div className="text-sm">Thinking...</div>
