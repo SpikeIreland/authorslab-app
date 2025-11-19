@@ -87,10 +87,12 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
       // Create variations with different quote styles
       const variations = [
         normalizedQuote,
-        normalizedQuote.replace(/'/g, "'"),
-        normalizedQuote.replace(/'/g, "'"),
-        normalizedQuote.replace(/'/g, "'"),
-        normalizedQuote.replace(/"/g, '"').replace(/"/g, '"'),
+        normalizedQuote.replace(/'/g, "'"),                        // Straight apostrophe
+        normalizedQuote.replace(/'/g, "'"),                        // Smart apostrophe right
+        normalizedQuote.replace(/'/g, "'"),                        // Smart apostrophe left  
+        normalizedQuote.replace(/'/g, "'").replace(/'/g, "'"),    // Both smart quotes
+        normalizedQuote.replace(/"/g, '"').replace(/"/g, '"'),    // Smart double quotes
+        normalizedQuote.replace(/\s+/g, ' ')                       // ⭐ NEW: Normalize all whitespace to single spaces
       ];
 
       console.log('🔍 Trying', variations.length, 'variations');
@@ -682,11 +684,12 @@ function StudioContent() {
       const cleanedContent = editorContent
         .replace(/([^\s])\n/g, '$1 \n')   // Add space before newline if character isn't whitespace
         .replace(/\n([^\s])/g, '\n $1')   // Add space after newline if next character isn't whitespace
-        .replace(/\n/g, '<br>')           // Now convert to <br> tags
+        .replace(/\n/g, '<br>')           // Convert to <br> tags
+        .replace(/\s{2,}/g, ' ')          // ⭐ NEW: Collapse multiple spaces into single space
 
       editorPanelRef.current.innerHTML = cleanedContent;
       console.log('✅ Editor populated with cleaned content');
-      console.log('📄 First 200 chars:', cleanedContent.substring(0, 200));
+      console.log('📄 First 300 chars:', cleanedContent.substring(0, 300));
     }
   }, [currentChapterIndex, isLoading]);
 
