@@ -52,18 +52,18 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
   console.log('=== EDITOR DEBUG ===');
   console.log('🔍 Looking for issue text:', quotedText);
 
-  // Get the HTML content and replace <br> tags with spaces
+  // Get the HTML content and normalize for matching
   const htmlContent = editorRef.innerHTML;
-  const normalizedContent = htmlContent.replace(/<br\s*\/?>/gi, ' ');
+  const normalizedContent = htmlContent
+    .replace(/<br\s*\/?>/gi, ' ')  // Convert ALL <br> to spaces
+    .replace(/\s+/g, ' ')           // Collapse multiple spaces
 
   // Create a temporary div to get clean text
   const tempDiv = document.createElement('div');
   tempDiv.innerHTML = normalizedContent;
-  const editorText = tempDiv.textContent || '';
+  const editorText = (tempDiv.textContent || '').replace(/\s+/g, ' ').trim();
 
-  console.log('📄 First 500 chars of normalized text:', editorText.substring(0, 500));
-
-  // Normalize the quoted text - trim and normalize whitespace
+  // ALSO normalize the issue text the same way
   const normalizedQuote = quotedText.replace(/\s+/g, ' ').trim();
 
   // Check if the core text exists (ignoring what comes before/after)
@@ -680,15 +680,16 @@ function StudioContent() {
     if (isLoading) return
 
     if (editorPanelRef.current && editorContent) {
-      // Convert newlines to <br> tags WITH proper spacing to prevent word merging
+      // Convert content for display:
+      // 1. Paragraph breaks (\n\n) become double <br><br>
+      // 2. Single newlines become spaces (already done in normalize)
       const cleanedContent = editorContent
-        .replace(/([^\s])\n/g, '$1 \n')   // Add space before newline if character isn't whitespace
-        .replace(/\n([^\s])/g, '\n $1')   // Add space after newline if next character isn't whitespace
-        .replace(/\n/g, '<br>')           // Convert to <br> tags
-        .replace(/\s{2,}/g, ' ')          // ⭐ NEW: Collapse multiple spaces into single space
+        .replace(/\n\n/g, '<br><br>')      // Paragraph breaks
+        .replace(/\n/g, ' ')                // Single newlines to spaces
+        .replace(/\s{2,}/g, ' ')           // Collapse multiple spaces
 
       editorPanelRef.current.innerHTML = cleanedContent;
-      console.log('✅ Editor populated with cleaned content');
+      console.log('✅ Editor populated with formatted content');
       console.log('📄 First 300 chars:', cleanedContent.substring(0, 300));
     }
   }, [currentChapterIndex, isLoading]);
