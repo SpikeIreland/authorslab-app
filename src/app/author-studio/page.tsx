@@ -100,18 +100,19 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
     done: () => {
       console.log('✅ Cleared old highlights');
 
-      // Create variations with different quote styles
+      // Create variations - include BOTH straight AND smart quotes
       const variations = [
-        normalizedQuote,
-        normalizedQuote.replace(/'/g, "'"),                        // Straight apostrophe
-        normalizedQuote.replace(/'/g, "'"),                        // Smart apostrophe right
-        normalizedQuote.replace(/'/g, "'"),                        // Smart apostrophe left  
-        normalizedQuote.replace(/'/g, "'").replace(/'/g, "'"),    // Both smart quotes
-        normalizedQuote.replace(/"/g, '"').replace(/"/g, '"'),    // Smart double quotes
-        normalizedQuote.replace(/\s+/g, ' ')                       // ⭐ NEW: Normalize all whitespace to single spaces
+        normalizedQuote,                                      // Straight quotes (34)
+        normalizedQuote.replace(/"/g, '\u201C'),             // Left smart double quote (8220)
+        normalizedQuote.replace(/"/g, '\u201D'),             // Right smart double quote (8221)
+        normalizedQuote.replace(/'/g, '\u2018'),             // Left smart single quote (8216)
+        normalizedQuote.replace(/'/g, '\u2019'),             // Right smart single quote (8217)
+        normalizedQuote.replace(/"/g, '\u201C').replace(/"/g, '\u201D'),  // Mix of smart quotes
+        normalizedQuote.replace(/\s+/g, ' ')                 // Whitespace normalized
       ];
 
       console.log('🔍 Trying', variations.length, 'variations');
+      console.log('🔍 Variation samples:', variations.map(v => v.substring(0, 30)));
 
       let foundMatch = false;
 
