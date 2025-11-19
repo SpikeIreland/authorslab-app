@@ -75,7 +75,13 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
 
   console.log('📄 Normalized editor text (first 300):', editorText.substring(0, 300));
   console.log('🔍 Normalized issue text:', normalizedQuote);
-
+  console.log('🔬 Issue text char codes (first 50):',
+    normalizedQuote.substring(0, 50).split('').map(c => c.charCodeAt(0)).join(',')
+  );
+  console.log('🔬 Editor text char codes (first 50):',
+    editorText.substring(0, 50).split('').map(c => c.charCodeAt(0)).join(',')
+  );
+  
   // Check if text exists
   const textExists = editorText.includes(normalizedQuote);
   console.log('✅ Text exists in editor:', textExists);
