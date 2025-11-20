@@ -435,7 +435,7 @@ function TaylorChatView({ manuscriptId, planPdfUrl }: { manuscriptId: string, pl
             console.log('🔍 [CHAT] First message:', data[0])
             setMessages(data.map(msg => ({
                 id: msg.id,
-                sender: msg.sender === 'Author' ? 'user' : 'taylor',
+                sender: (msg.sender === 'Author' ? 'user' : 'taylor') as 'user' | 'taylor',
                 message: msg.message,
                 created_at: msg.created_at
             })))
@@ -472,9 +472,9 @@ function TaylorChatView({ manuscriptId, planPdfUrl }: { manuscriptId: string, pl
                         console.log('✅ [CHAT] Conditions met, adding message to state')
                         setMessages(prev => {
                             console.log('🔍 [CHAT] Previous messages:', prev.length)
-                            const updated = [...prev, {
+                            const updated: ChatMessage[] = [...prev, {
                                 id: newMessage.id,
-                                sender: 'taylor',
+                                sender: 'taylor' as const,
                                 message: newMessage.message,
                                 created_at: newMessage.created_at
                             }]
@@ -510,7 +510,7 @@ function TaylorChatView({ manuscriptId, planPdfUrl }: { manuscriptId: string, pl
         const tempId = 'temp-' + Date.now()
         setMessages(prev => [...prev, {
             id: tempId,
-            sender: 'user',
+            sender: 'user' as const,
             message: userMessage,
             created_at: new Date().toISOString()
         }])
