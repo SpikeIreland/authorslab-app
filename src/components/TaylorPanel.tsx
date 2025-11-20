@@ -51,6 +51,7 @@ export default function TaylorPanel({ manuscriptId }: TaylorPanelProps) {
     }
 
     function subscribeToProgressUpdates() {
+        console.log('🔧 [SUBSCRIBE] Setting up publishing progress subscription')
         const supabase = createClient()
         const channel = supabase
             .channel(`publishing-progress-${manuscriptId}`)
@@ -63,20 +64,30 @@ export default function TaylorPanel({ manuscriptId }: TaylorPanelProps) {
                     filter: `manuscript_id=eq.${manuscriptId}`
                 },
                 (payload) => {
-                    console.log('📊 Publishing progress updated:', payload.new)
-                    console.log('🔍 [SUB] assessment_completed value:', payload.new.assessment_completed)
+                    console.log('🔔 [NEW CODE] Publishing progress subscription fired!')
+                    console.log('🔔 [NEW CODE] assessment_completed:', payload.new.assessment_completed)
+                    console.log('🔔 [NEW CODE] plan_pdf_url:', payload.new.plan_pdf_url)
 
-                    // Instead of trying to update state from the callback,
-                    // re-check the database to get fresh data
-                    if (payload.new.assessment_completed) {
-                        console.log('✅ [SUB] Assessment completed detected - rechecking database')
-                        checkAssessmentStatus()
+                    // Force state update using functional form
+                    if (payload.new.assessment_completed === true) {
+                        console.log('🔔 [NEW CODE] FORCING STATE UPDATE NOW')
+                        setAssessmentCompleted(() => {
+                            console.log('🔔 [NEW CODE] setAssessmentCompleted callback executed')
+                            return true
+                        })
+                        setPublishingPlanUrl(() => {
+                            console.log('🔔 [NEW CODE] setPublishingPlanUrl callback executed')
+                            return payload.new.plan_pdf_url
+                        })
                     }
                 }
             )
-            .subscribe()
+            .subscribe((status) => {
+                console.log('🔧 [SUBSCRIBE] Subscription status:', status)
+            })
 
         return () => {
+            console.log('🔧 [SUBSCRIBE] Cleaning up subscription')
             supabase.removeChannel(channel)
         }
     }
