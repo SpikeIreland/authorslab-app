@@ -405,7 +405,7 @@ function TaylorChatView({ manuscriptId, planPdfUrl }: { manuscriptId: string, pl
             console.log('💬 Loaded chat history:', data.length, 'messages')
             setMessages(data.map(msg => ({
                 id: msg.id,
-                sender: msg.sender === 'author' ? 'user' : 'taylor',
+                sender: msg.sender === 'Author' ? 'user' : 'taylor',
                 message: msg.message,
                 created_at: msg.created_at
             })))
@@ -430,7 +430,7 @@ function TaylorChatView({ manuscriptId, planPdfUrl }: { manuscriptId: string, pl
                 (payload) => {
                     const newMessage = payload.new
                     console.log('💬 New chat message received:', newMessage.sender)
-                    if (newMessage.phase_number === 4 && newMessage.sender === 'taylor') {
+                    if (newMessage.phase_number === 4 && newMessage.sender === 'Taylor') {
                         setMessages(prev => [...prev, {
                             id: newMessage.id,
                             sender: 'taylor',
@@ -470,7 +470,7 @@ function TaylorChatView({ manuscriptId, planPdfUrl }: { manuscriptId: string, pl
             .insert({
                 manuscript_id: manuscriptId,
                 phase_number: 4,
-                sender: 'author',
+                sender: 'Author',
                 message: userMessage
             })
 
