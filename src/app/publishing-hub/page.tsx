@@ -525,14 +525,8 @@ function PublishingHubContent() {
           </div>
         </div>
 
-        {/* RIGHT: Taylor Assessment or Chat (Conditional) */}
-        {publishingProgress?.assessment_completed ? (
-          // Show Chat if assessment is complete
-          <TaylorChatWidget manuscriptId={manuscriptId!} />
-        ) : (
-          // Show Assessment if not complete
-          <TaylorPanel manuscriptId={manuscriptId!} />
-        )}
+        {/* RIGHT: Taylor Panel (handles both assessment and chat) */}
+        <TaylorPanel manuscriptId={manuscriptId!} />
       </div>
     </div>
   )
