@@ -15,6 +15,11 @@ interface ChatMessage {
     created_at: string
 }
 
+const TAYLOR_WEBHOOKS = {
+    assessment: 'https://spikeislandstudios.app.n8n.cloud/webhook/taylor-assessment',
+    chat: 'https://spikeislandstudios.app.n8n.cloud/webhook/taylor-chat'
+}
+
 export default function TaylorPanel({ manuscriptId }: TaylorPanelProps) {
     const [assessmentCompleted, setAssessmentCompleted] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
@@ -142,14 +147,11 @@ function AssessmentView({ manuscriptId }: { manuscriptId: string }) {
 
     function handleAnswer(value: string) {
         if (isMultiSelect) {
-            // Multi-select: toggle selection
             const newSelected = selectedMultiple.includes(value)
                 ? selectedMultiple.filter(v => v !== value)
                 : [...selectedMultiple, value]
-
             setSelectedMultiple(newSelected)
         } else {
-            // Single select: move to next immediately
             const newAnswers = {
                 ...answers,
                 [currentQuestion.id]: value
@@ -165,17 +167,22 @@ function AssessmentView({ manuscriptId }: { manuscriptId: string }) {
     }
 
     function handleMultiSelectNext() {
-        // Save multi-select answers and move to next question
+        console.log('🎯 Next button clicked, current selections:', selectedMultiple)
+
         const newAnswers = {
             ...answers,
             [currentQuestion.id]: selectedMultiple
         }
+
+        console.log('💾 Updated answers:', newAnswers)
         setAnswers(newAnswers)
-        setSelectedMultiple([]) // Reset for next multi-select question
+        setSelectedMultiple([])
 
         if (isLastQuestion) {
+            console.log('🏁 Last question - submitting assessment')
             submitAssessment(newAnswers)
         } else {
+            console.log('➡️ Moving to next question')
             setCurrentQuestionIndex(currentQuestionIndex + 1)
         }
     }
@@ -185,25 +192,22 @@ function AssessmentView({ manuscriptId }: { manuscriptId: string }) {
             const newIndex = currentQuestionIndex - 1
             setCurrentQuestionIndex(newIndex)
 
-            // Restore previous multi-select if going back
             const previousQuestion = ASSESSMENT_QUESTIONS[newIndex]
             if (previousQuestion.multiSelect) {
-                // Fix TypeScript error by using type assertion
                 const previousAnswer = answers[previousQuestion.id as keyof AssessmentAnswers]
                 setSelectedMultiple(Array.isArray(previousAnswer) ? previousAnswer : [])
             } else {
-                // Clear multi-select when going back to single-select question
                 setSelectedMultiple([])
             }
         }
     }
 
     async function submitAssessment(finalAnswers: Partial<AssessmentAnswers>) {
+        console.log('📋 Submitting assessment with answers:', finalAnswers)
         setIsSubmitting(true)
 
         try {
-            // Call n8n webhook to generate publishing plan
-            const response = await fetch(process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL_TAYLOR_ASSESSMENT!, {
+            const response = await fetch(TAYLOR_WEBHOOKS.assessment, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -214,17 +218,22 @@ function AssessmentView({ manuscriptId }: { manuscriptId: string }) {
                 })
             })
 
+            console.log('📡 Webhook response status:', response.status)
+
             if (!response.ok) {
-                throw new Error('Failed to generate publishing plan')
+                const errorText = await response.text()
+                console.error('❌ Webhook error response:', errorText)
+                throw new Error(`Failed to generate publishing plan: ${response.status}`)
             }
 
-            console.log('✅ Assessment submitted, waiting for plan generation...')
-            // The subscription will automatically update when plan is ready
+            const responseData = await response.json()
+            console.log('✅ Assessment submitted successfully:', responseData)
+            console.log('⏳ Waiting for plan generation via realtime subscription...')
 
         } catch (error) {
             console.error('❌ Error submitting assessment:', error)
             setIsSubmitting(false)
-            // TODO: Show error message to user
+            alert('There was an error submitting your assessment. Please try again.')
         }
     }
 
@@ -247,7 +256,6 @@ function AssessmentView({ manuscriptId }: { manuscriptId: string }) {
 
     return (
         <div className="flex-1 flex flex-col overflow-hidden">
-            {/* Progress Bar */}
             <div className="px-4 pt-4">
                 <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-medium text-gray-600">
@@ -265,7 +273,6 @@ function AssessmentView({ manuscriptId }: { manuscriptId: string }) {
                 </div>
             </div>
 
-            {/* Greeting (only on first question) */}
             {currentQuestionIndex === 0 && (
                 <div className="px-4 pt-6 pb-4">
                     <div className="bg-teal-50 border-l-4 border-teal-500 rounded-lg p-4">
@@ -280,7 +287,6 @@ function AssessmentView({ manuscriptId }: { manuscriptId: string }) {
                 </div>
             )}
 
-            {/* Question */}
             <div className="flex-1 overflow-y-auto px-4 py-6">
                 <h3 className="font-bold text-lg text-gray-900 mb-4">
                     {currentQuestion.question}
@@ -301,19 +307,15 @@ function AssessmentView({ manuscriptId }: { manuscriptId: string }) {
                                 key={option.value}
                                 onClick={() => handleAnswer(option.value)}
                                 className={`w-full text-left p-4 border-2 rounded-lg transition-all group ${isSelected
-                                        ? 'border-teal-500 bg-teal-50'
-                                        : 'border-gray-200 hover:border-teal-500 hover:bg-teal-50'
+                                    ? 'border-teal-500 bg-teal-50'
+                                    : 'border-gray-200 hover:border-teal-500 hover:bg-teal-50'
                                     }`}
                             >
                                 <div className="flex items-center gap-3">
                                     {isMultiSelect && (
-                                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${isSelected
-                                                ? 'bg-teal-500 border-teal-500'
-                                                : 'border-gray-300'
+                                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${isSelected ? 'bg-teal-500 border-teal-500' : 'border-gray-300'
                                             }`}>
-                                            {isSelected && (
-                                                <span className="text-white text-sm">✓</span>
-                                            )}
+                                            {isSelected && <span className="text-white text-sm">✓</span>}
                                         </div>
                                     )}
                                     <div className="flex-1">
@@ -334,10 +336,8 @@ function AssessmentView({ manuscriptId }: { manuscriptId: string }) {
                 </div>
             </div>
 
-            {/* Footer with Back and Next buttons */}
             <div className="p-4 border-t border-gray-200">
                 <div className="flex items-center justify-between">
-                    {/* Back Button */}
                     {currentQuestionIndex > 0 ? (
                         <button
                             onClick={handleBack}
@@ -346,10 +346,9 @@ function AssessmentView({ manuscriptId }: { manuscriptId: string }) {
                             ← Back
                         </button>
                     ) : (
-                        <div></div> // Spacer for flexbox alignment
+                        <div></div>
                     )}
 
-                    {/* Next Button (only for multi-select questions) */}
                     {isMultiSelect && (
                         <button
                             onClick={handleMultiSelectNext}
@@ -402,7 +401,6 @@ function TaylorChatView({ manuscriptId, planPdfUrl }: { manuscriptId: string, pl
                 created_at: msg.created_at
             })))
         } else {
-            // Add initial greeting
             addInitialGreeting()
         }
     }
@@ -427,14 +425,13 @@ Your publishing plan for "${title}" is ready! ${planPdfUrl ? 'You can view it us
 
 I'm here to help you with every step of your publishing journey. Feel free to ask me about:
 
-• Cover design and formatting
-• Platform selection and setup
-• Publishing timeline and strategy
-• Any questions about your plan
+- Cover design and formatting
+- Platform selection and setup
+- Publishing timeline and strategy
+- Any questions about your plan
 
 What would you like to work on first?`
 
-        // Save greeting to database
         await supabase
             .from('editor_chat_history')
             .insert({
@@ -492,7 +489,6 @@ What would you like to work on first?`
         setInputMessage('')
         setIsLoading(true)
 
-        // Add user message immediately
         const tempId = 'temp-' + Date.now()
         setMessages(prev => [...prev, {
             id: tempId,
@@ -501,7 +497,6 @@ What would you like to work on first?`
             created_at: new Date().toISOString()
         }])
 
-        // Save to database
         const supabase = createClient()
         await supabase
             .from('editor_chat_history')
@@ -512,15 +507,14 @@ What would you like to work on first?`
                 message: userMessage
             })
 
-        // Call n8n webhook for Taylor's response
         try {
-            await fetch(process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL_TAYLOR_CHAT!, {
+            await fetch(TAYLOR_WEBHOOKS.chat, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     manuscriptId,
                     userMessage,
-                    chatHistory: messages.slice(-10) // Send last 10 messages for context
+                    chatHistory: messages.slice(-10)
                 })
             })
         } catch (error) {
@@ -531,11 +525,10 @@ What would you like to work on first?`
 
     return (
         <>
-            {/* Publishing Plan Button (if available) */}
             {planPdfUrl && (
                 <div className="px-4 py-3 border-b border-gray-200 bg-teal-50">
-                    <a
-                        href={planPdfUrl}
+
+                    <a href={planPdfUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="block text-center px-4 py-2 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition-all text-sm"
@@ -543,9 +536,9 @@ What would you like to work on first?`
                         📄 View Your Publishing Plan
                     </a>
                 </div>
-            )}
+            )
+            }
 
-            {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messages.map((msg) => (
                     <div
@@ -554,8 +547,8 @@ What would you like to work on first?`
                     >
                         <div
                             className={`max-w-[85%] rounded-lg p-3 ${msg.sender === 'user'
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-100 text-gray-900 border border-gray-200'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-gray-100 text-gray-900 border border-gray-200'
                                 }`}
                         >
                             <div className="text-sm whitespace-pre-wrap">{msg.message}</div>
@@ -577,7 +570,6 @@ What would you like to work on first?`
                 <div ref={messagesEndRef} />
             </div>
 
-            {/* Input */}
             <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-200">
                 <div className="flex gap-2">
                     <input
