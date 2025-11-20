@@ -31,6 +31,7 @@ export default function TaylorPanel({ manuscriptId }: TaylorPanelProps) {
     }, [manuscriptId])
 
     async function checkAssessmentStatus() {
+        console.log('🔍 [PANEL] checkAssessmentStatus called for:', manuscriptId)
         const supabase = createClient()
         const { data } = await supabase
             .from('publishing_progress')
@@ -38,10 +39,14 @@ export default function TaylorPanel({ manuscriptId }: TaylorPanelProps) {
             .eq('manuscript_id', manuscriptId)
             .single()
 
+        console.log('🔍 [PANEL] Query result:', data)
         if (data) {
+            console.log('🔍 [PANEL] Setting assessmentCompleted:', data.assessment_completed)
+            console.log('🔍 [PANEL] Setting planPdfUrl:', data.plan_pdf_url)
             setAssessmentCompleted(data.assessment_completed || false)
             setPublishingPlanUrl(data.plan_pdf_url)
         }
+        console.log('🔍 [PANEL] Setting isLoading to false')
         setIsLoading(false)
     }
 
@@ -73,6 +78,7 @@ export default function TaylorPanel({ manuscriptId }: TaylorPanelProps) {
     }
 
     if (isLoading) {
+        console.log('🔍 [PANEL] Rendering loading spinner')
         return (
             <div className="w-96 bg-white border-l border-gray-200 flex items-center justify-center">
                 <div className="text-center">
@@ -82,6 +88,9 @@ export default function TaylorPanel({ manuscriptId }: TaylorPanelProps) {
             </div>
         )
     }
+
+    console.log('🔍 [PANEL] isLoading is false, rendering main panel')
+    console.log('🔍 [PANEL] assessmentCompleted:', assessmentCompleted)
 
     return (
         <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
@@ -100,9 +109,15 @@ export default function TaylorPanel({ manuscriptId }: TaylorPanelProps) {
 
             {/* Conditional Content: Assessment or Chat */}
             {!assessmentCompleted ? (
-                <AssessmentView manuscriptId={manuscriptId} />
+                <>
+                    {console.log('🔍 [PANEL] Rendering AssessmentView')}
+                    <AssessmentView manuscriptId={manuscriptId} />
+                </>
             ) : (
-                <TaylorChatView manuscriptId={manuscriptId} planPdfUrl={publishingPlanUrl} />
+                <>
+                    {console.log('🔍 [PANEL] Rendering TaylorChatView')}
+                    <TaylorChatView manuscriptId={manuscriptId} planPdfUrl={publishingPlanUrl} />
+                </>
             )}
         </div>
     )
@@ -372,6 +387,10 @@ function AssessmentView({ manuscriptId }: { manuscriptId: string }) {
 // ============================================
 
 function TaylorChatView({ manuscriptId, planPdfUrl }: { manuscriptId: string, planPdfUrl: string | null }) {
+    console.log('🔍 [CHAT] TaylorChatView component rendering')
+    console.log('🔍 [CHAT] manuscriptId:', manuscriptId)
+    console.log('🔍 [CHAT] planPdfUrl:', planPdfUrl)
+
     const [messages, setMessages] = useState<ChatMessage[]>([])
     const [inputMessage, setInputMessage] = useState('')
     const [isLoading, setIsLoading] = useState(false)
@@ -379,6 +398,7 @@ function TaylorChatView({ manuscriptId, planPdfUrl }: { manuscriptId: string, pl
     const inputRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
+        console.log('🔍 [CHAT] useEffect triggered - calling loadChatHistory and subscribeToChatUpdates')
         loadChatHistory()
         subscribeToChatUpdates()
     }, [manuscriptId])
@@ -388,13 +408,22 @@ function TaylorChatView({ manuscriptId, planPdfUrl }: { manuscriptId: string, pl
     }, [messages])
 
     async function loadChatHistory() {
+        console.log('🔍 [CHAT] loadChatHistory called for manuscript:', manuscriptId)
+
         const supabase = createClient()
+        console.log('🔍 [CHAT] Supabase client created')
+
         const { data, error } = await supabase
             .from('editor_chat_history')
             .select('*')
             .eq('manuscript_id', manuscriptId)
             .eq('phase_number', 4)
             .order('created_at', { ascending: true })
+
+        console.log('🔍 [CHAT] Query executed')
+        console.log('🔍 [CHAT] Error:', error)
+        console.log('🔍 [CHAT] Data:', data)
+        console.log('🔍 [CHAT] Data length:', data?.length)
 
         if (error) {
             console.error('❌ Error loading chat history:', error)
@@ -403,6 +432,7 @@ function TaylorChatView({ manuscriptId, planPdfUrl }: { manuscriptId: string, pl
 
         if (data && data.length > 0) {
             console.log('💬 Loaded chat history:', data.length, 'messages')
+            console.log('🔍 [CHAT] First message:', data[0])
             setMessages(data.map(msg => ({
                 id: msg.id,
                 sender: msg.sender === 'Author' ? 'user' : 'taylor',
@@ -411,11 +441,13 @@ function TaylorChatView({ manuscriptId, planPdfUrl }: { manuscriptId: string, pl
             })))
         } else {
             console.log('📭 No existing chat history, waiting for Taylor welcome message...')
-            // Don't add a fallback greeting - let n8n handle it
+            console.log('🔍 [CHAT] Messages array is now empty')
         }
     }
 
     function subscribeToChatUpdates() {
+        console.log('🔍 [CHAT] Setting up subscription for manuscript:', manuscriptId)
+
         const supabase = createClient()
         const channel = supabase
             .channel(`taylor-chat-${manuscriptId}`)
@@ -428,22 +460,41 @@ function TaylorChatView({ manuscriptId, planPdfUrl }: { manuscriptId: string, pl
                     filter: `manuscript_id=eq.${manuscriptId}`
                 },
                 (payload) => {
+                    console.log('🔍 [CHAT] Realtime event received!')
+                    console.log('🔍 [CHAT] Payload:', payload)
+
                     const newMessage = payload.new
                     console.log('💬 New chat message received:', newMessage.sender)
+                    console.log('🔍 [CHAT] Phase number:', newMessage.phase_number)
+                    console.log('🔍 [CHAT] Checking if phase === 4 and sender === Taylor')
+
                     if (newMessage.phase_number === 4 && newMessage.sender === 'Taylor') {
-                        setMessages(prev => [...prev, {
-                            id: newMessage.id,
-                            sender: 'taylor',
-                            message: newMessage.message,
-                            created_at: newMessage.created_at
-                        }])
+                        console.log('✅ [CHAT] Conditions met, adding message to state')
+                        setMessages(prev => {
+                            console.log('🔍 [CHAT] Previous messages:', prev.length)
+                            const updated = [...prev, {
+                                id: newMessage.id,
+                                sender: 'taylor',
+                                message: newMessage.message,
+                                created_at: newMessage.created_at
+                            }]
+                            console.log('🔍 [CHAT] Updated messages:', updated.length)
+                            return updated
+                        })
                         setIsLoading(false)
+                    } else {
+                        console.log('❌ [CHAT] Conditions NOT met')
+                        console.log('🔍 [CHAT] Phase match:', newMessage.phase_number === 4)
+                        console.log('🔍 [CHAT] Sender match:', newMessage.sender === 'Taylor')
                     }
                 }
             )
-            .subscribe()
+            .subscribe((status) => {
+                console.log('🔍 [CHAT] Subscription status:', status)
+            })
 
         return () => {
+            console.log('🔍 [CHAT] Cleaning up subscription')
             supabase.removeChannel(channel)
         }
     }
