@@ -30,7 +30,8 @@ export default function TaylorPanel({ manuscriptId }: TaylorPanelProps) {
 
     useEffect(() => {
         checkAssessmentStatus()
-        subscribeToProgressUpdates()
+        const cleanup = subscribeToProgressUpdates()
+        return cleanup
     }, [manuscriptId])
 
     async function checkAssessmentStatus() {
@@ -54,10 +55,13 @@ export default function TaylorPanel({ manuscriptId }: TaylorPanelProps) {
     }
 
     function subscribeToProgressUpdates() {
-        console.log('🔧 [SUBSCRIBE] Setting up publishing progress subscription')
+        console.log('🔧 [SUBSCRIBE] Setting up publishing progress subscription for:', manuscriptId)
         const supabase = createClient()
+        const channelName = `taylor-panel-progress-${manuscriptId}` // Different name to avoid collision!
+        console.log('🔧 [SUBSCRIBE] Channel name:', channelName)
+
         const channel = supabase
-            .channel(`publishing-progress-${manuscriptId}`)
+            .channel(channelName)
             .on(
                 'postgres_changes',
                 {
@@ -68,6 +72,7 @@ export default function TaylorPanel({ manuscriptId }: TaylorPanelProps) {
                 },
                 (payload) => {
                     console.log('🔔 [NEW CODE] Publishing progress subscription fired!')
+                    console.log('🔔 [NEW CODE] Channel:', channelName)
                     console.log('🔔 [NEW CODE] assessment_completed:', payload.new.assessment_completed)
                     console.log('🔔 [NEW CODE] plan_pdf_url:', payload.new.plan_pdf_url)
 
@@ -86,11 +91,13 @@ export default function TaylorPanel({ manuscriptId }: TaylorPanelProps) {
                 }
             )
             .subscribe((status) => {
-                console.log('🔧 [SUBSCRIBE] Subscription status:', status)
+                console.log('🔧 [SUBSCRIBE] Subscription status changed:', status, 'for channel:', channelName)
             })
 
+        console.log('🔧 [SUBSCRIBE] Subscription setup complete')
+
         return () => {
-            console.log('🔧 [SUBSCRIBE] Cleaning up subscription')
+            console.log('🔧 [SUBSCRIBE] Cleaning up subscription for channel:', channelName)
             supabase.removeChannel(channel)
         }
     }
