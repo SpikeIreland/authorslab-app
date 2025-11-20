@@ -1,5 +1,8 @@
 'use client'
 
+// ⚡ UPDATED: 2025-11-20 13:20 - Fixed subscription callback state update issue
+// This version uses functional setState to properly update from realtime subscription
+
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { ASSESSMENT_QUESTIONS, type AssessmentAnswers } from '@/types/database'
