@@ -229,20 +229,9 @@ function AssessmentView({ manuscriptId }: { manuscriptId: string }) {
             const responseData = await response.json()
             console.log('✅ Assessment submitted successfully:', responseData)
 
-            // ✅ ADD THIS: Save Taylor's welcome message to chat
-            if (responseData.response) {
-                const supabase = createClient()
-                await supabase
-                    .from('editor_chat_history')
-                    .insert({
-                        manuscript_id: manuscriptId,
-                        phase_number: 4,
-                        sender: 'taylor',
-                        message: responseData.response
-                    })
-
-                console.log('💬 Taylor welcome message saved to chat')
-            }
+            // ✅ REMOVED: Frontend no longer saves the message
+            // The n8n workflow will handle saving Taylor's welcome message directly
+            // This avoids RLS policy issues and timing problems
 
         } catch (error) {
             console.error('❌ Error submitting assessment:', error)
@@ -400,14 +389,20 @@ function TaylorChatView({ manuscriptId, planPdfUrl }: { manuscriptId: string, pl
 
     async function loadChatHistory() {
         const supabase = createClient()
-        const { data } = await supabase
+        const { data, error } = await supabase
             .from('editor_chat_history')
             .select('*')
             .eq('manuscript_id', manuscriptId)
             .eq('phase_number', 4)
             .order('created_at', { ascending: true })
 
+        if (error) {
+            console.error('❌ Error loading chat history:', error)
+            return
+        }
+
         if (data && data.length > 0) {
+            console.log('💬 Loaded chat history:', data.length, 'messages')
             setMessages(data.map(msg => ({
                 id: msg.id,
                 sender: msg.sender === 'author' ? 'user' : 'taylor',
@@ -415,52 +410,9 @@ function TaylorChatView({ manuscriptId, planPdfUrl }: { manuscriptId: string, pl
                 created_at: msg.created_at
             })))
         } else {
-            addInitialGreeting()
+            console.log('📭 No existing chat history, waiting for Taylor welcome message...')
+            // Don't add a fallback greeting - let n8n handle it
         }
-    }
-
-    async function addInitialGreeting() {
-        const supabase = createClient()
-        const { data: manuscript } = await supabase
-            .from('manuscripts')
-            .select('title, author_profiles!inner(first_name)')
-            .eq('id', manuscriptId)
-            .single()
-
-        const profile = Array.isArray(manuscript?.author_profiles)
-            ? manuscript.author_profiles[0]
-            : manuscript?.author_profiles
-        const authorName = profile?.first_name || 'there'
-        const title = manuscript?.title || 'your manuscript'
-
-        const greeting = `Hi ${authorName}! 👋
-
-Your publishing plan for "${title}" is ready! ${planPdfUrl ? 'You can view it using the button above.' : ''}
-
-I'm here to help you with every step of your publishing journey. Feel free to ask me about:
-
-- Cover design and formatting
-- Platform selection and setup
-- Publishing timeline and strategy
-- Any questions about your plan
-
-What would you like to work on first?`
-
-        await supabase
-            .from('editor_chat_history')
-            .insert({
-                manuscript_id: manuscriptId,
-                phase_number: 4,
-                sender: 'taylor',
-                message: greeting
-            })
-
-        setMessages([{
-            id: 'greeting-' + Date.now(),
-            sender: 'taylor',
-            message: greeting,
-            created_at: new Date().toISOString()
-        }])
     }
 
     function subscribeToChatUpdates() {
@@ -477,6 +429,7 @@ What would you like to work on first?`
                 },
                 (payload) => {
                     const newMessage = payload.new
+                    console.log('💬 New chat message received:', newMessage.sender)
                     if (newMessage.phase_number === 4 && newMessage.sender === 'taylor') {
                         setMessages(prev => [...prev, {
                             id: newMessage.id,
@@ -512,7 +465,7 @@ What would you like to work on first?`
         }])
 
         const supabase = createClient()
-        await supabase
+        const { error } = await supabase
             .from('editor_chat_history')
             .insert({
                 manuscript_id: manuscriptId,
@@ -520,6 +473,12 @@ What would you like to work on first?`
                 sender: 'author',
                 message: userMessage
             })
+
+        if (error) {
+            console.error('❌ Error saving user message:', error)
+            setIsLoading(false)
+            return
+        }
 
         try {
             await fetch(TAYLOR_WEBHOOKS.chat, {
@@ -554,21 +513,30 @@ What would you like to work on first?`
             }
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {messages.map((msg) => (
-                    <div
-                        key={msg.id}
-                        className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
-                        <div
-                            className={`max-w-[85%] rounded-lg p-3 ${msg.sender === 'user'
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-100 text-gray-900 border border-gray-200'
-                                }`}
-                        >
-                            <div className="text-sm whitespace-pre-wrap">{msg.message}</div>
+                {messages.length === 0 ? (
+                    <div className="flex items-center justify-center h-full text-gray-500">
+                        <div className="text-center">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto mb-3"></div>
+                            <p className="text-sm">Waiting for Taylor...</p>
                         </div>
                     </div>
-                ))}
+                ) : (
+                    messages.map((msg) => (
+                        <div
+                            key={msg.id}
+                            className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                        >
+                            <div
+                                className={`max-w-[85%] rounded-lg p-3 ${msg.sender === 'user'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-gray-100 text-gray-900 border border-gray-200'
+                                    }`}
+                            >
+                                <div className="text-sm whitespace-pre-wrap">{msg.message}</div>
+                            </div>
+                        </div>
+                    ))
+                )}
 
                 {isLoading && (
                     <div className="flex justify-start">
