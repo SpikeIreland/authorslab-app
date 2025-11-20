@@ -1,8 +1,5 @@
 'use client'
 
-// ⚡ UPDATED: 2025-11-20 13:20 - Fixed subscription callback state update issue
-// This version uses functional setState to properly update from realtime subscription
-
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { ASSESSMENT_QUESTIONS, type AssessmentAnswers } from '@/types/database'
@@ -35,7 +32,6 @@ export default function TaylorPanel({ manuscriptId }: TaylorPanelProps) {
     }, [manuscriptId])
 
     async function checkAssessmentStatus() {
-        console.log('🔍 [PANEL] checkAssessmentStatus called for:', manuscriptId)
         const supabase = createClient()
         const { data } = await supabase
             .from('publishing_progress')
@@ -43,25 +39,17 @@ export default function TaylorPanel({ manuscriptId }: TaylorPanelProps) {
             .eq('manuscript_id', manuscriptId)
             .single()
 
-        console.log('🔍 [PANEL] Query result:', data)
         if (data) {
-            console.log('🔍 [PANEL] Setting assessmentCompleted:', data.assessment_completed)
-            console.log('🔍 [PANEL] Setting planPdfUrl:', data.plan_pdf_url)
             setAssessmentCompleted(data.assessment_completed || false)
             setPublishingPlanUrl(data.plan_pdf_url)
         }
-        console.log('🔍 [PANEL] Setting isLoading to false')
         setIsLoading(false)
     }
 
     function subscribeToProgressUpdates() {
-        console.log('🔧 [SUBSCRIBE] Setting up publishing progress subscription for:', manuscriptId)
         const supabase = createClient()
-        const channelName = `taylor-panel-progress-${manuscriptId}` // Different name to avoid collision!
-        console.log('🔧 [SUBSCRIBE] Channel name:', channelName)
-
         const channel = supabase
-            .channel(channelName)
+            .channel(`taylor-panel-progress-${manuscriptId}`)
             .on(
                 'postgres_changes',
                 {
@@ -71,39 +59,21 @@ export default function TaylorPanel({ manuscriptId }: TaylorPanelProps) {
                     filter: `manuscript_id=eq.${manuscriptId}`
                 },
                 (payload) => {
-                    console.log('🔔 [NEW CODE] Publishing progress subscription fired!')
-                    console.log('🔔 [NEW CODE] Channel:', channelName)
-                    console.log('🔔 [NEW CODE] assessment_completed:', payload.new.assessment_completed)
-                    console.log('🔔 [NEW CODE] plan_pdf_url:', payload.new.plan_pdf_url)
-
-                    // Force state update using functional form
+                    console.log('📊 Taylor: Publishing progress updated')
                     if (payload.new.assessment_completed === true) {
-                        console.log('🔔 [NEW CODE] FORCING STATE UPDATE NOW')
-                        setAssessmentCompleted(() => {
-                            console.log('🔔 [NEW CODE] setAssessmentCompleted callback executed')
-                            return true
-                        })
-                        setPublishingPlanUrl(() => {
-                            console.log('🔔 [NEW CODE] setPublishingPlanUrl callback executed')
-                            return payload.new.plan_pdf_url
-                        })
+                        setAssessmentCompleted(true)
+                        setPublishingPlanUrl(payload.new.plan_pdf_url)
                     }
                 }
             )
-            .subscribe((status) => {
-                console.log('🔧 [SUBSCRIBE] Subscription status changed:', status, 'for channel:', channelName)
-            })
-
-        console.log('🔧 [SUBSCRIBE] Subscription setup complete')
+            .subscribe()
 
         return () => {
-            console.log('🔧 [SUBSCRIBE] Cleaning up subscription for channel:', channelName)
             supabase.removeChannel(channel)
         }
     }
 
     if (isLoading) {
-        console.log('🔍 [PANEL] Rendering loading spinner')
         return (
             <div className="w-96 bg-white border-l border-gray-200 flex items-center justify-center">
                 <div className="text-center">
@@ -113,9 +83,6 @@ export default function TaylorPanel({ manuscriptId }: TaylorPanelProps) {
             </div>
         )
     }
-
-    console.log('🔍 [PANEL] isLoading is false, rendering main panel')
-    console.log('🔍 [PANEL] assessmentCompleted:', assessmentCompleted)
 
     return (
         <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
@@ -134,15 +101,9 @@ export default function TaylorPanel({ manuscriptId }: TaylorPanelProps) {
 
             {/* Conditional Content: Assessment or Chat */}
             {!assessmentCompleted ? (
-                <>
-                    {console.log('🔍 [PANEL] Rendering AssessmentView')}
-                    <AssessmentView manuscriptId={manuscriptId} />
-                </>
+                <AssessmentView manuscriptId={manuscriptId} />
             ) : (
-                <>
-                    {console.log('🔍 [PANEL] Rendering TaylorChatView')}
-                    <TaylorChatView manuscriptId={manuscriptId} planPdfUrl={publishingPlanUrl} />
-                </>
+                <TaylorChatView manuscriptId={manuscriptId} planPdfUrl={publishingPlanUrl} />
             )}
         </div>
     )
@@ -412,10 +373,6 @@ function AssessmentView({ manuscriptId }: { manuscriptId: string }) {
 // ============================================
 
 function TaylorChatView({ manuscriptId, planPdfUrl }: { manuscriptId: string, planPdfUrl: string | null }) {
-    console.log('🔍 [CHAT] TaylorChatView component rendering')
-    console.log('🔍 [CHAT] manuscriptId:', manuscriptId)
-    console.log('🔍 [CHAT] planPdfUrl:', planPdfUrl)
-
     const [messages, setMessages] = useState<ChatMessage[]>([])
     const [inputMessage, setInputMessage] = useState('')
     const [isLoading, setIsLoading] = useState(false)
@@ -423,7 +380,6 @@ function TaylorChatView({ manuscriptId, planPdfUrl }: { manuscriptId: string, pl
     const inputRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
-        console.log('🔍 [CHAT] useEffect triggered - calling loadChatHistory and subscribeToChatUpdates')
         loadChatHistory()
         subscribeToChatUpdates()
     }, [manuscriptId])
@@ -433,11 +389,7 @@ function TaylorChatView({ manuscriptId, planPdfUrl }: { manuscriptId: string, pl
     }, [messages])
 
     async function loadChatHistory() {
-        console.log('🔍 [CHAT] loadChatHistory called for manuscript:', manuscriptId)
-
         const supabase = createClient()
-        console.log('🔍 [CHAT] Supabase client created')
-
         const { data, error } = await supabase
             .from('editor_chat_history')
             .select('*')
@@ -445,34 +397,23 @@ function TaylorChatView({ manuscriptId, planPdfUrl }: { manuscriptId: string, pl
             .eq('phase_number', 4)
             .order('created_at', { ascending: true })
 
-        console.log('🔍 [CHAT] Query executed')
-        console.log('🔍 [CHAT] Error:', error)
-        console.log('🔍 [CHAT] Data:', data)
-        console.log('🔍 [CHAT] Data length:', data?.length)
-
         if (error) {
             console.error('❌ Error loading chat history:', error)
             return
         }
 
         if (data && data.length > 0) {
-            console.log('💬 Loaded chat history:', data.length, 'messages')
-            console.log('🔍 [CHAT] First message:', data[0])
+            console.log('💬 Loaded', data.length, 'Taylor chat messages')
             setMessages(data.map(msg => ({
                 id: msg.id,
                 sender: (msg.sender === 'Author' ? 'user' : 'taylor') as 'user' | 'taylor',
                 message: msg.message,
                 created_at: msg.created_at
             })))
-        } else {
-            console.log('📭 No existing chat history, waiting for Taylor welcome message...')
-            console.log('🔍 [CHAT] Messages array is now empty')
         }
     }
 
     function subscribeToChatUpdates() {
-        console.log('🔍 [CHAT] Setting up subscription for manuscript:', manuscriptId)
-
         const supabase = createClient()
         const channel = supabase
             .channel(`taylor-chat-${manuscriptId}`)
@@ -485,41 +426,24 @@ function TaylorChatView({ manuscriptId, planPdfUrl }: { manuscriptId: string, pl
                     filter: `manuscript_id=eq.${manuscriptId}`
                 },
                 (payload) => {
-                    console.log('🔍 [CHAT] Realtime event received!')
-                    console.log('🔍 [CHAT] Payload:', payload)
-
                     const newMessage = payload.new
-                    console.log('💬 New chat message received:', newMessage.sender)
-                    console.log('🔍 [CHAT] Phase number:', newMessage.phase_number)
-                    console.log('🔍 [CHAT] Checking if phase === 4 and sender === Taylor')
-
                     if (newMessage.phase_number === 4 && newMessage.sender === 'Taylor') {
-                        console.log('✅ [CHAT] Conditions met, adding message to state')
                         setMessages(prev => {
-                            console.log('🔍 [CHAT] Previous messages:', prev.length)
                             const updated: ChatMessage[] = [...prev, {
                                 id: newMessage.id,
                                 sender: 'taylor' as const,
                                 message: newMessage.message,
                                 created_at: newMessage.created_at
                             }]
-                            console.log('🔍 [CHAT] Updated messages:', updated.length)
                             return updated
                         })
                         setIsLoading(false)
-                    } else {
-                        console.log('❌ [CHAT] Conditions NOT met')
-                        console.log('🔍 [CHAT] Phase match:', newMessage.phase_number === 4)
-                        console.log('🔍 [CHAT] Sender match:', newMessage.sender === 'Taylor')
                     }
                 }
             )
-            .subscribe((status) => {
-                console.log('🔍 [CHAT] Subscription status:', status)
-            })
+            .subscribe()
 
         return () => {
-            console.log('🔍 [CHAT] Cleaning up subscription')
             supabase.removeChannel(channel)
         }
     }
