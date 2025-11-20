@@ -470,14 +470,14 @@ Ready to start? Just say "I'm ready" or "let's begin"! 📚`,
     }
 
     return (
-        <div className="fixed bottom-6 right-6 z-50">
+        <div className="fixed bottom-6 right-6 w-96 h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col z-[60] border-2 border-teal-500">
             {/* Chat Button */}
             {!isOpen && (
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-full shadow-2xl hover:scale-110 transition-transform flex items-center justify-center text-2xl"
+                    className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-br from-teal-500 to-teal-600 text-white rounded-full shadow-2xl hover:scale-110 transition-all flex items-center justify-center text-3xl z-[60] animate-bounce"
                 >
-                    💬
+                    📚
                 </button>
             )}
 
