@@ -481,7 +481,7 @@ function TaylorChatView({ manuscriptId, planPdfUrl }: { manuscriptId: string, pl
         }
 
         try {
-            await fetch(TAYLOR_WEBHOOKS.chat, {
+            const response = await fetch(TAYLOR_WEBHOOKS.chat, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -490,6 +490,25 @@ function TaylorChatView({ manuscriptId, planPdfUrl }: { manuscriptId: string, pl
                     chatHistory: messages.slice(-10)
                 })
             })
+
+            // Check if there's an immediate response (like for cover generation)
+            if (response.ok) {
+                const data = await response.json()
+
+                // If the workflow returns an immediate response, show it right away
+                if (data.response) {
+                    console.log('💬 Received immediate response from workflow')
+                    setMessages(prev => [...prev, {
+                        id: 'immediate-' + Date.now(),
+                        sender: 'taylor' as const,
+                        message: data.response,
+                        created_at: new Date().toISOString()
+                    }])
+                    setIsLoading(false)
+                }
+                // Otherwise, wait for realtime subscription (normal chat)
+                // isLoading stays true until subscription picks up the message
+            }
         } catch (error) {
             console.error('❌ Error sending message:', error)
             setIsLoading(false)
