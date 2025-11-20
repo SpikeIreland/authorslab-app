@@ -64,9 +64,13 @@ export default function TaylorPanel({ manuscriptId }: TaylorPanelProps) {
                 },
                 (payload) => {
                     console.log('📊 Publishing progress updated:', payload.new)
+                    console.log('🔍 [SUB] assessment_completed value:', payload.new.assessment_completed)
+
+                    // Instead of trying to update state from the callback,
+                    // re-check the database to get fresh data
                     if (payload.new.assessment_completed) {
-                        setAssessmentCompleted(true)
-                        setPublishingPlanUrl(payload.new.plan_pdf_url)
+                        console.log('✅ [SUB] Assessment completed detected - rechecking database')
+                        checkAssessmentStatus()
                     }
                 }
             )
