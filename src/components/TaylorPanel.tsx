@@ -228,7 +228,21 @@ function AssessmentView({ manuscriptId }: { manuscriptId: string }) {
 
             const responseData = await response.json()
             console.log('✅ Assessment submitted successfully:', responseData)
-            console.log('⏳ Waiting for plan generation via realtime subscription...')
+
+            // ✅ ADD THIS: Save Taylor's welcome message to chat
+            if (responseData.response) {
+                const supabase = createClient()
+                await supabase
+                    .from('editor_chat_history')
+                    .insert({
+                        manuscript_id: manuscriptId,
+                        phase_number: 4,
+                        sender: 'taylor',
+                        message: responseData.response
+                    })
+
+                console.log('💬 Taylor welcome message saved to chat')
+            }
 
         } catch (error) {
             console.error('❌ Error submitting assessment:', error)
@@ -547,8 +561,8 @@ What would you like to work on first?`
                     >
                         <div
                             className={`max-w-[85%] rounded-lg p-3 ${msg.sender === 'user'
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-100 text-gray-900 border border-gray-200'
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-100 text-gray-900 border border-gray-200'
                                 }`}
                         >
                             <div className="text-sm whitespace-pre-wrap">{msg.message}</div>
