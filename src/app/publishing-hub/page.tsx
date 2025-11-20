@@ -510,7 +510,7 @@ function PublishingHubContent() {
         <div className="flex-1 flex flex-col overflow-hidden bg-gray-50">
           <div className="flex-1 overflow-y-auto">
             {/* Book Preview Panel - Sticky at top */}
-            <div className="sticky top-0 z-10 bg-gray-50">
+            <div className="sticky top-0 z-[60] bg-gray-50">
               <BookPreviewPanel
                 manuscript={manuscript}
                 publishingProgress={publishingProgress}
