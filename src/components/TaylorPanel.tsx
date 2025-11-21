@@ -465,6 +465,14 @@ function TaylorChatView({ manuscriptId, planPdfUrl }: { manuscriptId: string, pl
         }])
 
         const supabase = createClient()
+
+        // ✅ FETCH MANUSCRIPT DATA FIRST
+        const { data: manuscript } = await supabase
+            .from('manuscripts')
+            .select('title, genre, manuscript_summary')
+            .eq('id', manuscriptId)
+            .single()
+
         const { error } = await supabase
             .from('editor_chat_history')
             .insert({
@@ -486,7 +494,12 @@ function TaylorChatView({ manuscriptId, planPdfUrl }: { manuscriptId: string, pl
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     manuscriptId,
-                    userMessage,
+                    message: userMessage,  // ✅ CORRECT FIELD NAME
+                    manuscriptData: {  // ✅ ADD THIS
+                        genre: manuscript?.genre || 'fiction',
+                        title: manuscript?.title || 'the book',
+                        summary: manuscript?.manuscript_summary || ''
+                    },
                     chatHistory: messages.slice(-10)
                 })
             })
