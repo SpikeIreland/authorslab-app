@@ -1668,6 +1668,24 @@ function StudioContent() {
                 📝 Beta Feedback
               </button>
 
+              {/* In the header, after Beta Feedback button */}
+              <button
+                onClick={() => {
+                  if (confirm(
+                    '⚠️ WARNING: Changing your manuscript will:\n\n' +
+                    '• Delete all current chapters\n' +
+                    '• Remove all editor notes and analysis\n' +
+                    '• Reset all editing progress\n\n' +
+                    'Are you sure you want to continue?'
+                  )) {
+                    router.push(`/re-upload?manuscriptId=${manuscript.id}`)
+                  }
+                }}
+                className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors text-sm font-semibold"
+              >
+                🔄 Change Manuscript
+              </button>
+              
               <div className="flex items-center gap-2">
                 {authorProfile?.profile_image_url ? (
                   <img
