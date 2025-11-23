@@ -290,6 +290,9 @@ function StudioContent() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatInputRef = useRef<HTMLInputElement>(null)
 
+  // Insert Chapter Mode
+  const [isInsertMode, setIsInsertMode] = useState(false)
+
   const [showFeedbackModal, setShowFeedbackModal] = useState(false)
 
   // Core State
@@ -1115,6 +1118,144 @@ function StudioContent() {
       await loadChapterIssues(freshChapter.chapter_number)
     } else {
       setChapterIssues([])
+    }
+  }
+
+  async function insertChapterAt(position: number) {
+    if (!manuscript || !activePhase) return
+
+    // Prompt for chapter title
+    const newTitle = prompt('Enter title for the new chapter:')
+    if (!newTitle || !newTitle.trim()) {
+      setIsInsertMode(false)
+      return
+    }
+
+    setIsLocked(true)
+    setIsInsertMode(false)
+
+    try {
+      const supabase = createClient()
+
+      // Determine the new chapter number
+      // Position 0 means "before first chapter", position 1 means "after first chapter", etc.
+      const chaptersToShift = chapters.filter(ch => {
+        // Don't shift prologue (0) or epilogue (999)
+        if (ch.chapter_number === 0 || ch.chapter_number === 999) return false
+        return ch.chapter_number >= position
+      })
+
+      // Calculate new chapter number
+      let newChapterNumber: number
+      if (position === 0) {
+        // Inserting at the very beginning
+        const firstChapter = chapters.find(ch => ch.chapter_number > 0 && ch.chapter_number < 999)
+        newChapterNumber = firstChapter ? 1 : 1
+      } else {
+        newChapterNumber = position
+      }
+
+      console.log(`📝 Inserting new chapter at position ${newChapterNumber}`)
+      console.log(`📝 Chapters to shift: ${chaptersToShift.length}`)
+
+      // Step 1: Shift existing chapters UP by 1 (in reverse order to avoid conflicts)
+      const sortedChaptersToShift = [...chaptersToShift].sort((a, b) => b.chapter_number - a.chapter_number)
+
+      for (const chapter of sortedChaptersToShift) {
+        const oldNumber = chapter.chapter_number
+        const newNumber = oldNumber + 1
+
+        console.log(`  Moving chapter ${oldNumber} → ${newNumber}`)
+
+        // Update chapter number
+        await supabase
+          .from('chapters')
+          .update({ chapter_number: newNumber })
+          .eq('id', chapter.id)
+
+        // Update related issues
+        await supabase
+          .from('manuscript_issues')
+          .update({ chapter_number: newNumber })
+          .eq('manuscript_id', manuscript.id)
+          .eq('chapter_number', oldNumber)
+
+        // Update related chat messages
+        await supabase
+          .from('editor_chat_messages')
+          .update({ chapter_number: newNumber })
+          .eq('manuscript_id', manuscript.id)
+          .eq('chapter_number', oldNumber)
+      }
+
+      // Step 2: Create the new chapter
+      const { data: newChapter, error } = await supabase
+        .from('chapters')
+        .insert({
+          manuscript_id: manuscript.id,
+          chapter_number: newChapterNumber,
+          title: newTitle.trim(),
+          content: '',
+          word_count: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single()
+
+      if (error) {
+        throw error
+      }
+
+      // Step 3: Update manuscript timestamp
+      await supabase
+        .from('manuscripts')
+        .update({
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', manuscript.id)
+
+      // Step 4: Reload chapters from database
+      const { data: updatedChapters } = await supabase
+        .from('chapters')
+        .select('*')
+        .eq('manuscript_id', manuscript.id)
+        .order('chapter_number', { ascending: true })
+
+      if (updatedChapters) {
+        setChapters(updatedChapters)
+
+        // Find the index of the new chapter and load it
+        const newChapterIndex = updatedChapters.findIndex(ch => ch.id === newChapter.id)
+        if (newChapterIndex !== -1) {
+          setCurrentChapterIndex(newChapterIndex)
+          setEditorContent('')
+          setWordCount(0)
+          setHasUnsavedChanges(false)
+          setChapterIssues([])
+
+          // Update editing status for new chapter
+          setChapterEditingStatus(prev => ({
+            ...prev,
+            [newChapterNumber]: 'not_started'
+          }))
+        }
+      }
+
+      // Step 5: Notify the user via chat
+      await addChatMessage(
+        editorName,
+        `✨ I see you've added a new chapter: **"${newTitle.trim()}"** (Chapter ${newChapterNumber}).\n\n` +
+        `Go ahead and write your content, then save when you're ready. Once you have some text, click "Start Editing" and I'll analyze it for you!`
+      )
+
+      console.log('✅ Chapter inserted successfully')
+
+    } catch (error) {
+      console.error('❌ Error inserting chapter:', error)
+      await addChatMessage(editorName, '❌ There was an error creating the new chapter. Please try again.')
+    } finally {
+      setIsLocked(false)
     }
   }
 
@@ -2154,65 +2295,105 @@ function StudioContent() {
 
 
             <div className="flex-1 overflow-y-auto p-2">
+              {/* Insert Chapter Button */}
+              {!isChapterSidebarCollapsed && (
+                <button
+                  onClick={() => setIsInsertMode(!isInsertMode)}
+                  className={`w-full px-3 py-2 mb-3 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors ${isInsertMode
+                      ? 'bg-red-100 text-red-700 border border-red-300 hover:bg-red-200'
+                      : 'bg-green-100 text-green-700 border border-green-300 hover:bg-green-200'
+                    }`}
+                >
+                  {isInsertMode ? '✕ Cancel Insert' : '+ Insert Chapter'}
+                </button>
+              )}
+
+              {/* Insert at beginning option */}
+              {isInsertMode && !isChapterSidebarCollapsed && (
+                <button
+                  onClick={() => {
+                    const firstRegularChapter = chapters.find(ch => ch.chapter_number > 0 && ch.chapter_number < 999)
+                    insertChapterAt(firstRegularChapter?.chapter_number || 1)
+                  }}
+                  className="w-full px-3 py-2 mb-2 bg-blue-50 text-blue-600 border-2 border-dashed border-blue-300 rounded-lg text-xs font-medium hover:bg-blue-100 hover:border-blue-400 transition-colors"
+                >
+                  + Insert Chapter Here
+                </button>
+              )}
+
               {chapters.map((chapter, index) => {
                 const editStatus = chapterEditingStatus[chapter.chapter_number]
                 const phaseColumn = `phase_${currentPhase}_approved_at` as keyof Chapter
                 const isApproved = !!chapter[phaseColumn]
 
                 return (
-                  <button
-                    key={chapter.id}
-                    onClick={() => !isLocked && loadChapter(index)}
-                    disabled={isLocked}
-                    className={`group w-full p-3 rounded-lg mb-2 text-left transition ${isLocked
-                      ? 'opacity-50 cursor-not-allowed'
-                      : index === currentChapterIndex
-                        ? `${getEditorColorClasses(editorColor).bgLight} border-2 ${getEditorColorClasses(editorColor).border}`
-                        : `bg-white border border-gray-200 ${getEditorColorClasses(editorColor).borderLight}`
-                      }`}
-                  >
-                    {!isChapterSidebarCollapsed ? (
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 flex items-center justify-center">
-                          {isApproved ? (
-                            <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>✓</span>
-                          ) : editStatus === 'analyzing' ? (
-                            <div className={`w-4 h-4 border-2 ${getEditorColorClasses(editorColor).border} border-t-transparent rounded-full animate-spin`}></div>
-                          ) : editStatus === 'ready' ? (
-                            <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>●</span>
-                          ) : unsavedChapters.has(chapter.chapter_number) ? (
-                            <span className="text-blue-600 text-lg">●</span>
-                          ) : (
-                            <span className="text-gray-300 text-lg">○</span>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs text-gray-500">
-                            {chapter.chapter_number === 0 ? 'Prologue' : `Chapter ${chapter.chapter_number}`}
+                  <div key={chapter.id}>
+                    {/* Chapter Button */}
+                    <button
+                      onClick={() => !isLocked && !isInsertMode && loadChapter(index)}
+                      disabled={isLocked || isInsertMode}
+                      className={`group w-full p-3 rounded-lg mb-1 text-left transition ${isLocked || isInsertMode
+                          ? 'opacity-50 cursor-not-allowed'
+                          : index === currentChapterIndex
+                            ? `${getEditorColorClasses(editorColor).bgLight} border-2 ${getEditorColorClasses(editorColor).border}`
+                            : `bg-white border border-gray-200 hover:${getEditorColorClasses(editorColor).borderLight}`
+                        }`}
+                    >
+                      {!isChapterSidebarCollapsed ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 flex items-center justify-center">
+                            {isApproved ? (
+                              <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>✓</span>
+                            ) : editStatus === 'analyzing' ? (
+                              <div className={`w-4 h-4 border-2 ${getEditorColorClasses(editorColor).border} border-t-transparent rounded-full animate-spin`}></div>
+                            ) : editStatus === 'ready' ? (
+                              <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>●</span>
+                            ) : unsavedChapters.has(chapter.chapter_number) ? (
+                              <span className="text-blue-600 text-lg">●</span>
+                            ) : (
+                              <span className="text-gray-300 text-lg">○</span>
+                            )}
                           </div>
-                          <div className="flex items-center gap-1">
-                            <div className="font-semibold text-sm flex-1">{chapter.title}</div>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleEditChapterTitle(chapter)
-                              }}
-                              className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white rounded transition"
-                              title="Edit chapter title"
-                            >
-                              <svg className="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                              </svg>
-                            </button>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs text-gray-500">
+                              {chapter.chapter_number === 0 ? 'Prologue' : chapter.chapter_number === 999 ? 'Epilogue' : `Chapter ${chapter.chapter_number}`}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <div className="font-semibold text-sm flex-1 truncate">{chapter.title}</div>
+                              {!isInsertMode && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleEditChapterTitle(chapter)
+                                  }}
+                                  className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white rounded transition"
+                                  title="Edit chapter title"
+                                >
+                                  <svg className="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                  </svg>
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ) : (
-                      <div className="text-center">
-                        {chapter.chapter_number === 0 ? 'P' : chapter.chapter_number}
-                      </div>
+                      ) : (
+                        <div className="text-center">
+                          {chapter.chapter_number === 0 ? 'P' : chapter.chapter_number === 999 ? 'E' : chapter.chapter_number}
+                        </div>
+                      )}
+                    </button>
+
+                    {/* Insert After This Chapter Button (only for non-epilogue chapters in insert mode) */}
+                    {isInsertMode && !isChapterSidebarCollapsed && chapter.chapter_number !== 999 && (
+                      <button
+                        onClick={() => insertChapterAt(chapter.chapter_number + 1)}
+                        className="w-full px-3 py-2 mb-2 bg-blue-50 text-blue-600 border-2 border-dashed border-blue-300 rounded-lg text-xs font-medium hover:bg-blue-100 hover:border-blue-400 transition-colors"
+                      >
+                        + Insert Chapter Here
+                      </button>
                     )}
-                  </button>
+                  </div>
                 )
               })}
             </div>
