@@ -1685,7 +1685,7 @@ function StudioContent() {
               >
                 🔄 Change Manuscript
               </button>
-              
+
               <div className="flex items-center gap-2">
                 {authorProfile?.profile_image_url ? (
                   <img
@@ -2097,6 +2097,44 @@ function StudioContent() {
                   {isChapterSidebarCollapsed ? '→' : '←'}
                 </button>
               </div>
+
+              {/* Change Manuscript Button */}
+              {!isChapterSidebarCollapsed ? (
+                <button
+                  onClick={() => {
+                    if (confirm(
+                      '⚠️ WARNING: Changing your manuscript will:\n\n' +
+                      '• Delete all current chapters\n' +
+                      '• Remove all editor notes and analysis\n' +
+                      '• Reset all editing progress\n\n' +
+                      'Are you sure you want to continue?'
+                    )) {
+                      router.push(`/re-upload?manuscriptId=${manuscript.id}`)
+                    }
+                  }}
+                  className="w-full px-3 py-2 bg-yellow-100 text-yellow-800 border border-yellow-300 rounded-lg hover:bg-yellow-200 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                >
+                  🔄 Change Manuscript
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    if (confirm(
+                      '⚠️ WARNING: Changing your manuscript will:\n\n' +
+                      '• Delete all current chapters\n' +
+                      '• Remove all editor notes and analysis\n' +
+                      '• Reset all editing progress\n\n' +
+                      'Are you sure you want to continue?'
+                    )) {
+                      router.push(`/re-upload?manuscriptId=${manuscript.id}`)
+                    }
+                  }}
+                  className="w-full p-2 bg-yellow-100 text-yellow-800 border border-yellow-300 rounded-lg hover:bg-yellow-200 transition-colors"
+                  title="Change Manuscript"
+                >
+                  🔄
+                </button>
+              )}
 
               {/* Phase Badges */}
               {!isChapterSidebarCollapsed && currentChapter && (
