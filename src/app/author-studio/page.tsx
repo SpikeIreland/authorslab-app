@@ -1181,12 +1181,16 @@ function StudioContent() {
           activePhase.phase_number === 3 ? WEBHOOKS.jordanChat :
             WEBHOOKS.alexChat
 
-      // Build the payload - include note context if discussing an issue
+      // Build the payload with full context
       const payload = {
         message: message,
         manuscriptId: manuscript.id,
         chapterNumber: chapters[currentChapterIndex]?.chapter_number,
+        chapterTitle: chapters[currentChapterIndex]?.title || '',
         chapterContent: editorContent,
+        manuscriptTitle: manuscript.title,
+        analysisComplete: analysisComplete,
+        authorFirstName: authorFirstName,
         ...(discussingIssue && {
           isNoteDiscussion: true,
           issueId: discussingIssue.id,
