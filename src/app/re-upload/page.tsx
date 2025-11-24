@@ -264,8 +264,11 @@ function ReUploadContent() {
                 .update({
                     title: manuscriptTitle,
                     genre: genre,
-                    word_count: wordCount,
-                    manuscript_text: extractedText,
+                    current_word_count: wordCount,
+                    full_text: extractedText,
+                    expected_chapters: chapterCount,
+                    has_prologue: hasPrologue,
+                    has_epilogue: hasEpilogue,
                     manuscript_summary: null,
                     full_analysis_key_points: null,
                     full_analysis_text: null,
@@ -284,7 +287,6 @@ function ReUploadContent() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     manuscriptId: manuscript.id,
-                    manuscriptText: extractedText,
                     expectedChapters: chapterCount,
                     hasPrologue: hasPrologue,
                     hasEpilogue: hasEpilogue
@@ -398,9 +400,9 @@ function ReUploadContent() {
                                 onDrop={handleDrop}
                                 onClick={() => document.getElementById('fileInput')?.click()}
                                 className={`border-4 border-dashed rounded-3xl p-12 text-center transition-all cursor-pointer ${dragOver ? 'border-blue-600 bg-blue-50' :
-                                        uploadStatus === 'processing' ? 'border-yellow-500 bg-yellow-50 animate-pulse' :
-                                            uploadStatus === 'success' ? 'border-green-500 bg-green-50' :
-                                                'border-gray-300 bg-gray-50 hover:border-blue-400 hover:bg-blue-50/50'
+                                    uploadStatus === 'processing' ? 'border-yellow-500 bg-yellow-50 animate-pulse' :
+                                        uploadStatus === 'success' ? 'border-green-500 bg-green-50' :
+                                            'border-gray-300 bg-gray-50 hover:border-blue-400 hover:bg-blue-50/50'
                                     }`}
                             >
                                 <div className="text-6xl mb-5">
@@ -465,9 +467,9 @@ function ReUploadContent() {
 
                             {statusMessage && (
                                 <div className={`mt-6 p-5 rounded-xl text-center font-medium ${uploadStatus === 'processing' ? 'bg-yellow-50 text-yellow-900 border-2 border-yellow-500' :
-                                        uploadStatus === 'success' ? 'bg-green-50 text-green-900 border-2 border-green-500' :
-                                            uploadStatus === 'error' ? 'bg-red-50 text-red-900 border-2 border-red-500' :
-                                                ''
+                                    uploadStatus === 'success' ? 'bg-green-50 text-green-900 border-2 border-green-500' :
+                                        uploadStatus === 'error' ? 'bg-red-50 text-red-900 border-2 border-red-500' :
+                                            ''
                                     }`}>
                                     {statusMessage}
                                 </div>
