@@ -397,7 +397,7 @@ export default function Home() {
               <p className="text-sm text-gray-500">Format prep & launch strategy</p>
               <div className="mt-3">
                 <span className="inline-block bg-teal-50 text-teal-600 text-xs font-bold px-3 py-1 rounded-full border border-teal-300">
-                  COMING Q4 2025
+                  NOW AVAILABLE
                 </span>
               </div>
             </div>
@@ -412,7 +412,7 @@ export default function Home() {
               <p className="text-sm text-gray-500">Platform building & book promotion</p>
               <div className="mt-3">
                 <span className="inline-block bg-orange-50 text-orange-600 text-xs font-bold px-3 py-1 rounded-full border border-orange-300">
-                  COMING Q4 2025
+                  NOW AVAILABLE
                 </span>
               </div>
             </div>

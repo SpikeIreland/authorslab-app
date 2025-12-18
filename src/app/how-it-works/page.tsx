@@ -50,7 +50,7 @@ export default function HowItWorksPage() {
             </span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            Our 5-phase AI-powered editing process transforms your manuscript into a published book. Three phases available now, with publishing and marketing launching Q4 2025.
+            Our 5-phase AI-powered editing process transforms your manuscript into a published book. Three phases available now, with publishing and marketing juat launched in Q4 2025.
           </p>
         </div>
       </section>
@@ -412,7 +412,7 @@ export default function HowItWorksPage() {
 
                 <div className="mt-6 p-4 bg-white rounded-lg border border-teal-300">
                   <p className="text-sm text-gray-600">
-                    <strong>Status:</strong> Launching Q4 2025 | <strong>Publishing Specialist:</strong> Taylor | <strong>Estimated Timeline:</strong> Files ready in 3-5 days
+                    <strong>Status:</strong> Now Available | <strong>Publishing Specialist:</strong> Taylor | <strong>Estimated Timeline:</strong> Files ready in 3-5 days
                   </p>
                 </div>
               </div>
@@ -478,7 +478,7 @@ export default function HowItWorksPage() {
                 </div>
                 <div className="mt-6 p-4 bg-white rounded-lg border border-orange-300">
                   <p className="text-sm text-gray-600">
-                    <strong>Status:</strong> Launching Q4 2025 | <strong>Marketing Specialist:</strong> Quinn (Marketing Strategist)
+                    <strong>Status:</strong> Now Available | <strong>Marketing Specialist:</strong> Quinn (Marketing Strategist)
                   </p>
                 </div>
               </div>
@@ -530,7 +530,7 @@ export default function HowItWorksPage() {
               {/* Coming Soon */}
               <div className="bg-white rounded-2xl p-8 shadow-xl border-2 border-teal-300 opacity-95">
                 <div className="inline-block bg-teal-500 text-white px-4 py-2 rounded-full text-sm font-bold mb-4">
-                  COMING Q4 2025
+                  NOW AVAILABLE
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">Publishing & Marketing Hub</h3>
                 <p className="text-gray-600 mb-6">
