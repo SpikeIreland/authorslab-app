@@ -50,15 +50,15 @@ export default function EditorsPage() {
             </span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            Five AI specialists, each trained in their craft, working together to transform your manuscript from first draft to published, promoted book. Three available now, two launching Q4 2025.
+            Five AI specialists, each trained in their craft, working together to transform your manuscript from first draft to published, promoted book.
           </p>
         </div>
       </section>
 
-      {/* Alex - Developmental Editor - AVAILABLE */}
+      {/* Alex - Developmental Editor */}
       <section className="py-20 relative">
         <div className="absolute top-8 right-8 bg-green-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
-          AVAILABLE NOW
+          PHASE 1
         </div>
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
@@ -155,10 +155,10 @@ export default function EditorsPage() {
         </div>
       </section>
 
-      {/* Sam - Line Editor - AVAILABLE */}
+      {/* Sam - Line Editor */}
       <section className="py-20 bg-gray-50 relative">
         <div className="absolute top-8 right-8 bg-purple-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
-          AVAILABLE NOW
+          PHASE 2
         </div>
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
@@ -255,10 +255,10 @@ export default function EditorsPage() {
         </div>
       </section>
 
-      {/* Jordan - Copy Editor - AVAILABLE */}
+      {/* Jordan - Copy Editor */}
       <section className="py-20 relative">
         <div className="absolute top-8 right-8 bg-blue-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
-          AVAILABLE NOW
+          PHASE 3
         </div>
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
@@ -355,10 +355,10 @@ export default function EditorsPage() {
         </div>
       </section>
 
-      {/* Taylor - Publishing - COMING SOON */}
-      <section className="py-20 bg-gray-50 relative opacity-95">
+      {/* Taylor - Publishing */}
+      <section className="py-20 bg-gray-50 relative">
         <div className="absolute top-8 right-8 bg-teal-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
-          COMING Q4 2025
+          PHASE 4
         </div>
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
@@ -377,10 +377,10 @@ export default function EditorsPage() {
                   <div className="bg-teal-50 rounded-xl p-6 border-l-4 border-teal-500">
                     <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
                       <span className="text-teal-600">📚</span>
-                      What Taylor Will Do
+                      What Taylor Does
                     </h4>
                     <p className="text-gray-700">
-                      Taylor transforms your edited manuscript into a professionally formatted, publication-ready book. From interior layout to file preparation, Taylor handles all the technical aspects of getting your book into readers&apos; hands.
+                      Taylor transforms your edited manuscript into a professionally formatted, publication-ready book. From cover design to file preparation, Taylor handles all the technical aspects of getting your book into readers&apos; hands.
                     </p>
                   </div>
 
@@ -390,24 +390,24 @@ export default function EditorsPage() {
                       Taylor&apos;s Approach
                     </h4>
                     <p className="text-gray-700 mb-3">
-                      &quot;Publishing is where editing meets reader experience. I&apos;ll help you with:
+                      &quot;Publishing is where editing meets reader experience. I help you with:
                     </p>
                     <ul className="space-y-2 text-gray-700">
                       <li className="flex items-start gap-2">
                         <span className="text-teal-600 mt-1">→</span>
-                        <span>Professional manuscript formatting for print and digital</span>
+                        <span>AI-generated cover designs tailored to your genre</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-teal-600 mt-1">→</span>
-                        <span>E-book file creation (EPUB, MOBI)</span>
+                        <span>Professional formatting for print and e-book</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-teal-600 mt-1">→</span>
-                        <span>Cover design guidance and best practices</span>
+                        <span>Front and back matter creation</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-teal-600 mt-1">→</span>
-                        <span>Publishing platform strategy and submission prep</span>
+                        <span>Publishing platform guidance and file preparation</span>
                       </li>
                     </ul>
                   </div>
@@ -439,12 +439,12 @@ export default function EditorsPage() {
                       Publishing Specialist
                     </p>
                     <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4 text-center">
-                      <p className="text-sm font-semibold mb-2">Will Specialize in:</p>
+                      <p className="text-sm font-semibold mb-2">Specializes in:</p>
                       <div className="flex flex-wrap gap-2 justify-center">
+                        <span className="bg-white/30 px-3 py-1 rounded-full text-xs font-semibold">Cover Design</span>
                         <span className="bg-white/30 px-3 py-1 rounded-full text-xs font-semibold">Formatting</span>
                         <span className="bg-white/30 px-3 py-1 rounded-full text-xs font-semibold">E-books</span>
-                        <span className="bg-white/30 px-3 py-1 rounded-full text-xs font-semibold">Design</span>
-                        <span className="bg-white/30 px-3 py-1 rounded-full text-xs font-semibold">Strategy</span>
+                        <span className="bg-white/30 px-3 py-1 rounded-full text-xs font-semibold">Print</span>
                       </div>
                     </div>
                   </div>
@@ -455,10 +455,10 @@ export default function EditorsPage() {
         </div>
       </section>
 
-      {/* Quinn - Marketing - COMING SOON */}
-      <section className="py-20 relative opacity-95">
+      {/* Quinn - Marketing */}
+      <section className="py-20 relative">
         <div className="absolute top-8 right-8 bg-orange-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
-          COMING Q4 2025
+          PHASE 5
         </div>
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
@@ -478,7 +478,7 @@ export default function EditorsPage() {
                       Marketing Strategist
                     </p>
                     <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4 text-center">
-                      <p className="text-sm font-semibold mb-2">Will Specialize in:</p>
+                      <p className="text-sm font-semibold mb-2">Specializes in:</p>
                       <div className="flex flex-wrap gap-2 justify-center">
                         <span className="bg-white/30 px-3 py-1 rounded-full text-xs font-semibold">Platform</span>
                         <span className="bg-white/30 px-3 py-1 rounded-full text-xs font-semibold">Promotion</span>
@@ -504,7 +504,7 @@ export default function EditorsPage() {
                   <div className="bg-orange-50 rounded-xl p-6 border-l-4 border-orange-500">
                     <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
                       <span className="text-orange-600">🎯</span>
-                      What Quinn Will Do
+                      What Quinn Does
                     </h4>
                     <p className="text-gray-700">
                       Quinn helps you build an author platform and create a strategic marketing plan to reach your target readers. From social media to email campaigns, Quinn guides you through every aspect of book promotion.
@@ -517,7 +517,7 @@ export default function EditorsPage() {
                       Quinn&apos;s Approach
                     </h4>
                     <p className="text-gray-700 mb-3">
-                      &quot;Great books need readers. I&apos;ll help you connect with them by:
+                      &quot;Great books need readers. I help you connect with them by:
                     </p>
                     <ul className="space-y-2 text-gray-700">
                       <li className="flex items-start gap-2">
@@ -560,28 +560,21 @@ export default function EditorsPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center mb-12">
             <h2 className="text-4xl font-bold text-gray-900 mb-6">
-              Your Complete Editorial & Publishing Team
+              Your Complete Editorial Team
             </h2>
             <p className="text-xl text-gray-600">
-              Five specialists working in sequence to take your manuscript from first draft to published, promoted book. The first three editors are available now, with publishing and marketing launching Q4 2025.
+              Five specialists working in sequence to take your manuscript from first draft to published, promoted book
             </p>
           </div>
 
           <div className="max-w-6xl mx-auto">
-            {/* Available Now */}
-            <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 mb-8">
-              <div className="text-center mb-8">
-                <span className="inline-block px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-bold mb-2">
-                  AVAILABLE NOW
-                </span>
-                <h3 className="text-2xl font-bold text-gray-900">Professional Editing</h3>
-              </div>
-              <div className="grid md:grid-cols-3 gap-8">
+            <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
+              <div className="grid md:grid-cols-5 gap-8">
                 <div className="text-center">
                   <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-4">
                     👔
                   </div>
-                  <h4 className="text-xl font-bold text-gray-900 mb-2">Alex Builds</h4>
+                  <h4 className="text-lg font-bold text-gray-900 mb-2">Alex Builds</h4>
                   <p className="text-gray-600 text-sm">
                     Creates the strong foundation your story needs
                   </p>
@@ -591,7 +584,7 @@ export default function EditorsPage() {
                   <div className="w-20 h-20 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-4">
                     ✨
                   </div>
-                  <h4 className="text-xl font-bold text-gray-900 mb-2">Sam Polishes</h4>
+                  <h4 className="text-lg font-bold text-gray-900 mb-2">Sam Polishes</h4>
                   <p className="text-gray-600 text-sm">
                     Refines every sentence to perfection
                   </p>
@@ -601,28 +594,17 @@ export default function EditorsPage() {
                   <div className="w-20 h-20 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-4">
                     🔍
                   </div>
-                  <h4 className="text-xl font-bold text-gray-900 mb-2">Jordan Perfects</h4>
+                  <h4 className="text-lg font-bold text-gray-900 mb-2">Jordan Perfects</h4>
                   <p className="text-gray-600 text-sm">
                     Ensures flawless technical execution
                   </p>
                 </div>
-              </div>
-            </div>
 
-            {/* Coming Soon */}
-            <div className="bg-gradient-to-r from-teal-50 to-orange-50 rounded-2xl shadow-xl p-8 md:p-12 border-2 border-teal-300 opacity-95">
-              <div className="text-center mb-8">
-                <span className="inline-block px-4 py-2 bg-teal-100 text-teal-800 rounded-full text-sm font-bold mb-2">
-                  COMING Q4 2025
-                </span>
-                <h3 className="text-2xl font-bold text-gray-900">Publishing & Marketing</h3>
-              </div>
-              <div className="grid md:grid-cols-2 gap-8">
                 <div className="text-center">
                   <div className="w-20 h-20 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-4">
                     📚
                   </div>
-                  <h4 className="text-xl font-bold text-gray-900 mb-2">Taylor Publishes</h4>
+                  <h4 className="text-lg font-bold text-gray-900 mb-2">Taylor Publishes</h4>
                   <p className="text-gray-600 text-sm">
                     Formats and prepares for distribution
                   </p>
@@ -632,18 +614,18 @@ export default function EditorsPage() {
                   <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-4">
                     🚀
                   </div>
-                  <h4 className="text-xl font-bold text-gray-900 mb-2">Quinn Promotes</h4>
+                  <h4 className="text-lg font-bold text-gray-900 mb-2">Quinn Promotes</h4>
                   <p className="text-gray-600 text-sm">
                     Connects your book with readers
                   </p>
                 </div>
               </div>
-            </div>
 
-            <div className="mt-8 text-center">
-              <p className="text-gray-700 text-lg font-semibold">
-                = Your Published, Promoted Book
-              </p>
+              <div className="mt-8 text-center">
+                <p className="text-gray-700 text-lg font-semibold">
+                  = Your Published, Promoted Book
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -656,7 +638,7 @@ export default function EditorsPage() {
             Ready to Work With Your Editorial Team?
           </h2>
           <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
-            Alex, Sam, and Jordan are ready to help transform your manuscript. Start with a free analysis or begin your complete 3-phase editing journey today.
+            All five editors are ready to help transform your manuscript. Start with a free analysis or begin your complete journey today.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <Link href="/free-analysis">
@@ -666,7 +648,7 @@ export default function EditorsPage() {
             </Link>
             <Link href="/signup">
               <Button className="text-lg px-8 py-6 bg-gradient-to-r from-green-400 to-blue-400 text-gray-900 hover:from-green-500 hover:to-blue-500 font-bold">
-                Start 3-Phase Journey - $299
+                Start Complete Journey - $299
               </Button>
             </Link>
           </div>

@@ -50,7 +50,7 @@ export default function HowItWorksPage() {
             </span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            Our 5-phase AI-powered editing process transforms your manuscript into a published book. Three phases available now, with publishing and marketing juat launched in Q4 2025.
+            Our 5-phase AI-powered process transforms your manuscript into a professionally edited, published, and marketed book. All five phases available now.
           </p>
         </div>
       </section>
@@ -120,7 +120,7 @@ export default function HowItWorksPage() {
                 </div>
                 <div className="mt-6 p-4 bg-white rounded-lg border border-green-300">
                   <p className="text-sm text-gray-600">
-                    <strong>Status:</strong> Available Now | <strong>AI Editor:</strong> Alex (Developmental Specialist) | <strong>Work at your own pace</strong>
+                    <strong>AI Editor:</strong> Alex (Developmental Specialist) | <strong>Work at your own pace</strong>
                   </p>
                 </div>
               </div>
@@ -186,7 +186,7 @@ export default function HowItWorksPage() {
                 </div>
                 <div className="mt-6 p-4 bg-white rounded-lg border border-purple-300">
                   <p className="text-sm text-gray-600">
-                    <strong>Status:</strong> Available Now | <strong>AI Editor:</strong> Sam (Line Editing Specialist) | <strong>Work at your own pace</strong>
+                    <strong>AI Editor:</strong> Sam (Line Editing Specialist) | <strong>Work at your own pace</strong>
                   </p>
                 </div>
               </div>
@@ -252,14 +252,14 @@ export default function HowItWorksPage() {
                 </div>
                 <div className="mt-6 p-4 bg-white rounded-lg border border-blue-300">
                   <p className="text-sm text-gray-600">
-                    <strong>Status:</strong> Available Now | <strong>AI Editor:</strong> Jordan (Copy Editing Specialist) | <strong>Work at your own pace</strong>
+                    <strong>AI Editor:</strong> Jordan (Copy Editing Specialist) | <strong>Work at your own pace</strong>
                   </p>
                 </div>
               </div>
             </div>
 
             {/* Phase 4: Publishing Preparation */}
-            <div className="mb-20 opacity-95">
+            <div className="mb-20">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-16 h-16 bg-teal-500 text-white rounded-full flex items-center justify-center text-2xl font-bold">
                   4
@@ -412,14 +412,14 @@ export default function HowItWorksPage() {
 
                 <div className="mt-6 p-4 bg-white rounded-lg border border-teal-300">
                   <p className="text-sm text-gray-600">
-                    <strong>Status:</strong> Now Available | <strong>Publishing Specialist:</strong> Taylor | <strong>Estimated Timeline:</strong> Files ready in 3-5 days
+                    <strong>Publishing Specialist:</strong> Taylor | <strong>Estimated Timeline:</strong> Files ready in 3-5 days
                   </p>
                 </div>
               </div>
             </div>
 
             {/* Phase 5: Marketing Strategy */}
-            <div className="mb-20 opacity-95">
+            <div className="mb-20">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-16 h-16 bg-orange-500 text-white rounded-full flex items-center justify-center text-2xl font-bold">
                   5
@@ -431,7 +431,7 @@ export default function HowItWorksPage() {
               </div>
 
               <div className="bg-orange-50 rounded-2xl p-8 border-2 border-orange-200">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">What Will Happen in Phase 5:</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">What Happens in Phase 5:</h3>
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
                     <h4 className="font-semibold text-gray-900 mb-3">🚀 Marketing Launch</h4>
@@ -455,7 +455,7 @@ export default function HowItWorksPage() {
                     </ul>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-3">🎯 You Will Receive</h4>
+                    <h4 className="font-semibold text-gray-900 mb-3">🎯 You Receive</h4>
                     <ul className="space-y-2 text-gray-700">
                       <li className="flex items-start gap-2">
                         <span className="text-orange-600 mt-1">→</span>
@@ -478,7 +478,7 @@ export default function HowItWorksPage() {
                 </div>
                 <div className="mt-6 p-4 bg-white rounded-lg border border-orange-300">
                   <p className="text-sm text-gray-600">
-                    <strong>Status:</strong> Now Available | <strong>Marketing Specialist:</strong> Quinn (Marketing Strategist)
+                    <strong>Marketing Specialist:</strong> Quinn | <strong>Work at your own pace</strong>
                   </p>
                 </div>
               </div>
@@ -488,71 +488,68 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
-      {/* What's Available Now vs Coming Soon */}
+      {/* Complete Journey Section */}
       <section className="py-20 bg-gradient-to-br from-green-50 to-blue-50">
         <div className="container mx-auto px-4">
-          <div className="max-w-5xl mx-auto">
-            <h2 className="text-4xl font-bold text-center text-gray-900 mb-12">Your Journey Starts Today</h2>
-            
-            <div className="grid md:grid-cols-2 gap-8">
-              {/* Available Now */}
-              <div className="bg-white rounded-2xl p-8 shadow-xl border-2 border-green-400">
-                <div className="inline-block bg-green-500 text-white px-4 py-2 rounded-full text-sm font-bold mb-4">
-                  AVAILABLE NOW
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-4xl font-bold text-gray-900 mb-6">Your Complete Journey</h2>
+            <p className="text-xl text-gray-600 mb-12">
+              All five phases included in one package. From first draft to published, marketed book.
+            </p>
+
+            <div className="bg-white rounded-2xl p-8 md:p-12 shadow-xl border-2 border-green-400">
+              <div className="inline-block bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-2 rounded-full text-sm font-bold mb-6">
+                COMPLETE PACKAGE
+              </div>
+
+              <div className="grid md:grid-cols-5 gap-4 mb-8">
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center text-xl mx-auto mb-2">👔</div>
+                  <p className="text-xs text-gray-600">Developmental</p>
+                  <p className="text-xs font-semibold text-green-600">Alex</p>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">3-Phase Professional Editing</h3>
-                <p className="text-gray-600 mb-6">
-                  Start editing your manuscript today with our complete 3-phase editing system.
-                </p>
-                <ul className="space-y-3 mb-6">
-                  <li className="flex items-start gap-3">
-                    <span className="text-green-600 text-xl">✓</span>
-                    <span className="text-gray-700"><strong>Phase 1:</strong> Developmental editing with Alex</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-green-600 text-xl">✓</span>
-                    <span className="text-gray-700"><strong>Phase 2:</strong> Line editing with Sam</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-green-600 text-xl">✓</span>
-                    <span className="text-gray-700"><strong>Phase 3:</strong> Copy editing with Jordan</span>
-                  </li>
-                </ul>
-                <div className="text-3xl font-bold text-gray-900 mb-2">$299</div>
-                <p className="text-sm text-gray-600 mb-6">Complete editing package · Work at your own pace</p>
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-purple-500 text-white rounded-full flex items-center justify-center text-xl mx-auto mb-2">✨</div>
+                  <p className="text-xs text-gray-600">Line Editing</p>
+                  <p className="text-xs font-semibold text-purple-600">Sam</p>
+                </div>
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center text-xl mx-auto mb-2">🔍</div>
+                  <p className="text-xs text-gray-600">Copy Editing</p>
+                  <p className="text-xs font-semibold text-blue-600">Jordan</p>
+                </div>
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-teal-500 text-white rounded-full flex items-center justify-center text-xl mx-auto mb-2">📚</div>
+                  <p className="text-xs text-gray-600">Publishing</p>
+                  <p className="text-xs font-semibold text-teal-600">Taylor</p>
+                </div>
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-orange-500 text-white rounded-full flex items-center justify-center text-xl mx-auto mb-2">🚀</div>
+                  <p className="text-xs text-gray-600">Marketing</p>
+                  <p className="text-xs font-semibold text-orange-600">Quinn</p>
+                </div>
+              </div>
+
+              <div className="text-5xl font-bold text-gray-900 mb-2">$299</div>
+              <p className="text-gray-600 mb-8">All five phases · Work at your own pace · Keep all rights</p>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/signup">
-                  <Button className="w-full py-6 text-lg bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600">
-                    Start Editing Now
+                  <Button className="text-lg px-8 py-6 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600">
+                    Start Your Journey
+                  </Button>
+                </Link>
+                <Link href="/free-analysis">
+                  <Button variant="outline" className="text-lg px-8 py-6 border-2">
+                    Get Free Analysis First
                   </Button>
                 </Link>
               </div>
-
-              {/* Coming Soon */}
-              <div className="bg-white rounded-2xl p-8 shadow-xl border-2 border-teal-300 opacity-95">
-                <div className="inline-block bg-teal-500 text-white px-4 py-2 rounded-full text-sm font-bold mb-4">
-                  NOW AVAILABLE
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Publishing & Marketing Hub</h3>
-                <p className="text-gray-600 mb-6">
-                  Complete your journey from edited manuscript to published, promoted book.
-                </p>
-                <ul className="space-y-3 mb-6">
-                  <li className="flex items-start gap-3">
-                    <span className="text-teal-600 text-xl">⏳</span>
-                    <span className="text-gray-700"><strong>Phase 4:</strong> Publishing prep with Taylor</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-orange-600 text-xl">⏳</span>
-                    <span className="text-gray-700"><strong>Phase 5:</strong> Marketing strategy with Quinn</span>
-                  </li>
-                </ul>
-                <div className="text-3xl font-bold text-gray-900 mb-2">Coming Soon</div>
-                <p className="text-sm text-gray-600 mb-6">Be the first to know when we launch</p>
-                <Button variant="outline" className="w-full py-6 text-lg border-2 border-teal-300 hover:bg-teal-50" disabled>
-                  Notify Me When Available
-                </Button>
-              </div>
             </div>
+
+            <p className="mt-8 text-gray-600">
+              Traditional editing alone costs $2,000 - $10,000+. AuthorsLab gives you editing, publishing, AND marketing for <strong>$299</strong>.
+            </p>
           </div>
         </div>
       </section>
@@ -572,7 +569,7 @@ export default function HowItWorksPage() {
             </Link>
             <Link href="/signup">
               <Button variant="outline" className="text-lg px-8 py-6 bg-white/10 border-white/30 text-white hover:bg-white/20">
-                Start 3-Phase Journey - $299
+                Start Complete Journey - $299
               </Button>
             </Link>
           </div>
