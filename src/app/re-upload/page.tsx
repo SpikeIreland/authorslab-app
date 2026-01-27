@@ -448,7 +448,7 @@ function ReUploadContent() {
             // 10. Redirect back to author studio
             console.log('✅ Step 10: Redirecting to author studio...')
             setTimeout(() => {
-                router.push(`/author-studio?manuscriptId=${manuscript.id}`)
+                window.location.href = `/author-studio?manuscriptId=${manuscript.id}`
             }, 2000)
 
         } catch (error) {
