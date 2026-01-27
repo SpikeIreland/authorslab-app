@@ -351,7 +351,6 @@ function ReUploadContent() {
                     full_analysis_text: null,
                     report_pdf_url: null,
                     analysis_started_at: null,
-                    status: 'pending',
                     updated_at: new Date().toISOString()
                 })
                 .eq('id', manuscript.id)
