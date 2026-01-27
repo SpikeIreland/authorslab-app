@@ -205,41 +205,68 @@ function ReUploadContent() {
         }
 
         setIsSubmitting(true)
+        console.log('=== RE-UPLOAD STARTING ===')
+        console.log('📝 New text length:', extractedText.length)
+        console.log('📝 New word count:', wordCount)
 
         try {
             const supabase = createClient()
 
             // 1. Delete all existing chapters
-            console.log('🗑️ Deleting old chapters...')
-            await supabase
+            console.log('🗑️ Step 1: Deleting old chapters...')
+            const { error: chaptersError } = await supabase
                 .from('chapters')
                 .delete()
                 .eq('manuscript_id', manuscript.id)
 
+            if (chaptersError) {
+                console.error('❌ Failed to delete chapters:', chaptersError)
+                throw new Error('Failed to delete old chapters')
+            }
+            console.log('✅ Chapters deleted')
+
             // 2. Delete all existing issues
-            console.log('🗑️ Deleting old issues...')
-            await supabase
+            console.log('🗑️ Step 2: Deleting old issues...')
+            const { error: issuesError } = await supabase
                 .from('manuscript_issues')
                 .delete()
                 .eq('manuscript_id', manuscript.id)
 
-            // 3. Delete all chat history (FIXED: correct table name)
-            console.log('🗑️ Deleting old chat history...')
-            await supabase
+            if (issuesError) {
+                console.error('❌ Failed to delete issues:', issuesError)
+                // Non-fatal, continue
+            }
+            console.log('✅ Issues deleted')
+
+            // 3. Delete all chat history
+            console.log('🗑️ Step 3: Deleting old chat history...')
+            const { error: chatError } = await supabase
                 .from('editor_chat_history')
                 .delete()
                 .eq('manuscript_id', manuscript.id)
 
+            if (chatError) {
+                console.error('❌ Failed to delete chat history:', chatError)
+                // Non-fatal, continue
+            }
+            console.log('✅ Chat history deleted')
+
             // 4. Delete any manuscript version snapshots
-            console.log('🗑️ Deleting old version snapshots...')
-            await supabase
+            console.log('🗑️ Step 4: Deleting old version snapshots...')
+            const { error: versionsError } = await supabase
                 .from('manuscript_versions')
                 .delete()
                 .eq('manuscript_id', manuscript.id)
 
+            if (versionsError) {
+                console.error('❌ Failed to delete versions:', versionsError)
+                // Non-fatal, continue
+            }
+            console.log('✅ Version snapshots deleted')
+
             // 5. Reset publishing progress (Taylor's Phase 4 data)
-            console.log('🔄 Resetting publishing progress...')
-            await supabase
+            console.log('🔄 Step 5: Resetting publishing progress...')
+            const { error: publishingError } = await supabase
                 .from('publishing_progress')
                 .update({
                     assessment_completed: false,
@@ -259,9 +286,15 @@ function ReUploadContent() {
                 })
                 .eq('manuscript_id', manuscript.id)
 
+            if (publishingError) {
+                console.error('❌ Failed to reset publishing progress:', publishingError)
+                // Non-fatal, continue
+            }
+            console.log('✅ Publishing progress reset')
+
             // 6. Reset editing phases
-            console.log('🔄 Resetting editing phases...')
-            await supabase
+            console.log('🔄 Step 6: Resetting editing phases...')
+            const { error: phasesError } = await supabase
                 .from('editing_phases')
                 .update({
                     phase_status: 'pending',
@@ -273,10 +306,14 @@ function ReUploadContent() {
                     chapters_approved: 0
                 })
                 .eq('manuscript_id', manuscript.id)
-                .neq('phase_number', 1)  // Keep Phase 1 separate
+                .neq('phase_number', 1)
+
+            if (phasesError) {
+                console.error('❌ Failed to reset phases:', phasesError)
+            }
 
             // Set Phase 1 back to active
-            await supabase
+            const { error: phase1Error } = await supabase
                 .from('editing_phases')
                 .update({
                     phase_status: 'active',
@@ -290,15 +327,25 @@ function ReUploadContent() {
                 .eq('manuscript_id', manuscript.id)
                 .eq('phase_number', 1)
 
-            // 7. Update manuscript record (FIXED: correct column name)
-            console.log('📝 Updating manuscript...')
-            await supabase
+            if (phase1Error) {
+                console.error('❌ Failed to activate Phase 1:', phase1Error)
+            }
+            console.log('✅ Editing phases reset')
+
+            // 7. Update manuscript record - THIS IS THE CRITICAL STEP
+            console.log('📝 Step 7: Updating manuscript with new text...')
+            console.log('📝 Text to save - length:', extractedText.length)
+            console.log('📝 Text to save - first 200 chars:', extractedText.substring(0, 200))
+
+            setStatusMessage('📝 Saving new manuscript text...')
+
+            const { error: updateError } = await supabase
                 .from('manuscripts')
                 .update({
                     title: manuscriptTitle,
                     genre: genre,
                     current_word_count: wordCount,
-                    full_text: extractedText,  // FIXED: was manuscript_text
+                    full_text: extractedText,
                     manuscript_summary: null,
                     full_analysis_key_points: null,
                     full_analysis_text: null,
@@ -309,7 +356,49 @@ function ReUploadContent() {
                 })
                 .eq('id', manuscript.id)
 
-            // 8. Trigger chapter parsing
+            if (updateError) {
+                console.error('❌ CRITICAL: Failed to update manuscript:', updateError)
+                throw new Error(`Failed to update manuscript text: ${updateError.message}`)
+            }
+            console.log('✅ Manuscript update query executed')
+
+            // 8. VERIFY the update actually happened
+            console.log('🔍 Step 8: Verifying manuscript update...')
+            setStatusMessage('🔍 Verifying update...')
+
+            const { data: verifyData, error: verifyError } = await supabase
+                .from('manuscripts')
+                .select('full_text, title, current_word_count')
+                .eq('id', manuscript.id)
+                .single()
+
+            if (verifyError) {
+                console.error('❌ Failed to verify update:', verifyError)
+                throw new Error('Failed to verify manuscript update')
+            }
+
+            const savedTextLength = verifyData?.full_text?.length || 0
+            const expectedTextLength = extractedText.length
+
+            console.log('🔍 Verification results:')
+            console.log('   - Expected text length:', expectedTextLength)
+            console.log('   - Saved text length:', savedTextLength)
+            console.log('   - Saved title:', verifyData?.title)
+            console.log('   - Saved word count:', verifyData?.current_word_count)
+            console.log('   - First 200 chars of saved:', verifyData?.full_text?.substring(0, 200))
+
+            // Check if the update actually worked
+            if (savedTextLength !== expectedTextLength) {
+                console.error('❌ CRITICAL: Text length mismatch!')
+                console.error('   Expected:', expectedTextLength)
+                console.error('   Got:', savedTextLength)
+                throw new Error(`Manuscript text was not saved correctly. Expected ${expectedTextLength} chars, got ${savedTextLength}`)
+            }
+
+            console.log('✅ Manuscript update VERIFIED - text lengths match!')
+
+            // 9. NOW trigger chapter parsing (only after verification)
+            console.log('📖 Step 9: Triggering chapter parsing...')
             setStatusMessage('📖 Parsing your chapters...')
 
             const parseResponse = await fetch('https://spikeislandstudios.app.n8n.cloud/webhook/parse-chapters', {
@@ -317,7 +406,6 @@ function ReUploadContent() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     manuscriptId: manuscript.id,
-                    manuscriptText: extractedText,
                     expectedChapters: chapterCount,
                     hasPrologue: hasPrologue,
                     hasEpilogue: hasEpilogue
@@ -325,6 +413,9 @@ function ReUploadContent() {
             })
 
             if (parseResponse.ok) {
+                const parseResult = await parseResponse.json()
+                console.log('✅ Parse response:', parseResult)
+
                 // Poll for chapters
                 setStatusMessage('🔍 Verifying chapters are ready...')
 
@@ -334,31 +425,35 @@ function ReUploadContent() {
 
                     const { data: chapters } = await supabase
                         .from('chapters')
-                        .select('id')
+                        .select('id, title')
                         .eq('manuscript_id', manuscript.id)
 
                     if (chapters && chapters.length > 0) {
-                        console.log(`✅ Verified ${chapters.length} chapters`)
+                        console.log(`✅ Verified ${chapters.length} chapters:`, chapters.slice(0, 3))
                         setStatusMessage(`✅ Found ${chapters.length} chapters! Returning to studio...`)
                         chaptersFound = true
                         break
                     }
+
+                    console.log(`⏳ Attempt ${attempt + 1}: Waiting for chapters...`)
                 }
 
                 if (!chaptersFound) {
                     console.warn('⚠️ Chapters not found after 10 seconds')
                     setStatusMessage('⚠️ Chapters are still processing. Redirecting anyway...')
                 }
+            } else {
+                console.error('❌ Parse chapters failed:', parseResponse.status)
             }
 
-            // 9. Redirect back to author studio
-            console.log('✅ Redirecting to author studio...')
+            // 10. Redirect back to author studio
+            console.log('✅ Step 10: Redirecting to author studio...')
             setTimeout(() => {
                 router.push(`/author-studio?manuscriptId=${manuscript.id}`)
             }, 2000)
 
         } catch (error) {
-            console.error('❌ Re-upload error:', error)
+            console.error('❌ RE-UPLOAD ERROR:', error)
             setIsSubmitting(false)
             const errorMessage = error instanceof Error ? error.message : 'Re-upload failed'
             setStatusMessage(`❌ Error: ${errorMessage}`)
