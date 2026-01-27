@@ -223,14 +223,43 @@ function ReUploadContent() {
                 .delete()
                 .eq('manuscript_id', manuscript.id)
 
-            // 3. Delete all chat messages
-            console.log('🗑️ Deleting old chat messages...')
+            // 3. Delete all chat history (FIXED: correct table name)
+            console.log('🗑️ Deleting old chat history...')
             await supabase
-                .from('editor_chat_messages')
+                .from('editor_chat_history')
                 .delete()
                 .eq('manuscript_id', manuscript.id)
 
-            // 4. Reset editing phases
+            // 4. Delete any manuscript version snapshots
+            console.log('🗑️ Deleting old version snapshots...')
+            await supabase
+                .from('manuscript_versions')
+                .delete()
+                .eq('manuscript_id', manuscript.id)
+
+            // 5. Reset publishing progress (Taylor's Phase 4 data)
+            console.log('🔄 Resetting publishing progress...')
+            await supabase
+                .from('publishing_progress')
+                .update({
+                    assessment_completed: false,
+                    assessment_completed_at: null,
+                    assessment_answers: null,
+                    publishing_plan: null,
+                    plan_pdf_url: null,
+                    current_step: null,
+                    completed_steps: [],
+                    cover_concepts: null,
+                    selected_cover_url: null,
+                    front_matter: null,
+                    back_matter: null,
+                    formatting_completed_at: null,
+                    metadata_completed_at: null,
+                    step_data: null
+                })
+                .eq('manuscript_id', manuscript.id)
+
+            // 6. Reset editing phases
             console.log('🔄 Resetting editing phases...')
             await supabase
                 .from('editing_phases')
@@ -239,10 +268,12 @@ function ReUploadContent() {
                     ai_read_started_at: null,
                     ai_read_completed_at: null,
                     phase_completed_at: null,
-                    report_pdf_url: null
+                    report_pdf_url: null,
+                    chapters_analyzed: 0,
+                    chapters_approved: 0
                 })
                 .eq('manuscript_id', manuscript.id)
-                .neq('phase_number', 1)  // Keep Phase 1 as active
+                .neq('phase_number', 1)  // Keep Phase 1 separate
 
             // Set Phase 1 back to active
             await supabase
@@ -252,12 +283,14 @@ function ReUploadContent() {
                     ai_read_started_at: null,
                     ai_read_completed_at: null,
                     phase_completed_at: null,
-                    report_pdf_url: null
+                    report_pdf_url: null,
+                    chapters_analyzed: 0,
+                    chapters_approved: 0
                 })
                 .eq('manuscript_id', manuscript.id)
                 .eq('phase_number', 1)
 
-            // 5. Update manuscript record
+            // 7. Update manuscript record (FIXED: correct column name)
             console.log('📝 Updating manuscript...')
             await supabase
                 .from('manuscripts')
@@ -265,10 +298,7 @@ function ReUploadContent() {
                     title: manuscriptTitle,
                     genre: genre,
                     current_word_count: wordCount,
-                    full_text: extractedText,
-                    expected_chapters: chapterCount,
-                    has_prologue: hasPrologue,
-                    has_epilogue: hasEpilogue,
+                    full_text: extractedText,  // FIXED: was manuscript_text
                     manuscript_summary: null,
                     full_analysis_key_points: null,
                     full_analysis_text: null,
@@ -279,7 +309,7 @@ function ReUploadContent() {
                 })
                 .eq('id', manuscript.id)
 
-            // 6. Trigger chapter parsing
+            // 8. Trigger chapter parsing
             setStatusMessage('📖 Parsing your chapters...')
 
             const parseResponse = await fetch('https://spikeislandstudios.app.n8n.cloud/webhook/parse-chapters', {
@@ -287,6 +317,7 @@ function ReUploadContent() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     manuscriptId: manuscript.id,
+                    manuscriptText: extractedText,
                     expectedChapters: chapterCount,
                     hasPrologue: hasPrologue,
                     hasEpilogue: hasEpilogue
@@ -320,7 +351,7 @@ function ReUploadContent() {
                 }
             }
 
-            // 7. Redirect back to author studio
+            // 9. Redirect back to author studio
             console.log('✅ Redirecting to author studio...')
             setTimeout(() => {
                 router.push(`/author-studio?manuscriptId=${manuscript.id}`)
@@ -354,7 +385,7 @@ function ReUploadContent() {
                             Replacing Your Manuscript
                         </h3>
                         <p className="text-gray-600">
-                            Setting up your new manuscript...
+                            {statusMessage || 'Setting up your new manuscript...'}
                         </p>
                     </div>
                 </div>
@@ -378,6 +409,7 @@ function ReUploadContent() {
                             <li>• All editor notes and analysis</li>
                             <li>• All chat history</li>
                             <li>• All editing progress</li>
+                            <li>• All cover designs and publishing setup</li>
                         </ul>
                         <p className="text-yellow-900 font-bold mt-4">
                             This action cannot be undone!
@@ -413,34 +445,19 @@ function ReUploadContent() {
                                 </div>
                                 <div className="text-gray-600 mb-6">
                                     {uploadStatus === 'success' && wordCount > 0
-                                        ? `${wordCount.toLocaleString()} words ready`
-                                        : 'PDF format only'
-                                    }
+                                        ? `${wordCount.toLocaleString()} words ready for analysis`
+                                        : 'Drag and drop your PDF or click to browse'}
                                 </div>
 
                                 {/* Manuscript Preparation Tips */}
-                                <div className="bg-blue-50 border border-blue-500 rounded-xl p-5 mb-6 text-left max-w-xl mx-auto">
-                                    <div className="font-semibold text-blue-900 mb-2 text-center">
-                                        📝 Preparing Your Manuscript
+                                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 text-left max-w-md mx-auto">
+                                    <div className="font-semibold text-blue-900 mb-2 text-center text-sm">
+                                        📝 Manuscript Requirements
                                     </div>
-                                    <div className="text-blue-800 text-sm space-y-2">
-                                        <p><strong>✅ DO include:</strong></p>
-                                        <ul className="list-disc ml-5 space-y-1">
-                                            <li>Clear chapter markers (e.g., &quot;Chapter 1 - Your Title&quot;)</li>
-                                            <li>Prologue and Epilogue if you have them</li>
-                                            <li>Your complete manuscript text</li>
-                                        </ul>
-
-                                        <p className="mt-3"><strong>❌ REMOVE before uploading:</strong></p>
-                                        <ul className="list-disc ml-5 space-y-1">
-                                            <li>Copyright notices and page numbers</li>
-                                            <li>Headers and footers with author name/title</li>
-                                            <li>Any repeated formatting elements on each page</li>
-                                        </ul>
-
-                                        <p className="text-xs mt-3 opacity-75 italic">
-                                            Clean manuscript text helps our AI focus on your story, not formatting artifacts.
-                                        </p>
+                                    <div className="text-blue-800 text-xs space-y-1">
+                                        <p>✅ Clear chapter markers (e.g., &quot;Chapter 1 - Title&quot;)</p>
+                                        <p>❌ Remove Table of Contents and Index</p>
+                                        <p>❌ Remove headers/footers with page numbers</p>
                                     </div>
                                 </div>
 
@@ -465,7 +482,7 @@ function ReUploadContent() {
                                 </button>
                             </div>
 
-                            {statusMessage && (
+                            {statusMessage && !isSubmitting && (
                                 <div className={`mt-6 p-5 rounded-xl text-center font-medium ${uploadStatus === 'processing' ? 'bg-yellow-50 text-yellow-900 border-2 border-yellow-500' :
                                     uploadStatus === 'success' ? 'bg-green-50 text-green-900 border-2 border-green-500' :
                                         uploadStatus === 'error' ? 'bg-red-50 text-red-900 border-2 border-red-500' :
@@ -534,7 +551,7 @@ function ReUploadContent() {
                                 min="1"
                                 max="200"
                                 required
-                                defaultValue={existingChapterCount || 0}
+                                defaultValue={existingChapterCount || ''}
                                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-600 focus:outline-none"
                             />
                             <small className="text-gray-600">
@@ -571,10 +588,10 @@ function ReUploadContent() {
                         <div className="flex gap-4">
                             <button
                                 type="button"
-                                onClick={() => router.push(`/author-studio?manuscriptId=${manuscript.id}`)}
-                                className="flex-1 bg-gray-300 text-gray-700 px-8 py-4 rounded-xl text-lg font-bold hover:bg-gray-400 transition-all"
+                                onClick={() => router.back()}
+                                className="flex-1 bg-gray-200 text-gray-800 px-8 py-4 rounded-xl text-lg font-bold hover:bg-gray-300 transition-all"
                             >
-                                Cancel
+                                ← Cancel
                             </button>
                             <button
                                 type="submit"
