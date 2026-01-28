@@ -9,6 +9,7 @@ import TaylorChatWidget from '@/components/TaylorChatWidget'
 import BookPreviewPanel from '@/components/BookPreviewPanel'
 import FrontMatterComponent from '@/components/FrontMatter'
 import BackMatterComponent from '@/components/BackMatterSection'
+import CoverDesignSection from '@/components/taylor/CoverDesignSection'
 
 // Publishing Journey Section Type
 type PublishingSectionId =
@@ -52,17 +53,18 @@ interface PublishingProgress {
   assessment_completed: boolean
   cover_concepts?: CoverConcept[]
   selected_cover_url?: string
+  cover_generation_status?: 'generating' | 'complete' | 'failed' | null
   publishing_plan?: string
   plan_pdf_url?: string
   front_matter?: {
     title_page?: { title?: string; subtitle?: string; author?: string; completed?: boolean }
-    copyright_page?: { /* ... */ completed?: boolean }
+    copyright_page?: { completed?: boolean }
     dedication?: { text?: string; completed?: boolean }
     acknowledgements?: { text?: string; completed?: boolean }
     epigraph?: { quote?: string; attribution?: string; completed?: boolean }
     preface?: { text?: string; completed?: boolean }
   }
-  back_matter?: {  // ✅ ADD THIS
+  back_matter?: {
     author_bio?: {
       bio_text?: string
       author_tagline?: string
@@ -589,102 +591,6 @@ function renderSectionContent(
     default:
       return <div className="text-center py-12 text-gray-500">Select a section to begin</div>
   }
-}
-
-function CoverDesignSection({
-  progress,
-  manuscriptId,
-  onCoverSelect
-}: {
-  progress: PublishingProgress | null
-  manuscriptId: string
-  onCoverSelect: (coverUrl: string) => Promise<void>
-}) {
-  const [isSelecting, setIsSelecting] = useState(false)
-
-  const coverConcepts = progress?.cover_concepts || []
-  const selectedCover = progress?.selected_cover_url
-
-  async function handleSelectCover(coverUrl: string) {
-    setIsSelecting(true)
-    await onCoverSelect(coverUrl)
-    setIsSelecting(false)
-  }
-
-  return (
-    <div className="max-w-5xl mx-auto">
-      <div className="bg-white rounded-2xl p-8 shadow-lg border-2 border-teal-300">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-16 h-16 bg-teal-500 rounded-xl flex items-center justify-center text-3xl">
-            🎨
-          </div>
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900">Cover Design</h2>
-            <p className="text-gray-600">Create and select your professional book cover</p>
-          </div>
-        </div>
-
-        {coverConcepts.length === 0 ? (
-          <div className="text-center py-12 bg-gray-50 rounded-xl">
-            <div className="text-6xl mb-4">🎨</div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">Ready to Design Your Cover?</h3>
-            <p className="text-gray-600 mb-6 max-w-md mx-auto">
-              Chat with Taylor to generate four professional cover concepts for your book.
-            </p>
-            <div className="inline-block px-6 py-3 bg-teal-100 text-teal-700 rounded-lg font-semibold">
-              💬 Say &quot;create my cover&quot; to Taylor →
-            </div>
-          </div>
-        ) : (
-          <div>
-            <div className="grid grid-cols-2 gap-6 mb-6">
-              {coverConcepts.map((cover: CoverConcept, index: number) => {
-                const isThisCoverSelected = selectedCover === cover.url
-
-                return (
-                  <div
-                    key={index}
-                    className={`relative rounded-xl overflow-hidden border-4 transition-all ${isThisCoverSelected
-                      ? 'border-teal-500 shadow-2xl'
-                      : 'border-gray-200 hover:border-teal-300'
-                      }`}
-                  >
-                    <img
-                      src={cover.url}
-                      alt={`Cover concept ${index + 1}`}
-                      className="w-full aspect-[2/3] object-cover"
-                    />
-                    {isThisCoverSelected && (
-                      <div className="absolute top-4 right-4 bg-teal-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
-                        <span>✓</span>
-                        <span>Selected</span>
-                      </div>
-                    )}
-                    {!isThisCoverSelected && (
-                      <button
-                        onClick={() => handleSelectCover(cover.url)}
-                        disabled={isSelecting}
-                        className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-white text-teal-600 rounded-lg font-semibold hover:bg-teal-50 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {isSelecting ? 'Selecting...' : 'Select This Cover'}
-                      </button>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-            {!selectedCover && (
-              <div className="text-center py-4 bg-yellow-50 rounded-lg">
-                <p className="text-yellow-800 font-semibold">
-                  👆 Select your favorite cover to continue
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  )
 }
 
 function FrontMatterSection({ manuscript }: { manuscript: Manuscript }) {
