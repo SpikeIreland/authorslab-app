@@ -28,16 +28,28 @@ export default function TaylorPanel({ manuscriptId }: TaylorPanelProps) {
 
     async function checkAssessmentStatus() {
         const supabase = createClient()
-        const { data } = await supabase
-            .from('publishing_progress')
-            .select('assessment_completed, plan_pdf_url')
-            .eq('manuscript_id', manuscriptId)
-            .maybeSingle()
 
-        if (data) {
-            setAssessmentCompleted(data.assessment_completed || false)
-            setPublishingPlanUrl(data.plan_pdf_url)
+        try {
+            // Use maybeSingle() to avoid 406 errors when row doesn't exist
+            const { data, error } = await supabase
+                .from('publishing_progress')
+                .select('assessment_completed, plan_pdf_url')
+                .eq('manuscript_id', manuscriptId)
+                .maybeSingle()
+
+            if (error) {
+                console.error('❌ Error checking assessment status:', error.message)
+            } else if (data) {
+                console.log('📊 Initial assessment status:', data.assessment_completed)
+                setAssessmentCompleted(data.assessment_completed || false)
+                setPublishingPlanUrl(data.plan_pdf_url)
+            } else {
+                console.log('⚠️ No publishing_progress row found for manuscript')
+            }
+        } catch (err) {
+            console.error('❌ Exception checking assessment status:', err)
         }
+
         setIsLoading(false)
     }
 
@@ -75,26 +87,59 @@ export default function TaylorPanel({ manuscriptId }: TaylorPanelProps) {
     // ============================================
     // ✅ FIX: Callback for Assessment Completion
     // This provides a fallback when realtime subscription doesn't fire
+    // Uses polling to ensure we catch the database update
     // ============================================
 
     async function handleAssessmentComplete() {
-        console.log('🔄 Assessment complete callback triggered - refreshing status...')
-
-        // Small delay to ensure database has been updated
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        console.log('🔄 Assessment complete callback triggered - starting polling...')
 
         const supabase = createClient()
-        const { data } = await supabase
-            .from('publishing_progress')
-            .select('assessment_completed, plan_pdf_url')
-            .eq('manuscript_id', manuscriptId)
-            .maybeSingle()
+        const maxAttempts = 10
+        const delayMs = 1500
 
-        if (data) {
-            console.log('✅ Refreshed assessment status:', data.assessment_completed)
-            setAssessmentCompleted(data.assessment_completed || false)
-            setPublishingPlanUrl(data.plan_pdf_url)
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+            console.log(`🔍 Polling attempt ${attempt}/${maxAttempts}...`)
+
+            // Wait before checking (gives workflow time to update DB)
+            await new Promise(resolve => setTimeout(resolve, delayMs))
+
+            try {
+                // Use maybeSingle() instead of single() to avoid 406 errors
+                const { data, error } = await supabase
+                    .from('publishing_progress')
+                    .select('assessment_completed, plan_pdf_url')
+                    .eq('manuscript_id', manuscriptId)
+                    .maybeSingle()
+
+                if (error) {
+                    console.error(`❌ Attempt ${attempt} error:`, error.message, error.code)
+                    continue
+                }
+
+                if (!data) {
+                    console.log(`⚠️ Attempt ${attempt}: No publishing_progress row found`)
+                    continue
+                }
+
+                console.log(`📊 Attempt ${attempt} result:`, {
+                    assessment_completed: data.assessment_completed,
+                    plan_pdf_url: data.plan_pdf_url ? 'present' : 'null'
+                })
+
+                if (data.assessment_completed === true) {
+                    console.log('✅ Assessment confirmed complete! Switching to chat view...')
+                    setAssessmentCompleted(true)
+                    setPublishingPlanUrl(data.plan_pdf_url)
+                    return // Success - exit the function
+                }
+            } catch (err) {
+                console.error(`❌ Attempt ${attempt} exception:`, err)
+            }
         }
+
+        // If we get here, polling timed out
+        console.error('⚠️ Polling timed out - assessment_completed still false after', maxAttempts, 'attempts')
+        console.log('💡 Try refreshing the page manually')
     }
 
     // ============================================
