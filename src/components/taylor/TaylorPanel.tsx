@@ -32,7 +32,7 @@ export default function TaylorPanel({ manuscriptId }: TaylorPanelProps) {
             .from('publishing_progress')
             .select('assessment_completed, plan_pdf_url')
             .eq('manuscript_id', manuscriptId)
-            .single()
+            .maybeSingle()
 
         if (data) {
             setAssessmentCompleted(data.assessment_completed || false)
@@ -88,7 +88,7 @@ export default function TaylorPanel({ manuscriptId }: TaylorPanelProps) {
             .from('publishing_progress')
             .select('assessment_completed, plan_pdf_url')
             .eq('manuscript_id', manuscriptId)
-            .single()
+            .maybeSingle()
 
         if (data) {
             console.log('✅ Refreshed assessment status:', data.assessment_completed)
