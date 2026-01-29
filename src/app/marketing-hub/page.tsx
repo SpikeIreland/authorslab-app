@@ -87,20 +87,23 @@ function MarketingHubContent() {
   const searchParams = useSearchParams()
   const manuscriptId = searchParams.get('manuscriptId')
 
-  const [hasAccess, setHasAccess] = useState(false)
-  const [isChecking, setIsChecking] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
   const [manuscript, setManuscript] = useState<Manuscript | null>(null)
   const [marketingProgress, setMarketingProgress] = useState<MarketingProgress | null>(null)
   const [activeSection, setActiveSection] = useState<MarketingSectionId>('blurb')
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [authorFirstName, setAuthorFirstName] = useState('')
 
+  // ✅ NEW: Preview mode state
+  const [isPreviewMode, setIsPreviewMode] = useState(true)
+
   // Check access and load data
   useEffect(() => {
     async function checkAccess() {
       if (!manuscriptId) {
-        console.log('❌ No manuscriptId - redirecting to author-studio')
-        router.push('/author-studio')
+        // No manuscript - show generic preview
+        setIsLoading(false)
+        setIsPreviewMode(true)
         return
       }
 
@@ -109,34 +112,34 @@ function MarketingHubContent() {
       // Get current user
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-        console.log('❌ No user - redirecting to login')
-        router.push('/login')
+        // Not logged in - show preview mode
+        setIsLoading(false)
+        setIsPreviewMode(true)
         return
       }
 
-      // Check if user has access to Phase 5 (Marketing)
-      const { hasPhaseAccess } = await import('@/lib/accessControl')
-      const hasAccess = await hasPhaseAccess(user.id, 5)
+      // ✅ Check if admin or beta tester (full access)
+      const { data: profile } = await supabase
+        .from('author_profiles')
+        .select('role, is_beta_tester, first_name')
+        .eq('user_id', user.id)
+        .single()
 
-      if (!hasAccess) {
-        console.log('❌ No Phase 5 access - redirecting to phase-complete')
-        router.push(`/phase-complete?manuscriptId=${manuscriptId}`)
-        return
-      }
+      const hasFullAccess = profile?.role === 'admin' || profile?.is_beta_tester === true
+      setAuthorFirstName(profile?.first_name || '')
 
-      // Check Phase 5 is active for this manuscript
+      // Check Phase 5 status
       const { data: phase5 } = await supabase
         .from('editing_phases')
         .select('phase_status')
         .eq('manuscript_id', manuscriptId)
         .eq('phase_number', 5)
-        .single()
+        .maybeSingle()
 
-      if (phase5?.phase_status !== 'active') {
-        console.log('❌ Phase 5 not active - redirecting to phase-complete')
-        router.push(`/phase-complete?manuscriptId=${manuscriptId}`)
-        return
-      }
+      const phaseActive = phase5?.phase_status === 'active'
+
+      // ✅ Set preview mode based on access
+      setIsPreviewMode(!phaseActive && !hasFullAccess)
 
       // Load manuscript
       const { data: manuscriptData } = await supabase
@@ -150,22 +153,28 @@ function MarketingHubContent() {
         const authorProfile = Array.isArray(manuscriptData.author_profiles)
           ? manuscriptData.author_profiles[0]
           : manuscriptData.author_profiles
-        setAuthorFirstName(authorProfile?.first_name || '')
+        if (!authorFirstName) {
+          setAuthorFirstName(authorProfile?.first_name || '')
+        }
       }
 
       // Load marketing progress (if table exists)
-      const { data: progressData } = await supabase
-        .from('marketing_progress')
-        .select('*')
-        .eq('manuscript_id', manuscriptId)
-        .single()
+      try {
+        const { data: progressData } = await supabase
+          .from('marketing_progress')
+          .select('*')
+          .eq('manuscript_id', manuscriptId)
+          .maybeSingle()
 
-      if (progressData) {
-        setMarketingProgress(progressData)
+        if (progressData) {
+          setMarketingProgress(progressData)
+        }
+      } catch (error) {
+        // Table may not exist yet - that's ok
+        console.log('Marketing progress table not available yet')
       }
 
-      setHasAccess(true)
-      setIsChecking(false)
+      setIsLoading(false)
     }
 
     checkAccess()
@@ -173,7 +182,7 @@ function MarketingHubContent() {
 
   // Subscribe to marketing progress updates
   useEffect(() => {
-    if (!manuscriptId) return
+    if (!manuscriptId || isPreviewMode) return
 
     const supabase = createClient()
 
@@ -197,7 +206,7 @@ function MarketingHubContent() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [manuscriptId])
+  }, [manuscriptId, isPreviewMode])
 
   // Define marketing sections
   const marketingSections: MarketingSection[] = [
@@ -217,65 +226,66 @@ function MarketingHubContent() {
       id: 'keywords',
       title: 'Keywords & Categories',
       icon: '🔍',
-      description: 'Help readers discover your book',
+      description: 'Optimize discoverability',
       isComplete: marketingProgress?.keywords_completed || false,
       items: [
-        { id: 'amazon-keywords', title: 'Amazon Keywords (7)', isComplete: (marketingProgress?.keywords?.length || 0) >= 7 },
-        { id: 'categories', title: 'BISAC Categories', isComplete: (marketingProgress?.categories?.length || 0) > 0 },
+        { id: 'keywords', title: 'Amazon Keywords (7)', isComplete: !!marketingProgress?.keywords?.length },
+        { id: 'categories', title: 'BISAC Categories', isComplete: !!marketingProgress?.categories?.length },
       ]
     },
     {
       id: 'audience',
       title: 'Target Audience',
       icon: '🎯',
-      description: 'Define your ideal reader',
-      isComplete: !!marketingProgress?.assessment_answers?.target_reader,
+      description: 'Define your ideal readers',
+      isComplete: marketingProgress?.author_bio_completed || false,
       items: [
-        { id: 'reader-profile', title: 'Reader Profile', isComplete: !!marketingProgress?.assessment_answers?.target_reader },
-        { id: 'comp-titles', title: 'Comp Titles', isComplete: false },
+        { id: 'reader-profile', title: 'Reader Profile', isComplete: false },
+        { id: 'comp-titles', title: 'Comparable Titles', isComplete: false },
+        { id: 'author-bio', title: 'Author Bio', isComplete: !!marketingProgress?.author_bio_short },
       ]
     },
     {
       id: 'social-media',
-      title: 'Social Media Content',
+      title: 'Social Media',
       icon: '📱',
-      description: 'Ready-to-post content for all platforms',
+      description: 'Content for all platforms',
       isComplete: marketingProgress?.social_completed || false,
       items: [
-        { id: 'twitter', title: 'Twitter/X Posts', isComplete: false },
-        { id: 'instagram', title: 'Instagram Captions', isComplete: false },
-        { id: 'facebook', title: 'Facebook Posts', isComplete: false },
-        { id: 'calendar', title: 'Content Calendar', isComplete: false },
+        { id: 'posts', title: 'Post Templates', isComplete: !!marketingProgress?.social_media_posts },
+        { id: 'calendar', title: 'Content Calendar', isComplete: !!marketingProgress?.content_calendar },
+        { id: 'graphics', title: 'Graphics Kit', isComplete: false },
       ]
     },
     {
       id: 'launch-plan',
       title: 'Launch Strategy',
       icon: '🚀',
-      description: 'Your roadmap to a successful launch',
+      description: 'Your path to launch day',
       isComplete: marketingProgress?.launch_completed || false,
       items: [
-        { id: 'timeline', title: 'Launch Timeline', isComplete: false },
-        { id: 'pre-launch', title: 'Pre-Launch Checklist', isComplete: false },
-        { id: 'launch-week', title: 'Launch Week Plan', isComplete: false },
-        { id: 'post-launch', title: 'Post-Launch Strategy', isComplete: false },
+        { id: 'timeline', title: 'Launch Timeline', isComplete: !!marketingProgress?.launch_timeline },
+        { id: 'checklist', title: 'Launch Checklist', isComplete: !!marketingProgress?.launch_checklist },
+        { id: 'email', title: 'Email Sequences', isComplete: false },
       ]
     },
     {
       id: 'resources',
       title: 'Marketing Resources',
       icon: '📚',
-      description: 'Templates and guides',
+      description: 'Tools and templates',
       isComplete: false,
       items: [
-        { id: 'email-templates', title: 'Email Templates', isComplete: false },
-        { id: 'review-requests', title: 'Review Request Templates', isComplete: false },
-        { id: 'media-kit', title: 'Author Media Kit', isComplete: false },
+        { id: 'press-kit', title: 'Press Kit', isComplete: false },
+        { id: 'media-assets', title: 'Media Assets', isComplete: false },
+        { id: 'promo-plan', title: 'Promo Strategy', isComplete: false },
       ]
     },
   ]
 
-  if (isChecking) {
+  const currentSection = marketingSections.find(s => s.id === activeSection)
+
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -286,15 +296,28 @@ function MarketingHubContent() {
     )
   }
 
-  if (!hasAccess || !manuscript) {
-    return null
-  }
-
-  // Get current section data
-  const currentSection = marketingSections.find(s => s.id === activeSection)
-
   return (
     <div className="flex flex-col h-screen bg-gray-50">
+      {/* ✅ Preview Mode Banner */}
+      {isPreviewMode && (
+        <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white py-3 px-6 text-center">
+          <div className="flex items-center justify-center gap-3 flex-wrap">
+            <span className="text-xl">🔮</span>
+            <span className="font-semibold">Preview Mode</span>
+            <span className="text-orange-100 hidden sm:inline">—</span>
+            <span className="hidden sm:inline">Complete Phase 4 (Publishing) to unlock Marketing with Quinn</span>
+            {manuscriptId && (
+              <Link
+                href={`/publishing-hub?manuscriptId=${manuscriptId}`}
+                className="ml-4 px-4 py-1 bg-white text-orange-600 rounded-full text-sm font-bold hover:bg-orange-50 transition-colors"
+              >
+                Return to Publishing →
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div className="px-6 py-4">
@@ -303,7 +326,7 @@ function MarketingHubContent() {
               📚 AuthorsLab.ai
             </Link>
             <div className="flex items-center gap-4">
-              {marketingProgress?.plan_pdf_url && (
+              {marketingProgress?.plan_pdf_url && !isPreviewMode && (
                 <button
                   onClick={() => window.open(marketingProgress.plan_pdf_url!, '_blank')}
                   className="px-4 py-2 bg-orange-600 text-white text-sm rounded-lg hover:bg-orange-700 transition-colors flex items-center gap-2 shadow-sm"
@@ -319,33 +342,38 @@ function MarketingHubContent() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">{manuscript.title}</h1>
-                <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
-                  <span>{manuscript.genre}</span>
-                  <span className="text-gray-400">•</span>
-                  <span>{manuscript.current_word_count.toLocaleString()} words</span>
-                  <span className="text-gray-400">•</span>
-                  <span>{manuscript.total_chapters} chapters</span>
-                </div>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {manuscript?.title || 'Marketing Hub'}
+                  {isPreviewMode && <span className="text-sm font-normal text-orange-500 ml-2">(Preview)</span>}
+                </h1>
+                {manuscript && (
+                  <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
+                    <span>{manuscript.genre}</span>
+                    <span className="text-gray-400">•</span>
+                    <span>{manuscript.current_word_count.toLocaleString()} words</span>
+                    <span className="text-gray-400">•</span>
+                    <span>{manuscript.total_chapters} chapters</span>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Phase Navigation - All links include manuscriptId */}
+            {/* Phase Navigation */}
             <nav className="flex items-center gap-6">
               <Link
-                href={`/author-studio?manuscriptId=${manuscriptId}&phase=3`}
+                href={manuscriptId ? `/author-studio?manuscriptId=${manuscriptId}&phase=3` : '/author-studio'}
                 className="text-gray-700 hover:text-blue-900 font-medium transition-colors"
               >
                 Author Studio
               </Link>
               <Link
-                href={`/publishing-hub?manuscriptId=${manuscriptId}`}
+                href={manuscriptId ? `/publishing-hub?manuscriptId=${manuscriptId}` : '/publishing-hub'}
                 className="text-gray-700 hover:text-blue-900 font-medium transition-colors"
               >
                 Publishing
               </Link>
               <Link
-                href={`/marketing-hub?manuscriptId=${manuscriptId}`}
+                href={manuscriptId ? `/marketing-hub?manuscriptId=${manuscriptId}` : '/marketing-hub'}
                 className="text-orange-600 font-semibold border-b-2 border-orange-600"
               >
                 Marketing
@@ -356,7 +384,7 @@ function MarketingHubContent() {
       </header>
 
       {/* Main Layout */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className={`flex-1 flex overflow-hidden ${isPreviewMode ? 'opacity-90' : ''}`}>
         {/* LEFT: Marketing Journey Navigation */}
         <div className={`${isSidebarCollapsed ? 'w-16' : 'w-72'} bg-white border-r border-gray-200 flex flex-col transition-all overflow-y-auto`}>
           <div className="p-4 border-b border-gray-200">
@@ -384,11 +412,12 @@ function MarketingHubContent() {
             {marketingSections.map((section) => (
               <button
                 key={section.id}
-                onClick={() => setActiveSection(section.id)}
+                onClick={() => !isPreviewMode && setActiveSection(section.id)}
+                disabled={isPreviewMode}
                 className={`w-full text-left p-3 rounded-lg mb-1 transition-colors ${activeSection === section.id
-                    ? 'bg-orange-50 border-l-4 border-orange-500'
-                    : 'hover:bg-gray-50'
-                  }`}
+                  ? 'bg-orange-50 border-l-4 border-orange-500'
+                  : 'hover:bg-gray-50'
+                  } ${isPreviewMode ? 'cursor-default' : 'cursor-pointer'}`}
               >
                 <div className="flex items-center gap-3">
                   <span className="text-xl">{section.icon}</span>
@@ -420,7 +449,9 @@ function MarketingHubContent() {
                 </div>
                 <div>
                   <p className="font-semibold text-gray-900">Quinn</p>
-                  <p className="text-xs text-gray-600">Ready to strategize</p>
+                  <p className="text-xs text-gray-600">
+                    {isPreviewMode ? 'Available after Publishing' : 'Ready to strategize'}
+                  </p>
                 </div>
               </div>
             </div>
@@ -440,36 +471,86 @@ function MarketingHubContent() {
             </div>
           </div>
 
-          {/* Placeholder Content - Will be replaced with actual components */}
+          {/* Content Area */}
           <div className="bg-white rounded-2xl p-8 shadow-lg border-2 border-orange-200">
-            <div className="text-center py-12">
-              <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">
-                🏗️
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                {currentSection?.title} - Coming Soon
-              </h3>
-              <p className="text-gray-600 max-w-md mx-auto mb-6">
-                This section is being built. Quinn will help you with {currentSection?.title.toLowerCase()} once it&apos;s ready.
-              </p>
+            {isPreviewMode ? (
+              // ✅ Preview Mode Content
+              <div className="text-center py-12">
+                <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">
+                  🔒
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                  Marketing Hub Preview
+                </h3>
+                <p className="text-gray-600 max-w-md mx-auto mb-6">
+                  Complete your publishing journey with Taylor to unlock the Marketing Hub.
+                  Quinn will then help you create compelling marketing materials and launch your book successfully.
+                </p>
 
-              {/* Section Items Preview */}
-              <div className="max-w-md mx-auto text-left">
-                <p className="text-sm font-semibold text-gray-700 mb-3">What you&apos;ll be able to do:</p>
-                <ul className="space-y-2">
-                  {currentSection?.items.map((item) => (
-                    <li key={item.id} className="flex items-center gap-2 text-gray-600">
-                      <span className="text-orange-500">→</span>
-                      {item.title}
+                {/* What's included preview */}
+                <div className="max-w-lg mx-auto text-left bg-orange-50 rounded-xl p-6 mb-6">
+                  <p className="text-sm font-semibold text-orange-800 mb-3">What you&apos;ll get with Quinn:</p>
+                  <ul className="space-y-2">
+                    <li className="flex items-center gap-2 text-gray-700">
+                      <span className="text-orange-500">📝</span> Professional book descriptions & blurbs
                     </li>
-                  ))}
-                </ul>
+                    <li className="flex items-center gap-2 text-gray-700">
+                      <span className="text-orange-500">🔍</span> Optimized keywords & categories
+                    </li>
+                    <li className="flex items-center gap-2 text-gray-700">
+                      <span className="text-orange-500">📱</span> Ready-to-post social media content
+                    </li>
+                    <li className="flex items-center gap-2 text-gray-700">
+                      <span className="text-orange-500">🚀</span> Complete launch strategy & timeline
+                    </li>
+                    <li className="flex items-center gap-2 text-gray-700">
+                      <span className="text-orange-500">✉️</span> Email campaign templates
+                    </li>
+                  </ul>
+                </div>
+
+                {manuscriptId && (
+                  <Link
+                    href={`/publishing-hub?manuscriptId=${manuscriptId}`}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-all"
+                  >
+                    <span>📚</span>
+                    <span>Continue with Publishing</span>
+                    <span>→</span>
+                  </Link>
+                )}
               </div>
-            </div>
+            ) : (
+              // Active Mode - Placeholder Content
+              <div className="text-center py-12">
+                <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">
+                  🏗️
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                  {currentSection?.title} - Coming Soon
+                </h3>
+                <p className="text-gray-600 max-w-md mx-auto mb-6">
+                  This section is being built. Quinn will help you with {currentSection?.title.toLowerCase()} once it&apos;s ready.
+                </p>
+
+                {/* Section Items Preview */}
+                <div className="max-w-md mx-auto text-left">
+                  <p className="text-sm font-semibold text-gray-700 mb-3">What you&apos;ll be able to do:</p>
+                  <ul className="space-y-2">
+                    {currentSection?.items.map((item) => (
+                      <li key={item.id} className="flex items-center gap-2 text-gray-600">
+                        <span className="text-orange-500">→</span>
+                        {item.title}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Assessment CTA (if not completed) */}
-          {!marketingProgress?.assessment_completed && (
+          {/* Assessment CTA (if not completed and not in preview mode) */}
+          {!isPreviewMode && !marketingProgress?.assessment_completed && (
             <div className="mt-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl p-8 text-white">
               <div className="flex items-center gap-6">
                 <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center text-3xl">
@@ -489,7 +570,7 @@ function MarketingHubContent() {
           )}
         </div>
 
-        {/* RIGHT: Quinn Chat Panel (Placeholder) */}
+        {/* RIGHT: Quinn Chat Panel */}
         <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
           {/* Chat Header */}
           <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-orange-500 to-orange-600">
@@ -499,54 +580,82 @@ function MarketingHubContent() {
               </div>
               <div className="text-white">
                 <h3 className="font-bold">Quinn</h3>
-                <p className="text-sm text-orange-100">The Creative Strategist</p>
+                <p className="text-sm text-orange-100">
+                  {isPreviewMode ? 'Available after Publishing' : 'The Creative Strategist'}
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Chat Placeholder */}
+          {/* Chat Content */}
           <div className="flex-1 p-6 flex flex-col items-center justify-center text-center">
-            <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center text-4xl mb-4">
-              💬
-            </div>
-            <h4 className="font-bold text-gray-900 mb-2">Chat with Quinn</h4>
-            <p className="text-gray-600 text-sm mb-6 max-w-xs">
-              Quinn will help you create compelling marketing materials and launch strategies.
-            </p>
+            {isPreviewMode ? (
+              // Preview Mode Chat
+              <>
+                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center text-4xl mb-4">
+                  🔒
+                </div>
+                <h4 className="font-bold text-gray-900 mb-2">Quinn is Waiting</h4>
+                <p className="text-gray-600 text-sm mb-6 max-w-xs">
+                  Complete your publishing setup with Taylor, then Quinn will be ready to help with marketing.
+                </p>
+                {manuscriptId && (
+                  <Link
+                    href={`/publishing-hub?manuscriptId=${manuscriptId}`}
+                    className="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-semibold hover:bg-teal-700 transition-colors"
+                  >
+                    Continue Publishing →
+                  </Link>
+                )}
+              </>
+            ) : (
+              // Active Mode Chat Placeholder
+              <>
+                <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center text-4xl mb-4">
+                  💬
+                </div>
+                <h4 className="font-bold text-gray-900 mb-2">Chat with Quinn</h4>
+                <p className="text-gray-600 text-sm mb-6 max-w-xs">
+                  Quinn will help you create compelling marketing materials and launch strategies.
+                </p>
 
-            {/* Example starter prompts */}
-            <div className="space-y-2 w-full">
-              <button className="w-full p-3 text-left text-sm bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors border border-orange-200">
-                📝 &quot;Help me write a compelling book blurb&quot;
-              </button>
-              <button className="w-full p-3 text-left text-sm bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors border border-orange-200">
-                🔍 &quot;What keywords should I target?&quot;
-              </button>
-              <button className="w-full p-3 text-left text-sm bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors border border-orange-200">
-                🚀 &quot;Create a launch timeline for me&quot;
-              </button>
-            </div>
+                {/* Example starter prompts */}
+                <div className="space-y-2 w-full">
+                  <button className="w-full p-3 text-left text-sm bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors border border-orange-200">
+                    📝 &quot;Help me write a compelling book blurb&quot;
+                  </button>
+                  <button className="w-full p-3 text-left text-sm bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors border border-orange-200">
+                    🔍 &quot;What keywords should I target?&quot;
+                  </button>
+                  <button className="w-full p-3 text-left text-sm bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors border border-orange-200">
+                    🚀 &quot;Create a launch timeline for me&quot;
+                  </button>
+                </div>
+              </>
+            )}
           </div>
 
-          {/* Chat Input Placeholder */}
+          {/* Chat Input */}
           <div className="p-4 border-t border-gray-200">
             <div className="flex gap-2">
               <input
                 type="text"
-                placeholder="Ask Quinn about marketing..."
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                disabled
+                placeholder={isPreviewMode ? "Unlock to chat with Quinn..." : "Ask Quinn about marketing..."}
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:bg-gray-100"
+                disabled={isPreviewMode}
               />
               <button
-                className="px-4 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50"
-                disabled
+                className="px-4 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isPreviewMode}
               >
                 Send
               </button>
             </div>
-            <p className="text-xs text-gray-500 mt-2 text-center">
-              Chat functionality coming soon
-            </p>
+            {isPreviewMode && (
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                Complete Publishing to unlock Quinn
+              </p>
+            )}
           </div>
         </div>
       </div>
