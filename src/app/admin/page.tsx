@@ -588,527 +588,530 @@ export default function AdminDashboard() {
                                 : 'border-transparent text-gray-600 hover:text-gray-900'
                                 }`}
                         >
-                            💬 Feedback ({allFeedback.length})
+                            💬 Feedback ({allFeedback.length + betaFeedback.length})
                         </button>
-                        <button
-                            onClick={() => setActiveTab('stats')}
-                            className={`py-4 px-2 border-b-2 font-semibold transition-colors ${activeTab === 'stats'
-                                ? 'border-blue-600 text-blue-600'
-                                : 'border-transparent text-gray-600 hover:text-gray-900'
-                                }`}
-                        >
-                            📊 Stats
-                        </button>
-                    </div>
+
+                        💬 Feedback ({allFeedback.length})
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('stats')}
+                        className={`py-4 px-2 border-b-2 font-semibold transition-colors ${activeTab === 'stats'
+                            ? 'border-blue-600 text-blue-600'
+                            : 'border-transparent text-gray-600 hover:text-gray-900'
+                            }`}
+                    >
+                        📊 Stats
+                    </button>
                 </div>
             </div>
+        </div>
 
-            {/* Main Content */}
-            <main className="container mx-auto px-6 py-8">
+            {/* Main Content */ }
+    <main className="container mx-auto px-6 py-8">
 
-                {/* CREATE USER TAB */}
-                {activeTab === 'create' && (
-                    <div className="max-w-2xl mx-auto">
-                        <div className="bg-white rounded-2xl shadow-lg p-8">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-6">Create Beta Tester Account</h2>
+        {/* CREATE USER TAB */}
+        {activeTab === 'create' && (
+            <div className="max-w-2xl mx-auto">
+                <div className="bg-white rounded-2xl shadow-lg p-8">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Create Beta Tester Account</h2>
 
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        First Name
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={createForm.firstName}
-                                        onChange={(e) => setCreateForm({ ...createForm, firstName: e.target.value })}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="John"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Last Name
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={createForm.lastName}
-                                        onChange={(e) => setCreateForm({ ...createForm, lastName: e.target.value })}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="Doe"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Email
-                                    </label>
-                                    <input
-                                        type="email"
-                                        value={createForm.email}
-                                        onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="john@example.com"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Temporary Password
-                                    </label>
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="text"
-                                            value={generatedPassword}
-                                            readOnly
-                                            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 font-mono text-sm"
-                                            placeholder="Click 'Generate Password'"
-                                        />
-                                        <Button
-                                            onClick={generatePassword}
-                                            variant="outline"
-                                            type="button"
-                                        >
-                                            🔑 Generate
-                                        </Button>
-                                    </div>
-                                </div>
-
-                                <div className="pt-4">
-                                    <Button
-                                        onClick={createUser}
-                                        disabled={creating || !generatedPassword}
-                                        className="w-full py-3 text-lg"
-                                    >
-                                        {creating ? '⏳ Creating Account...' : '✉️ Create Account & Send Welcome Email'}
-                                    </Button>
-                                </div>
-
-                                {createSuccess && (
-                                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                                        <p className="text-green-800 font-semibold">✅ User created successfully!</p>
-                                        <p className="text-green-700 text-sm mt-1">Password copied to clipboard. Welcome email sent.</p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                            <p className="text-sm text-blue-900">
-                                <strong>📋 What happens:</strong>
-                            </p>
-                            <ul className="text-sm text-blue-800 mt-2 space-y-1 ml-4 list-disc">
-                                <li>Creates Supabase auth account with temporary password</li>
-                                <li>Marks user as beta tester in database</li>
-                                <li>Sends welcome email with login instructions</li>
-                                <li>Password is copied to your clipboard for safekeeping</li>
-                            </ul>
-                        </div>
-                    </div>
-                )}
-
-                {/* USERS TAB */}
-                {activeTab === 'users' && (
-                    <div className="grid md:grid-cols-2 gap-8">
-                        {/* User List */}
+                    <div className="space-y-4">
                         <div>
-                            <div className="bg-white rounded-2xl shadow-lg p-6">
-                                <h2 className="text-2xl font-bold text-gray-900 mb-4">Beta Testers</h2>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                First Name
+                            </label>
+                            <input
+                                type="text"
+                                value={createForm.firstName}
+                                onChange={(e) => setCreateForm({ ...createForm, firstName: e.target.value })}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="John"
+                            />
+                        </div>
 
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Last Name
+                            </label>
+                            <input
+                                type="text"
+                                value={createForm.lastName}
+                                onChange={(e) => setCreateForm({ ...createForm, lastName: e.target.value })}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Doe"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Email
+                            </label>
+                            <input
+                                type="email"
+                                value={createForm.email}
+                                onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="john@example.com"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Temporary Password
+                            </label>
+                            <div className="flex gap-2">
                                 <input
                                     type="text"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    placeholder="Search by name or email..."
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    value={generatedPassword}
+                                    readOnly
+                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 font-mono text-sm"
+                                    placeholder="Click 'Generate Password'"
                                 />
-
-                                <div className="space-y-3 max-h-[600px] overflow-y-auto">
-                                    {users
-                                        .filter(user =>
-                                            searchQuery === '' ||
-                                            user.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                            user.last_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                            user.email.toLowerCase().includes(searchQuery.toLowerCase())
-                                        )
-                                        .map(user => (
-                                            <button
-                                                key={user.id}
-                                                onClick={() => loadUserDetails(user.id)}
-                                                className="w-full text-left p-4 border-2 border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all"
-                                            >
-                                                <div className="font-semibold text-gray-900">
-                                                    {user.first_name} {user.last_name}
-                                                </div>
-                                                <div className="text-sm text-gray-600">{user.email}</div>
-                                                <div className="text-xs text-gray-500 mt-1">
-                                                    Joined {new Date(user.created_at).toLocaleDateString()}
-                                                </div>
-                                            </button>
-                                        ))}
-                                </div>
+                                <Button
+                                    onClick={generatePassword}
+                                    variant="outline"
+                                    type="button"
+                                >
+                                    🔑 Generate
+                                </Button>
                             </div>
                         </div>
 
-                        {/* User Details */}
-                        <div>
-                            {selectedUser ? (
-                                <div className="bg-white rounded-2xl shadow-lg p-6">
-                                    <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                                        {selectedUser.profile.first_name} {selectedUser.profile.last_name}
-                                    </h2>
+                        <div className="pt-4">
+                            <Button
+                                onClick={createUser}
+                                disabled={creating || !generatedPassword}
+                                className="w-full py-3 text-lg"
+                            >
+                                {creating ? '⏳ Creating Account...' : '✉️ Create Account & Send Welcome Email'}
+                            </Button>
+                        </div>
 
-                                    <div className="space-y-4">
-                                        {/* Profile Info */}
-                                        <div>
-                                            <p className="text-sm text-gray-600">
-                                                📧 {selectedUser.profile.email}
-                                            </p>
-                                            <p className="text-sm text-gray-600">
-                                                📅 Joined {new Date(selectedUser.profile.created_at).toLocaleDateString()}
-                                            </p>
-                                            {selectedUser.profile.last_login_at && (
-                                                <p className="text-sm text-gray-600">
-                                                    🕐 Last login {new Date(selectedUser.profile.last_login_at).toLocaleDateString()}
-                                                </p>
-                                            )}
+                        {createSuccess && (
+                            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                                <p className="text-green-800 font-semibold">✅ User created successfully!</p>
+                                <p className="text-green-700 text-sm mt-1">Password copied to clipboard. Welcome email sent.</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-sm text-blue-900">
+                        <strong>📋 What happens:</strong>
+                    </p>
+                    <ul className="text-sm text-blue-800 mt-2 space-y-1 ml-4 list-disc">
+                        <li>Creates Supabase auth account with temporary password</li>
+                        <li>Marks user as beta tester in database</li>
+                        <li>Sends welcome email with login instructions</li>
+                        <li>Password is copied to your clipboard for safekeeping</li>
+                    </ul>
+                </div>
+            </div>
+        )}
+
+        {/* USERS TAB */}
+        {activeTab === 'users' && (
+            <div className="grid md:grid-cols-2 gap-8">
+                {/* User List */}
+                <div>
+                    <div className="bg-white rounded-2xl shadow-lg p-6">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-4">Beta Testers</h2>
+
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search by name or email..."
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+
+                        <div className="space-y-3 max-h-[600px] overflow-y-auto">
+                            {users
+                                .filter(user =>
+                                    searchQuery === '' ||
+                                    user.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                    user.last_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                    user.email.toLowerCase().includes(searchQuery.toLowerCase())
+                                )
+                                .map(user => (
+                                    <button
+                                        key={user.id}
+                                        onClick={() => loadUserDetails(user.id)}
+                                        className="w-full text-left p-4 border-2 border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all"
+                                    >
+                                        <div className="font-semibold text-gray-900">
+                                            {user.first_name} {user.last_name}
                                         </div>
+                                        <div className="text-sm text-gray-600">{user.email}</div>
+                                        <div className="text-xs text-gray-500 mt-1">
+                                            Joined {new Date(user.created_at).toLocaleDateString()}
+                                        </div>
+                                    </button>
+                                ))}
+                        </div>
+                    </div>
+                </div>
 
-                                        {/* Manuscript Info */}
-                                        {selectedUser.manuscript ? (
-                                            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                                                <p className="font-semibold text-gray-900">
-                                                    📚 {selectedUser.manuscript.title}
+                {/* User Details */}
+                <div>
+                    {selectedUser ? (
+                        <div className="bg-white rounded-2xl shadow-lg p-6">
+                            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                                {selectedUser.profile.first_name} {selectedUser.profile.last_name}
+                            </h2>
+
+                            <div className="space-y-4">
+                                {/* Profile Info */}
+                                <div>
+                                    <p className="text-sm text-gray-600">
+                                        📧 {selectedUser.profile.email}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                        📅 Joined {new Date(selectedUser.profile.created_at).toLocaleDateString()}
+                                    </p>
+                                    {selectedUser.profile.last_login_at && (
+                                        <p className="text-sm text-gray-600">
+                                            🕐 Last login {new Date(selectedUser.profile.last_login_at).toLocaleDateString()}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Manuscript Info */}
+                                {selectedUser.manuscript ? (
+                                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                        <p className="font-semibold text-gray-900">
+                                            📚 {selectedUser.manuscript.title}
+                                        </p>
+                                        <p className="text-sm text-gray-600">
+                                            Genre: {selectedUser.manuscript.genre}
+                                        </p>
+                                        {selectedUser.currentPhase && (
+                                            <>
+                                                <p className="text-sm text-gray-600 mt-2">
+                                                    📊 Phase {selectedUser.currentPhase.phase_number} - {selectedUser.currentPhase.status}
                                                 </p>
                                                 <p className="text-sm text-gray-600">
-                                                    Genre: {selectedUser.manuscript.genre}
+                                                    ✅ Chapters: {selectedUser.chaptersApproved}/{selectedUser.totalChapters} approved
                                                 </p>
-                                                {selectedUser.currentPhase && (
-                                                    <>
-                                                        <p className="text-sm text-gray-600 mt-2">
-                                                            📊 Phase {selectedUser.currentPhase.phase_number} - {selectedUser.currentPhase.status}
-                                                        </p>
-                                                        <p className="text-sm text-gray-600">
-                                                            ✅ Chapters: {selectedUser.chaptersApproved}/{selectedUser.totalChapters} approved
-                                                        </p>
-                                                    </>
-                                                )}
-                                            </div>
-                                        ) : (
-                                            <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                                <p className="text-gray-600">No manuscript uploaded yet</p>
-                                            </div>
+                                            </>
                                         )}
+                                    </div>
+                                ) : (
+                                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                        <p className="text-gray-600">No manuscript uploaded yet</p>
+                                    </div>
+                                )}
 
-                                        {/* Feedback */}
-                                        {selectedUser.feedback.length > 0 ? (
-                                            <div>
-                                                <h3 className="font-semibold text-gray-900 mb-2">💬 Feedback</h3>
-                                                <div className="space-y-2">
-                                                    {selectedUser.feedback.map(fb => (
-                                                        <div key={fb.id} className="p-3 bg-green-50 rounded-lg border border-green-200">
-                                                            <div className="flex items-start justify-between mb-1">
-                                                                <span className="text-sm font-semibold text-green-900">
-                                                                    Phase {fb.phase_number}
-                                                                </span>
-                                                                {fb.rating && (
-                                                                    <span className="text-sm text-yellow-600">
-                                                                        {'⭐'.repeat(fb.rating)}
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                            <p className="text-sm text-gray-700">{fb.feedback_text}</p>
-                                                            <p className="text-xs text-gray-500 mt-1">
-                                                                {new Date(fb.created_at).toLocaleDateString()}
-                                                            </p>
-                                                        </div>
-                                                    ))}
+                                {/* Feedback */}
+                                {selectedUser.feedback.length > 0 ? (
+                                    <div>
+                                        <h3 className="font-semibold text-gray-900 mb-2">💬 Feedback</h3>
+                                        <div className="space-y-2">
+                                            {selectedUser.feedback.map(fb => (
+                                                <div key={fb.id} className="p-3 bg-green-50 rounded-lg border border-green-200">
+                                                    <div className="flex items-start justify-between mb-1">
+                                                        <span className="text-sm font-semibold text-green-900">
+                                                            Phase {fb.phase_number}
+                                                        </span>
+                                                        {fb.rating && (
+                                                            <span className="text-sm text-yellow-600">
+                                                                {'⭐'.repeat(fb.rating)}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-sm text-gray-700">{fb.feedback_text}</p>
+                                                    <p className="text-xs text-gray-500 mt-1">
+                                                        {new Date(fb.created_at).toLocaleDateString()}
+                                                    </p>
                                                 </div>
-                                            </div>
-                                        ) : (
-                                            <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                                <p className="text-gray-600">No feedback submitted yet</p>
-                                            </div>
-                                        )}
-
-                                        {/* Quick Actions */}
-                                        <div className="pt-4 border-t space-y-2">
-                                            <Button variant="outline" className="w-full">
-                                                ✉️ Send Email
-                                            </Button>
-                                            <Button variant="outline" className="w-full">
-                                                🔐 Reset Password
-                                            </Button>
+                                            ))}
                                         </div>
                                     </div>
+                                ) : (
+                                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                        <p className="text-gray-600">No feedback submitted yet</p>
+                                    </div>
+                                )}
+
+                                {/* Quick Actions */}
+                                <div className="pt-4 border-t space-y-2">
+                                    <Button variant="outline" className="w-full">
+                                        ✉️ Send Email
+                                    </Button>
+                                    <Button variant="outline" className="w-full">
+                                        🔐 Reset Password
+                                    </Button>
                                 </div>
-                            ) : (
-                                <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
-                                    <div className="text-6xl mb-4">👈</div>
-                                    <p className="text-gray-600">Select a user to view details</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
+                            <div className="text-6xl mb-4">👈</div>
+                            <p className="text-gray-600">Select a user to view details</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        )}
+
+        {/* FEEDBACK TAB */}
+        {activeTab === 'feedback' && (
+            <div className="max-w-4xl mx-auto">
+                <div className="bg-white rounded-2xl shadow-lg p-6">
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-2xl font-bold text-gray-900">Feedback</h2>
+
+                        <div className="flex gap-4">
+                            {/* Feedback Type Toggle */}
+                            <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
+                                <button
+                                    onClick={() => {
+                                        setFeedbackType('beta')
+                                        loadAllFeedback()
+                                    }}
+                                    className={`px-4 py-2 rounded-lg font-semibold transition-colors ${feedbackType === 'beta'
+                                        ? 'bg-white shadow text-gray-900'
+                                        : 'text-gray-600 hover:text-gray-900'
+                                        }`}
+                                >
+                                    💬 Beta Feedback
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setFeedbackType('phase')
+                                        loadAllFeedback()
+                                    }}
+                                    className={`px-4 py-2 rounded-lg font-semibold transition-colors ${feedbackType === 'phase'
+                                        ? 'bg-white shadow text-gray-900'
+                                        : 'text-gray-600 hover:text-gray-900'
+                                        }`}
+                                >
+                                    📊 Phase Feedback
+                                </button>
+                            </div>
+
+                            {/* Existing filter buttons (only for phase feedback) */}
+                            {feedbackType === 'phase' && (
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => {
+                                            setFeedbackFilter('all')
+                                            loadAllFeedback()
+                                        }}
+                                        className={`px-4 py-2 rounded-lg font-semibold transition-colors ${feedbackFilter === 'all'
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                            }`}
+                                    >
+                                        All
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setFeedbackFilter('flagged')
+                                            loadAllFeedback()
+                                        }}
+                                        className={`px-4 py-2 rounded-lg font-semibold transition-colors ${feedbackFilter === 'flagged'
+                                            ? 'bg-red-600 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                            }`}
+                                    >
+                                        🚩 Flagged
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setFeedbackFilter('unreviewed')
+                                            loadAllFeedback()
+                                        }}
+                                        className={`px-4 py-2 rounded-lg font-semibold transition-colors ${feedbackFilter === 'unreviewed'
+                                            ? 'bg-yellow-600 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                            }`}
+                                    >
+                                        ⏳ Unreviewed
+                                    </button>
                                 </div>
                             )}
                         </div>
                     </div>
-                )}
 
-                {/* FEEDBACK TAB */}
-                {activeTab === 'feedback' && (
-                    <div className="max-w-4xl mx-auto">
-                        <div className="bg-white rounded-2xl shadow-lg p-6">
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-2xl font-bold text-gray-900">Feedback</h2>
-
-                                <div className="flex gap-4">
-                                    {/* Feedback Type Toggle */}
-                                    <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
-                                        <button
-                                            onClick={() => {
-                                                setFeedbackType('beta')
-                                                loadAllFeedback()
-                                            }}
-                                            className={`px-4 py-2 rounded-lg font-semibold transition-colors ${feedbackType === 'beta'
-                                                ? 'bg-white shadow text-gray-900'
-                                                : 'text-gray-600 hover:text-gray-900'
-                                                }`}
-                                        >
-                                            💬 Beta Feedback
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                setFeedbackType('phase')
-                                                loadAllFeedback()
-                                            }}
-                                            className={`px-4 py-2 rounded-lg font-semibold transition-colors ${feedbackType === 'phase'
-                                                ? 'bg-white shadow text-gray-900'
-                                                : 'text-gray-600 hover:text-gray-900'
-                                                }`}
-                                        >
-                                            📊 Phase Feedback
-                                        </button>
+                    <div className="space-y-4 max-h-[700px] overflow-y-auto">
+                        {/* BETA FEEDBACK */}
+                        {feedbackType === 'beta' && betaFeedback.map(fb => (
+                            <div
+                                key={fb.id}
+                                className={`p-4 rounded-lg border-2 ${fb.reviewed_at
+                                    ? 'bg-gray-50 border-gray-200'
+                                    : 'bg-white border-blue-200'
+                                    }`}
+                            >
+                                <div className="flex items-start justify-between mb-2">
+                                    <div>
+                                        <p className="font-semibold text-gray-900">
+                                            {fb.author?.first_name || 'Unknown'} {fb.author?.last_name || 'User'}
+                                        </p>
+                                        <p className="text-sm text-gray-600">
+                                            {fb.author?.email}
+                                        </p>
+                                        {fb.manuscript?.title && (
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                📚 {fb.manuscript.title}
+                                            </p>
+                                        )}
+                                        {fb.page_url && (
+                                            <p className="text-xs text-blue-600 mt-1">
+                                                📍 {new URL(fb.page_url).pathname}
+                                            </p>
+                                        )}
                                     </div>
+                                    <div className="flex items-center gap-2">
+                                        {fb.rating && (
+                                            <span className="text-sm text-yellow-600">
+                                                {'⭐'.repeat(fb.rating)}
+                                            </span>
+                                        )}
+                                        {fb.reviewed_at && <span className="text-green-600">✅</span>}
+                                    </div>
+                                </div>
 
-                                    {/* Existing filter buttons (only for phase feedback) */}
-                                    {feedbackType === 'phase' && (
-                                        <div className="flex gap-2">
+                                <p className="text-gray-700 mb-3">{fb.feedback_text}</p>
+
+                                {fb.admin_notes && (
+                                    <div className="p-2 bg-yellow-50 border border-yellow-200 rounded mb-3">
+                                        <p className="text-xs font-semibold text-yellow-900">Admin Notes:</p>
+                                        <p className="text-sm text-yellow-800">{fb.admin_notes}</p>
+                                    </div>
+                                )}
+
+                                <div className="flex items-center justify-between">
+                                    <p className="text-xs text-gray-500">
+                                        {new Date(fb.created_at).toLocaleDateString()} at {new Date(fb.created_at).toLocaleTimeString()}
+                                    </p>
+
+                                    <div className="flex gap-2">
+                                        {!fb.reviewed_at && (
                                             <button
-                                                onClick={() => {
-                                                    setFeedbackFilter('all')
-                                                    loadAllFeedback()
-                                                }}
-                                                className={`px-4 py-2 rounded-lg font-semibold transition-colors ${feedbackFilter === 'all'
-                                                    ? 'bg-blue-600 text-white'
-                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                                    }`}
+                                                onClick={() => markBetaFeedbackReviewed(fb.id)}
+                                                className="text-sm px-3 py-1 bg-green-100 hover:bg-green-200 text-green-700 rounded font-semibold"
                                             >
-                                                All
+                                                ✅ Mark Reviewed
                                             </button>
-                                            <button
-                                                onClick={() => {
-                                                    setFeedbackFilter('flagged')
-                                                    loadAllFeedback()
-                                                }}
-                                                className={`px-4 py-2 rounded-lg font-semibold transition-colors ${feedbackFilter === 'flagged'
-                                                    ? 'bg-red-600 text-white'
-                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                                    }`}
-                                            >
-                                                🚩 Flagged
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    setFeedbackFilter('unreviewed')
-                                                    loadAllFeedback()
-                                                }}
-                                                className={`px-4 py-2 rounded-lg font-semibold transition-colors ${feedbackFilter === 'unreviewed'
-                                                    ? 'bg-yellow-600 text-white'
-                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                                    }`}
-                                            >
-                                                ⏳ Unreviewed
-                                            </button>
-                                        </div>
-                                    )}
+                                        )}
+                                    </div>
                                 </div>
                             </div>
+                        ))}
 
-                            <div className="space-y-4 max-h-[700px] overflow-y-auto">
-                                {/* BETA FEEDBACK */}
-                                {feedbackType === 'beta' && betaFeedback.map(fb => (
-                                    <div
-                                        key={fb.id}
-                                        className={`p-4 rounded-lg border-2 ${fb.reviewed_at
-                                            ? 'bg-gray-50 border-gray-200'
-                                            : 'bg-white border-blue-200'
-                                            }`}
-                                    >
-                                        <div className="flex items-start justify-between mb-2">
-                                            <div>
-                                                <p className="font-semibold text-gray-900">
-                                                    {fb.author?.first_name || 'Unknown'} {fb.author?.last_name || 'User'}
-                                                </p>
-                                                <p className="text-sm text-gray-600">
-                                                    {fb.author?.email}
-                                                </p>
-                                                {fb.manuscript?.title && (
-                                                    <p className="text-xs text-gray-500 mt-1">
-                                                        📚 {fb.manuscript.title}
-                                                    </p>
-                                                )}
-                                                {fb.page_url && (
-                                                    <p className="text-xs text-blue-600 mt-1">
-                                                        📍 {new URL(fb.page_url).pathname}
-                                                    </p>
-                                                )}
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                {fb.rating && (
-                                                    <span className="text-sm text-yellow-600">
-                                                        {'⭐'.repeat(fb.rating)}
-                                                    </span>
-                                                )}
-                                                {fb.reviewed_at && <span className="text-green-600">✅</span>}
-                                            </div>
-                                        </div>
-
-                                        <p className="text-gray-700 mb-3">{fb.feedback_text}</p>
-
-                                        {fb.admin_notes && (
-                                            <div className="p-2 bg-yellow-50 border border-yellow-200 rounded mb-3">
-                                                <p className="text-xs font-semibold text-yellow-900">Admin Notes:</p>
-                                                <p className="text-sm text-yellow-800">{fb.admin_notes}</p>
-                                            </div>
+                        {/* PHASE FEEDBACK (existing code) */}
+                        {feedbackType === 'phase' && allFeedback.map(fb => (
+                            <div
+                                key={fb.id}
+                                className={`p-4 rounded-lg border-2 ${fb.is_flagged
+                                    ? 'bg-red-50 border-red-300'
+                                    : fb.reviewed_at
+                                        ? 'bg-gray-50 border-gray-200'
+                                        : 'bg-white border-blue-200'
+                                    }`}
+                            >
+                                <div className="flex items-start justify-between mb-2">
+                                    <div>
+                                        <p className="font-semibold text-gray-900">
+                                            {fb.author?.first_name || 'Unknown'} {fb.author?.last_name || 'User'}
+                                        </p>
+                                        <p className="text-sm text-gray-600">
+                                            {fb.manuscript?.title || 'No manuscript'} - Phase {fb.phase_number}
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        {fb.rating && (
+                                            <span className="text-sm text-yellow-600">
+                                                {'⭐'.repeat(fb.rating)}
+                                            </span>
                                         )}
-
-                                        <div className="flex items-center justify-between">
-                                            <p className="text-xs text-gray-500">
-                                                {new Date(fb.created_at).toLocaleDateString()} at {new Date(fb.created_at).toLocaleTimeString()}
-                                            </p>
-
-                                            <div className="flex gap-2">
-                                                {!fb.reviewed_at && (
-                                                    <button
-                                                        onClick={() => markBetaFeedbackReviewed(fb.id)}
-                                                        className="text-sm px-3 py-1 bg-green-100 hover:bg-green-200 text-green-700 rounded font-semibold"
-                                                    >
-                                                        ✅ Mark Reviewed
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
+                                        {fb.is_flagged && <span className="text-red-600">🚩</span>}
+                                        {fb.reviewed_at && <span className="text-green-600">✅</span>}
                                     </div>
-                                ))}
+                                </div>
 
-                                {/* PHASE FEEDBACK (existing code) */}
-                                {feedbackType === 'phase' && allFeedback.map(fb => (
-                                    <div
-                                        key={fb.id}
-                                        className={`p-4 rounded-lg border-2 ${fb.is_flagged
-                                            ? 'bg-red-50 border-red-300'
-                                            : fb.reviewed_at
-                                                ? 'bg-gray-50 border-gray-200'
-                                                : 'bg-white border-blue-200'
-                                            }`}
-                                    >
-                                        <div className="flex items-start justify-between mb-2">
-                                            <div>
-                                                <p className="font-semibold text-gray-900">
-                                                    {fb.author?.first_name || 'Unknown'} {fb.author?.last_name || 'User'}
-                                                </p>
-                                                <p className="text-sm text-gray-600">
-                                                    {fb.manuscript?.title || 'No manuscript'} - Phase {fb.phase_number}
-                                                </p>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                {fb.rating && (
-                                                    <span className="text-sm text-yellow-600">
-                                                        {'⭐'.repeat(fb.rating)}
-                                                    </span>
-                                                )}
-                                                {fb.is_flagged && <span className="text-red-600">🚩</span>}
-                                                {fb.reviewed_at && <span className="text-green-600">✅</span>}
-                                            </div>
-                                        </div>
+                                <p className="text-gray-700 mb-3">{fb.feedback_text}</p>
 
-                                        <p className="text-gray-700 mb-3">{fb.feedback_text}</p>
+                                <div className="flex items-center justify-between">
+                                    <p className="text-xs text-gray-500">
+                                        {new Date(fb.created_at).toLocaleDateString()} at {new Date(fb.created_at).toLocaleTimeString()}
+                                    </p>
 
-                                        <div className="flex items-center justify-between">
-                                            <p className="text-xs text-gray-500">
-                                                {new Date(fb.created_at).toLocaleDateString()} at {new Date(fb.created_at).toLocaleTimeString()}
-                                            </p>
-
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={() => toggleFeedbackFlag(fb.id, fb.is_flagged)}
-                                                    className="text-sm px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded font-semibold"
-                                                >
-                                                    {fb.is_flagged ? '🚩 Unflag' : 'Flag'}
-                                                </button>
-                                                {!fb.reviewed_at && (
-                                                    <button
-                                                        onClick={() => markFeedbackReviewed(fb.id)}
-                                                        className="text-sm px-3 py-1 bg-green-100 hover:bg-green-200 text-green-700 rounded font-semibold"
-                                                    >
-                                                        ✅ Mark Reviewed
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => toggleFeedbackFlag(fb.id, fb.is_flagged)}
+                                            className="text-sm px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded font-semibold"
+                                        >
+                                            {fb.is_flagged ? '🚩 Unflag' : 'Flag'}
+                                        </button>
+                                        {!fb.reviewed_at && (
+                                            <button
+                                                onClick={() => markFeedbackReviewed(fb.id)}
+                                                className="text-sm px-3 py-1 bg-green-100 hover:bg-green-200 text-green-700 rounded font-semibold"
+                                            >
+                                                ✅ Mark Reviewed
+                                            </button>
+                                        )}
                                     </div>
-                                ))}
-
-                                {feedbackType === 'beta' && betaFeedback.length === 0 && (
-                                    <div className="text-center py-12">
-                                        <div className="text-6xl mb-4">💬</div>
-                                        <p className="text-gray-600">No beta feedback yet</p>
-                                    </div>
-                                )}
-
-                                {feedbackType === 'phase' && allFeedback.length === 0 && (
-                                    <div className="text-center py-12">
-                                        <div className="text-6xl mb-4">📊</div>
-                                        <p className="text-gray-600">No phase feedback yet</p>
-                                    </div>
-                                )}
+                                </div>
                             </div>
-                        </div>
+                        ))}
+
+                        {feedbackType === 'beta' && betaFeedback.length === 0 && (
+                            <div className="text-center py-12">
+                                <div className="text-6xl mb-4">💬</div>
+                                <p className="text-gray-600">No beta feedback yet</p>
+                            </div>
+                        )}
+
+                        {feedbackType === 'phase' && allFeedback.length === 0 && (
+                            <div className="text-center py-12">
+                                <div className="text-6xl mb-4">📊</div>
+                                <p className="text-gray-600">No phase feedback yet</p>
+                            </div>
+                        )}
                     </div>
-                )}
+                </div>
+            </div>
+        )}
 
-                {/* STATS TAB */}
-                {activeTab === 'stats' && (
-                    <div className="max-w-5xl mx-auto">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Dashboard Statistics</h2>
+        {/* STATS TAB */}
+        {activeTab === 'stats' && (
+            <div className="max-w-5xl mx-auto">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Dashboard Statistics</h2>
 
-                        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <div className="bg-white rounded-2xl shadow-lg p-6">
-                                <div className="text-4xl mb-2">👥</div>
-                                <div className="text-3xl font-bold text-gray-900">{stats.totalBetaTesters}</div>
-                                <div className="text-sm text-gray-600">Total Beta Testers</div>
-                            </div>
-
-                            <div className="bg-white rounded-2xl shadow-lg p-6">
-                                <div className="text-4xl mb-2">🟢</div>
-                                <div className="text-3xl font-bold text-gray-900">{stats.activeThisWeek}</div>
-                                <div className="text-sm text-gray-600">Active This Week</div>
-                            </div>
-
-                            <div className="bg-white rounded-2xl shadow-lg p-6">
-                                <div className="text-4xl mb-2">✅</div>
-                                <div className="text-3xl font-bold text-gray-900">{stats.phaseCompletions}</div>
-                                <div className="text-sm text-gray-600">Phase Completions</div>
-                            </div>
-
-                            <div className="bg-white rounded-2xl shadow-lg p-6">
-                                <div className="text-4xl mb-2">⭐</div>
-                                <div className="text-3xl font-bold text-gray-900">{stats.averageRating.toFixed(1)}</div>
-                                <div className="text-sm text-gray-600">Average Rating</div>
-                            </div>
-                        </div>
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="bg-white rounded-2xl shadow-lg p-6">
+                        <div className="text-4xl mb-2">👥</div>
+                        <div className="text-3xl font-bold text-gray-900">{stats.totalBetaTesters}</div>
+                        <div className="text-sm text-gray-600">Total Beta Testers</div>
                     </div>
-                )}
 
-            </main>
-        </div>
+                    <div className="bg-white rounded-2xl shadow-lg p-6">
+                        <div className="text-4xl mb-2">🟢</div>
+                        <div className="text-3xl font-bold text-gray-900">{stats.activeThisWeek}</div>
+                        <div className="text-sm text-gray-600">Active This Week</div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl shadow-lg p-6">
+                        <div className="text-4xl mb-2">✅</div>
+                        <div className="text-3xl font-bold text-gray-900">{stats.phaseCompletions}</div>
+                        <div className="text-sm text-gray-600">Phase Completions</div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl shadow-lg p-6">
+                        <div className="text-4xl mb-2">⭐</div>
+                        <div className="text-3xl font-bold text-gray-900">{stats.averageRating.toFixed(1)}</div>
+                        <div className="text-sm text-gray-600">Average Rating</div>
+                    </div>
+                </div>
+            </div>
+        )}
+
+    </main>
+        </div >
     )
 }
