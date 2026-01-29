@@ -929,7 +929,7 @@ function StudioContent() {
 
         if (history && history.length > 0) {
           const messages: ChatMessage[] = history.map(msg => ({
-            sender: msg.sender === 'author' ? 'Author' : phaseForChat.editor_name,
+            sender: msg.sender === 'Author' ? 'Author' : phaseForChat.editor_name,
             message: msg.message
           })) as ChatMessage[]
           setChatMessages(messages)

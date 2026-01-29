@@ -175,7 +175,7 @@ export interface EditorChatMessage {
   chapter_number: number | null
 
   // Message
-  sender: 'author' | 'editor'
+  sender: 'Author' | 'Alex' | 'Sam' | 'Jordan' | 'Taylor' | 'system'
   message: string
 
   // Metadata
