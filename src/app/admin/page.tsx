@@ -591,8 +591,6 @@ export default function AdminDashboard() {
                             💬 Feedback ({allFeedback.length + betaFeedback.length})
                         </button>
 
-                        💬 Feedback ({allFeedback.length})
-                    </button>
                     <button
                         onClick={() => setActiveTab('stats')}
                         className={`py-4 px-2 border-b-2 font-semibold transition-colors ${activeTab === 'stats'
