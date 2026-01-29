@@ -671,6 +671,17 @@ function StudioContent() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [hasUnsavedChanges])
 
+  // Immediately clear chat when switching editors
+  useEffect(() => {
+    const phaseParam = searchParams.get('phase')
+
+    // When phase param exists or changes, clear old data immediately
+    setChatMessages([])
+    setIsChatLoading(true)
+    setChapterIssues([])
+    setShowIssuesPanel(false)
+  }, [searchParams])
+
   // Update word count when content changes
   useEffect(() => {
     const text = editorContent.replace(/<[^>]*>/g, '')
@@ -2300,8 +2311,8 @@ function StudioContent() {
                 <button
                   onClick={() => setIsInsertMode(!isInsertMode)}
                   className={`w-full px-3 py-2 mb-3 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors ${isInsertMode
-                      ? 'bg-red-100 text-red-700 border border-red-300 hover:bg-red-200'
-                      : 'bg-green-100 text-green-700 border border-green-300 hover:bg-green-200'
+                    ? 'bg-red-100 text-red-700 border border-red-300 hover:bg-red-200'
+                    : 'bg-green-100 text-green-700 border border-green-300 hover:bg-green-200'
                     }`}
                 >
                   {isInsertMode ? '✕ Cancel Insert' : '+ Insert Chapter'}
@@ -2333,10 +2344,10 @@ function StudioContent() {
                       onClick={() => !isLocked && !isInsertMode && loadChapter(index)}
                       disabled={isLocked || isInsertMode}
                       className={`group w-full p-3 rounded-lg mb-1 text-left transition ${isLocked || isInsertMode
-                          ? 'opacity-50 cursor-not-allowed'
-                          : index === currentChapterIndex
-                            ? `${getEditorColorClasses(editorColor).bgLight} border-2 ${getEditorColorClasses(editorColor).border}`
-                            : `bg-white border border-gray-200 hover:${getEditorColorClasses(editorColor).borderLight}`
+                        ? 'opacity-50 cursor-not-allowed'
+                        : index === currentChapterIndex
+                          ? `${getEditorColorClasses(editorColor).bgLight} border-2 ${getEditorColorClasses(editorColor).border}`
+                          : `bg-white border border-gray-200 hover:${getEditorColorClasses(editorColor).borderLight}`
                         }`}
                     >
                       {!isChapterSidebarCollapsed ? (
@@ -2637,7 +2648,12 @@ function StudioContent() {
               {isChatLoading && (
                 <div className="flex items-center justify-center py-12">
                   <div className="text-center">
-                    <div className="w-12 h-12 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+                    <div className={`w-12 h-12 border-4 border-gray-200 rounded-full animate-spin mx-auto mb-4 ${editorColor === 'green' ? 'border-t-green-600' :
+                      editorColor === 'purple' ? 'border-t-purple-600' :
+                        editorColor === 'blue' ? 'border-t-blue-600' :
+                          editorColor === 'teal' ? 'border-t-teal-600' :
+                            'border-t-orange-600'
+                      }`}></div>
                     <p className="text-gray-600 font-medium">Loading chat history...</p>
                     <p className="text-gray-500 text-sm mt-1">Retrieving your conversation with {editorName}</p>
                   </div>
