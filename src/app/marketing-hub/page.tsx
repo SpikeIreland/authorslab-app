@@ -326,6 +326,15 @@ function MarketingHubContent() {
               📚 AuthorsLab.ai
             </Link>
             <div className="flex items-center gap-4">
+              {/* Sales Demo Link */}
+              <Link
+                href={manuscriptId ? `/marketing-hub-demo?manuscriptId=${manuscriptId}` : '/marketing-hub-demo'}
+                className="px-4 py-2 bg-purple-100 text-purple-700 text-sm rounded-lg hover:bg-purple-200 transition-colors flex items-center gap-2"
+              >
+                <span>🎬</span>
+                <span>View Sales Demo</span>
+              </Link>
+
               {marketingProgress?.plan_pdf_url && !isPreviewMode && (
                 <button
                   onClick={() => window.open(marketingProgress.plan_pdf_url!, '_blank')}
