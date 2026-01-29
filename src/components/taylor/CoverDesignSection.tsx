@@ -74,7 +74,7 @@ export default function CoverDesignSection({
                             Creating Your Cover Designs
                         </h3>
                         <p className="text-gray-600 mb-4 max-w-md mx-auto">
-                            Taylor is generating 4 unique cover concepts using AI. This typically takes 1-2 minutes.
+                            Taylor is generating 4 unique cover concepts using AI. This can typically take up to 5 minutes.
                         </p>
                         <div className="flex items-center justify-center gap-2 text-sm text-teal-600">
                             <div className="flex gap-1">
