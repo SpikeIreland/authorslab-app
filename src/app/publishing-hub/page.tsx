@@ -426,7 +426,7 @@ function PublishingHubContent() {
                 Publishing
               </Link>
               <Link
-                href="/marketing-hub"
+                href={`/marketing-hub?manuscriptId=${manuscriptId}`}
                 className="text-gray-700 hover:text-blue-900 font-medium transition-colors"
               >
                 Marketing

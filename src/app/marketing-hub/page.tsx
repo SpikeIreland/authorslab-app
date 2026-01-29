@@ -1,513 +1,571 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
-export default function MarketingHubPage() {
-  const [pricingPeriod, setPricingPeriod] = useState<'monthly' | 'annual'>('monthly')
+// Marketing Journey Section Type
+type MarketingSectionId =
+  | 'blurb'
+  | 'keywords'
+  | 'audience'
+  | 'social-media'
+  | 'launch-plan'
+  | 'resources'
+
+interface MarketingSection {
+  id: MarketingSectionId
+  title: string
+  icon: string
+  description: string
+  items: MarketingSectionItem[]
+  isComplete: boolean
+}
+
+interface MarketingSectionItem {
+  id: string
+  title: string
+  isComplete: boolean
+}
+
+interface Manuscript {
+  id: string
+  title: string
+  genre: string
+  current_word_count: number
+  total_chapters: number
+}
+
+interface MarketingProgress {
+  assessment_completed: boolean
+  assessment_answers?: {
+    primary_goal?: string
+    target_reader?: string
+    launch_timeline?: string
+    platforms?: string[]
+    marketing_budget?: string
+    existing_audience?: string
+  }
+
+  // Blurb
+  blurb_short?: string
+  blurb_long?: string
+  blurb_tagline?: string
+  blurb_completed: boolean
+
+  // Keywords
+  keywords?: Array<{ keyword: string; category: string; rationale: string }>
+  categories?: string[]
+  keywords_completed: boolean
+
+  // Author Platform
+  author_bio_short?: string
+  author_bio_long?: string
+  author_bio_completed: boolean
+
+  // Social Media
+  social_media_posts?: Record<string, string[]>
+  content_calendar?: Array<{ date: string; platform: string; content: string }>
+  social_completed: boolean
+
+  // Launch Strategy
+  launch_timeline?: Array<{ milestone: string; date: string; tasks: string[] }>
+  launch_checklist?: Array<{ task: string; completed: boolean }>
+  launch_date?: string
+  launch_completed: boolean
+
+  // Overall
+  marketing_plan?: string
+  plan_pdf_url?: string
+  current_step?: string
+  completed_steps?: string[]
+}
+
+function MarketingHubContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const manuscriptId = searchParams.get('manuscriptId')
+
+  const [hasAccess, setHasAccess] = useState(false)
+  const [isChecking, setIsChecking] = useState(true)
+  const [manuscript, setManuscript] = useState<Manuscript | null>(null)
+  const [marketingProgress, setMarketingProgress] = useState<MarketingProgress | null>(null)
+  const [activeSection, setActiveSection] = useState<MarketingSectionId>('blurb')
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const [authorFirstName, setAuthorFirstName] = useState('')
+
+  // Check access and load data
+  useEffect(() => {
+    async function checkAccess() {
+      if (!manuscriptId) {
+        console.log('❌ No manuscriptId - redirecting to author-studio')
+        router.push('/author-studio')
+        return
+      }
+
+      const supabase = createClient()
+
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        console.log('❌ No user - redirecting to login')
+        router.push('/login')
+        return
+      }
+
+      // Check if user has access to Phase 5 (Marketing)
+      const { hasPhaseAccess } = await import('@/lib/accessControl')
+      const hasAccess = await hasPhaseAccess(user.id, 5)
+
+      if (!hasAccess) {
+        console.log('❌ No Phase 5 access - redirecting to phase-complete')
+        router.push(`/phase-complete?manuscriptId=${manuscriptId}`)
+        return
+      }
+
+      // Check Phase 5 is active for this manuscript
+      const { data: phase5 } = await supabase
+        .from('editing_phases')
+        .select('phase_status')
+        .eq('manuscript_id', manuscriptId)
+        .eq('phase_number', 5)
+        .single()
+
+      if (phase5?.phase_status !== 'active') {
+        console.log('❌ Phase 5 not active - redirecting to phase-complete')
+        router.push(`/phase-complete?manuscriptId=${manuscriptId}`)
+        return
+      }
+
+      // Load manuscript
+      const { data: manuscriptData } = await supabase
+        .from('manuscripts')
+        .select('id, title, genre, current_word_count, total_chapters, author_profiles!inner(first_name)')
+        .eq('id', manuscriptId)
+        .single()
+
+      if (manuscriptData) {
+        setManuscript(manuscriptData)
+        const authorProfile = Array.isArray(manuscriptData.author_profiles)
+          ? manuscriptData.author_profiles[0]
+          : manuscriptData.author_profiles
+        setAuthorFirstName(authorProfile?.first_name || '')
+      }
+
+      // Load marketing progress (if table exists)
+      const { data: progressData } = await supabase
+        .from('marketing_progress')
+        .select('*')
+        .eq('manuscript_id', manuscriptId)
+        .single()
+
+      if (progressData) {
+        setMarketingProgress(progressData)
+      }
+
+      setHasAccess(true)
+      setIsChecking(false)
+    }
+
+    checkAccess()
+  }, [manuscriptId, router])
+
+  // Subscribe to marketing progress updates
+  useEffect(() => {
+    if (!manuscriptId) return
+
+    const supabase = createClient()
+
+    const channel = supabase
+      .channel(`marketing-progress-${manuscriptId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'marketing_progress',
+          filter: `manuscript_id=eq.${manuscriptId}`
+        },
+        (payload) => {
+          console.log('📊 Marketing progress updated:', payload.new)
+          setMarketingProgress(payload.new as MarketingProgress)
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [manuscriptId])
+
+  // Define marketing sections
+  const marketingSections: MarketingSection[] = [
+    {
+      id: 'blurb',
+      title: 'Book Description',
+      icon: '📝',
+      description: 'Compelling blurbs that sell your story',
+      isComplete: marketingProgress?.blurb_completed || false,
+      items: [
+        { id: 'tagline', title: 'Tagline', isComplete: !!marketingProgress?.blurb_tagline },
+        { id: 'short-blurb', title: 'Short Blurb (~150 words)', isComplete: !!marketingProgress?.blurb_short },
+        { id: 'long-blurb', title: 'Long Blurb (~300 words)', isComplete: !!marketingProgress?.blurb_long },
+      ]
+    },
+    {
+      id: 'keywords',
+      title: 'Keywords & Categories',
+      icon: '🔍',
+      description: 'Help readers discover your book',
+      isComplete: marketingProgress?.keywords_completed || false,
+      items: [
+        { id: 'amazon-keywords', title: 'Amazon Keywords (7)', isComplete: (marketingProgress?.keywords?.length || 0) >= 7 },
+        { id: 'categories', title: 'BISAC Categories', isComplete: (marketingProgress?.categories?.length || 0) > 0 },
+      ]
+    },
+    {
+      id: 'audience',
+      title: 'Target Audience',
+      icon: '🎯',
+      description: 'Define your ideal reader',
+      isComplete: !!marketingProgress?.assessment_answers?.target_reader,
+      items: [
+        { id: 'reader-profile', title: 'Reader Profile', isComplete: !!marketingProgress?.assessment_answers?.target_reader },
+        { id: 'comp-titles', title: 'Comp Titles', isComplete: false },
+      ]
+    },
+    {
+      id: 'social-media',
+      title: 'Social Media Content',
+      icon: '📱',
+      description: 'Ready-to-post content for all platforms',
+      isComplete: marketingProgress?.social_completed || false,
+      items: [
+        { id: 'twitter', title: 'Twitter/X Posts', isComplete: false },
+        { id: 'instagram', title: 'Instagram Captions', isComplete: false },
+        { id: 'facebook', title: 'Facebook Posts', isComplete: false },
+        { id: 'calendar', title: 'Content Calendar', isComplete: false },
+      ]
+    },
+    {
+      id: 'launch-plan',
+      title: 'Launch Strategy',
+      icon: '🚀',
+      description: 'Your roadmap to a successful launch',
+      isComplete: marketingProgress?.launch_completed || false,
+      items: [
+        { id: 'timeline', title: 'Launch Timeline', isComplete: false },
+        { id: 'pre-launch', title: 'Pre-Launch Checklist', isComplete: false },
+        { id: 'launch-week', title: 'Launch Week Plan', isComplete: false },
+        { id: 'post-launch', title: 'Post-Launch Strategy', isComplete: false },
+      ]
+    },
+    {
+      id: 'resources',
+      title: 'Marketing Resources',
+      icon: '📚',
+      description: 'Templates and guides',
+      isComplete: false,
+      items: [
+        { id: 'email-templates', title: 'Email Templates', isComplete: false },
+        { id: 'review-requests', title: 'Review Request Templates', isComplete: false },
+        { id: 'media-kit', title: 'Author Media Kit', isComplete: false },
+      ]
+    },
+  ]
+
+  if (isChecking) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading Marketing Hub...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!hasAccess || !manuscript) {
+    return null
+  }
+
+  // Get current section data
+  const currentSection = marketingSections.find(s => s.id === activeSection)
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="flex flex-col h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div className="px-6 py-4">
+          <div className="flex items-center justify-between mb-4">
             <Link href="/" className="text-2xl font-extrabold bg-gradient-to-r from-blue-900 to-blue-700 bg-clip-text text-transparent">
               📚 AuthorsLab.ai
             </Link>
-            <nav className="hidden md:flex items-center gap-8">
-              <Link href="/dashboard" className="text-gray-700 hover:text-blue-900 font-medium">
-                Dashboard
+            <div className="flex items-center gap-4">
+              {marketingProgress?.plan_pdf_url && (
+                <button
+                  onClick={() => window.open(marketingProgress.plan_pdf_url!, '_blank')}
+                  className="px-4 py-2 bg-orange-600 text-white text-sm rounded-lg hover:bg-orange-700 transition-colors flex items-center gap-2 shadow-sm"
+                >
+                  <span>📄</span>
+                  <span>Marketing Plan</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Book Info Bar */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">{manuscript.title}</h1>
+                <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
+                  <span>{manuscript.genre}</span>
+                  <span className="text-gray-400">•</span>
+                  <span>{manuscript.current_word_count.toLocaleString()} words</span>
+                  <span className="text-gray-400">•</span>
+                  <span>{manuscript.total_chapters} chapters</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Phase Navigation - All links include manuscriptId */}
+            <nav className="flex items-center gap-6">
+              <Link
+                href={`/author-studio?manuscriptId=${manuscriptId}&phase=3`}
+                className="text-gray-700 hover:text-blue-900 font-medium transition-colors"
+              >
+                Author Studio
               </Link>
-              <Link href="/author-studio" className="text-gray-700 hover:text-blue-900 font-medium">
-                Writing Studio
-              </Link>
-              <Link href="/publishing-hub" className="text-gray-700 hover:text-blue-900 font-medium">
+              <Link
+                href={`/publishing-hub?manuscriptId=${manuscriptId}`}
+                className="text-gray-700 hover:text-blue-900 font-medium transition-colors"
+              >
                 Publishing
               </Link>
-              <Link href="/marketing-hub" className="text-blue-900 font-semibold border-b-2 border-blue-900">
+              <Link
+                href={`/marketing-hub?manuscriptId=${manuscriptId}`}
+                className="text-orange-600 font-semibold border-b-2 border-orange-600"
+              >
                 Marketing
               </Link>
             </nav>
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-900 to-blue-700 rounded-full flex items-center justify-center text-white font-semibold">
-              JS
-            </div>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-6 py-12">
-        {/* Hero Section */}
-        <section className="bg-gradient-to-br from-purple-700 to-purple-600 text-white rounded-3xl p-12 mb-12 relative overflow-hidden">
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute inset-0" style={{
-              backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,.1) 10px, rgba(255,255,255,.1) 20px)',
-            }}></div>
+      {/* Main Layout */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* LEFT: Marketing Journey Navigation */}
+        <div className={`${isSidebarCollapsed ? 'w-16' : 'w-72'} bg-white border-r border-gray-200 flex flex-col transition-all overflow-y-auto`}>
+          <div className="p-4 border-b border-gray-200">
+            <div className="flex items-center justify-between mb-2">
+              {!isSidebarCollapsed && (
+                <h2 className="font-bold text-gray-900 text-lg">Marketing Journey</h2>
+              )}
+              <button
+                onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                className="p-2 hover:bg-gray-100 rounded transition-colors"
+                title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              >
+                {isSidebarCollapsed ? '→' : '←'}
+              </button>
+            </div>
+            {!isSidebarCollapsed && (
+              <p className="text-sm text-gray-500">
+                {marketingSections.filter(s => s.isComplete).length} of {marketingSections.length} complete
+              </p>
+            )}
           </div>
-          <div className="relative z-10 text-center max-w-3xl mx-auto">
-            <h1 className="text-5xl font-extrabold mb-4">Marketing Hub</h1>
-            <p className="text-xl opacity-95 mb-8">
-              Reach your perfect readers with AI-powered marketing tools and targeted audience campaigns
+
+          {/* Section Navigation */}
+          <nav className="flex-1 p-2">
+            {marketingSections.map((section) => (
+              <button
+                key={section.id}
+                onClick={() => setActiveSection(section.id)}
+                className={`w-full text-left p-3 rounded-lg mb-1 transition-colors ${activeSection === section.id
+                    ? 'bg-orange-50 border-l-4 border-orange-500'
+                    : 'hover:bg-gray-50'
+                  }`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">{section.icon}</span>
+                  {!isSidebarCollapsed && (
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className={`font-medium ${activeSection === section.id ? 'text-orange-700' : 'text-gray-700'
+                          }`}>
+                          {section.title}
+                        </span>
+                        {section.isComplete && (
+                          <span className="text-green-500 text-sm">✓</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-0.5">{section.description}</p>
+                    </div>
+                  )}
+                </div>
+              </button>
+            ))}
+          </nav>
+
+          {/* Quinn Status */}
+          {!isSidebarCollapsed && (
+            <div className="p-4 border-t border-gray-200">
+              <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
+                <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-xl">
+                  🚀
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900">Quinn</p>
+                  <p className="text-xs text-gray-600">Ready to strategize</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* CENTER: Main Content Area */}
+        <div className="flex-1 overflow-y-auto p-8">
+          {/* Section Header */}
+          <div className="mb-8">
+            <div className="flex items-center gap-4 mb-2">
+              <span className="text-4xl">{currentSection?.icon}</span>
+              <div>
+                <h2 className="text-3xl font-bold text-gray-900">{currentSection?.title}</h2>
+                <p className="text-gray-600">{currentSection?.description}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Placeholder Content - Will be replaced with actual components */}
+          <div className="bg-white rounded-2xl p-8 shadow-lg border-2 border-orange-200">
+            <div className="text-center py-12">
+              <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">
+                🏗️
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                {currentSection?.title} - Coming Soon
+              </h3>
+              <p className="text-gray-600 max-w-md mx-auto mb-6">
+                This section is being built. Quinn will help you with {currentSection?.title.toLowerCase()} once it&apos;s ready.
+              </p>
+
+              {/* Section Items Preview */}
+              <div className="max-w-md mx-auto text-left">
+                <p className="text-sm font-semibold text-gray-700 mb-3">What you&apos;ll be able to do:</p>
+                <ul className="space-y-2">
+                  {currentSection?.items.map((item) => (
+                    <li key={item.id} className="flex items-center gap-2 text-gray-600">
+                      <span className="text-orange-500">→</span>
+                      {item.title}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Assessment CTA (if not completed) */}
+          {!marketingProgress?.assessment_completed && (
+            <div className="mt-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl p-8 text-white">
+              <div className="flex items-center gap-6">
+                <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center text-3xl">
+                  💬
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold mb-2">Start with Quinn&apos;s Marketing Assessment</h3>
+                  <p className="text-orange-100 mb-4">
+                    Tell Quinn about your goals, target readers, and timeline. This helps create a personalized marketing strategy for your book.
+                  </p>
+                  <button className="px-6 py-3 bg-white text-orange-600 font-bold rounded-lg hover:bg-orange-50 transition-colors">
+                    Begin Assessment →
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* RIGHT: Quinn Chat Panel (Placeholder) */}
+        <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
+          {/* Chat Header */}
+          <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-orange-500 to-orange-600">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl">
+                🚀
+              </div>
+              <div className="text-white">
+                <h3 className="font-bold">Quinn</h3>
+                <p className="text-sm text-orange-100">The Creative Strategist</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Chat Placeholder */}
+          <div className="flex-1 p-6 flex flex-col items-center justify-center text-center">
+            <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center text-4xl mb-4">
+              💬
+            </div>
+            <h4 className="font-bold text-gray-900 mb-2">Chat with Quinn</h4>
+            <p className="text-gray-600 text-sm mb-6 max-w-xs">
+              Quinn will help you create compelling marketing materials and launch strategies.
             </p>
-            <div className="inline-flex items-center gap-3 bg-yellow-400/20 border-2 border-yellow-400 text-yellow-400 px-6 py-3 rounded-full font-semibold">
-              🎯 Ready for Launch Marketing
+
+            {/* Example starter prompts */}
+            <div className="space-y-2 w-full">
+              <button className="w-full p-3 text-left text-sm bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors border border-orange-200">
+                📝 &quot;Help me write a compelling book blurb&quot;
+              </button>
+              <button className="w-full p-3 text-left text-sm bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors border border-orange-200">
+                🔍 &quot;What keywords should I target?&quot;
+              </button>
+              <button className="w-full p-3 text-left text-sm bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors border border-orange-200">
+                🚀 &quot;Create a launch timeline for me&quot;
+              </button>
             </div>
           </div>
-        </section>
 
-        {/* Quick Stats */}
-        <section className="bg-white rounded-3xl p-8 mb-12 shadow-lg">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="text-center p-6 border border-gray-200 rounded-xl hover:shadow-lg transition-all hover:-translate-y-1">
-              <div className="text-4xl font-extrabold text-purple-600 mb-2">12.4K</div>
-              <div className="text-gray-600 font-medium">Total Reach</div>
-            </div>
-            <div className="text-center p-6 border border-gray-200 rounded-xl hover:shadow-lg transition-all hover:-translate-y-1">
-              <div className="text-4xl font-extrabold text-green-600 mb-2">8.7%</div>
-              <div className="text-gray-600 font-medium">Engagement Rate</div>
-            </div>
-            <div className="text-center p-6 border border-gray-200 rounded-xl hover:shadow-lg transition-all hover:-translate-y-1">
-              <div className="text-4xl font-extrabold text-red-600 mb-2">3.2%</div>
-              <div className="text-gray-600 font-medium">Conversion Rate</div>
-            </div>
-            <div className="text-center p-6 border border-gray-200 rounded-xl hover:shadow-lg transition-all hover:-translate-y-1">
-              <div className="text-4xl font-extrabold text-yellow-600 mb-2">284%</div>
-              <div className="text-gray-600 font-medium">Marketing ROI</div>
-            </div>
-          </div>
-        </section>
-
-        {/* Marketing Tools */}
-        <section className="mb-12">
-          <h2 className="text-4xl font-bold text-gray-900 mb-8">Marketing Tools & Services</h2>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Social Media */}
-            <div className="bg-white rounded-2xl p-8 shadow-lg border-2 border-[#1da1f2] hover:border-[#0d8bd9] hover:shadow-2xl transition-all cursor-pointer hover:-translate-y-2">
-              <div className="w-16 h-16 bg-[#1da1f2] rounded-xl flex items-center justify-center text-3xl mb-6">
-                📱
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Social Media Manager</h3>
-              <p className="text-gray-600 mb-4 text-sm">
-                Automated posting, content scheduling, and audience engagement across all major platforms.
-              </p>
-              <ul className="space-y-2 text-sm text-gray-700 mb-6">
-                <li className="flex items-start gap-2">
-                  <span className="text-purple-600">→</span>
-                  <span>Multi-platform scheduling</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-purple-600">→</span>
-                  <span>AI-generated content</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-purple-600">→</span>
-                  <span>Hashtag optimization</span>
-                </li>
-              </ul>
-              <div className="flex items-center gap-2 text-sm font-semibold text-green-600 mb-4">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                Active - 3 platforms connected
-              </div>
-              <div className="flex gap-2">
-                <button className="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-all">
-                  Manage Posts
-                </button>
-                <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-all">
-                  Analytics
-                </button>
-              </div>
-            </div>
-
-            {/* Email Marketing */}
-            <div className="bg-white rounded-2xl p-8 shadow-lg border-2 border-[#ea4335] hover:border-[#d62516] hover:shadow-2xl transition-all cursor-pointer hover:-translate-y-2">
-              <div className="w-16 h-16 bg-[#ea4335] rounded-xl flex items-center justify-center text-3xl mb-6">
-                📧
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Email Marketing</h3>
-              <p className="text-gray-600 mb-4 text-sm">
-                Build your author platform with targeted email campaigns and newsletters.
-              </p>
-              <ul className="space-y-2 text-sm text-gray-700 mb-6">
-                <li className="flex items-start gap-2">
-                  <span className="text-purple-600">→</span>
-                  <span>Automated drip campaigns</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-purple-600">→</span>
-                  <span>Reader list segmentation</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-purple-600">→</span>
-                  <span>Book launch sequences</span>
-                </li>
-              </ul>
-              <div className="flex items-center gap-2 text-sm font-semibold text-yellow-600 mb-4">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                Setup Required
-              </div>
-              <div className="flex gap-2">
-                <button className="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-all">
-                  Setup Campaign
-                </button>
-                <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-all">
-                  Templates
-                </button>
-              </div>
-            </div>
-
-            {/* Content Creation */}
-            <div className="bg-white rounded-2xl p-8 shadow-lg border-2 border-[#fbbc04] hover:border-[#ea9a00] hover:shadow-2xl transition-all cursor-pointer hover:-translate-y-2">
-              <div className="w-16 h-16 bg-[#fbbc04] rounded-xl flex items-center justify-center text-3xl mb-6">
-                🎨
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Content Creation Studio</h3>
-              <p className="text-gray-600 mb-4 text-sm">
-                AI-powered content generation for book promotion and marketing materials.
-              </p>
-              <ul className="space-y-2 text-sm text-gray-700 mb-6">
-                <li className="flex items-start gap-2">
-                  <span className="text-purple-600">→</span>
-                  <span>Book quote graphics</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-purple-600">→</span>
-                  <span>Video trailers</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-purple-600">→</span>
-                  <span>Social media templates</span>
-                </li>
-              </ul>
-              <div className="flex items-center gap-2 text-sm font-semibold text-green-600 mb-4">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                Ready to Create
-              </div>
-              <div className="flex gap-2">
-                <button className="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-all">
-                  Create Content
-                </button>
-                <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-all">
-                  Gallery
-                </button>
-              </div>
-            </div>
-
-            {/* Analytics */}
-            <div className="bg-white rounded-2xl p-8 shadow-lg border-2 border-[#34a853] hover:border-[#2d9246] hover:shadow-2xl transition-all cursor-pointer hover:-translate-y-2">
-              <div className="w-16 h-16 bg-[#34a853] rounded-xl flex items-center justify-center text-3xl mb-6">
-                📊
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Marketing Analytics</h3>
-              <p className="text-gray-600 mb-4 text-sm">
-                Track performance across all channels with detailed insights.
-              </p>
-              <ul className="space-y-2 text-sm text-gray-700 mb-6">
-                <li className="flex items-start gap-2">
-                  <span className="text-purple-600">→</span>
-                  <span>Cross-platform analytics</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-purple-600">→</span>
-                  <span>ROI tracking</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-purple-600">→</span>
-                  <span>Audience insights</span>
-                </li>
-              </ul>
-              <div className="flex items-center gap-2 text-sm font-semibold text-green-600 mb-4">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                Collecting Data
-              </div>
-              <div className="flex gap-2">
-                <button className="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-all">
-                  View Reports
-                </button>
-                <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-all">
-                  Export
-                </button>
-              </div>
-            </div>
-
-            {/* Advertising */}
-            <div className="bg-white rounded-2xl p-8 shadow-lg border-2 border-purple-600 hover:border-purple-700 hover:shadow-2xl transition-all cursor-pointer hover:-translate-y-2">
-              <div className="w-16 h-16 bg-purple-600 rounded-xl flex items-center justify-center text-3xl mb-6">
-                🎯
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Paid Advertising</h3>
-              <p className="text-gray-600 mb-4 text-sm">
-                Targeted campaigns on Amazon, Facebook, Instagram, and Google.
-              </p>
-              <ul className="space-y-2 text-sm text-gray-700 mb-6">
-                <li className="flex items-start gap-2">
-                  <span className="text-purple-600">→</span>
-                  <span>Amazon AMS campaigns</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-purple-600">→</span>
-                  <span>Facebook/Instagram ads</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-purple-600">→</span>
-                  <span>Budget optimization</span>
-                </li>
-              </ul>
-              <div className="flex items-center gap-2 text-sm font-semibold text-purple-600 mb-4">
-                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                Premium Feature
-              </div>
-              <div className="flex gap-2">
-                <button className="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-all">
-                  Start Campaign
-                </button>
-                <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-all">
-                  Learn More
-                </button>
-              </div>
-            </div>
-
-            {/* Influencer Network */}
-            <div className="bg-white rounded-2xl p-8 shadow-lg border-2 border-pink-500 hover:border-pink-600 hover:shadow-2xl transition-all cursor-pointer hover:-translate-y-2">
-              <div className="w-16 h-16 bg-pink-500 rounded-xl flex items-center justify-center text-3xl mb-6">
-                👥
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Influencer Network</h3>
-              <p className="text-gray-600 mb-4 text-sm">
-                Connect with book reviewers, bloggers, and influencers in your genre.
-              </p>
-              <ul className="space-y-2 text-sm text-gray-700 mb-6">
-                <li className="flex items-start gap-2">
-                  <span className="text-purple-600">→</span>
-                  <span>Reviewer matching</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-purple-600">→</span>
-                  <span>Blogger outreach</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-purple-600">→</span>
-                  <span>Review management</span>
-                </li>
-              </ul>
-              <div className="flex items-center gap-2 text-sm font-semibold text-purple-600 mb-4">
-                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                Premium Feature
-              </div>
-              <div className="flex gap-2">
-                <button className="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-all">
-                  Find Reviewers
-                </button>
-                <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-all">
-                  Network
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Campaign Templates */}
-        <section className="bg-white rounded-3xl p-12 mb-12 shadow-lg">
-          <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
-            <div>
-              <h2 className="text-4xl font-bold text-gray-900 mb-2">Quick Campaign Builder</h2>
-              <p className="text-gray-600">Launch professional marketing campaigns in minutes</p>
-            </div>
-            <button className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 px-6 py-3 rounded-xl font-bold hover:from-yellow-500 hover:to-yellow-600 transition-all flex items-center gap-2">
-              ⚡ Create Custom Campaign
-            </button>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="border-2 border-gray-300 rounded-xl p-6 text-center hover:border-purple-600 hover:shadow-xl transition-all cursor-pointer hover:-translate-y-1">
-              <div className="text-4xl mb-4">🚀</div>
-              <h3 className="font-bold text-gray-900 mb-2">Book Launch Campaign</h3>
-              <p className="text-sm text-gray-600 mb-4">Complete 30-day launch sequence</p>
-              <div className="bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-xs font-semibold">
-                30-day campaign
-              </div>
-            </div>
-
-            <div className="border-2 border-gray-300 rounded-xl p-6 text-center hover:border-purple-600 hover:shadow-xl transition-all cursor-pointer hover:-translate-y-1">
-              <div className="text-4xl mb-4">⭐</div>
-              <h3 className="font-bold text-gray-900 mb-2">Review Generation</h3>
-              <p className="text-sm text-gray-600 mb-4">Build social proof with reviews</p>
-              <div className="bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-xs font-semibold">
-                2-week campaign
-              </div>
-            </div>
-
-            <div className="border-2 border-gray-300 rounded-xl p-6 text-center hover:border-purple-600 hover:shadow-xl transition-all cursor-pointer hover:-translate-y-1">
-              <div className="text-4xl mb-4">📲</div>
-              <h3 className="font-bold text-gray-900 mb-2">Social Media Blitz</h3>
-              <p className="text-sm text-gray-600 mb-4">High-impact social campaign</p>
-              <div className="bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-xs font-semibold">
-                7-day intensive
-              </div>
-            </div>
-
-            <div className="border-2 border-gray-300 rounded-xl p-6 text-center hover:border-purple-600 hover:shadow-xl transition-all cursor-pointer hover:-translate-y-1">
-              <div className="text-4xl mb-4">📈</div>
-              <h3 className="font-bold text-gray-900 mb-2">Amazon Optimization</h3>
-              <p className="text-sm text-gray-600 mb-4">Boost your Amazon ranking</p>
-              <div className="bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-xs font-semibold">
-                Ongoing optimization
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Pricing */}
-        <section className="bg-white rounded-3xl p-12 shadow-lg">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-900 mb-3">Marketing Packages</h2>
-            <p className="text-gray-600 text-lg mb-8">Choose the right marketing package to reach your ideal readers</p>
-
-            <div className="flex items-center justify-center gap-4 mb-8">
+          {/* Chat Input Placeholder */}
+          <div className="p-4 border-t border-gray-200">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Ask Quinn about marketing..."
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                disabled
+              />
               <button
-                onClick={() => setPricingPeriod('monthly')}
-                className={`px-6 py-2 border-2 rounded-lg font-semibold transition-all ${
-                  pricingPeriod === 'monthly'
-                    ? 'bg-purple-600 border-purple-600 text-white'
-                    : 'bg-white border-gray-300 text-gray-700 hover:border-purple-400'
-                }`}
+                className="px-4 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50"
+                disabled
               >
-                Monthly
-              </button>
-              <button
-                onClick={() => setPricingPeriod('annual')}
-                className={`px-6 py-2 border-2 rounded-lg font-semibold transition-all ${
-                  pricingPeriod === 'annual'
-                    ? 'bg-purple-600 border-purple-600 text-white'
-                    : 'bg-white border-gray-300 text-gray-700 hover:border-purple-400'
-                }`}
-              >
-                Annual
-                <span className="ml-2 bg-green-500 text-white px-2 py-0.5 rounded text-xs">
-                  Save 20%
-                </span>
+                Send
               </button>
             </div>
+            <p className="text-xs text-gray-500 mt-2 text-center">
+              Chat functionality coming soon
+            </p>
           </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Starter */}
-            <div className="border-2 border-gray-300 rounded-2xl p-8 hover:shadow-2xl transition-all">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Starter Marketing</h3>
-              <div className="text-5xl font-extrabold text-purple-600 mb-2">
-                ${pricingPeriod === 'monthly' ? '49' : '39'}
-              </div>
-              <p className="text-gray-600 mb-8">
-                {pricingPeriod === 'monthly' ? 'per month' : 'per month (billed annually)'}
-              </p>
-              <ul className="space-y-3 mb-8 text-gray-700">
-                <li className="flex items-start gap-2">
-                  <span className="text-green-600 mt-1">✓</span>
-                  <span>Social media scheduling (2 platforms)</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-600 mt-1">✓</span>
-                  <span>Basic content generation</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-600 mt-1">✓</span>
-                  <span>Email marketing (1,000 subscribers)</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-600 mt-1">✓</span>
-                  <span>Basic analytics dashboard</span>
-                </li>
-              </ul>
-              <button className="w-full bg-blue-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-800 transition-all">
-                Start Free Trial
-              </button>
-            </div>
-
-            {/* Professional */}
-            <div className="border-4 border-purple-600 rounded-2xl p-8 relative shadow-2xl transform md:scale-105">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-purple-600 text-white px-6 py-2 rounded-full text-sm font-bold">
-                MOST POPULAR
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2 mt-4">Professional Marketing</h3>
-              <div className="text-5xl font-extrabold text-purple-600 mb-2">
-                ${pricingPeriod === 'monthly' ? '149' : '119'}
-              </div>
-              <p className="text-gray-600 mb-8">
-                {pricingPeriod === 'monthly' ? 'per month' : 'per month (billed annually)'}
-              </p>
-              <ul className="space-y-3 mb-8 text-gray-700">
-                <li className="flex items-start gap-2">
-                  <span className="text-green-600 mt-1">✓</span>
-                  <span>Multi-platform social media</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-600 mt-1">✓</span>
-                  <span>Advanced AI content creation</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-600 mt-1">✓</span>
-                  <span>Email marketing (10,000 subscribers)</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-600 mt-1">✓</span>
-                  <span>Detailed analytics & ROI tracking</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-600 mt-1">✓</span>
-                  <span>Unlimited campaign templates</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-600 mt-1">✓</span>
-                  <span>Basic paid advertising</span>
-                </li>
-              </ul>
-              <button className="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-3 rounded-xl font-bold hover:from-purple-700 hover:to-purple-800 transition-all">
-                Choose Professional
-              </button>
-            </div>
-
-            {/* Premium */}
-            <div className="border-2 border-gray-300 rounded-2xl p-8 hover:shadow-2xl transition-all">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Premium Marketing</h3>
-              <div className="text-5xl font-extrabold text-purple-600 mb-2">
-                ${pricingPeriod === 'monthly' ? '299' : '239'}
-              </div>
-              <p className="text-gray-600 mb-8">
-                {pricingPeriod === 'monthly' ? 'per month' : 'per month (billed annually)'}
-              </p>
-              <ul className="space-y-3 mb-8 text-gray-700">
-                <li className="flex items-start gap-2">
-                  <span className="text-green-600 mt-1">✓</span>
-                  <span>Everything in Professional</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-600 mt-1">✓</span>
-                  <span>Full-service paid advertising</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-600 mt-1">✓</span>
-                  <span>Influencer network access</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-600 mt-1">✓</span>
-                  <span>Custom campaign development</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-600 mt-1">✓</span>
-                  <span>Dedicated marketing manager</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-600 mt-1">✓</span>
-                  <span>Monthly strategy calls</span>
-                </li>
-              </ul>
-              <button className="w-full bg-blue-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-800 transition-all">
-                Choose Premium
-              </button>
-            </div>
-          </div>
-        </section>
-      </main>
+        </div>
+      </div>
     </div>
+  )
+}
+
+// Main export with Suspense wrapper
+export default function MarketingHub() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <MarketingHubContent />
+    </Suspense>
   )
 }
