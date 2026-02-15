@@ -45,12 +45,12 @@ const highlightStyles = `
 
 function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null) {
   if (!editorRef || !quotedText) {
-    console.log('âŒ Missing ref or text');
+    console.log('❌ Missing ref or text');
     return false;
   }
 
   console.log('=== EDITOR DEBUG ===');
-  console.log('ðŸ” Looking for issue text:', quotedText);
+  console.log('🔍 Looking for issue text:', quotedText);
 
   // Get the HTML content and normalize for matching
   const htmlContent = editorRef.innerHTML;
@@ -73,22 +73,22 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
   editorText = normalizeQuotes(editorText);
   const normalizedQuote = normalizeQuotes(quotedText.replace(/\s+/g, ' ').trim());
 
-  console.log('ðŸ“„ Normalized editor text (first 300):', editorText.substring(0, 300));
-  console.log('ðŸ” Normalized issue text:', normalizedQuote);
-  console.log('ðŸ”¬ Issue text char codes (first 50):',
+  console.log('📄 Normalized editor text (first 300):', editorText.substring(0, 300));
+  console.log('🔍 Normalized issue text:', normalizedQuote);
+  console.log('🔬 Issue text char codes (first 50):',
     normalizedQuote.substring(0, 50).split('').map(c => c.charCodeAt(0)).join(',')
   );
-  console.log('ðŸ”¬ Editor text char codes (first 50):',
+  console.log('🔬 Editor text char codes (first 50):',
     editorText.substring(0, 50).split('').map(c => c.charCodeAt(0)).join(',')
   );
 
   // Check if text exists
   const textExists = editorText.includes(normalizedQuote);
-  console.log('✓ Text exists in editor:', textExists);
+  console.log('✅ Text exists in editor:', textExists);
   console.log('=== END DEBUG ===');
 
   if (!textExists) {
-    console.log('âŒ Issue text not found in current chapter');
+    console.log('❌ Issue text not found in current chapter');
     return false;
   }
 
@@ -108,7 +108,7 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
   // Clear previous highlights
   markInstance.unmark({
     done: () => {
-      console.log('✓ Cleared old highlights');
+      console.log('✅ Cleared old highlights');
 
       // Now search with straight quotes in normalized HTML
       markInstance.mark(normalizedQuote, {
@@ -126,14 +126,14 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
         },
         done: (counter: number) => {
           if (counter > 0) {
-            console.log(`✓ Highlighted ${counter} matches`);
+            console.log(`✅ Highlighted ${counter} matches`);
 
             const highlights = editorRef.querySelectorAll('.issue-highlight');
             setTimeout(() => {
               highlights[0]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 100);
           } else {
-            console.log('âŒ No matches found');
+            console.log('❌ No matches found');
           }
         }
       });
@@ -226,15 +226,15 @@ function getCategoryColor(category: string): string {
 // Severity display helpers
 function getSeverityIcon(severity: string): string {
   const icons: Record<string, string> = {
-    'low': 'ðŸŸ¢',
-    'medium': 'ðŸŸ¡',
-    'high': 'ðŸ”´',
+    'low': '🟢',
+    'medium': '🟡',
+    'high': '🔴',
     // Backward compatibility for old values
-    'minor': 'ðŸŸ¢',
-    'moderate': 'ðŸŸ¡',
-    'major': 'ðŸ”´',
+    'minor': '🟢',
+    'moderate': '🟡',
+    'major': '🔴',
   }
-  return icons[severity] || 'âšª'
+  return icons[severity] || '⚪'
 }
 
 function getSeverityLabel(severity: string): string {
@@ -362,7 +362,7 @@ function StudioContent() {
   const refreshPhases = async () => {
     if (!manuscript?.id) return
 
-    console.log('ðŸ”„ Manually refreshing phases...')
+    console.log('📄 Manually refreshing phases...')
     const supabase = createClient()
 
     const { data: allPhases, error } = await supabase
@@ -372,14 +372,14 @@ function StudioContent() {
       .order('phase_number', { ascending: true })
 
     if (error) {
-      console.error('âŒ Error refreshing phases:', error)
+      console.error('❌ Error refreshing phases:', error)
       return
     }
 
     if (allPhases) {
       setEditorPhases(allPhases)
-      console.log('✓ Phases refreshed manually')
-      console.log('ðŸ“Š Updated phases:', allPhases.map(p => ({
+      console.log('✅ Phases refreshed manually')
+      console.log('📊 Updated phases:', allPhases.map(p => ({
         phase: p.phase_number,
         editor: p.editor_name,
         hasReport: !!p.report_pdf_url
@@ -397,12 +397,12 @@ function StudioContent() {
       editorName,
       `Perfect! I'm diving into your manuscript now. This will take about 5 minutes.\n\n` +
       `I'm analyzing:\n` +
-      `â€¢ Story structure and plot\n` +
-      `â€¢ Character development\n` +
-      `â€¢ Pacing and flow\n` +
-      `â€¢ Themes and motifs\n\n` +
+      `• Story structure and plot\n` +
+      `• Character development\n` +
+      `• Pacing and flow\n` +
+      `• Themes and motifs\n\n` +
       `You'll receive a comprehensive report by email when I'm done.\n\n` +
-      `**While I read:** Check that your text and chapters loaded correctly, and save any edits you make. ðŸ“š`
+      `**While I read:** Check that your text and chapters loaded correctly, and save any edits you make. 📚`
     )
 
     try {
@@ -436,7 +436,7 @@ function StudioContent() {
 
       if (allPhases) {
         setEditorPhases(allPhases)
-        console.log('✓ Updated phases - analysis started')
+        console.log('✅ Updated phases - analysis started')
       }
 
       // Trigger all THREE workflows simultaneously
@@ -449,7 +449,7 @@ function StudioContent() {
             manuscriptId: manuscript.id,
             userId: manuscript.author_id
           })
-        }).catch(() => console.log('✓ Full analysis webhook triggered')),
+        }).catch(() => console.log('✅ Full analysis webhook triggered')),
 
         // 2. Generate summary + key points
         fetch(WEBHOOKS.alexGenerateSummary, {
@@ -459,7 +459,7 @@ function StudioContent() {
             manuscriptId: manuscript.id,
             userId: manuscript.author_id
           })
-        }).catch(() => console.log('✓ Summary webhook triggered')),
+        }).catch(() => console.log('✅ Summary webhook triggered')),
 
         // 3. Chapter summaries
         fetch(WEBHOOKS.alexGenerateChapterSummaries, {
@@ -469,10 +469,10 @@ function StudioContent() {
             manuscriptId: manuscript.id,
             userId: manuscript.author_id
           })
-        }).catch(() => console.log('✓ Chapter summaries webhook triggered'))
+        }).catch(() => console.log('✅ Chapter summaries webhook triggered'))
       ])
 
-      console.log('✓ All analysis workflows triggered successfully')
+      console.log('✅ All analysis workflows triggered successfully')
 
       // Poll for completion
       pollForAnalysisCompletion()
@@ -514,8 +514,8 @@ function StudioContent() {
 
         await addChatMessage(
           editorName,
-          `✓ I've finished reading your manuscript! I'm genuinely excited about what you've created.\n\n` +
-          `ðŸ“§ Your comprehensive PDF report will arrive by email shortly (it takes about 15 minutes to generate).\n\n` +
+          `✅ I've finished reading your manuscript! I'm genuinely excited about what you've created.\n\n` +
+          `📧 Your comprehensive PDF report will arrive by email shortly (it takes about 15 minutes to generate).\n\n` +
           `**Ready to start editing?**\n` +
           `Click on any chapter and hit "Start Editing" to see my specific notes. We'll work through them together, one chapter at a time.`
         )
@@ -524,7 +524,7 @@ function StudioContent() {
         setFullAnalysisInProgress(false)
         await addChatMessage(
           editorName,
-          'âš ï¸ Analysis is taking longer than expected. Please refresh the page in a moment.'
+          '⚠️ Analysis is taking longer than expected. Please refresh the page in a moment.'
         )
       }
     }, 3000) // Poll every 3 seconds
@@ -534,7 +534,7 @@ function StudioContent() {
   useEffect(() => {
     if (!manuscript?.id) return
 
-    console.log('ðŸ“¡ Subscribing to report updates for manuscript:', manuscript.id)
+    console.log('📡 Subscribing to report updates for manuscript:', manuscript.id)
 
     const supabase = createClient()
 
@@ -549,8 +549,8 @@ function StudioContent() {
           filter: `manuscript_id=eq.${manuscript.id}`
         },
         async (payload) => {
-          console.log('ðŸ”” Editing phase update received:', payload)
-          console.log('ðŸ”” Updated phase:', payload.new.phase_number, payload.new.editor_name)
+          console.log('🔔 Editing phase update received:', payload)
+          console.log('🔔 Updated phase:', payload.new.phase_number, payload.new.editor_name)
 
           // Reload ALL phases whenever any phase updates
           const { data: allPhases, error } = await supabase
@@ -560,14 +560,14 @@ function StudioContent() {
             .order('phase_number', { ascending: true })
 
           if (error) {
-            console.error('âŒ Error reloading phases:', error)
+            console.error('❌ Error reloading phases:', error)
             return
           }
 
           if (allPhases) {
             setEditorPhases(allPhases)
-            console.log('ðŸ”„ Updated phases with new report data')
-            console.log('ðŸ”„ Phases now in state:', allPhases.map(p => ({
+            console.log('📄 Updated phases with new report data')
+            console.log('📄 Phases now in state:', allPhases.map(p => ({
               phase: p.phase_number,
               editor: p.editor_name,
               hasReport: !!p.report_pdf_url
@@ -576,12 +576,12 @@ function StudioContent() {
             // Check if the report just became ready
             const updatedPhase = allPhases.find(p => p.id === payload.new.id)
             if (updatedPhase?.report_pdf_url && updatedPhase?.ai_read_completed_at) {
-              console.log('✓ PDF Report ready (realtime)')
+              console.log('✅ PDF Report ready (realtime)')
 
               // Add chat message when report is ready
               addChatMessage(
                 updatedPhase.editor_name,
-                `ðŸ“§ Your comprehensive PDF report is ready! Check your email or click "${updatedPhase.editor_name}'s Report" above.`
+                `📧 Your comprehensive PDF report is ready! Check your email or click "${updatedPhase.editor_name}'s Report" above.`
               )
 
               // Stop the progress indicator
@@ -591,14 +591,14 @@ function StudioContent() {
         }
       )
       .subscribe((status) => {
-        console.log('ðŸ“¡ Subscription status:', status)
+        console.log('📡 Subscription status:', status)
         if (status === 'SUBSCRIBED') {
-          console.log('✓ Successfully subscribed to report updates')
+          console.log('✅ Successfully subscribed to report updates')
         }
       })
 
     return () => {
-      console.log('ðŸ”Œ Unsubscribing from report updates')
+      console.log('📌 Unsubscribing from report updates')
       supabase.removeChannel(channel)
     }
   }, [manuscript?.id])
@@ -628,7 +628,7 @@ function StudioContent() {
 
       // Beta testers bypass payment check
       if (profile.is_beta_tester) {
-        console.log('✓ Beta tester - author studio access granted')
+        console.log('✅ Beta tester - author studio access granted')
         return
       }
 
@@ -642,12 +642,12 @@ function StudioContent() {
 
       if (!subscription) {
         // No payment, redirect to checkout
-        console.log('âŒ No active subscription - redirecting to checkout')
+        console.log('❌ No active subscription - redirecting to checkout')
         router.push('/checkout')
         return
       }
 
-      console.log('✓ Subscription verified - author studio access granted')
+      console.log('✅ Subscription verified - author studio access granted')
     }
 
     checkPaymentAccess()
@@ -719,8 +719,8 @@ function StudioContent() {
         .replace(/\s{2,}/g, ' ')           // Collapse multiple spaces
 
       editorPanelRef.current.innerHTML = cleanedContent;
-      console.log('✓ Editor populated with formatted content');
-      console.log('ðŸ“„ First 300 chars:', cleanedContent.substring(0, 300));
+      console.log('✅ Editor populated with formatted content');
+      console.log('📄 First 300 chars:', cleanedContent.substring(0, 300));
     }
   }, [currentChapterIndex, isLoading]);
 
@@ -790,7 +790,7 @@ function StudioContent() {
       // Check if analysis is complete (summary + key points, not full PDF)
       if (manuscriptData.manuscript_summary && manuscriptData.full_analysis_key_points) {
         setAnalysisComplete(true)
-        console.log('✓ Analysis already complete on page load')
+        console.log('✅ Analysis already complete on page load')
       }
 
       // ========================================
@@ -808,15 +808,15 @@ function StudioContent() {
 
       if (allPhases) {
         setEditorPhases(allPhases)
-        console.log(`✓ Loaded ${allPhases.length} editing phases`)
+        console.log(`✅ Loaded ${allPhases.length} editing phases`)
 
         // DEBUG: Log phase details to help diagnose missing reports
         allPhases.forEach(phase => {
-          console.log(`ðŸ“Š Phase ${phase.phase_number} (${phase.editor_name}):`, {
+          console.log(`📊 Phase ${phase.phase_number} (${phase.editor_name}):`, {
             phase_status: phase.phase_status,
             ai_read_started_at: phase.ai_read_started_at,
             ai_read_completed_at: phase.ai_read_completed_at,
-            report_pdf_url: phase.report_pdf_url ? '✓ EXISTS' : 'âŒ MISSING'
+            report_pdf_url: phase.report_pdf_url ? '✅ EXISTS' : '❌ MISSING'
           })
         })
 
@@ -827,7 +827,7 @@ function StudioContent() {
           // User clicked "Return to [Editor]" from phase-complete page
           const targetPhaseNumber = parseInt(phaseParam)
           phaseToLoad = allPhases.find(p => p.phase_number === targetPhaseNumber)
-          console.log(`ðŸ”„ Loading requested phase ${targetPhaseNumber}`)
+          console.log(`📄 Loading requested phase ${targetPhaseNumber}`)
         } else {
           // Normal flow - load the currently active phase
           phaseToLoad = allPhases.find(p => p.phase_status === 'active')
@@ -841,13 +841,13 @@ function StudioContent() {
         // Only redirect to Publishing/Marketing Hub if user didn't explicitly request a phase
         if (!phaseParam) {
           if (phaseToLoad.phase_number === 4) {
-            console.log('ðŸ“š Phase 4 active - redirecting to Publishing Hub')
+            console.log('📚 Phase 4 active - redirecting to Publishing Hub')
             router.push(`/publishing-hub?manuscriptId=${manuscriptId}`)
             return
           }
 
           if (phaseToLoad.phase_number === 5) {
-            console.log('ðŸ“¢ Phase 5 active - redirecting to Marketing Hub')
+            console.log('📢 Phase 5 active - redirecting to Marketing Hub')
             router.push(`/marketing-hub?manuscriptId=${manuscriptId}`)
             return
           }
@@ -855,7 +855,7 @@ function StudioContent() {
         // If phaseParam exists, user explicitly wants to work with a specific editor - allow it
 
         setActivePhase(phaseToLoad)
-        console.log(`✓ Loaded phase: ${phaseToLoad.phase_name} (${phaseToLoad.editor_name})`)
+        console.log(`✅ Loaded phase: ${phaseToLoad.phase_name} (${phaseToLoad.editor_name})`)
       } else {
         // Fallback to old method if allPhases query fails
         const phase = await getActivePhase(supabase, manuscriptId)
@@ -866,7 +866,7 @@ function StudioContent() {
         }
 
         setActivePhase(phase)
-        console.log(`✓ Active phase: ${phase.phase_name} (${phase.editor_name})`)
+        console.log(`✅ Active phase: ${phase.phase_name} (${phase.editor_name})`)
       }
       // ========================================
       // END NEW CODE
@@ -907,7 +907,7 @@ function StudioContent() {
         }
 
         setChapterEditingStatus(initialStatus)
-        console.log('✓ Initialized editing status for', chaptersData.length, 'chapters based on existing issues')
+        console.log('✅ Initialized editing status for', chaptersData.length, 'chapters based on existing issues')
 
         // Load the first chapter in the array
         setCurrentChapterIndex(0)
@@ -929,7 +929,7 @@ function StudioContent() {
             .order('severity', { ascending: false })
 
           setChapterIssues(firstChapterIssues || [])
-          console.log(`✓ Loaded ${firstChapterIssues?.length || 0} existing issues for first chapter`)
+          console.log(`✅ Loaded ${firstChapterIssues?.length || 0} existing issues for first chapter`)
         }
       }
 
@@ -949,7 +949,7 @@ function StudioContent() {
             message: msg.message
           })) as ChatMessage[]
           setChatMessages(messages)
-          console.log(`✓ Restored ${history.length} chat messages for ${phaseForChat.editor_name}`)
+          console.log(`✅ Restored ${history.length} chat messages for ${phaseForChat.editor_name}`)
         } else {
           // Show initial greeting for this phase
           showInitialGreeting(phaseForChat, manuscriptData, authorProfile.first_name, chaptersData?.length || 0)
@@ -981,9 +981,9 @@ function StudioContent() {
       } else {
         // First time - Alex hasn't read yet
         addChatMessage('Alex',
-          `Hi ${firstName}! I'm Alex. I can see you've uploaded "${manuscript.title}" with ${chapterCount} chaptersâ€”I'm excited to dig in.\n\n` +
+          `Hi ${firstName}! I'm Alex. I can see you've uploaded "${manuscript.title}" with ${chapterCount} chapters—I'm excited to dig in.\n\n` +
           `I'll need about 5 minutes to read through everything and identify the key story patterns. Once I'm done, we can explore what's working and where the real opportunities are.\n\n` +
-          `Hit "Read My Manuscript" when you're ready! ðŸ“–`
+          `Hit "Read My Manuscript" when you're ready! 📖`
         )
       }
     } else if (phase.phase_number === 2) {
@@ -993,19 +993,19 @@ function StudioContent() {
       if (samPhase?.report_pdf_url) {
         // Sam finished reading
         addChatMessage('Sam',
-          `Hey ${firstName}! I'm Sam, your line editor. ✗¨\n\n` +
+          `Hey ${firstName}! I'm Sam, your line editor. ✨\n\n` +
           `I've already read through your approved manuscript and I'm excited about the prose work ahead! ` +
-          `The structural foundation Alex helped you build is solidâ€”now let's make every sentence shine.\n\n` +
-          `ðŸ“§ I've sent you a detailed line-editing report by email.\n\n` +
-          `**Ready to start?** Click on any chapter to see my specific prose notes! ðŸ“š`
+          `The structural foundation Alex helped you build is solid—now let's make every sentence shine.\n\n` +
+          `📧 I've sent you a detailed line-editing report by email.\n\n` +
+          `**Ready to start?** Click on any chapter to see my specific prose notes! 📚`
         )
       } else {
         // Sam is still reading
         addChatMessage('Sam',
-          `Hey ${firstName}! I'm Sam, your line editor. ✗¨\n\n` +
+          `Hey ${firstName}! I'm Sam, your line editor. ✨\n\n` +
           `I've reviewed the fantastic structural work you and Alex accomplished together on "${manuscript.title}". ` +
-          `I'm currently doing a deep read of your proseâ€”should be done in just a few minutes.\n\n` +
-          `**While I read:** Feel free to browse your chapters. I'll let you know when I'm ready! ðŸ“š`
+          `I'm currently doing a deep read of your prose—should be done in just a few minutes.\n\n` +
+          `**While I read:** Feel free to browse your chapters. I'll let you know when I'm ready! 📚`
         )
 
         // Poll for Sam's reading completion
@@ -1014,10 +1014,10 @@ function StudioContent() {
     } else if (phase.phase_number === 3) {
       // Jordan's greeting (for future Phase 3)
       addChatMessage('Jordan',
-        `Hi ${firstName}! I'm Jordan, your copy editor. ðŸ”\n\n` +
+        `Hi ${firstName}! I'm Jordan, your copy editor. 🔍\n\n` +
         `I've reviewed the excellent work you did with Alex and Sam. ` +
         `Now let's make sure every technical detail is perfect.\n\n` +
-        `Click on any chapter to start! ðŸ“š`
+        `Click on any chapter to start! 📚`
       )
     }
   }
@@ -1043,8 +1043,8 @@ function StudioContent() {
         clearInterval(pollInterval)
 
         await addChatMessage('Sam',
-          `✗¨ Done reading! Your prose has some really beautiful moments.\n\n` +
-          `ðŸ“§ I've sent you my line-editing report by email.\n\n` +
+          `✨ Done reading! Your prose has some really beautiful moments.\n\n` +
+          `📧 I've sent you my line-editing report by email.\n\n` +
           `**Let's get started!** Click on any chapter to see my prose notes.`
         )
 
@@ -1061,7 +1061,7 @@ function StudioContent() {
       } else if (attempts >= maxAttempts) {
         clearInterval(pollInterval)
         await addChatMessage('Sam',
-          `Almost done reading... Feel free to start browsing chapters while I finish up! ✗¨`
+          `Almost done reading... Feel free to start browsing chapters while I finish up! ✨`
         )
       }
     }, 3000) // Poll every 3 seconds
@@ -1084,10 +1084,10 @@ function StudioContent() {
           ch.id === chapter.id ? { ...ch, title: newTitle.trim() } : ch
         ))
 
-        await addChatMessage(editorName, `✓ Chapter title updated to "${newTitle.trim()}"`)
+        await addChatMessage(editorName, `✅ Chapter title updated to "${newTitle.trim()}"`)
       } else {
         console.error('Failed to update title:', error)
-        await addChatMessage(editorName, 'âŒ Failed to update chapter title. Please try again.')
+        await addChatMessage(editorName, '❌ Failed to update chapter title. Please try again.')
       }
     }
   }
@@ -1106,11 +1106,11 @@ function StudioContent() {
         `Chapter ${chapter.chapter_number}`
 
     const confirmed = confirm(
-      `Delete "${chapter.title}" (${chapterLabel})?\n\n` +
+      `⚠️ Delete "${chapter.title}" (${chapterLabel})?\n\n` +
       `This will:\n` +
-      `- Permanently delete the chapter content\n` +
-      `- Remove all editor notes for this chapter\n` +
-      `- Update the manuscript word count\n\n` +
+      `• Permanently delete the chapter content\n` +
+      `• Remove all editor notes for this chapter\n` +
+      `• Update the manuscript word count\n\n` +
       `This action cannot be undone.`
     )
 
@@ -1120,31 +1120,38 @@ function StudioContent() {
     const supabase = createClient()
 
     try {
+      // 1. Get word count of chapter being deleted
       const chapterWordCount = chapter.content.split(/\s+/).filter((w: string) => w.length > 0).length
 
-      // Delete manuscript_issues for this chapter
-      await supabase
+      // 2. Delete manuscript_issues for this chapter (all phases)
+      const { error: issuesError } = await supabase
         .from('manuscript_issues')
         .delete()
         .eq('manuscript_id', manuscript!.id)
         .eq('chapter_number', chapter.chapter_number)
 
-      // Delete chapter_summaries for this chapter
+      if (issuesError) {
+        console.error('Error deleting issues:', issuesError)
+      }
+
+      // 3. Delete chapter_summaries for this chapter (if exists)
       await supabase
         .from('chapter_summaries')
         .delete()
         .eq('manuscript_id', manuscript!.id)
         .eq('chapter_number', chapter.chapter_number)
 
-      // Delete the chapter itself
+      // 4. Delete the chapter itself
       const { error: deleteError } = await supabase
         .from('chapters')
         .delete()
         .eq('id', chapter.id)
 
-      if (deleteError) throw deleteError
+      if (deleteError) {
+        throw deleteError
+      }
 
-      // Renumber subsequent chapters
+      // 5. Renumber subsequent chapters (only for regular chapters, not prologue/epilogue)
       if (chapter.chapter_number > 0 && chapter.chapter_number < 999) {
         const subsequentChapters = chapters.filter(ch =>
           ch.chapter_number > chapter.chapter_number && ch.chapter_number < 999
@@ -1156,12 +1163,14 @@ function StudioContent() {
             .update({ chapter_number: ch.chapter_number - 1 })
             .eq('id', ch.id)
 
+          // Also update issues to reference new chapter number
           await supabase
             .from('manuscript_issues')
             .update({ chapter_number: ch.chapter_number - 1 })
             .eq('manuscript_id', manuscript!.id)
             .eq('chapter_number', ch.chapter_number)
 
+          // Update chapter_summaries
           await supabase
             .from('chapter_summaries')
             .update({ chapter_number: ch.chapter_number - 1 })
@@ -1170,7 +1179,7 @@ function StudioContent() {
         }
       }
 
-      // Update manuscript word count
+      // 6. Update manuscript word count and total_chapters
       const newWordCount = (manuscript!.current_word_count || 0) - chapterWordCount
       const newTotalChapters = (manuscript!.total_chapters || chapters.length) - 1
 
@@ -1182,13 +1191,14 @@ function StudioContent() {
         })
         .eq('id', manuscript!.id)
 
+      // Update local manuscript state
       setManuscript(prev => prev ? {
         ...prev,
         current_word_count: Math.max(0, newWordCount),
         total_chapters: Math.max(0, newTotalChapters)
       } : null)
 
-      // Reload chapters
+      // 7. Reload chapters from database to get correct state
       const { data: updatedChapters } = await supabase
         .from('chapters')
         .select('*')
@@ -1198,6 +1208,7 @@ function StudioContent() {
       if (updatedChapters) {
         setChapters(updatedChapters)
 
+        // Update editing status map with new chapter numbers
         const newStatus: { [key: number]: ChapterEditingStatus } = {}
         for (const ch of updatedChapters) {
           const { data: existingIssues } = await supabase
@@ -1213,16 +1224,19 @@ function StudioContent() {
         }
         setChapterEditingStatus(newStatus)
 
+        // Navigate to first chapter if we deleted the current one
         if (currentChapterIndex >= updatedChapters.length) {
           setCurrentChapterIndex(Math.max(0, updatedChapters.length - 1))
         }
 
+        // Load the new current chapter
         const newCurrentChapter = updatedChapters[Math.min(currentChapterIndex, updatedChapters.length - 1)]
         if (newCurrentChapter) {
           setEditorContent(newCurrentChapter.content)
           setWordCount(newCurrentChapter.content.split(/\s+/).filter((w: string) => w.length > 0).length)
           setHasUnsavedChanges(false)
 
+          // Load issues for new current chapter
           const { data: newIssues } = await supabase
             .from('manuscript_issues')
             .select('*')
@@ -1236,27 +1250,29 @@ function StudioContent() {
         }
       }
 
+      // 8. Clear the current chapter's issues from view
       setChapterIssues([])
       setShowIssuesPanel(false)
 
+      // 9. Notify user via chat with staleness warning
       await addChatMessage(
         editorName,
-        `"${chapter.title}" (${chapterLabel}) has been deleted.\n\n` +
-        `Note: My original analysis was based on the full manuscript including this chapter. ` +
-        `Some of my earlier observations may now be outdated.`
+        `🗑️ "${chapter.title}" (${chapterLabel}) has been deleted.\n\n` +
+        `⚠️ **Note:** My original analysis was based on the full manuscript including this chapter. ` +
+        `Some of my earlier observations may now be outdated. If you've made significant structural changes, ` +
+        `you may want to consider a fresh analysis in a future session.`
       )
 
-      console.log('Chapter deleted successfully')
+      console.log('✅ Chapter deleted successfully')
 
     } catch (error) {
-      console.error('Error deleting chapter:', error)
-      await addChatMessage(editorName, 'There was an error deleting the chapter. Please try again.')
+      console.error('❌ Error deleting chapter:', error)
+      await addChatMessage(editorName, '❌ There was an error deleting the chapter. Please try again.')
     } finally {
       setIsLocked(false)
       setOpenChapterMenuId(null)
     }
   }
-
 
   async function loadChapter(index: number) {
     if (isLocked) return
@@ -1269,7 +1285,7 @@ function StudioContent() {
 
     // Save current chapter if unsaved
     if (hasUnsavedChanges && currentChapter && pendingContentRef.current) {
-      console.log('ðŸ’¾ Saving before switch')
+      console.log('💾 Saving before switch')
       const supabase = createClient()
       await supabase
         .from('chapters')
@@ -1299,7 +1315,7 @@ function StudioContent() {
       return
     }
 
-    console.log('ðŸ“– Loaded fresh chapter from database:', freshChapter.chapter_number)
+    console.log('📖 Loaded fresh chapter from database:', freshChapter.chapter_number)
 
     setCurrentChapterIndex(index)
     setEditorContent(freshChapter.content)
@@ -1348,8 +1364,8 @@ function StudioContent() {
         newChapterNumber = position
       }
 
-      console.log(`ðŸ“ Inserting new chapter at position ${newChapterNumber}`)
-      console.log(`ðŸ“ Chapters to shift: ${chaptersToShift.length}`)
+      console.log(`🔒 Inserting new chapter at position ${newChapterNumber}`)
+      console.log(`🔒 Chapters to shift: ${chaptersToShift.length}`)
 
       // Step 1: Shift existing chapters UP by 1 (in reverse order to avoid conflicts)
       const sortedChaptersToShift = [...chaptersToShift].sort((a, b) => b.chapter_number - a.chapter_number)
@@ -1358,7 +1374,7 @@ function StudioContent() {
         const oldNumber = chapter.chapter_number
         const newNumber = oldNumber + 1
 
-        console.log(`  Moving chapter ${oldNumber} â†’ ${newNumber}`)
+        console.log(`  Moving chapter ${oldNumber} → ${newNumber}`)
 
         // Update chapter number
         await supabase
@@ -1438,15 +1454,15 @@ function StudioContent() {
       // Step 5: Notify the user via chat
       await addChatMessage(
         editorName,
-        `✗¨ I see you've added a new chapter: **"${newTitle.trim()}"** (Chapter ${newChapterNumber}).\n\n` +
+        `✨ I see you've added a new chapter: **"${newTitle.trim()}"** (Chapter ${newChapterNumber}).\n\n` +
         `Go ahead and write your content, then save when you're ready. Once you have some text, click "Start Editing" and I'll analyze it for you!`
       )
 
-      console.log('✓ Chapter inserted successfully')
+      console.log('✅ Chapter inserted successfully')
 
     } catch (error) {
-      console.error('âŒ Error inserting chapter:', error)
-      await addChatMessage(editorName, 'âŒ There was an error creating the new chapter. Please try again.')
+      console.error('❌ Error inserting chapter:', error)
+      await addChatMessage(editorName, '❌ There was an error creating the new chapter. Please try again.')
     } finally {
       setIsLocked(false)
     }
@@ -1464,7 +1480,7 @@ function StudioContent() {
       .eq('manuscript_id', manuscript.id)
       .eq('chapter_number', chapterNumber)
       .eq('phase_number', activePhase.phase_number)
-      .neq('status', 'dismissed')  // â† Add this line to filter out dismissed issues
+      .neq('status', 'dismissed')  // ← Add this line to filter out dismissed issues
       .order('severity', { ascending: false })
 
     if (error) {
@@ -1571,7 +1587,7 @@ function StudioContent() {
     // Add a system message showing what's being discussed
     await addChatMessage(
       'system',
-      `ðŸ“ **Discussing ${editorName}'s Note:**\n\n` +
+      `🔒 **Discussing ${editorName}'s Note:**\n\n` +
       `**Issue:** ${issue.issue_description}\n\n` +
       `**${editorName}'s question:** ${issue.editor_suggestion}\n\n` +
       `*What would you like to ask ${editorName} about this?*`
@@ -1599,7 +1615,7 @@ function StudioContent() {
       return
     }
 
-    console.log('ðŸ’¾ Saving chapter:', currentChapter.chapter_number, 'Auto:', isAutoSave)
+    console.log('💾 Saving chapter:', currentChapter.chapter_number, 'Auto:', isAutoSave)
 
     if (!isAutoSave) setIsLocked(true)
     setIsSaving(true)
@@ -1620,11 +1636,11 @@ function StudioContent() {
         .select()
 
       if (error) {
-        console.error('âŒ Supabase error:', error)
+        console.error('❌ Supabase error:', error)
         throw error
       }
 
-      console.log('✓ Save successful:', data)
+      console.log('✅ Save successful:', data)
 
       setHasUnsavedChanges(false)
       setUnsavedChapters(prev => {
@@ -1638,13 +1654,13 @@ function StudioContent() {
           ? 'Prologue'
           : `Chapter ${currentChapter.chapter_number}`
 
-        await addChatMessage(editorName, `✓ ${chapterLabel}: "${currentChapter.title}" saved successfully!`)
+        await addChatMessage(editorName, `✅ ${chapterLabel}: "${currentChapter.title}" saved successfully!`)
       }
 
     } catch (error) {
-      console.error('ðŸ’¥ Save error:', error)
+      console.error('👥 Save error:', error)
       if (!isAutoSave) {
-        await addChatMessage(editorName, 'âŒ Failed to save. Please try again.')
+        await addChatMessage(editorName, '❌ Failed to save. Please try again.')
       }
     } finally {
       setIsSaving(false)
@@ -1672,7 +1688,7 @@ function StudioContent() {
         throw new Error('Failed to approve chapter')
       }
 
-      console.log(`✓ Chapter ${currentChapter.chapter_number} approved for Phase ${activePhase.phase_number}`)
+      console.log(`✅ Chapter ${currentChapter.chapter_number} approved for Phase ${activePhase.phase_number}`)
 
       // Update local state
       const phaseColumn = `phase_${activePhase.phase_number}_approved_at` as keyof Chapter
@@ -1688,7 +1704,7 @@ function StudioContent() {
         ? 'Prologue'
         : `Chapter ${currentChapter.chapter_number}`
 
-      await addChatMessage(editorName, `✓ ${chapterLabel} approved! Great work.`)
+      await addChatMessage(editorName, `✅ ${chapterLabel} approved! Great work.`)
 
       // Check if all chapters are now approved
       const allApproved = await areAllChaptersApproved(
@@ -1707,7 +1723,7 @@ function StudioContent() {
 
     } catch (error) {
       console.error('Approve error:', error)
-      await addChatMessage(editorName, 'âŒ Error approving chapter. Please try again.')
+      await addChatMessage(editorName, '❌ Error approving chapter. Please try again.')
     }
   }
 
@@ -1731,8 +1747,8 @@ function StudioContent() {
 
       // 2. Trigger next editor's reading
       if (activePhase.phase_number === 1) {
-        // Completing Phase 1 â†’ Trigger Sam's reading
-        console.log('ðŸš€ Starting Sam\'s manuscript reading...')
+        // Completing Phase 1 → Trigger Sam's reading
+        console.log('🚀 Starting Sam\'s manuscript reading...')
 
         fetch(WEBHOOKS.samFullAnalysis, {
           method: 'POST',
@@ -1741,10 +1757,10 @@ function StudioContent() {
             manuscriptId: manuscript.id,
             userId: manuscript.author_id
           })
-        }).catch(() => console.log('✓ Sam reading triggered'))
+        }).catch(() => console.log('✅ Sam reading triggered'))
       } else if (activePhase.phase_number === 2) {
-        // Completing Phase 2 â†’ Trigger Jordan's reading
-        console.log('ðŸš€ Starting Jordan\'s manuscript reading...')
+        // Completing Phase 2 → Trigger Jordan's reading
+        console.log('🚀 Starting Jordan\'s manuscript reading...')
 
         fetch(WEBHOOKS.jordanFullAnalysis, {
           method: 'POST',
@@ -1753,7 +1769,7 @@ function StudioContent() {
             manuscriptId: manuscript.id,
             userId: manuscript.author_id
           })
-        }).catch(() => console.log('✓ Jordan reading triggered'))
+        }).catch(() => console.log('✅ Jordan reading triggered'))
       }
 
       // 3. Transition to next phase
@@ -1778,7 +1794,7 @@ function StudioContent() {
 
     } catch (error) {
       console.error('Error completing phase:', error)
-      await addChatMessage(editorName, '✓ All chapters approved! There was an issue with the transition, but your work is safe.')
+      await addChatMessage(editorName, '✅ All chapters approved! There was an issue with the transition, but your work is safe.')
     }
   }
 
@@ -1792,39 +1808,39 @@ function StudioContent() {
     const firstName = authorFirstName || 'there'
 
     if (phaseNumber === 1) {
-      return `ðŸŽ‰ **Incredible work, ${firstName}!**\n\n` +
+      return `🎉 **Incredible work, ${firstName}!**\n\n` +
         `You've successfully approved all ${chapterCount} chapters. Your story structure is solid, ` +
         `your character arcs are clear, and the pacing flows beautifully.\n\n` +
         `**What happens next?**\n` +
         `You're ready for **Phase 2: Line Editing with Sam**. Sam will work at the sentence level, ` +
         `polishing your prose and making sure every word sings.\n\n` +
-        `Click the **"Meet Sam"** button above when you're ready for the handoff! ðŸ‘‹\n\n` +
+        `Click the **"Meet Sam"** button above when you're ready for the handoff! 👋\n\n` +
         `*Your approved manuscript will be generated and emailed to you for safekeeping.*\n\n` +
-        `*â€” Alex, Your Developmental Editor* ðŸ‘”`
+        `*— Alex, Your Developmental Editor* 👔`
     } else if (phaseNumber === 2) {
-      return `✗¨ **Beautiful work, ${firstName}!**\n\n` +
+      return `✨ **Beautiful work, ${firstName}!**\n\n` +
         `You've successfully approved all ${chapterCount} chapters. Your prose is polished and every ` +
         `sentence now sings with clarity and impact.\n\n` +
         `**What happens next?**\n` +
         `You're ready for **Phase 3: Copy Editing with Jordan**. Jordan will ensure every technical ` +
-        `detail is perfectâ€”grammar, punctuation, consistency, and professional polish.\n\n` +
-        `Click the **"Meet Jordan"** button above when you're ready for the handoff! ðŸ‘‹\n\n` +
+        `detail is perfect—grammar, punctuation, consistency, and professional polish.\n\n` +
+        `Click the **"Meet Jordan"** button above when you're ready for the handoff! 👋\n\n` +
         `*Your line-edited manuscript will be generated and emailed to you for safekeeping.*\n\n` +
-        `*â€” Sam, Your Line Editor* ✗¨`
+        `*— Sam, Your Line Editor* ✨`
     } else if (phaseNumber === 3) {
-      return `ðŸ” **Excellent work, ${firstName}!**\n\n` +
+      return `🔍 **Excellent work, ${firstName}!**\n\n` +
         `You've successfully completed all three editing phases! Your manuscript is now:\n` +
         `- Structurally sound (Alex)\n` +
         `- Beautifully written (Sam)\n` +
         `- Technically flawless (Jordan)\n\n` +
-        `**ðŸŽ‰ You're Ready!**\n` +
+        `**🎉 You're Ready!**\n` +
         `Click the **"View Completion Summary"** button above to see everything you've accomplished ` +
         `and download your manuscript versions!\n\n` +
-        `*â€” Jordan, Your Copy Editor* ðŸ”`
+        `*— Jordan, Your Copy Editor* 🔍`
     }
 
     // Default fallback
-    return `ðŸŽ‰ **Great work, ${firstName}!**\n\n` +
+    return `🎉 **Great work, ${firstName}!**\n\n` +
       `You've completed this editing phase. Click the button above to meet your next editor!`
   }
 
@@ -1845,7 +1861,7 @@ function StudioContent() {
 
     await addChatMessage(
       editorName,
-      `ðŸ“– Let me get my notes on "${chapterLabel}". This will just take a moment...`
+      `📖 Let me get my notes on "${chapterLabel}". This will just take a moment...`
     )
 
     // Show analyzing messages
@@ -1878,7 +1894,7 @@ function StudioContent() {
           chapterNumber: chapterNumber,
           userId: manuscript.author_id
         })
-      }).catch(() => console.log('✓ Analysis webhook triggered'))
+      }).catch(() => console.log('✅ Analysis webhook triggered'))
 
       clearInterval(msgInterval)
 
@@ -1888,7 +1904,7 @@ function StudioContent() {
     } catch (error) {
       clearInterval(msgInterval)
       console.error('Error analyzing chapter:', error)
-      await addChatMessage(editorName, 'âŒ Had trouble analyzing. Please try again.')
+      await addChatMessage(editorName, '❌ Had trouble analyzing. Please try again.')
     }
   }
 
@@ -1932,12 +1948,12 @@ function StudioContent() {
         if (issueCount > 0) {
           await addChatMessage(
             editorName,
-            `✓ I've got some thoughts on this chapter. Click the Notes Button!`
+            `✅ I've got some thoughts on this chapter. Click the Notes Button!`
           )
         } else {
           await addChatMessage(
             editorName,
-            `✓ Analysis complete! This chapter looks good.`
+            `✅ Analysis complete! This chapter looks good.`
           )
         }
       }
@@ -1967,7 +1983,7 @@ function StudioContent() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl p-12 text-center max-w-md shadow-2xl">
-          <div className="text-6xl mb-4">âŒ</div>
+          <div className="text-6xl mb-4">❌</div>
           <h3 className="text-2xl font-bold text-gray-900 mb-3">Error Loading Studio</h3>
           <p className="text-gray-600 mb-6">Unable to load your manuscript. Please try again.</p>
           <button
@@ -1993,7 +2009,7 @@ function StudioContent() {
           {/* TOP ROW: Logo, Beta Feedback, and User Menu */}
           <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
             <Link href="/" className="text-lg font-bold bg-gradient-to-r from-blue-900 to-blue-700 bg-clip-text text-transparent hover:opacity-80 transition-opacity">
-              ðŸ“š AuthorsLab.ai
+              📚 AuthorsLab.ai
             </Link>
 
 
@@ -2003,7 +2019,7 @@ function StudioContent() {
                 onClick={() => setShowFeedbackModal(true)}
                 className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-semibold"
               >
-                ðŸ“ Beta Feedback
+                🔒 Beta Feedback
               </button>
 
               <div className="flex items-center gap-2">
@@ -2208,7 +2224,7 @@ function StudioContent() {
                         disabled
                         className="px-3 py-1.5 bg-gray-200 text-gray-400 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
                       >
-                        <span>ðŸ“„</span>
+                        <span>📄</span>
                         <span>Alex Report</span>
                       </button>
                     )
@@ -2232,7 +2248,7 @@ function StudioContent() {
                         }}
                         className="px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1.5 shadow-sm"
                       >
-                        <span>ðŸ“„</span>
+                        <span>📄</span>
                         <span>Alex Report</span>
                       </button>
                     )
@@ -2242,7 +2258,7 @@ function StudioContent() {
                         disabled
                         className="px-3 py-1.5 bg-gray-200 text-gray-400 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
                       >
-                        <span>ðŸ“„</span>
+                        <span>📄</span>
                         <span>Alex Report</span>
                       </button>
                     )
@@ -2258,7 +2274,7 @@ function StudioContent() {
                   const phaseStarted = samPhase?.phase_status !== 'pending'
 
                   // DEBUG: Log Sam button state
-                  console.log('ðŸ” Sam Report Button State:', {
+                  console.log('🔍 Sam Report Button State:', {
                     samPhaseExists: !!samPhase,
                     hasReport: !!hasReport,
                     isReading,
@@ -2273,7 +2289,7 @@ function StudioContent() {
                         disabled
                         className="px-3 py-1.5 bg-gray-200 text-gray-400 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
                       >
-                        <span>ðŸ“„</span>
+                        <span>📄</span>
                         <span>Sam Report</span>
                       </button>
                     )
@@ -2297,7 +2313,7 @@ function StudioContent() {
                         }}
                         className="px-3 py-1.5 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-1.5 shadow-sm"
                       >
-                        <span>ðŸ“„</span>
+                        <span>📄</span>
                         <span>Sam Report</span>
                       </button>
                     )
@@ -2307,7 +2323,7 @@ function StudioContent() {
                         disabled
                         className="px-3 py-1.5 bg-gray-200 text-gray-500 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
                       >
-                        <span>âš ï¸</span>
+                        <span>⚠️</span>
                         <span>No Report</span>
                       </button>
                     )
@@ -2323,7 +2339,7 @@ function StudioContent() {
                   const phaseStarted = jordanPhase?.phase_status !== 'pending'
 
                   // DEBUG: Log Jordan button state
-                  console.log('ðŸ” Jordan Report Button State:', {
+                  console.log('🔍 Jordan Report Button State:', {
                     jordanPhaseExists: !!jordanPhase,
                     hasReport: !!hasReport,
                     isReading,
@@ -2338,7 +2354,7 @@ function StudioContent() {
                         disabled
                         className="px-3 py-1.5 bg-gray-200 text-gray-400 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
                       >
-                        <span>ðŸ“„</span>
+                        <span>📄</span>
                         <span>Jordan Report</span>
                       </button>
                     )
@@ -2362,7 +2378,7 @@ function StudioContent() {
                         }}
                         className="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1.5 shadow-sm"
                       >
-                        <span>ðŸ“„</span>
+                        <span>📄</span>
                         <span>Jordan Report</span>
                       </button>
                     )
@@ -2372,7 +2388,7 @@ function StudioContent() {
                         disabled
                         className="px-3 py-1.5 bg-gray-200 text-gray-500 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
                       >
-                        <span>âš ï¸</span>
+                        <span>⚠️</span>
                         <span>No Report</span>
                       </button>
                     )
@@ -2385,7 +2401,7 @@ function StudioContent() {
                   className="px-3 py-1.5 bg-gray-100 text-gray-600 text-xs rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-1.5"
                   title="Refresh reports (if not updating automatically)"
                 >
-                  <span>ðŸ”„</span>
+                  <span>📄</span>
                   <span>Refresh</span>
                 </button>
               </div>
@@ -2414,7 +2430,7 @@ function StudioContent() {
                   onClick={() => setIsChapterSidebarCollapsed(!isChapterSidebarCollapsed)}
                   className="p-2 hover:bg-gray-100 rounded"
                 >
-                  {isChapterSidebarCollapsed ? 'â†’' : 'â†'}
+                  {isChapterSidebarCollapsed ? '→' : '←'}
                 </button>
               </div>
 
@@ -2423,10 +2439,10 @@ function StudioContent() {
                 <button
                   onClick={() => {
                     if (confirm(
-                      'âš ï¸ WARNING: Changing your manuscript will:\n\n' +
-                      'â€¢ Delete all current chapters\n' +
-                      'â€¢ Remove all editor notes and analysis\n' +
-                      'â€¢ Reset all editing progress\n\n' +
+                      '⚠️ WARNING: Changing your manuscript will:\n\n' +
+                      '• Delete all current chapters\n' +
+                      '• Remove all editor notes and analysis\n' +
+                      '• Reset all editing progress\n\n' +
                       'Are you sure you want to continue?'
                     )) {
                       router.push(`/re-upload?manuscriptId=${manuscript.id}`)
@@ -2434,16 +2450,16 @@ function StudioContent() {
                   }}
                   className="w-full px-3 py-2 bg-yellow-100 text-yellow-800 border border-yellow-300 rounded-lg hover:bg-yellow-200 transition-colors text-sm font-medium flex items-center justify-center gap-2"
                 >
-                  ðŸ”„ Change Manuscript
+                  📄 Change Manuscript
                 </button>
               ) : (
                 <button
                   onClick={() => {
                     if (confirm(
-                      'âš ï¸ WARNING: Changing your manuscript will:\n\n' +
-                      'â€¢ Delete all current chapters\n' +
-                      'â€¢ Remove all editor notes and analysis\n' +
-                      'â€¢ Reset all editing progress\n\n' +
+                      '⚠️ WARNING: Changing your manuscript will:\n\n' +
+                      '• Delete all current chapters\n' +
+                      '• Remove all editor notes and analysis\n' +
+                      '• Reset all editing progress\n\n' +
                       'Are you sure you want to continue?'
                     )) {
                       router.push(`/re-upload?manuscriptId=${manuscript.id}`)
@@ -2452,7 +2468,7 @@ function StudioContent() {
                   className="w-full p-2 bg-yellow-100 text-yellow-800 border border-yellow-300 rounded-lg hover:bg-yellow-200 transition-colors"
                   title="Change Manuscript"
                 >
-                  ðŸ”„
+                  📄
                 </button>
               )}
 
@@ -2497,7 +2513,7 @@ function StudioContent() {
                     : 'bg-green-100 text-green-700 border border-green-300 hover:bg-green-200'
                     }`}
                 >
-                  {isInsertMode ? '✗• Cancel Insert' : '+ Insert Chapter'}
+                  {isInsertMode ? '✕ Cancel Insert' : '+ Insert Chapter'}
                 </button>
               )}
 
@@ -2536,7 +2552,7 @@ function StudioContent() {
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 flex items-center justify-center">
                             {isApproved ? (
-                              <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>✗“</span>
+                              <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>✔</span>
                             ) : editStatus === 'analyzing' ? (
                               <div className={`w-4 h-4 border-2 ${getEditorColorClasses(editorColor).border} border-t-transparent rounded-full animate-spin`}></div>
                             ) : editStatus === 'ready' ? (
@@ -2634,7 +2650,7 @@ function StudioContent() {
               <div className="flex gap-2">
                 {/* Start Editing Button - Shows when not started */}
                 {(() => {
-                  console.log('ðŸ” Start Editing button check:', {
+                  console.log('🔍 Start Editing button check:', {
                     currentEditingStatus,
                     analysisComplete,
                     shouldShow: currentEditingStatus === 'not_started' && analysisComplete
@@ -2705,7 +2721,7 @@ function StudioContent() {
                         onClick={handleMeetNextEditor}
                         className="px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse"
                       >
-                        ðŸ‘‹ Meet Sam
+                        👋 Meet Sam
                       </button>
                     )}
 
@@ -2715,7 +2731,7 @@ function StudioContent() {
                         onClick={handleMeetNextEditor}
                         className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse"
                       >
-                        ðŸ‘‹ Meet Jordan
+                        👋 Meet Jordan
                       </button>
                     )}
 
@@ -2725,7 +2741,7 @@ function StudioContent() {
                         onClick={async () => {
                           // Generate Phase 3 manuscript version
                           try {
-                            console.log('ðŸ“¦ Generating Phase 3 manuscript version...')
+                            console.log('📦 Generating Phase 3 manuscript version...')
 
                             // Get author info
                             const supabase = createClient()
@@ -2763,7 +2779,7 @@ function StudioContent() {
                               }
                             )
 
-                            console.log('✓ Phase 3 version generation triggered')
+                            console.log('✅ Phase 3 version generation triggered')
                           } catch (error) {
                             console.error('Version generation error:', error)
                           }
@@ -2773,7 +2789,7 @@ function StudioContent() {
                         }}
                         className="px-6 py-3 bg-gradient-to-r from-green-600 via-purple-600 to-blue-600 text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse hover:shadow-xl"
                       >
-                        ðŸŽ‰ View Completion Summary
+                        🎉 View Completion Summary
                       </button>
                     )}
 
@@ -2783,7 +2799,7 @@ function StudioContent() {
                         onClick={() => router.push(`/marketing-hub?manuscriptId=${manuscript?.id}`)}
                         className="px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse"
                       >
-                        ðŸš€ Start Marketing with Quinn
+                        🚀 Start Marketing with Quinn
                       </button>
                     )}
 
@@ -2793,7 +2809,7 @@ function StudioContent() {
                         onClick={() => router.push(`/phase-complete?manuscriptId=${manuscript?.id}`)}
                         className="px-6 py-3 bg-gradient-to-r from-green-600 via-purple-600 to-blue-600 text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse hover:shadow-xl"
                       >
-                        ðŸŽ‰ View Completion Summary
+                        🎉 View Completion Summary
                       </button>
                     )}
                   </>
@@ -2937,7 +2953,7 @@ function StudioContent() {
                     <div className="relative">
                       <div className="w-10 h-10 border-4 border-gray-200 border-t-gray-600 rounded-full animate-spin"></div>
                       <div className="absolute inset-0 flex items-center justify-center text-lg">
-                        ðŸ“–
+                        📖
                       </div>
                     </div>
                     <div>
@@ -2967,7 +2983,7 @@ function StudioContent() {
                 <div className="text-center mb-3">
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-lg">
-                      ðŸ“–
+                      📖
                     </div>
                     <h3 className="font-bold text-gray-900">
                       Ready to Start?
@@ -2982,11 +2998,11 @@ function StudioContent() {
                   onClick={triggerFullAnalysis}
                   className={`w-full ${getEditorColorClasses(editorColor).bg} text-white px-6 py-4 rounded-xl font-bold text-base ${getEditorColorClasses(editorColor).bgHover} transition-all shadow-lg hover:shadow-xl hover:scale-105 transform`}
                 >
-                  ðŸ“– Read My Manuscript
+                  📖 Read My Manuscript
                 </button>
 
                 <p className="text-xs text-gray-500 mt-3 text-center">
-                  Takes about 5 minutes â€¢ You&apos;ll get a comprehensive report by email
+                  Takes about 5 minutes • You&apos;ll get a comprehensive report by email
                 </p>
               </div>
             ) : (
@@ -3050,7 +3066,7 @@ function StudioContent() {
                     onClick={() => setShowIssuesPanel(false)}
                     className="text-gray-500 hover:text-gray-700"
                   >
-                    ✗•
+                    ✕
                   </button>
                 </div>
               </div>
@@ -3136,7 +3152,7 @@ function StudioContent() {
                             {getSeverityIcon(issue.severity)} {getSeverityLabel(issue.severity)}
                           </span>
                           <span className="text-xs text-blue-600 font-medium ml-auto">
-                            ðŸ‘† Click to highlight
+                            👆 Click to highlight
                           </span>
                         </div>
 
@@ -3190,13 +3206,13 @@ function StudioContent() {
                         onClick={() => handleDiscussIssue(issue)}
                         className={`flex-1 px-3 py-1.5 ${getEditorColorClasses(editorColor).bg} text-white rounded text-xs font-medium ${getEditorColorClasses(editorColor).bgHover}`}
                       >
-                        ðŸ’¬ Discuss
+                        💬 Discuss
                       </button>
                       <button
                         onClick={() => handleDismissIssue(issue)}
                         className="flex-1 px-3 py-1.5 bg-gray-300 text-gray-700 rounded text-xs font-medium hover:bg-gray-400"
                       >
-                        ✗• Dismiss
+                        ✕ Dismiss
                       </button>
                     </div>
                   </div>
