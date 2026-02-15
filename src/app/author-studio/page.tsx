@@ -1116,10 +1116,15 @@ function StudioContent() {
 
     if (!confirmed) return
 
+    // Close the menu immediately
+    setOpenChapterMenuId(null)
     setIsLocked(true)
+
     const supabase = createClient()
 
     try {
+      console.log('🗑️ Starting chapter deletion:', chapter.id, chapter.title)
+
       // 1. Get word count of chapter being deleted
       const chapterWordCount = chapter.content.split(/\s+/).filter((w: string) => w.length > 0).length
 
@@ -1132,24 +1137,51 @@ function StudioContent() {
 
       if (issuesError) {
         console.error('Error deleting issues:', issuesError)
+      } else {
+        console.log('✅ Deleted issues for chapter')
       }
 
       // 3. Delete chapter_summaries for this chapter (if exists)
-      await supabase
+      const { error: summaryError } = await supabase
         .from('chapter_summaries')
         .delete()
         .eq('manuscript_id', manuscript!.id)
         .eq('chapter_number', chapter.chapter_number)
 
+      if (summaryError) {
+        console.error('Error deleting chapter summaries:', summaryError)
+      } else {
+        console.log('✅ Deleted chapter summaries')
+      }
+
       // 4. Delete the chapter itself
-      const { error: deleteError } = await supabase
+      const { data: deleteData, error: deleteError } = await supabase
         .from('chapters')
         .delete()
         .eq('id', chapter.id)
+        .select()
+
+      console.log('Delete response:', { deleteData, deleteError })
 
       if (deleteError) {
+        console.error('❌ Chapter delete error:', deleteError)
         throw deleteError
       }
+
+      // Verify the chapter was actually deleted
+      const { data: verifyChapter, error: verifyError } = await supabase
+        .from('chapters')
+        .select('id')
+        .eq('id', chapter.id)
+        .maybeSingle()  // Use maybeSingle to avoid error when no row found
+
+      if (verifyChapter) {
+        console.error('❌ Chapter still exists after delete!')
+        throw new Error('Chapter deletion failed - chapter still exists. This may be a permissions issue.')
+      }
+
+      // If no data and no error (or error is "not found"), deletion succeeded
+      console.log('✅ Chapter deleted and verified')
 
       // 5. Renumber subsequent chapters (only for regular chapters, not prologue/epilogue)
       if (chapter.chapter_number > 0 && chapter.chapter_number < 999) {
@@ -1267,10 +1299,9 @@ function StudioContent() {
 
     } catch (error) {
       console.error('❌ Error deleting chapter:', error)
-      await addChatMessage(editorName, '❌ There was an error deleting the chapter. Please try again.')
+      await addChatMessage(editorName, `❌ There was an error deleting the chapter: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`)
     } finally {
       setIsLocked(false)
-      setOpenChapterMenuId(null)
     }
   }
 
@@ -2605,6 +2636,7 @@ function StudioContent() {
                                       <button
                                         onClick={(e) => {
                                           e.stopPropagation()
+                                          setOpenChapterMenuId(null)
                                           handleDeleteChapter(chapter)
                                         }}
                                         className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
