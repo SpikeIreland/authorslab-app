@@ -84,7 +84,7 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
 
   // Check if text exists
   const textExists = editorText.includes(normalizedQuote);
-  console.log('âœ… Text exists in editor:', textExists);
+  console.log('✓ Text exists in editor:', textExists);
   console.log('=== END DEBUG ===');
 
   if (!textExists) {
@@ -108,7 +108,7 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
   // Clear previous highlights
   markInstance.unmark({
     done: () => {
-      console.log('âœ… Cleared old highlights');
+      console.log('✓ Cleared old highlights');
 
       // Now search with straight quotes in normalized HTML
       markInstance.mark(normalizedQuote, {
@@ -126,7 +126,7 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
         },
         done: (counter: number) => {
           if (counter > 0) {
-            console.log(`âœ… Highlighted ${counter} matches`);
+            console.log(`✓ Highlighted ${counter} matches`);
 
             const highlights = editorRef.querySelectorAll('.issue-highlight');
             setTimeout(() => {
@@ -378,7 +378,7 @@ function StudioContent() {
 
     if (allPhases) {
       setEditorPhases(allPhases)
-      console.log('âœ… Phases refreshed manually')
+      console.log('✓ Phases refreshed manually')
       console.log('ðŸ“Š Updated phases:', allPhases.map(p => ({
         phase: p.phase_number,
         editor: p.editor_name,
@@ -436,7 +436,7 @@ function StudioContent() {
 
       if (allPhases) {
         setEditorPhases(allPhases)
-        console.log('âœ… Updated phases - analysis started')
+        console.log('✓ Updated phases - analysis started')
       }
 
       // Trigger all THREE workflows simultaneously
@@ -449,7 +449,7 @@ function StudioContent() {
             manuscriptId: manuscript.id,
             userId: manuscript.author_id
           })
-        }).catch(() => console.log('âœ… Full analysis webhook triggered')),
+        }).catch(() => console.log('✓ Full analysis webhook triggered')),
 
         // 2. Generate summary + key points
         fetch(WEBHOOKS.alexGenerateSummary, {
@@ -459,7 +459,7 @@ function StudioContent() {
             manuscriptId: manuscript.id,
             userId: manuscript.author_id
           })
-        }).catch(() => console.log('âœ… Summary webhook triggered')),
+        }).catch(() => console.log('✓ Summary webhook triggered')),
 
         // 3. Chapter summaries
         fetch(WEBHOOKS.alexGenerateChapterSummaries, {
@@ -469,10 +469,10 @@ function StudioContent() {
             manuscriptId: manuscript.id,
             userId: manuscript.author_id
           })
-        }).catch(() => console.log('âœ… Chapter summaries webhook triggered'))
+        }).catch(() => console.log('✓ Chapter summaries webhook triggered'))
       ])
 
-      console.log('âœ… All analysis workflows triggered successfully')
+      console.log('✓ All analysis workflows triggered successfully')
 
       // Poll for completion
       pollForAnalysisCompletion()
@@ -514,7 +514,7 @@ function StudioContent() {
 
         await addChatMessage(
           editorName,
-          `âœ… I've finished reading your manuscript! I'm genuinely excited about what you've created.\n\n` +
+          `✓ I've finished reading your manuscript! I'm genuinely excited about what you've created.\n\n` +
           `ðŸ“§ Your comprehensive PDF report will arrive by email shortly (it takes about 15 minutes to generate).\n\n` +
           `**Ready to start editing?**\n` +
           `Click on any chapter and hit "Start Editing" to see my specific notes. We'll work through them together, one chapter at a time.`
@@ -576,7 +576,7 @@ function StudioContent() {
             // Check if the report just became ready
             const updatedPhase = allPhases.find(p => p.id === payload.new.id)
             if (updatedPhase?.report_pdf_url && updatedPhase?.ai_read_completed_at) {
-              console.log('âœ… PDF Report ready (realtime)')
+              console.log('✓ PDF Report ready (realtime)')
 
               // Add chat message when report is ready
               addChatMessage(
@@ -593,7 +593,7 @@ function StudioContent() {
       .subscribe((status) => {
         console.log('ðŸ“¡ Subscription status:', status)
         if (status === 'SUBSCRIBED') {
-          console.log('âœ… Successfully subscribed to report updates')
+          console.log('✓ Successfully subscribed to report updates')
         }
       })
 
@@ -628,7 +628,7 @@ function StudioContent() {
 
       // Beta testers bypass payment check
       if (profile.is_beta_tester) {
-        console.log('âœ… Beta tester - author studio access granted')
+        console.log('✓ Beta tester - author studio access granted')
         return
       }
 
@@ -647,7 +647,7 @@ function StudioContent() {
         return
       }
 
-      console.log('âœ… Subscription verified - author studio access granted')
+      console.log('✓ Subscription verified - author studio access granted')
     }
 
     checkPaymentAccess()
@@ -719,7 +719,7 @@ function StudioContent() {
         .replace(/\s{2,}/g, ' ')           // Collapse multiple spaces
 
       editorPanelRef.current.innerHTML = cleanedContent;
-      console.log('âœ… Editor populated with formatted content');
+      console.log('✓ Editor populated with formatted content');
       console.log('ðŸ“„ First 300 chars:', cleanedContent.substring(0, 300));
     }
   }, [currentChapterIndex, isLoading]);
@@ -790,7 +790,7 @@ function StudioContent() {
       // Check if analysis is complete (summary + key points, not full PDF)
       if (manuscriptData.manuscript_summary && manuscriptData.full_analysis_key_points) {
         setAnalysisComplete(true)
-        console.log('âœ… Analysis already complete on page load')
+        console.log('✓ Analysis already complete on page load')
       }
 
       // ========================================
@@ -808,7 +808,7 @@ function StudioContent() {
 
       if (allPhases) {
         setEditorPhases(allPhases)
-        console.log(`âœ… Loaded ${allPhases.length} editing phases`)
+        console.log(`✓ Loaded ${allPhases.length} editing phases`)
 
         // DEBUG: Log phase details to help diagnose missing reports
         allPhases.forEach(phase => {
@@ -816,7 +816,7 @@ function StudioContent() {
             phase_status: phase.phase_status,
             ai_read_started_at: phase.ai_read_started_at,
             ai_read_completed_at: phase.ai_read_completed_at,
-            report_pdf_url: phase.report_pdf_url ? 'âœ… EXISTS' : 'âŒ MISSING'
+            report_pdf_url: phase.report_pdf_url ? '✓ EXISTS' : 'âŒ MISSING'
           })
         })
 
@@ -855,7 +855,7 @@ function StudioContent() {
         // If phaseParam exists, user explicitly wants to work with a specific editor - allow it
 
         setActivePhase(phaseToLoad)
-        console.log(`âœ… Loaded phase: ${phaseToLoad.phase_name} (${phaseToLoad.editor_name})`)
+        console.log(`✓ Loaded phase: ${phaseToLoad.phase_name} (${phaseToLoad.editor_name})`)
       } else {
         // Fallback to old method if allPhases query fails
         const phase = await getActivePhase(supabase, manuscriptId)
@@ -866,7 +866,7 @@ function StudioContent() {
         }
 
         setActivePhase(phase)
-        console.log(`âœ… Active phase: ${phase.phase_name} (${phase.editor_name})`)
+        console.log(`✓ Active phase: ${phase.phase_name} (${phase.editor_name})`)
       }
       // ========================================
       // END NEW CODE
@@ -907,7 +907,7 @@ function StudioContent() {
         }
 
         setChapterEditingStatus(initialStatus)
-        console.log('âœ… Initialized editing status for', chaptersData.length, 'chapters based on existing issues')
+        console.log('✓ Initialized editing status for', chaptersData.length, 'chapters based on existing issues')
 
         // Load the first chapter in the array
         setCurrentChapterIndex(0)
@@ -929,7 +929,7 @@ function StudioContent() {
             .order('severity', { ascending: false })
 
           setChapterIssues(firstChapterIssues || [])
-          console.log(`âœ… Loaded ${firstChapterIssues?.length || 0} existing issues for first chapter`)
+          console.log(`✓ Loaded ${firstChapterIssues?.length || 0} existing issues for first chapter`)
         }
       }
 
@@ -949,7 +949,7 @@ function StudioContent() {
             message: msg.message
           })) as ChatMessage[]
           setChatMessages(messages)
-          console.log(`âœ… Restored ${history.length} chat messages for ${phaseForChat.editor_name}`)
+          console.log(`✓ Restored ${history.length} chat messages for ${phaseForChat.editor_name}`)
         } else {
           // Show initial greeting for this phase
           showInitialGreeting(phaseForChat, manuscriptData, authorProfile.first_name, chaptersData?.length || 0)
@@ -993,7 +993,7 @@ function StudioContent() {
       if (samPhase?.report_pdf_url) {
         // Sam finished reading
         addChatMessage('Sam',
-          `Hey ${firstName}! I'm Sam, your line editor. âœ¨\n\n` +
+          `Hey ${firstName}! I'm Sam, your line editor. ✗¨\n\n` +
           `I've already read through your approved manuscript and I'm excited about the prose work ahead! ` +
           `The structural foundation Alex helped you build is solidâ€”now let's make every sentence shine.\n\n` +
           `ðŸ“§ I've sent you a detailed line-editing report by email.\n\n` +
@@ -1002,7 +1002,7 @@ function StudioContent() {
       } else {
         // Sam is still reading
         addChatMessage('Sam',
-          `Hey ${firstName}! I'm Sam, your line editor. âœ¨\n\n` +
+          `Hey ${firstName}! I'm Sam, your line editor. ✗¨\n\n` +
           `I've reviewed the fantastic structural work you and Alex accomplished together on "${manuscript.title}". ` +
           `I'm currently doing a deep read of your proseâ€”should be done in just a few minutes.\n\n` +
           `**While I read:** Feel free to browse your chapters. I'll let you know when I'm ready! ðŸ“š`
@@ -1043,7 +1043,7 @@ function StudioContent() {
         clearInterval(pollInterval)
 
         await addChatMessage('Sam',
-          `âœ¨ Done reading! Your prose has some really beautiful moments.\n\n` +
+          `✗¨ Done reading! Your prose has some really beautiful moments.\n\n` +
           `ðŸ“§ I've sent you my line-editing report by email.\n\n` +
           `**Let's get started!** Click on any chapter to see my prose notes.`
         )
@@ -1061,7 +1061,7 @@ function StudioContent() {
       } else if (attempts >= maxAttempts) {
         clearInterval(pollInterval)
         await addChatMessage('Sam',
-          `Almost done reading... Feel free to start browsing chapters while I finish up! âœ¨`
+          `Almost done reading... Feel free to start browsing chapters while I finish up! ✗¨`
         )
       }
     }, 3000) // Poll every 3 seconds
@@ -1084,7 +1084,7 @@ function StudioContent() {
           ch.id === chapter.id ? { ...ch, title: newTitle.trim() } : ch
         ))
 
-        await addChatMessage(editorName, `âœ… Chapter title updated to "${newTitle.trim()}"`)
+        await addChatMessage(editorName, `✓ Chapter title updated to "${newTitle.trim()}"`)
       } else {
         console.error('Failed to update title:', error)
         await addChatMessage(editorName, 'âŒ Failed to update chapter title. Please try again.')
@@ -1106,11 +1106,11 @@ function StudioContent() {
         `Chapter ${chapter.chapter_number}`
 
     const confirmed = confirm(
-      `⚠️ Delete "${chapter.title}" (${chapterLabel})?\n\n` +
+      `Delete "${chapter.title}" (${chapterLabel})?\n\n` +
       `This will:\n` +
-      `• Permanently delete the chapter content\n` +
-      `• Remove all editor notes for this chapter\n` +
-      `• Update the manuscript word count\n\n` +
+      `- Permanently delete the chapter content\n` +
+      `- Remove all editor notes for this chapter\n` +
+      `- Update the manuscript word count\n\n` +
       `This action cannot be undone.`
     )
 
@@ -1120,38 +1120,31 @@ function StudioContent() {
     const supabase = createClient()
 
     try {
-      // 1. Get word count of chapter being deleted
       const chapterWordCount = chapter.content.split(/\s+/).filter((w: string) => w.length > 0).length
 
-      // 2. Delete manuscript_issues for this chapter (all phases)
-      const { error: issuesError } = await supabase
+      // Delete manuscript_issues for this chapter
+      await supabase
         .from('manuscript_issues')
         .delete()
         .eq('manuscript_id', manuscript!.id)
         .eq('chapter_number', chapter.chapter_number)
 
-      if (issuesError) {
-        console.error('Error deleting issues:', issuesError)
-      }
-
-      // 3. Delete chapter_summaries for this chapter (if exists)
+      // Delete chapter_summaries for this chapter
       await supabase
         .from('chapter_summaries')
         .delete()
         .eq('manuscript_id', manuscript!.id)
         .eq('chapter_number', chapter.chapter_number)
 
-      // 4. Delete the chapter itself
+      // Delete the chapter itself
       const { error: deleteError } = await supabase
         .from('chapters')
         .delete()
         .eq('id', chapter.id)
 
-      if (deleteError) {
-        throw deleteError
-      }
+      if (deleteError) throw deleteError
 
-      // 5. Renumber subsequent chapters (only for regular chapters, not prologue/epilogue)
+      // Renumber subsequent chapters
       if (chapter.chapter_number > 0 && chapter.chapter_number < 999) {
         const subsequentChapters = chapters.filter(ch =>
           ch.chapter_number > chapter.chapter_number && ch.chapter_number < 999
@@ -1163,14 +1156,12 @@ function StudioContent() {
             .update({ chapter_number: ch.chapter_number - 1 })
             .eq('id', ch.id)
 
-          // Also update issues to reference new chapter number
           await supabase
             .from('manuscript_issues')
             .update({ chapter_number: ch.chapter_number - 1 })
             .eq('manuscript_id', manuscript!.id)
             .eq('chapter_number', ch.chapter_number)
 
-          // Update chapter_summaries
           await supabase
             .from('chapter_summaries')
             .update({ chapter_number: ch.chapter_number - 1 })
@@ -1179,7 +1170,7 @@ function StudioContent() {
         }
       }
 
-      // 6. Update manuscript word count and total_chapters
+      // Update manuscript word count
       const newWordCount = (manuscript!.current_word_count || 0) - chapterWordCount
       const newTotalChapters = (manuscript!.total_chapters || chapters.length) - 1
 
@@ -1191,14 +1182,13 @@ function StudioContent() {
         })
         .eq('id', manuscript!.id)
 
-      // Update local manuscript state
       setManuscript(prev => prev ? {
         ...prev,
         current_word_count: Math.max(0, newWordCount),
         total_chapters: Math.max(0, newTotalChapters)
       } : null)
 
-      // 7. Reload chapters from database to get correct state
+      // Reload chapters
       const { data: updatedChapters } = await supabase
         .from('chapters')
         .select('*')
@@ -1208,7 +1198,6 @@ function StudioContent() {
       if (updatedChapters) {
         setChapters(updatedChapters)
 
-        // Update editing status map with new chapter numbers
         const newStatus: { [key: number]: ChapterEditingStatus } = {}
         for (const ch of updatedChapters) {
           const { data: existingIssues } = await supabase
@@ -1224,19 +1213,16 @@ function StudioContent() {
         }
         setChapterEditingStatus(newStatus)
 
-        // Navigate to first chapter if we deleted the current one
         if (currentChapterIndex >= updatedChapters.length) {
           setCurrentChapterIndex(Math.max(0, updatedChapters.length - 1))
         }
 
-        // Load the new current chapter
         const newCurrentChapter = updatedChapters[Math.min(currentChapterIndex, updatedChapters.length - 1)]
         if (newCurrentChapter) {
           setEditorContent(newCurrentChapter.content)
           setWordCount(newCurrentChapter.content.split(/\s+/).filter((w: string) => w.length > 0).length)
           setHasUnsavedChanges(false)
 
-          // Load issues for new current chapter
           const { data: newIssues } = await supabase
             .from('manuscript_issues')
             .select('*')
@@ -1250,29 +1236,27 @@ function StudioContent() {
         }
       }
 
-      // 8. Clear the current chapter's issues from view
       setChapterIssues([])
       setShowIssuesPanel(false)
 
-      // 9. Notify user via chat with staleness warning
       await addChatMessage(
         editorName,
-        `🗑️ "${chapter.title}" (${chapterLabel}) has been deleted.\n\n` +
-        `⚠️ **Note:** My original analysis was based on the full manuscript including this chapter. ` +
-        `Some of my earlier observations may now be outdated. If you've made significant structural changes, ` +
-        `you may want to consider a fresh analysis in a future session.`
+        `"${chapter.title}" (${chapterLabel}) has been deleted.\n\n` +
+        `Note: My original analysis was based on the full manuscript including this chapter. ` +
+        `Some of my earlier observations may now be outdated.`
       )
 
-      console.log('✅ Chapter deleted successfully')
+      console.log('Chapter deleted successfully')
 
     } catch (error) {
-      console.error('❌ Error deleting chapter:', error)
-      await addChatMessage(editorName, '❌ There was an error deleting the chapter. Please try again.')
+      console.error('Error deleting chapter:', error)
+      await addChatMessage(editorName, 'There was an error deleting the chapter. Please try again.')
     } finally {
       setIsLocked(false)
       setOpenChapterMenuId(null)
     }
   }
+
 
   async function loadChapter(index: number) {
     if (isLocked) return
@@ -1454,11 +1438,11 @@ function StudioContent() {
       // Step 5: Notify the user via chat
       await addChatMessage(
         editorName,
-        `âœ¨ I see you've added a new chapter: **"${newTitle.trim()}"** (Chapter ${newChapterNumber}).\n\n` +
+        `✗¨ I see you've added a new chapter: **"${newTitle.trim()}"** (Chapter ${newChapterNumber}).\n\n` +
         `Go ahead and write your content, then save when you're ready. Once you have some text, click "Start Editing" and I'll analyze it for you!`
       )
 
-      console.log('âœ… Chapter inserted successfully')
+      console.log('✓ Chapter inserted successfully')
 
     } catch (error) {
       console.error('âŒ Error inserting chapter:', error)
@@ -1640,7 +1624,7 @@ function StudioContent() {
         throw error
       }
 
-      console.log('âœ… Save successful:', data)
+      console.log('✓ Save successful:', data)
 
       setHasUnsavedChanges(false)
       setUnsavedChapters(prev => {
@@ -1654,7 +1638,7 @@ function StudioContent() {
           ? 'Prologue'
           : `Chapter ${currentChapter.chapter_number}`
 
-        await addChatMessage(editorName, `âœ… ${chapterLabel}: "${currentChapter.title}" saved successfully!`)
+        await addChatMessage(editorName, `✓ ${chapterLabel}: "${currentChapter.title}" saved successfully!`)
       }
 
     } catch (error) {
@@ -1688,7 +1672,7 @@ function StudioContent() {
         throw new Error('Failed to approve chapter')
       }
 
-      console.log(`âœ… Chapter ${currentChapter.chapter_number} approved for Phase ${activePhase.phase_number}`)
+      console.log(`✓ Chapter ${currentChapter.chapter_number} approved for Phase ${activePhase.phase_number}`)
 
       // Update local state
       const phaseColumn = `phase_${activePhase.phase_number}_approved_at` as keyof Chapter
@@ -1704,7 +1688,7 @@ function StudioContent() {
         ? 'Prologue'
         : `Chapter ${currentChapter.chapter_number}`
 
-      await addChatMessage(editorName, `âœ… ${chapterLabel} approved! Great work.`)
+      await addChatMessage(editorName, `✓ ${chapterLabel} approved! Great work.`)
 
       // Check if all chapters are now approved
       const allApproved = await areAllChaptersApproved(
@@ -1757,7 +1741,7 @@ function StudioContent() {
             manuscriptId: manuscript.id,
             userId: manuscript.author_id
           })
-        }).catch(() => console.log('âœ… Sam reading triggered'))
+        }).catch(() => console.log('✓ Sam reading triggered'))
       } else if (activePhase.phase_number === 2) {
         // Completing Phase 2 â†’ Trigger Jordan's reading
         console.log('ðŸš€ Starting Jordan\'s manuscript reading...')
@@ -1769,7 +1753,7 @@ function StudioContent() {
             manuscriptId: manuscript.id,
             userId: manuscript.author_id
           })
-        }).catch(() => console.log('âœ… Jordan reading triggered'))
+        }).catch(() => console.log('✓ Jordan reading triggered'))
       }
 
       // 3. Transition to next phase
@@ -1794,7 +1778,7 @@ function StudioContent() {
 
     } catch (error) {
       console.error('Error completing phase:', error)
-      await addChatMessage(editorName, 'âœ… All chapters approved! There was an issue with the transition, but your work is safe.')
+      await addChatMessage(editorName, '✓ All chapters approved! There was an issue with the transition, but your work is safe.')
     }
   }
 
@@ -1818,7 +1802,7 @@ function StudioContent() {
         `*Your approved manuscript will be generated and emailed to you for safekeeping.*\n\n` +
         `*â€” Alex, Your Developmental Editor* ðŸ‘”`
     } else if (phaseNumber === 2) {
-      return `âœ¨ **Beautiful work, ${firstName}!**\n\n` +
+      return `✗¨ **Beautiful work, ${firstName}!**\n\n` +
         `You've successfully approved all ${chapterCount} chapters. Your prose is polished and every ` +
         `sentence now sings with clarity and impact.\n\n` +
         `**What happens next?**\n` +
@@ -1826,7 +1810,7 @@ function StudioContent() {
         `detail is perfectâ€”grammar, punctuation, consistency, and professional polish.\n\n` +
         `Click the **"Meet Jordan"** button above when you're ready for the handoff! ðŸ‘‹\n\n` +
         `*Your line-edited manuscript will be generated and emailed to you for safekeeping.*\n\n` +
-        `*â€” Sam, Your Line Editor* âœ¨`
+        `*â€” Sam, Your Line Editor* ✗¨`
     } else if (phaseNumber === 3) {
       return `ðŸ” **Excellent work, ${firstName}!**\n\n` +
         `You've successfully completed all three editing phases! Your manuscript is now:\n` +
@@ -1894,7 +1878,7 @@ function StudioContent() {
           chapterNumber: chapterNumber,
           userId: manuscript.author_id
         })
-      }).catch(() => console.log('âœ… Analysis webhook triggered'))
+      }).catch(() => console.log('✓ Analysis webhook triggered'))
 
       clearInterval(msgInterval)
 
@@ -1948,12 +1932,12 @@ function StudioContent() {
         if (issueCount > 0) {
           await addChatMessage(
             editorName,
-            `âœ… I've got some thoughts on this chapter. Click the Notes Button!`
+            `✓ I've got some thoughts on this chapter. Click the Notes Button!`
           )
         } else {
           await addChatMessage(
             editorName,
-            `âœ… Analysis complete! This chapter looks good.`
+            `✓ Analysis complete! This chapter looks good.`
           )
         }
       }
@@ -2513,7 +2497,7 @@ function StudioContent() {
                     : 'bg-green-100 text-green-700 border border-green-300 hover:bg-green-200'
                     }`}
                 >
-                  {isInsertMode ? 'âœ• Cancel Insert' : '+ Insert Chapter'}
+                  {isInsertMode ? '✗• Cancel Insert' : '+ Insert Chapter'}
                 </button>
               )}
 
@@ -2552,15 +2536,15 @@ function StudioContent() {
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 flex items-center justify-center">
                             {isApproved ? (
-                              <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>âœ“</span>
+                              <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>✗“</span>
                             ) : editStatus === 'analyzing' ? (
                               <div className={`w-4 h-4 border-2 ${getEditorColorClasses(editorColor).border} border-t-transparent rounded-full animate-spin`}></div>
                             ) : editStatus === 'ready' ? (
-                              <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>â—</span>
+                              <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>●</span>
                             ) : unsavedChapters.has(chapter.chapter_number) ? (
-                              <span className="text-blue-600 text-lg">â—</span>
+                              <span className="text-blue-600 text-lg">●</span>
                             ) : (
-                              <span className="text-gray-300 text-lg">â—‹</span>
+                              <span className="text-gray-300 text-lg">●‹</span>
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
@@ -2779,7 +2763,7 @@ function StudioContent() {
                               }
                             )
 
-                            console.log('âœ… Phase 3 version generation triggered')
+                            console.log('✓ Phase 3 version generation triggered')
                           } catch (error) {
                             console.error('Version generation error:', error)
                           }
@@ -3066,7 +3050,7 @@ function StudioContent() {
                     onClick={() => setShowIssuesPanel(false)}
                     className="text-gray-500 hover:text-gray-700"
                   >
-                    âœ•
+                    ✗•
                   </button>
                 </div>
               </div>
@@ -3212,7 +3196,7 @@ function StudioContent() {
                         onClick={() => handleDismissIssue(issue)}
                         className="flex-1 px-3 py-1.5 bg-gray-300 text-gray-700 rounded text-xs font-medium hover:bg-gray-400"
                       >
-                        âœ• Dismiss
+                        ✗• Dismiss
                       </button>
                     </div>
                   </div>
