@@ -1141,20 +1141,7 @@ function StudioContent() {
         console.log('✅ Deleted issues for chapter')
       }
 
-      // 3. Delete chapter_summaries for this chapter (if exists)
-      const { error: summaryError } = await supabase
-        .from('chapter_summaries')
-        .delete()
-        .eq('manuscript_id', manuscript!.id)
-        .eq('chapter_number', chapter.chapter_number)
-
-      if (summaryError) {
-        console.error('Error deleting chapter summaries:', summaryError)
-      } else {
-        console.log('✅ Deleted chapter summaries')
-      }
-
-      // 4. Delete the chapter itself
+      // 3. Delete the chapter itself
       const { data: deleteData, error: deleteError } = await supabase
         .from('chapters')
         .delete()
@@ -1168,20 +1155,14 @@ function StudioContent() {
         throw deleteError
       }
 
-      // Verify the chapter was actually deleted
-      const { data: verifyChapter, error: verifyError } = await supabase
-        .from('chapters')
-        .select('id')
-        .eq('id', chapter.id)
-        .maybeSingle()  // Use maybeSingle to avoid error when no row found
-
-      if (verifyChapter) {
-        console.error('❌ Chapter still exists after delete!')
-        throw new Error('Chapter deletion failed - chapter still exists. This may be a permissions issue.')
+      // Check if any rows were actually deleted
+      // If deleteData is empty array, RLS policy likely blocked the delete
+      if (!deleteData || deleteData.length === 0) {
+        console.error('❌ No rows deleted - likely RLS policy issue')
+        throw new Error('Chapter deletion failed - no rows affected. Please check that DELETE is allowed on the chapters table (RLS policy may be missing).')
       }
 
-      // If no data and no error (or error is "not found"), deletion succeeded
-      console.log('✅ Chapter deleted and verified')
+      console.log('✅ Chapter deleted successfully:', deleteData.length, 'row(s)')
 
       // 5. Renumber subsequent chapters (only for regular chapters, not prologue/epilogue)
       if (chapter.chapter_number > 0 && chapter.chapter_number < 999) {
@@ -1198,13 +1179,6 @@ function StudioContent() {
           // Also update issues to reference new chapter number
           await supabase
             .from('manuscript_issues')
-            .update({ chapter_number: ch.chapter_number - 1 })
-            .eq('manuscript_id', manuscript!.id)
-            .eq('chapter_number', ch.chapter_number)
-
-          // Update chapter_summaries
-          await supabase
-            .from('chapter_summaries')
             .update({ chapter_number: ch.chapter_number - 1 })
             .eq('manuscript_id', manuscript!.id)
             .eq('chapter_number', ch.chapter_number)
