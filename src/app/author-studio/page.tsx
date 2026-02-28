@@ -711,64 +711,84 @@ function StudioContent() {
     try {
       const supabase = createClient()
 
-      // Recalculate chapter numbers based on new positions
-      // Preserve special numbers: 0 for prologue, 999 for epilogue
-      for (let i = 0; i < newChapters.length; i++) {
-        const chapter = newChapters[i]
-        let newChapterNumber: number
+      // Build mapping of chapter ID to old and new chapter numbers
+      // Prologue (0) and Epilogue (999) keep their special numbers
+      // Regular chapters get renumbered 1, 2, 3... based on position
+      const chapterMapping: { id: string; oldNumber: number; newNumber: number }[] = []
 
-        // Determine the new chapter number based on position
-        const hasProlog = newChapters.some(ch => ch.chapter_number === 0)
-        const hasEpilog = newChapters.some(ch => ch.chapter_number === 999)
+      let regularChapterCounter = 1
+      for (const chapter of newChapters) {
+        const oldNumber = chapter.chapter_number
+        let newNumber: number
 
-        if (chapter.chapter_number === 0) {
-          // Keep prologue at 0
-          newChapterNumber = 0
-        } else if (chapter.chapter_number === 999) {
-          // Keep epilogue at 999
-          newChapterNumber = 999
+        if (oldNumber === 0) {
+          // Prologue stays as 0
+          newNumber = 0
+        } else if (oldNumber === 999) {
+          // Epilogue stays as 999
+          newNumber = 999
         } else {
-          // Calculate regular chapter number based on position
-          // Count position excluding any prologue at the start
-          const prologIndex = newChapters.findIndex(ch => ch.chapter_number === 0)
-          const adjustedIndex = prologIndex === 0 ? i : i + 1
-
-          // Regular chapters start at 1
-          newChapterNumber = adjustedIndex
-          if (prologIndex >= 0 && i > prologIndex) {
-            newChapterNumber = i - (prologIndex === 0 ? 1 : 0)
-          }
-          // Simpler approach: just use index + 1, skipping prologue
-          const chaptersBeforeThisOne = newChapters.slice(0, i).filter(ch => ch.chapter_number !== 0 && ch.chapter_number !== 999)
-          newChapterNumber = chaptersBeforeThisOne.length + 1
+          // Regular chapter gets next number
+          newNumber = regularChapterCounter
+          regularChapterCounter++
         }
 
-        const oldChapterNumber = chapter.chapter_number
+        chapterMapping.push({ id: chapter.id, oldNumber, newNumber })
+      }
 
-        if (newChapterNumber !== oldChapterNumber) {
-          // Update chapter
-          await supabase
-            .from('chapters')
-            .update({ chapter_number: newChapterNumber })
-            .eq('id', chapter.id)
+      console.log('📋 Chapter reorder mapping:', chapterMapping)
 
-          // Update related issues
+      // Step 1: Set all chapters to temporary numbers (to avoid unique constraint conflicts)
+      for (let i = 0; i < chapterMapping.length; i++) {
+        const tempNumber = 10000 + i
+        await supabase
+          .from('chapters')
+          .update({ chapter_number: tempNumber })
+          .eq('id', chapterMapping[i].id)
+      }
+
+      // Step 2: Set chapters to their final numbers
+      for (const mapping of chapterMapping) {
+        await supabase
+          .from('chapters')
+          .update({ chapter_number: mapping.newNumber })
+          .eq('id', mapping.id)
+      }
+
+      // Step 3: Update manuscript_issues and editor_chat_messages
+      // Only update if the chapter number actually changed
+      for (const mapping of chapterMapping) {
+        if (mapping.oldNumber !== mapping.newNumber) {
+          // Update issues - use a temp number first to avoid conflicts
+          const tempIssueNumber = 10000 + mapping.oldNumber
           await supabase
             .from('manuscript_issues')
-            .update({ chapter_number: newChapterNumber })
+            .update({ chapter_number: tempIssueNumber })
             .eq('manuscript_id', manuscript.id)
-            .eq('chapter_number', oldChapterNumber)
-
-          // Update related chat messages
-          await supabase
-            .from('editor_chat_messages')
-            .update({ chapter_number: newChapterNumber })
-            .eq('manuscript_id', manuscript.id)
-            .eq('chapter_number', oldChapterNumber)
+            .eq('chapter_number', mapping.oldNumber)
         }
       }
 
-      // Reload chapters from database to ensure consistency
+      // Now set issues to final numbers
+      for (const mapping of chapterMapping) {
+        if (mapping.oldNumber !== mapping.newNumber) {
+          const tempIssueNumber = 10000 + mapping.oldNumber
+          await supabase
+            .from('manuscript_issues')
+            .update({ chapter_number: mapping.newNumber })
+            .eq('manuscript_id', manuscript.id)
+            .eq('chapter_number', tempIssueNumber)
+
+          // Update chat messages
+          await supabase
+            .from('editor_chat_messages')
+            .update({ chapter_number: mapping.newNumber })
+            .eq('manuscript_id', manuscript.id)
+            .eq('chapter_number', mapping.oldNumber)
+        }
+      }
+
+      // Step 4: Reload chapters from database to ensure consistency
       const { data: updatedChapters } = await supabase
         .from('chapters')
         .select('*')
@@ -777,6 +797,13 @@ function StudioContent() {
 
       if (updatedChapters) {
         setChapters(updatedChapters)
+
+        // Find the new index of the chapter we were viewing
+        const currentChapterId = newChapters[newIndex]?.id
+        const newCurrentIndex = updatedChapters.findIndex(ch => ch.id === currentChapterId)
+        if (newCurrentIndex !== -1) {
+          setCurrentChapterIndex(newCurrentIndex)
+        }
 
         // Update editing status map
         const newStatus: { [key: number]: ChapterEditingStatus } = {}
@@ -803,7 +830,7 @@ function StudioContent() {
         await addChatMessage(
           editorName,
           `📋 I noticed you're reorganizing your chapters. When you're done moving things around, ` +
-          `you can click **"Run Fresh Analysis"** in the header to update my notes to match your new structure.\n\n` +
+          `you can click **"Fresh Analysis"** in the header to update my notes to match your new structure.\n\n` +
           `Take your time - I'll be ready when you are!`
         )
       }
