@@ -605,13 +605,29 @@ function StudioContent() {
     setFreshAnalysisInProgress(true)
     setStructureChangesPending(false)
 
+    // Capture current values so we can detect when they change
+    const previousSummary = manuscript.manuscript_summary || ''
+    const previousKeyPoints = manuscript.full_analysis_key_points || ''
+
     await addChatMessage(
       editorName,
       `🔄 Running a fresh analysis to update my notes based on your changes...\n\n` +
-      `This should just take a minute or two.`
+      `This usually takes about 5 minutes. I'll let you know when it's done!`
     )
 
     try {
+      const supabase = createClient()
+
+      // First, clear the current values to indicate refresh is in progress
+      await supabase
+        .from('manuscripts')
+        .update({
+          manuscript_summary: null,
+          full_analysis_key_points: null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', manuscript.id)
+
       // Trigger lightweight analysis workflows (no PDF report)
       await Promise.all([
         // 1. Generate summary + key points
@@ -635,10 +651,9 @@ function StudioContent() {
         }).catch(() => console.log('✅ Chapter summaries webhook triggered'))
       ])
 
-      // Poll for completion
-      const supabase = createClient()
+      // Poll for completion - check for NEW values (not null)
       let attempts = 0
-      const maxAttempts = 60 // 2 minutes
+      const maxAttempts = 180 // 6 minutes (every 2 seconds)
 
       const pollInterval = setInterval(async () => {
         attempts++
@@ -649,6 +664,7 @@ function StudioContent() {
           .eq('id', manuscript?.id)
           .single()
 
+        // Check if new values have arrived (they'll be non-null once the workflow completes)
         if (manuscriptData?.manuscript_summary && manuscriptData?.full_analysis_key_points) {
           clearInterval(pollInterval)
           setFreshAnalysisInProgress(false)
