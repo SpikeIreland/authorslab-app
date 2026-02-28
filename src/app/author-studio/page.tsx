@@ -6,10 +6,27 @@ import { Suspense, useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { BookOpen } from 'lucide-react'
+import { BookOpen, RefreshCw } from 'lucide-react'
 import { VersionsDropdown } from '@/components/VersionsDropdown'
 import Mark from 'mark.js'
 import { FeedbackModal } from '@/components/FeedbackModal'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 // Import types and helpers
 import type {
@@ -284,6 +301,184 @@ interface ChatMessage {
 
 type ChapterEditingStatus = 'not_started' | 'analyzing' | 'ready'
 
+// Sortable Chapter Item Component
+interface SortableChapterProps {
+  chapter: Chapter
+  index: number
+  currentChapterIndex: number
+  isLocked: boolean
+  isInsertMode: boolean
+  isChapterSidebarCollapsed: boolean
+  editStatus: ChapterEditingStatus | undefined
+  isApproved: boolean
+  editorColor: string
+  unsavedChapters: Set<number>
+  openChapterMenuId: string | null
+  setOpenChapterMenuId: (id: string | null) => void
+  loadChapter: (index: number) => void
+  handleEditChapterTitle: (chapter: Chapter) => void
+  handleDeleteChapter: (chapter: Chapter) => void
+  insertChapterAt: (position: number) => void
+}
+
+function SortableChapterItem({
+  chapter,
+  index,
+  currentChapterIndex,
+  isLocked,
+  isInsertMode,
+  isChapterSidebarCollapsed,
+  editStatus,
+  isApproved,
+  editorColor,
+  unsavedChapters,
+  openChapterMenuId,
+  setOpenChapterMenuId,
+  loadChapter,
+  handleEditChapterTitle,
+  handleDeleteChapter,
+  insertChapterAt,
+}: SortableChapterProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: chapter.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 1000 : 'auto',
+  }
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes}>
+      {/* Chapter Button */}
+      <div
+        className={`group w-full p-3 rounded-lg mb-1 text-left transition ${isLocked || isInsertMode
+          ? 'opacity-50 cursor-not-allowed'
+          : index === currentChapterIndex
+            ? `${getEditorColorClasses(editorColor).bgLight} border-2 ${getEditorColorClasses(editorColor).border}`
+            : `bg-white border border-gray-200 hover:${getEditorColorClasses(editorColor).borderLight}`
+          }`}
+      >
+        {!isChapterSidebarCollapsed ? (
+          <div className="flex items-center gap-2">
+            {/* Drag Handle */}
+            <div
+              {...listeners}
+              className="cursor-grab active:cursor-grabbing p-1 hover:bg-gray-100 rounded touch-none"
+              title="Drag to reorder"
+            >
+              <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm8-16a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4z" />
+              </svg>
+            </div>
+            <div
+              className="w-6 h-6 flex items-center justify-center cursor-pointer"
+              onClick={() => !isLocked && !isInsertMode && loadChapter(index)}
+            >
+              {isApproved ? (
+                <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>✔</span>
+              ) : editStatus === 'analyzing' ? (
+                <div className={`w-4 h-4 border-2 ${getEditorColorClasses(editorColor).border} border-t-transparent rounded-full animate-spin`}></div>
+              ) : editStatus === 'ready' ? (
+                <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>●</span>
+              ) : unsavedChapters.has(chapter.chapter_number) ? (
+                <span className="text-blue-600 text-lg">●</span>
+              ) : (
+                <span className="text-gray-300 text-lg">●</span>
+              )}
+            </div>
+            <div
+              className="flex-1 min-w-0 cursor-pointer"
+              onClick={() => !isLocked && !isInsertMode && loadChapter(index)}
+            >
+              <div className="text-xs text-gray-500">
+                {chapter.chapter_number === 0 ? 'Prologue' : chapter.chapter_number === 999 ? 'Epilogue' : `Chapter ${chapter.chapter_number}`}
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="font-semibold text-sm flex-1 truncate">{chapter.title}</div>
+                {!isInsertMode && (
+                  <div className="chapter-menu-container relative">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setOpenChapterMenuId(openChapterMenuId === chapter.id ? null : chapter.id)
+                      }}
+                      className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white rounded transition"
+                      title="Chapter options"
+                    >
+                      <svg className="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="5" r="2" />
+                        <circle cx="12" cy="12" r="2" />
+                        <circle cx="12" cy="19" r="2" />
+                      </svg>
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {openChapterMenuId === chapter.id && (
+                      <div className="absolute right-0 top-full mt-1 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setOpenChapterMenuId(null)
+                            handleEditChapterTitle(chapter)
+                          }}
+                          className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                        >
+                          <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                          Rename
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setOpenChapterMenuId(null)
+                            handleDeleteChapter(chapter)
+                          }}
+                          className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div
+            className="text-center cursor-pointer"
+            onClick={() => !isLocked && !isInsertMode && loadChapter(index)}
+          >
+            {chapter.chapter_number === 0 ? 'P' : chapter.chapter_number === 999 ? 'E' : chapter.chapter_number}
+          </div>
+        )}
+      </div>
+
+      {/* Insert After This Chapter Button (only for non-epilogue chapters in insert mode) */}
+      {isInsertMode && !isChapterSidebarCollapsed && chapter.chapter_number !== 999 && (
+        <button
+          onClick={() => insertChapterAt(chapter.chapter_number + 1)}
+          className="w-full px-3 py-2 mb-2 bg-blue-50 text-blue-600 border-2 border-dashed border-blue-300 rounded-lg text-xs font-medium hover:bg-blue-100 hover:border-blue-400 transition-colors"
+        >
+          + Insert Chapter Here
+        </button>
+      )}
+    </div>
+  )
+}
+
 function StudioContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -358,6 +553,22 @@ function StudioContent() {
   // Chapter menu dropdown
   const [openChapterMenuId, setOpenChapterMenuId] = useState<string | null>(null)
 
+  // Structure changes tracking
+  const [structureChangesPending, setStructureChangesPending] = useState(false)
+  const [freshAnalysisInProgress, setFreshAnalysisInProgress] = useState(false)
+
+  // DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
   // Manual refresh function for phases (useful if real-time subscription fails)
   const refreshPhases = async () => {
     if (!manuscript?.id) return
@@ -384,6 +595,238 @@ function StudioContent() {
         editor: p.editor_name,
         hasReport: !!p.report_pdf_url
       })))
+    }
+  }
+
+  // Fresh Analysis function - lightweight re-analysis without PDF generation
+  const handleFreshAnalysis = async () => {
+    if (!manuscript || !activePhase) return
+
+    setFreshAnalysisInProgress(true)
+    setStructureChangesPending(false)
+
+    await addChatMessage(
+      editorName,
+      `🔄 Running a fresh analysis to update my notes based on your changes...\n\n` +
+      `This should just take a minute or two.`
+    )
+
+    try {
+      // Trigger lightweight analysis workflows (no PDF report)
+      await Promise.all([
+        // 1. Generate summary + key points
+        fetch(WEBHOOKS.alexGenerateSummary, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            manuscriptId: manuscript.id,
+            userId: manuscript.author_id
+          })
+        }).catch(() => console.log('✅ Summary webhook triggered')),
+
+        // 2. Chapter summaries
+        fetch(WEBHOOKS.alexGenerateChapterSummaries, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            manuscriptId: manuscript.id,
+            userId: manuscript.author_id
+          })
+        }).catch(() => console.log('✅ Chapter summaries webhook triggered'))
+      ])
+
+      // Poll for completion
+      const supabase = createClient()
+      let attempts = 0
+      const maxAttempts = 60 // 2 minutes
+
+      const pollInterval = setInterval(async () => {
+        attempts++
+
+        const { data: manuscriptData } = await supabase
+          .from('manuscripts')
+          .select('manuscript_summary, full_analysis_key_points')
+          .eq('id', manuscript?.id)
+          .single()
+
+        if (manuscriptData?.manuscript_summary && manuscriptData?.full_analysis_key_points) {
+          clearInterval(pollInterval)
+          setFreshAnalysisInProgress(false)
+
+          // Update local manuscript state
+          setManuscript(prev => prev ? {
+            ...prev,
+            manuscript_summary: manuscriptData.manuscript_summary,
+            full_analysis_key_points: manuscriptData.full_analysis_key_points
+          } : null)
+
+          await addChatMessage(
+            editorName,
+            `✅ All done! My notes have been updated to reflect your current manuscript structure.\n\n` +
+            `Feel free to continue editing or click on any chapter to see my updated feedback.`
+          )
+        } else if (attempts >= maxAttempts) {
+          clearInterval(pollInterval)
+          setFreshAnalysisInProgress(false)
+          await addChatMessage(
+            editorName,
+            `⚠️ The analysis is taking longer than expected. Please try again in a moment.`
+          )
+        }
+      }, 2000)
+
+    } catch (error) {
+      console.error('Error running fresh analysis:', error)
+      setFreshAnalysisInProgress(false)
+      await addChatMessage(editorName, '❌ Had trouble running the analysis. Please try again.')
+    }
+  }
+
+  // Handle chapter reorder via drag and drop
+  const handleChapterReorder = async (event: DragEndEvent) => {
+    const { active, over } = event
+
+    if (!over || active.id === over.id || !manuscript) return
+
+    const oldIndex = chapters.findIndex(ch => ch.id === active.id)
+    const newIndex = chapters.findIndex(ch => ch.id === over.id)
+
+    if (oldIndex === -1 || newIndex === -1) return
+
+    // Optimistically update UI
+    const newChapters = arrayMove(chapters, oldIndex, newIndex)
+    setChapters(newChapters)
+
+    // Update current chapter index if needed
+    if (currentChapterIndex === oldIndex) {
+      setCurrentChapterIndex(newIndex)
+    } else if (oldIndex < currentChapterIndex && newIndex >= currentChapterIndex) {
+      setCurrentChapterIndex(currentChapterIndex - 1)
+    } else if (oldIndex > currentChapterIndex && newIndex <= currentChapterIndex) {
+      setCurrentChapterIndex(currentChapterIndex + 1)
+    }
+
+    setIsLocked(true)
+
+    try {
+      const supabase = createClient()
+
+      // Recalculate chapter numbers based on new positions
+      // Preserve special numbers: 0 for prologue, 999 for epilogue
+      for (let i = 0; i < newChapters.length; i++) {
+        const chapter = newChapters[i]
+        let newChapterNumber: number
+
+        // Determine the new chapter number based on position
+        const hasProlog = newChapters.some(ch => ch.chapter_number === 0)
+        const hasEpilog = newChapters.some(ch => ch.chapter_number === 999)
+
+        if (chapter.chapter_number === 0) {
+          // Keep prologue at 0
+          newChapterNumber = 0
+        } else if (chapter.chapter_number === 999) {
+          // Keep epilogue at 999
+          newChapterNumber = 999
+        } else {
+          // Calculate regular chapter number based on position
+          // Count position excluding any prologue at the start
+          const prologIndex = newChapters.findIndex(ch => ch.chapter_number === 0)
+          const adjustedIndex = prologIndex === 0 ? i : i + 1
+
+          // Regular chapters start at 1
+          newChapterNumber = adjustedIndex
+          if (prologIndex >= 0 && i > prologIndex) {
+            newChapterNumber = i - (prologIndex === 0 ? 1 : 0)
+          }
+          // Simpler approach: just use index + 1, skipping prologue
+          const chaptersBeforeThisOne = newChapters.slice(0, i).filter(ch => ch.chapter_number !== 0 && ch.chapter_number !== 999)
+          newChapterNumber = chaptersBeforeThisOne.length + 1
+        }
+
+        const oldChapterNumber = chapter.chapter_number
+
+        if (newChapterNumber !== oldChapterNumber) {
+          // Update chapter
+          await supabase
+            .from('chapters')
+            .update({ chapter_number: newChapterNumber })
+            .eq('id', chapter.id)
+
+          // Update related issues
+          await supabase
+            .from('manuscript_issues')
+            .update({ chapter_number: newChapterNumber })
+            .eq('manuscript_id', manuscript.id)
+            .eq('chapter_number', oldChapterNumber)
+
+          // Update related chat messages
+          await supabase
+            .from('editor_chat_messages')
+            .update({ chapter_number: newChapterNumber })
+            .eq('manuscript_id', manuscript.id)
+            .eq('chapter_number', oldChapterNumber)
+        }
+      }
+
+      // Reload chapters from database to ensure consistency
+      const { data: updatedChapters } = await supabase
+        .from('chapters')
+        .select('*')
+        .eq('manuscript_id', manuscript.id)
+        .order('chapter_number', { ascending: true })
+
+      if (updatedChapters) {
+        setChapters(updatedChapters)
+
+        // Update editing status map
+        const newStatus: { [key: number]: ChapterEditingStatus } = {}
+        for (const ch of updatedChapters) {
+          const { data: existingIssues } = await supabase
+            .from('manuscript_issues')
+            .select('id')
+            .eq('manuscript_id', manuscript.id)
+            .eq('chapter_number', ch.chapter_number)
+            .eq('phase_number', currentPhase)
+            .neq('status', 'dismissed')
+            .limit(1)
+
+          newStatus[ch.chapter_number] = (existingIssues && existingIssues.length > 0) ? 'ready' : 'not_started'
+        }
+        setChapterEditingStatus(newStatus)
+      }
+
+      // Flag structure changes if not already flagged
+      if (!structureChangesPending) {
+        setStructureChangesPending(true)
+
+        // Notify user via chat (only once)
+        await addChatMessage(
+          editorName,
+          `📋 I noticed you're reorganizing your chapters. When you're done moving things around, ` +
+          `you can click **"Run Fresh Analysis"** in the header to update my notes to match your new structure.\n\n` +
+          `Take your time - I'll be ready when you are!`
+        )
+      }
+
+      console.log('✅ Chapter order updated successfully')
+
+    } catch (error) {
+      console.error('❌ Error reordering chapters:', error)
+      // Reload original order on error
+      const supabase = createClient()
+      const { data: originalChapters } = await supabase
+        .from('chapters')
+        .select('*')
+        .eq('manuscript_id', manuscript.id)
+        .order('chapter_number', { ascending: true })
+
+      if (originalChapters) {
+        setChapters(originalChapters)
+      }
+
+      await addChatMessage(editorName, '❌ Had trouble saving the chapter order. Please try again.')
+    } finally {
+      setIsLocked(false)
     }
   }
 
@@ -1260,13 +1703,17 @@ function StudioContent() {
       setChapterIssues([])
       setShowIssuesPanel(false)
 
-      // 9. Notify user via chat with staleness warning
+      // 9. Set structure changes pending flag (only if not already set)
+      if (!structureChangesPending) {
+        setStructureChangesPending(true)
+      }
+
+      // 10. Notify user via chat with reference to Fresh Analysis button
       await addChatMessage(
         editorName,
         `🗑️ "${chapter.title}" (${chapterLabel}) has been deleted.\n\n` +
         `⚠️ **Note:** My original analysis was based on the full manuscript including this chapter. ` +
-        `Some of my earlier observations may now be outdated. If you've made significant structural changes, ` +
-        `you may want to consider a fresh analysis in a future session.`
+        `When you're ready, click **"Fresh Analysis"** in the header to update my notes to match your current structure.`
       )
 
       console.log('✅ Chapter deleted successfully')
@@ -1456,11 +1903,17 @@ function StudioContent() {
         }
       }
 
-      // Step 5: Notify the user via chat
+      // Step 5: Set structure changes pending flag (only if not already set)
+      if (!structureChangesPending) {
+        setStructureChangesPending(true)
+      }
+
+      // Step 6: Notify the user via chat
       await addChatMessage(
         editorName,
         `✨ I see you've added a new chapter: **"${newTitle.trim()}"** (Chapter ${newChapterNumber}).\n\n` +
-        `Go ahead and write your content, then save when you're ready. Once you have some text, click "Start Editing" and I'll analyze it for you!`
+        `Go ahead and write your content, then save when you're ready. Once you have some text, click "Start Editing" and I'll analyze it!\n\n` +
+        `💡 When you're done making structural changes, click **"Fresh Analysis"** in the header to update my overall manuscript notes.`
       )
 
       console.log('✅ Chapter inserted successfully')
@@ -2213,6 +2666,46 @@ function StudioContent() {
                 })()}
               </div>
 
+              {/* Fresh Analysis Button */}
+              <div className="border-l border-gray-200 pl-6">
+                <button
+                  onClick={handleFreshAnalysis}
+                  disabled={freshAnalysisInProgress || !analysisComplete}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all ${freshAnalysisInProgress
+                      ? 'bg-amber-100 text-amber-700 cursor-wait'
+                      : !analysisComplete
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : structureChangesPending
+                          ? 'bg-amber-500 text-white hover:bg-amber-600 shadow-md animate-pulse'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  title={
+                    freshAnalysisInProgress
+                      ? 'Analysis in progress...'
+                      : !analysisComplete
+                        ? 'Complete initial analysis first'
+                        : structureChangesPending
+                          ? 'Structure changes detected - click to update analysis'
+                          : 'Run a fresh analysis to update notes'
+                  }
+                >
+                  {freshAnalysisInProgress ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-amber-600 border-t-transparent rounded-full animate-spin"></div>
+                      <span>Analyzing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className={`w-4 h-4 ${structureChangesPending ? '' : ''}`} />
+                      <span>Fresh Analysis</span>
+                      {structureChangesPending && (
+                        <span className="w-2 h-2 bg-white rounded-full"></span>
+                      )}
+                    </>
+                  )}
+                </button>
+              </div>
+
               {/* PDF Report Buttons - Always Visible */}
               <div className="flex items-center gap-2 border-l border-gray-200 pl-6">
                 {/* Alex's Report Button */}
@@ -2399,16 +2892,6 @@ function StudioContent() {
                     )
                   }
                 })()}
-
-                {/* Manual Refresh Button - Debug/Workaround */}
-                <button
-                  onClick={refreshPhases}
-                  className="px-3 py-1.5 bg-gray-100 text-gray-600 text-xs rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-1.5"
-                  title="Refresh reports (if not updating automatically)"
-                >
-                  <span>📄</span>
-                  <span>Refresh</span>
-                </button>
               </div>
 
               {/* Versions Dropdown */}
@@ -2535,117 +3018,44 @@ function StudioContent() {
                 </button>
               )}
 
-              {chapters.map((chapter, index) => {
-                const editStatus = chapterEditingStatus[chapter.chapter_number]
-                const phaseColumn = `phase_${currentPhase}_approved_at` as keyof Chapter
-                const isApproved = !!chapter[phaseColumn]
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleChapterReorder}
+              >
+                <SortableContext
+                  items={chapters.map(ch => ch.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {chapters.map((chapter, index) => {
+                    const editStatus = chapterEditingStatus[chapter.chapter_number]
+                    const phaseColumn = `phase_${currentPhase}_approved_at` as keyof Chapter
+                    const isApproved = !!chapter[phaseColumn]
 
-                return (
-                  <div key={chapter.id}>
-                    {/* Chapter Button */}
-                    <button
-                      onClick={() => !isLocked && !isInsertMode && loadChapter(index)}
-                      disabled={isLocked || isInsertMode}
-                      className={`group w-full p-3 rounded-lg mb-1 text-left transition ${isLocked || isInsertMode
-                        ? 'opacity-50 cursor-not-allowed'
-                        : index === currentChapterIndex
-                          ? `${getEditorColorClasses(editorColor).bgLight} border-2 ${getEditorColorClasses(editorColor).border}`
-                          : `bg-white border border-gray-200 hover:${getEditorColorClasses(editorColor).borderLight}`
-                        }`}
-                    >
-                      {!isChapterSidebarCollapsed ? (
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 flex items-center justify-center">
-                            {isApproved ? (
-                              <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>✔</span>
-                            ) : editStatus === 'analyzing' ? (
-                              <div className={`w-4 h-4 border-2 ${getEditorColorClasses(editorColor).border} border-t-transparent rounded-full animate-spin`}></div>
-                            ) : editStatus === 'ready' ? (
-                              <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>●</span>
-                            ) : unsavedChapters.has(chapter.chapter_number) ? (
-                              <span className="text-blue-600 text-lg">●</span>
-                            ) : (
-                              <span className="text-gray-300 text-lg">●‹</span>
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-xs text-gray-500">
-                              {chapter.chapter_number === 0 ? 'Prologue' : chapter.chapter_number === 999 ? 'Epilogue' : `Chapter ${chapter.chapter_number}`}
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <div className="font-semibold text-sm flex-1 truncate">{chapter.title}</div>
-                              {!isInsertMode && (
-                                <div className="chapter-menu-container relative">
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      setOpenChapterMenuId(openChapterMenuId === chapter.id ? null : chapter.id)
-                                    }}
-                                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white rounded transition"
-                                    title="Chapter options"
-                                  >
-                                    <svg className="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
-                                      <circle cx="12" cy="5" r="2" />
-                                      <circle cx="12" cy="12" r="2" />
-                                      <circle cx="12" cy="19" r="2" />
-                                    </svg>
-                                  </button>
-
-                                  {/* Dropdown Menu */}
-                                  {openChapterMenuId === chapter.id && (
-                                    <div className="absolute right-0 top-full mt-1 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          setOpenChapterMenuId(null)
-                                          handleEditChapterTitle(chapter)
-                                        }}
-                                        className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                                      >
-                                        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                        </svg>
-                                        Rename
-                                      </button>
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          setOpenChapterMenuId(null)
-                                          handleDeleteChapter(chapter)
-                                        }}
-                                        className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                                      >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                        Delete
-                                      </button>
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="text-center">
-                          {chapter.chapter_number === 0 ? 'P' : chapter.chapter_number === 999 ? 'E' : chapter.chapter_number}
-                        </div>
-                      )}
-                    </button>
-
-                    {/* Insert After This Chapter Button (only for non-epilogue chapters in insert mode) */}
-                    {isInsertMode && !isChapterSidebarCollapsed && chapter.chapter_number !== 999 && (
-                      <button
-                        onClick={() => insertChapterAt(chapter.chapter_number + 1)}
-                        className="w-full px-3 py-2 mb-2 bg-blue-50 text-blue-600 border-2 border-dashed border-blue-300 rounded-lg text-xs font-medium hover:bg-blue-100 hover:border-blue-400 transition-colors"
-                      >
-                        + Insert Chapter Here
-                      </button>
-                    )}
-                  </div>
-                )
-              })}
+                    return (
+                      <SortableChapterItem
+                        key={chapter.id}
+                        chapter={chapter}
+                        index={index}
+                        currentChapterIndex={currentChapterIndex}
+                        isLocked={isLocked}
+                        isInsertMode={isInsertMode}
+                        isChapterSidebarCollapsed={isChapterSidebarCollapsed}
+                        editStatus={editStatus}
+                        isApproved={isApproved}
+                        editorColor={editorColor}
+                        unsavedChapters={unsavedChapters}
+                        openChapterMenuId={openChapterMenuId}
+                        setOpenChapterMenuId={setOpenChapterMenuId}
+                        loadChapter={loadChapter}
+                        handleEditChapterTitle={handleEditChapterTitle}
+                        handleDeleteChapter={handleDeleteChapter}
+                        insertChapterAt={insertChapterAt}
+                      />
+                    )
+                  })}
+                </SortableContext>
+              </DndContext>
             </div>
           </div>
 
