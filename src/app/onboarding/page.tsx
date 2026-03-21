@@ -12,6 +12,12 @@ function OnboardingContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
 
+    // Ghost Writer returning-author path (Brief 2)
+    const [isGhostWriterAuthor, setIsGhostWriterAuthor] = useState(false)
+    const [ghostWriterAgent, setGhostWriterAgent] = useState<'ivy' | 'reid' | null>(null)
+    const [ghostWriterBookTitle, setGhostWriterBookTitle] = useState('')
+    const [edenMessage, setEdenMessage] = useState('')
+
     const [authorName, setAuthorName] = useState('')
     const [file, setFile] = useState<File | null>(null)
     const [extractedText, setExtractedText] = useState<string>('')
@@ -170,7 +176,7 @@ function OnboardingContent() {
 
             const { data: profile } = await supabase
                 .from('author_profiles')
-                .select('id, is_beta_tester')
+                .select('id, first_name, is_beta_tester, ghostwriter_onboarding_completed, ghostwriter_agent, ghostwriter_book_title')
                 .eq('auth_user_id', user.id)
                 .single()
 
@@ -182,29 +188,48 @@ function OnboardingContent() {
             // Beta testers bypass payment check
             if (profile.is_beta_tester) {
                 console.log('✅ Beta tester - access granted')
-                return
+            } else {
+                // Check for active subscription
+                const { data: subscription } = await supabase
+                    .from('subscriptions')
+                    .select('*')
+                    .eq('author_id', profile.id)
+                    .eq('status', 'active')
+                    .single()
+
+                if (!subscription) {
+                    console.log('❌ No active subscription - redirecting to checkout')
+                    router.push('/checkout')
+                    return
+                }
+
+                console.log('✅ Subscription verified - access granted')
             }
 
-            // Check for active subscription
-            const { data: subscription } = await supabase
-                .from('subscriptions')
-                .select('*')
-                .eq('author_id', profile.id)
-                .eq('status', 'active')
-                .single()
+            // Brief 2 — detect returning ghost writer author
+            if (profile.ghostwriter_onboarding_completed) {
+                const firstName = profile.first_name || searchParams.get('firstName') || 'there'
+                const agent = profile.ghostwriter_agent as 'ivy' | 'reid' | null
+                const bookTitle = profile.ghostwriter_book_title || 'your book'
 
-            if (!subscription) {
-                // No payment, redirect to checkout
-                console.log('❌ No active subscription - redirecting to checkout')
-                router.push('/checkout')
-                return
+                setIsGhostWriterAuthor(true)
+                setGhostWriterAgent(agent)
+                setGhostWriterBookTitle(bookTitle)
+
+                if (agent === 'ivy') {
+                    setEdenMessage(
+                        `Oh, ${firstName} — look at you. You came in here not knowing where to start, and now you've got a book. You and Ivy did that together and I'm genuinely impressed. Things are a little different from here — you're not a beginner anymore, you're an author with a manuscript. Let me introduce you to Alex. He's going to love what you've brought him.`
+                    )
+                } else {
+                    setEdenMessage(
+                        `${firstName}, well done — seriously. You came in with an idea and you leave with a book. You and Reid did good work together. ${bookTitle} is ready for the next stage now, and so are you. Alex is waiting — let's get you in.`
+                    )
+                }
             }
-
-            console.log('✅ Subscription verified - access granted')
         }
 
         checkAccess()
-    }, [router])
+    }, [router, searchParams])
 
     const generateManuscriptId = () => {
         // Generate a proper UUID v4
@@ -547,6 +572,21 @@ function OnboardingContent() {
                 setStatusMessage('✅ Manuscript uploaded! Chapters will be processed in the studio...')
             }
 
+            // Mark AuthorsLab onboarding complete
+            try {
+                const { createClient: getClient } = await import('@/lib/supabase/client')
+                const supabase = getClient()
+                await supabase
+                    .from('author_profiles')
+                    .update({
+                        authorslab_onboarding_completed: true,
+                        authorslab_onboarding_completed_at: new Date().toISOString(),
+                    })
+                    .eq('id', authorProfileId)
+            } catch (err) {
+                console.warn('Could not write authorslab_onboarding_completed:', err)
+            }
+
             // Redirect after verification
             console.log('✅ Redirecting to author studio...')
             setTimeout(() => {
@@ -580,13 +620,35 @@ function OnboardingContent() {
             )}
 
             <div className="max-w-3xl mx-auto">
+                {/* Brief 2 — Ghost Writer returning author: Eden greeting */}
+                {isGhostWriterAuthor && edenMessage && (
+                    <div className="mb-8 flex items-start gap-3 bg-white/10 backdrop-blur rounded-2xl p-6">
+                        <div className="w-10 h-10 rounded-full bg-white/30 flex items-center justify-center flex-shrink-0">
+                            <span className="text-white font-semibold text-sm">E</span>
+                        </div>
+                        <p className="text-white text-base leading-relaxed">{edenMessage}</p>
+                    </div>
+                )}
+
                 {/* Welcome Header */}
                 <div className="text-center mb-12 text-white">
-                    <h1 className="text-5xl font-bold mb-4">Welcome!</h1>
-                    <div className="text-3xl font-semibold mb-4 opacity-95">{authorName}</div>
-                    <p className="text-xl opacity-90 max-w-2xl mx-auto">
-                        Let&apos;s set up your personal writing workspace with AI specialists who will guide you through every step of your journey
-                    </p>
+                    {isGhostWriterAuthor ? (
+                        <>
+                            <h1 className="text-5xl font-bold mb-4">Welcome Back</h1>
+                            <div className="text-3xl font-semibold mb-4 opacity-95">{authorName}</div>
+                            <p className="text-xl opacity-90 max-w-2xl mx-auto">
+                                Upload your completed manuscript and let&apos;s get you into the studio.
+                            </p>
+                        </>
+                    ) : (
+                        <>
+                            <h1 className="text-5xl font-bold mb-4">Welcome!</h1>
+                            <div className="text-3xl font-semibold mb-4 opacity-95">{authorName}</div>
+                            <p className="text-xl opacity-90 max-w-2xl mx-auto">
+                                Let&apos;s set up your personal writing workspace with AI specialists who will guide you through every step of your journey
+                            </p>
+                        </>
+                    )}
                 </div>
 
                 {/* Main Setup Card */}
