@@ -144,6 +144,7 @@ export default function GhostWriterStudio() {
   const [chatInput, setChatInput] = useState('')
   const [isSending, setIsSending] = useState(false)
   const [showTyping, setShowTyping] = useState(false)
+  const [newSectionId, setNewSectionId] = useState<string | null>(null) // drives entrance animation
 
   const sessionRef = useRef<Session | null>(null)
   const authorProfileRef = useRef<AuthorProfile | null>(null)
@@ -272,6 +273,50 @@ export default function GhostWriterStudio() {
     void authorId
   }
 
+  // ── Section update handler ────────────────────────────────────────────────
+
+  const sectionsRef = useRef<Section[]>([])
+  useEffect(() => { sectionsRef.current = sections }, [sections])
+
+  async function handleSectionUpdate(
+    sectionUpdate: {
+      action: 'created' | 'update'
+      section?: { id: string; title: string; status: SectionStatus; order_index: number }
+      sectionId?: string
+      status?: SectionStatus
+    },
+    sessionId: string
+  ) {
+    if (sectionUpdate.action === 'created' && sectionUpdate.section) {
+      const { title, status } = sectionUpdate.section
+      const orderIndex = sectionsRef.current.length // use actual count as order_index
+
+      const { data: newSection } = await supabase
+        .from('ghostwriter_sections')
+        .insert({ session_id: sessionId, title, status, order_index: orderIndex })
+        .select()
+        .single()
+
+      if (newSection) {
+        setSections((prev) => [...prev, newSection as Section])
+        setNewSectionId(newSection.id)
+        // Clear animation flag after transition completes
+        setTimeout(() => setNewSectionId(null), 700)
+      }
+    } else if (sectionUpdate.action === 'update' && sectionUpdate.sectionId && sectionUpdate.status) {
+      await supabase
+        .from('ghostwriter_sections')
+        .update({ status: sectionUpdate.status })
+        .eq('id', sectionUpdate.sectionId)
+
+      setSections((prev) =>
+        prev.map((s) =>
+          s.id === sectionUpdate.sectionId ? { ...s, status: sectionUpdate.status! } : s
+        )
+      )
+    }
+  }
+
   // ── Send message ──────────────────────────────────────────────────────────
 
   const handleSend = useCallback(async () => {
@@ -329,6 +374,11 @@ export default function GhostWriterStudio() {
 
       const data = await res.json()
       const reply: string = data.reply ?? "I'm thinking about that — give me a moment."
+
+      // Handle section surfacing — null sectionUpdate is a no-op
+      if (data.sectionUpdate) {
+        await handleSectionUpdate(data.sectionUpdate, sess.id)
+      }
 
       setShowTyping(false)
 
@@ -453,6 +503,10 @@ export default function GhostWriterStudio() {
                     selectedSection?.id === sec.id
                       ? 'bg-[#8FAF8A]/10'
                       : 'hover:bg-[#8FAF8A]/5'
+                  } ${
+                    newSectionId === sec.id
+                      ? 'animate-[slideDown_0.4s_ease-out]'
+                      : ''
                   }`}
                 >
                   <div className="flex items-center gap-2">
