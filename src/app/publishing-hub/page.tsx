@@ -10,6 +10,7 @@ import BookPreviewPanel from '@/components/BookPreviewPanel'
 import FrontMatterComponent from '@/components/FrontMatter'
 import BackMatterComponent from '@/components/BackMatterSection'
 import CoverDesignSection from '@/components/taylor/CoverDesignSection'
+import PlatformsSection from '@/components/PlatformsSection'
 
 // Publishing Journey Section Type
 type PublishingSectionId =
@@ -315,13 +316,14 @@ function PublishingHubContent() {
     },
     {
       id: 'platforms',
-      title: 'Platform Preparation',
+      title: 'Publishing Platforms',
       icon: '🚀',
-      isComplete: false,
+      isComplete: false, // Could check if any platform has been set up
       items: [
-        { id: 'kdp', title: 'Amazon KDP', isComplete: false },
+        { id: 'amazon-kdp', title: 'Amazon KDP', isComplete: false },
         { id: 'ingramspark', title: 'IngramSpark', isComplete: false },
-        { id: 'd2d', title: 'Draft2Digital', isComplete: false },
+        { id: 'lulu', title: 'Lulu', isComplete: false },
+        { id: 'draft2digital', title: 'Draft2Digital', isComplete: false },
       ]
     },
     {
@@ -577,7 +579,12 @@ function renderSectionContent(
       return <FormattingSection manuscript={manuscript} />
 
     case 'platforms':
-      return <PlatformsSection />
+      return (
+        <PlatformsSection
+          publishingProgress={progress}
+          manuscriptTitle={manuscript?.title}
+        />
+      )
 
     case 'marketing':
       return <MarketingSection manuscript={manuscript} />
