@@ -50,8 +50,9 @@ interface CoverConcept {
   prompt: string
 }
 
-interface PublishingProgress {
+export interface PublishingProgress {
   assessment_completed: boolean
+  platforms?: string[]
   cover_concepts?: CoverConcept[]
   selected_cover_url?: string
   cover_generation_status?: 'generating' | 'complete' | 'failed' | null
@@ -778,55 +779,6 @@ function FormattingSection({ manuscript }: { manuscript: Manuscript }) {
   )
 }
 
-function PlatformsSection() {
-  const platforms = [
-    { name: 'Amazon KDP', icon: 'A', color: 'bg-[#ff9900]', status: 'Setup Ready' },
-    { name: 'IngramSpark', icon: 'IS', color: 'bg-blue-700', status: 'Coming Soon' },
-    { name: 'Draft2Digital', icon: 'D2D', color: 'bg-green-500', status: 'Coming Soon' },
-    { name: 'Apple Books', icon: '🍎', color: 'bg-gray-800', status: 'Coming Soon' },
-  ]
-
-  return (
-    <div className="max-w-5xl mx-auto">
-      <div className="bg-white rounded-2xl p-8 shadow-lg">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-16 h-16 bg-red-500 rounded-xl flex items-center justify-center text-3xl">
-            🚀
-          </div>
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900">Platform Preparation</h2>
-            <p className="text-gray-600">Get ready to publish on major platforms</p>
-          </div>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-6">
-          {platforms.map((platform) => (
-            <div
-              key={platform.name}
-              className="p-6 bg-gray-50 rounded-xl border-2 border-gray-200 hover:border-red-300 transition-colors"
-            >
-              <div className="flex items-center gap-4 mb-4">
-                <div className={`w-14 h-14 ${platform.color} rounded-lg flex items-center justify-center text-white text-xl font-bold`}>
-                  {platform.icon}
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-gray-900 text-lg">{platform.name}</h3>
-                  <p className="text-sm text-yellow-600 font-semibold">⏳ {platform.status}</p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-6 p-4 bg-teal-50 rounded-lg">
-          <p className="text-teal-800 text-sm">
-            💬 <strong>Tip:</strong> Ask Taylor for platform-specific publishing guides!
-          </p>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 function MarketingSection({ manuscript }: { manuscript: Manuscript }) {
   return (

@@ -6,11 +6,7 @@
 'use client'
 
 import { useState } from 'react'
-
-interface PublishingProgress {
-  platforms?: string[]
-  // Add other fields as needed
-}
+import type { PublishingProgress } from '@/app/publishing-hub/page'
 
 interface PlatformsSectionProps {
   publishingProgress: PublishingProgress | null
@@ -135,8 +131,8 @@ export default function PlatformsSection({ publishingProgress, manuscriptTitle }
   const selectedPlatforms = publishingProgress?.platforms || []
   
   // Separate into selected and other platforms
-  const userPlatforms = selectedPlatforms.filter(p => PLATFORM_CONFIG[p])
-  const otherPlatforms = Object.keys(PLATFORM_CONFIG).filter(p => !selectedPlatforms.includes(p))
+  const userPlatforms = selectedPlatforms.filter((p: string) => PLATFORM_CONFIG[p])
+  const otherPlatforms = Object.keys(PLATFORM_CONFIG).filter((p: string) => !selectedPlatforms.includes(p))
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -173,7 +169,7 @@ export default function PlatformsSection({ publishingProgress, manuscriptTitle }
               Your Selected Platforms
             </h3>
             <div className="grid md:grid-cols-2 gap-4">
-              {userPlatforms.map((platformId) => {
+              {userPlatforms.map((platformId: string) => {
                 const platform = PLATFORM_CONFIG[platformId]
                 if (!platform) return null
                 
