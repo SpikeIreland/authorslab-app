@@ -247,7 +247,7 @@ export default function AdminDashboard() {
             })
 
             // 3. Trigger welcome email workflow
-            await fetch('https://spikeislandstudios.app.n8n.cloud/webhook/admin-send-welcome-email', {
+            await fetch('https://authorslab.app.n8n.cloud/webhook/admin-send-welcome-email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

@@ -14,8 +14,8 @@ export default function FreeAnalysisPage() {
   const [error, setError] = useState<string>('')
   const [dragOver, setDragOver] = useState(false)
 
-  const WEBHOOK_URL = "https://spikeislandstudios.app.n8n.cloud/webhook/free-manuscript-analysis"
-  const WORD_COUNT_URL = "https://spikeislandstudios.app.n8n.cloud/webhook/manuscript-word-count"
+  const WEBHOOK_URL = "https://authorslab.app.n8n.cloud/webhook/free-manuscript-analysis"
+  const WORD_COUNT_URL = "https://authorslab.app.n8n.cloud/webhook/manuscript-word-count"
 
   const validateFile = (file: File) => {
     const maxSize = 10 * 1024 * 1024 // 10MB

@@ -20,6 +20,6 @@ export interface Manuscript {
 }
 
 export const TAYLOR_WEBHOOKS = {
-    assessment: 'https://spikeislandstudios.app.n8n.cloud/webhook/taylor-assessment',
-    chat: 'https://spikeislandstudios.app.n8n.cloud/webhook/taylor-chat'
+    assessment: 'https://authorslab.app.n8n.cloud/webhook/taylor-assessment',
+    chat: 'https://authorslab.app.n8n.cloud/webhook/taylor-chat'
 } as const

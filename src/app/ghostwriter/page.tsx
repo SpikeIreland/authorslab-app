@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/client'
 // ─── Webhook config ────────────────────────────────────────────────────────────
 
 const GHOSTWRITER_WEBHOOKS = {
-  edenMatch: 'https://spikeislandstudios.app.n8n.cloud/webhook/eden-match',
+  edenMatch: 'https://authorslab.app.n8n.cloud/webhook/eden-match',
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────

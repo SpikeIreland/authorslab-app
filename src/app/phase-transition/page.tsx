@@ -100,7 +100,7 @@ function TransitionContent() {
 
       try {
         const versionResponse = await fetch(
-          'https://spikeislandstudios.app.n8n.cloud/webhook/generate-manuscript-version',
+          'https://authorslab.app.n8n.cloud/webhook/generate-manuscript-version',
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

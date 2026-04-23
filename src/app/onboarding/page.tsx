@@ -32,8 +32,8 @@ function OnboardingContent() {
     const [profileImage, setProfileImage] = useState<File | null>(null)
     const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null)
 
-    const WORD_COUNT_WEBHOOK = 'https://spikeislandstudios.app.n8n.cloud/webhook/pdf-word-count'
-    const ONBOARDING_WEBHOOK = 'https://spikeislandstudios.app.n8n.cloud/webhook/onboarding'
+    const WORD_COUNT_WEBHOOK = 'https://authorslab.app.n8n.cloud/webhook/pdf-word-count'
+    const ONBOARDING_WEBHOOK = 'https://authorslab.app.n8n.cloud/webhook/onboarding'
 
     const loadAuthorName = useCallback(() => {
         const firstName = searchParams.get('firstName') || localStorage.getItem('currentUserFirstName')
@@ -284,7 +284,7 @@ function OnboardingContent() {
             extractFormData.append('fileName', selectedFile.name)
 
             // Call a simple PDF text extraction endpoint
-            const extractResponse = await fetch('https://spikeislandstudios.app.n8n.cloud/webhook/extract-pdf-text', {
+            const extractResponse = await fetch('https://authorslab.app.n8n.cloud/webhook/extract-pdf-text', {
                 method: 'POST',
                 body: extractFormData
             })
@@ -517,7 +517,7 @@ function OnboardingContent() {
             try {
                 setStatusMessage('📖 Parsing your chapters...')
 
-                const parseResponse = await fetch('https://spikeislandstudios.app.n8n.cloud/webhook/parse-chapters', {
+                const parseResponse = await fetch('https://authorslab.app.n8n.cloud/webhook/parse-chapters', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

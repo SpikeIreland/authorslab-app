@@ -9,9 +9,9 @@ import { createClient } from '@/lib/supabase/client'
 // ─── Webhook config ────────────────────────────────────────────────────────────
 
 const GHOSTWRITER_WEBHOOKS = {
-  ivyChat: 'https://spikeislandstudios.app.n8n.cloud/webhook/ivy-chat',
-  reidChat: 'https://spikeislandstudios.app.n8n.cloud/webhook/reid-chat',
-  gapAnalysis: 'https://spikeislandstudios.app.n8n.cloud/webhook/ghostwriter-gap-analysis',
+  ivyChat: 'https://authorslab.app.n8n.cloud/webhook/ivy-chat',
+  reidChat: 'https://authorslab.app.n8n.cloud/webhook/reid-chat',
+  gapAnalysis: 'https://authorslab.app.n8n.cloud/webhook/ghostwriter-gap-analysis',
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────

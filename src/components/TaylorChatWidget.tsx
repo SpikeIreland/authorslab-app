@@ -256,7 +256,7 @@ Ready to start? Just say "I'm ready" or "let's begin"! 📚`,
                     .single()
 
                 const response = await fetch(
-                    'https://spikeislandstudios.app.n8n.cloud/webhook/taylor-assessment',
+                    'https://authorslab.app.n8n.cloud/webhook/taylor-assessment',
                     {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -301,7 +301,7 @@ Ready to start? Just say "I'm ready" or "let's begin"! 📚`,
 
             // Call taylor-chat workflow for conversation
             const response = await fetch(
-                'https://spikeislandstudios.app.n8n.cloud/webhook/taylor-chat',
+                'https://authorslab.app.n8n.cloud/webhook/taylor-chat',
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -397,7 +397,7 @@ Ready to start? Just say "I'm ready" or "let's begin"! 📚`,
 
             try {
                 const response = await fetch(
-                    'https://spikeislandstudios.app.n8n.cloud/webhook/taylor-detect-cover-intent',
+                    'https://authorslab.app.n8n.cloud/webhook/taylor-detect-cover-intent',
                     {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },

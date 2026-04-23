@@ -30,8 +30,8 @@ function ReUploadContent() {
     const isFormValid = file && wordCount > 0
 
     // Webhook URLs
-    const CLEANUP_WEBHOOK = 'https://spikeislandstudios.app.n8n.cloud/webhook/manuscript-cleanup'
-    const PARSE_CHAPTERS_WEBHOOK = 'https://spikeislandstudios.app.n8n.cloud/webhook/parse-chapters'
+    const CLEANUP_WEBHOOK = 'https://authorslab.app.n8n.cloud/webhook/manuscript-cleanup'
+    const PARSE_CHAPTERS_WEBHOOK = 'https://authorslab.app.n8n.cloud/webhook/parse-chapters'
 
     useEffect(() => {
         async function loadManuscript() {
@@ -114,7 +114,7 @@ function ReUploadContent() {
             extractFormData.append('file', selectedFile)
             extractFormData.append('fileName', selectedFile.name)
 
-            const extractResponse = await fetch('https://spikeislandstudios.app.n8n.cloud/webhook/extract-pdf-text', {
+            const extractResponse = await fetch('https://authorslab.app.n8n.cloud/webhook/extract-pdf-text', {
                 method: 'POST',
                 body: extractFormData
             })
