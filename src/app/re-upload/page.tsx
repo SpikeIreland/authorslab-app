@@ -6,6 +6,7 @@ import { Suspense, useState, useEffect, FormEvent, ChangeEvent, DragEvent } from
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { Manuscript } from '@/types/database'
+import { N8N_WEBHOOKS } from '@/lib/n8n-config'
 
 function ReUploadContent() {
     const router = useRouter()
@@ -30,8 +31,8 @@ function ReUploadContent() {
     const isFormValid = file && wordCount > 0
 
     // Webhook URLs
-    const CLEANUP_WEBHOOK = 'https://authorslab.app.n8n.cloud/webhook/manuscript-cleanup'
-    const PARSE_CHAPTERS_WEBHOOK = 'https://authorslab.app.n8n.cloud/webhook/parse-chapters'
+    const CLEANUP_WEBHOOK = N8N_WEBHOOKS.manuscriptCleanup
+    const PARSE_CHAPTERS_WEBHOOK = N8N_WEBHOOKS.parseChapters
 
     useEffect(() => {
         async function loadManuscript() {
@@ -114,7 +115,7 @@ function ReUploadContent() {
             extractFormData.append('file', selectedFile)
             extractFormData.append('fileName', selectedFile.name)
 
-            const extractResponse = await fetch('https://authorslab.app.n8n.cloud/webhook/extract-pdf-text', {
+            const extractResponse = await fetch(N8N_WEBHOOKS.extractPdfText, {
                 method: 'POST',
                 body: extractFormData
             })

@@ -120,6 +120,23 @@ export const N8N_WEBHOOKS = {
     // ─────────────────────────────────────────────
     // 06.01 Format Manuscript — UI exists but backend incomplete.
     // Add here when wiring up.
+
+    // ─────────────────────────────────────────────
+    // Phase 7 — Ghost Writer (Eden / Ivy / Reid)
+    // ─────────────────────────────────────────────
+    /** 07.01 Eden Match — used by ghostwriter/page.tsx */
+    edenMatch: webhook('eden-match'),
+
+    /** 07.02 Ivy Chat — used by ghostwriter/studio/page.tsx */
+    ivyChat: webhook('ivy-chat'),
+
+    /** 07.03 Reid Chat — used by ghostwriter/studio/page.tsx */
+    reidChat: webhook('reid-chat'),
+
+    /** Ghostwriter Gap Analysis — used by ghostwriter/studio/page.tsx.
+     *  Note: n8n workflow 07.04 is named "Ghostwriter Read Material";
+     *  confirm the registered webhook path matches this constant. */
+    ghostwriterGapAnalysis: webhook('ghostwriter-gap-analysis'),
 } as const;
 
 export type N8nWebhookKey = keyof typeof N8N_WEBHOOKS;

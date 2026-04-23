@@ -3,6 +3,7 @@
 import { useState, FormEvent, ChangeEvent, DragEvent } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { N8N_WEBHOOKS } from '@/lib/n8n-config'
 
 export default function FreeAnalysisPage() {
   const [file, setFile] = useState<File | null>(null)
@@ -14,8 +15,8 @@ export default function FreeAnalysisPage() {
   const [error, setError] = useState<string>('')
   const [dragOver, setDragOver] = useState(false)
 
-  const WEBHOOK_URL = "https://authorslab.app.n8n.cloud/webhook/free-manuscript-analysis"
-  const WORD_COUNT_URL = "https://authorslab.app.n8n.cloud/webhook/manuscript-word-count"
+  const WEBHOOK_URL = N8N_WEBHOOKS.freeManuscriptAnalysis
+  const WORD_COUNT_URL = N8N_WEBHOOKS.manuscriptWordCount
 
   const validateFile = (file: File) => {
     const maxSize = 10 * 1024 * 1024 // 10MB

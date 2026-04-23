@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { N8N_WEBHOOKS } from '@/lib/n8n-config'
 
 interface TaylorChatWidgetProps {
     manuscriptId: string
@@ -256,7 +257,7 @@ Ready to start? Just say "I'm ready" or "let's begin"! 📚`,
                     .single()
 
                 const response = await fetch(
-                    'https://authorslab.app.n8n.cloud/webhook/taylor-assessment',
+                    N8N_WEBHOOKS.taylorAssessment,
                     {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -301,7 +302,7 @@ Ready to start? Just say "I'm ready" or "let's begin"! 📚`,
 
             // Call taylor-chat workflow for conversation
             const response = await fetch(
-                'https://authorslab.app.n8n.cloud/webhook/taylor-chat',
+                N8N_WEBHOOKS.taylorChat,
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -397,7 +398,7 @@ Ready to start? Just say "I'm ready" or "let's begin"! 📚`,
 
             try {
                 const response = await fetch(
-                    'https://authorslab.app.n8n.cloud/webhook/taylor-detect-cover-intent',
+                    N8N_WEBHOOKS.taylorDetectCoverIntent,
                     {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },

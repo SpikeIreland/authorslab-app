@@ -27,6 +27,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { N8N_WEBHOOKS } from '@/lib/n8n-config'
 
 // Import types and helpers
 import type {
@@ -281,17 +282,17 @@ function getSeverityColor(severity: string): string {
 }
 
 const WEBHOOKS = {
-  alexFullAnalysis: 'https://authorslab.app.n8n.cloud/webhook/alex-full-manuscript-analysis',
-  alexChapterAnalysis: 'https://authorslab.app.n8n.cloud/webhook/alex-chapter-analysis',
-  alexChat: 'https://authorslab.app.n8n.cloud/webhook/alex-chat',
-  alexGenerateSummary: 'https://authorslab.app.n8n.cloud/webhook/generate-summary-points',
-  alexGenerateChapterSummaries: 'https://authorslab.app.n8n.cloud/webhook/generate-chapter-summaries',
-  samFullAnalysis: 'https://authorslab.app.n8n.cloud/webhook/sam-full-manuscript-analysis',
-  samChapterAnalysis: 'https://authorslab.app.n8n.cloud/webhook/sam-chapter-analysis',
-  samChat: 'https://authorslab.app.n8n.cloud/webhook/sam-chat',
-  jordanFullAnalysis: 'https://authorslab.app.n8n.cloud/webhook/jordan-full-manuscript-analysis',
-  jordanChapterAnalysis: 'https://authorslab.app.n8n.cloud/webhook/jordan-chapter-analysis',
-  jordanChat: 'https://authorslab.app.n8n.cloud/webhook/jordan-chat',
+  alexFullAnalysis: N8N_WEBHOOKS.alexFullManuscriptAnalysis,
+  alexChapterAnalysis: N8N_WEBHOOKS.alexChapterAnalysis,
+  alexChat: N8N_WEBHOOKS.alexChat,
+  alexGenerateSummary: N8N_WEBHOOKS.generateSummaryPoints,
+  alexGenerateChapterSummaries: N8N_WEBHOOKS.generateChapterSummaries,
+  samFullAnalysis: N8N_WEBHOOKS.samFullManuscriptAnalysis,
+  samChapterAnalysis: N8N_WEBHOOKS.samChapterAnalysis,
+  samChat: N8N_WEBHOOKS.samChat,
+  jordanFullAnalysis: N8N_WEBHOOKS.jordanFullManuscriptAnalysis,
+  jordanChapterAnalysis: N8N_WEBHOOKS.jordanChapterAnalysis,
+  jordanChat: N8N_WEBHOOKS.jordanChat,
 }
 
 interface ChatMessage {
@@ -3223,7 +3224,7 @@ function StudioContent() {
                               : manuscriptData?.author_profiles
 
                             await fetch(
-                              'https://authorslab.app.n8n.cloud/webhook/generate-manuscript-version',
+                              N8N_WEBHOOKS.generateManuscriptVersion,
                               {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },

@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createManuscript, updateAuthorProfile } from '@/lib/supabase/queries'
 import type { AuthorProfile } from '@/lib/supabase/queries'
 import { createClient } from '@/lib/supabase/client'
+import { N8N_WEBHOOKS } from '@/lib/n8n-config'
 
 function OnboardingContent() {
     const router = useRouter()
@@ -32,8 +33,8 @@ function OnboardingContent() {
     const [profileImage, setProfileImage] = useState<File | null>(null)
     const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null)
 
-    const WORD_COUNT_WEBHOOK = 'https://authorslab.app.n8n.cloud/webhook/pdf-word-count'
-    const ONBOARDING_WEBHOOK = 'https://authorslab.app.n8n.cloud/webhook/onboarding'
+    const WORD_COUNT_WEBHOOK = N8N_WEBHOOKS.pdfWordCount
+    const ONBOARDING_WEBHOOK = N8N_WEBHOOKS.onboarding
 
     const loadAuthorName = useCallback(() => {
         const firstName = searchParams.get('firstName') || localStorage.getItem('currentUserFirstName')
@@ -284,7 +285,7 @@ function OnboardingContent() {
             extractFormData.append('fileName', selectedFile.name)
 
             // Call a simple PDF text extraction endpoint
-            const extractResponse = await fetch('https://authorslab.app.n8n.cloud/webhook/extract-pdf-text', {
+            const extractResponse = await fetch(N8N_WEBHOOKS.extractPdfText, {
                 method: 'POST',
                 body: extractFormData
             })
@@ -517,7 +518,7 @@ function OnboardingContent() {
             try {
                 setStatusMessage('📖 Parsing your chapters...')
 
-                const parseResponse = await fetch('https://authorslab.app.n8n.cloud/webhook/parse-chapters', {
+                const parseResponse = await fetch(N8N_WEBHOOKS.parseChapters, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

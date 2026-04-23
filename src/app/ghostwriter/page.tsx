@@ -5,11 +5,12 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect, useRef, useCallback, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { N8N_WEBHOOKS } from '@/lib/n8n-config'
 
 // ─── Webhook config ────────────────────────────────────────────────────────────
 
 const GHOSTWRITER_WEBHOOKS = {
-  edenMatch: 'https://authorslab.app.n8n.cloud/webhook/eden-match',
+  edenMatch: N8N_WEBHOOKS.edenMatch,
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────

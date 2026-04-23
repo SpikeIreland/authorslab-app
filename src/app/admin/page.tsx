@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { N8N_WEBHOOKS } from '@/lib/n8n-config'
 
 // Types
 interface AuthorProfile {
@@ -247,7 +248,7 @@ export default function AdminDashboard() {
             })
 
             // 3. Trigger welcome email workflow
-            await fetch('https://authorslab.app.n8n.cloud/webhook/admin-send-welcome-email', {
+            await fetch(N8N_WEBHOOKS.adminSendWelcomeEmail, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

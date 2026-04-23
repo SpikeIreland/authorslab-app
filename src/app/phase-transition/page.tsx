@@ -4,6 +4,7 @@ import { Suspense, useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import { N8N_WEBHOOKS } from '@/lib/n8n-config'
 
 interface Manuscript {
   id: string
@@ -100,7 +101,7 @@ function TransitionContent() {
 
       try {
         const versionResponse = await fetch(
-          'https://authorslab.app.n8n.cloud/webhook/generate-manuscript-version',
+          N8N_WEBHOOKS.generateManuscriptVersion,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

@@ -5,13 +5,14 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { N8N_WEBHOOKS } from '@/lib/n8n-config'
 
 // ─── Webhook config ────────────────────────────────────────────────────────────
 
 const GHOSTWRITER_WEBHOOKS = {
-  ivyChat: 'https://authorslab.app.n8n.cloud/webhook/ivy-chat',
-  reidChat: 'https://authorslab.app.n8n.cloud/webhook/reid-chat',
-  gapAnalysis: 'https://authorslab.app.n8n.cloud/webhook/ghostwriter-gap-analysis',
+  ivyChat: N8N_WEBHOOKS.ivyChat,
+  reidChat: N8N_WEBHOOKS.reidChat,
+  gapAnalysis: N8N_WEBHOOKS.ghostwriterGapAnalysis,
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────

@@ -2,6 +2,8 @@
 // Taylor Panel - Shared Types & Constants
 // ============================================
 
+import { N8N_WEBHOOKS } from '@/lib/n8n-config'
+
 export interface TaylorPanelProps {
     manuscriptId: string
 }
@@ -20,6 +22,6 @@ export interface Manuscript {
 }
 
 export const TAYLOR_WEBHOOKS = {
-    assessment: 'https://authorslab.app.n8n.cloud/webhook/taylor-assessment',
-    chat: 'https://authorslab.app.n8n.cloud/webhook/taylor-chat'
+    assessment: N8N_WEBHOOKS.taylorAssessment,
+    chat: N8N_WEBHOOKS.taylorChat,
 } as const
