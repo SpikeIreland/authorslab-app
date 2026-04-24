@@ -39,11 +39,20 @@ export default function CoverDesignerPanel({ manuscriptId }: CoverDesignerPanelP
                 (payload) => {
                     console.log('🎨 Cover update received:', payload.new)
 
-                    // ✅ Fixed: Changed from cover_designs to cover_concepts
-                    if (payload.new.cover_concepts) {
-                        console.log('✅ Updating covers in real-time:', payload.new.cover_concepts.length, 'covers')
-                        setCovers(payload.new.cover_concepts as CoverDesign[])
-                        setSelectedCoverId(payload.new.selected_cover_url)
+                    // Only overwrite the covers list when the payload actually carries
+                    // a non-empty cover_concepts array. Supabase Realtime can truncate
+                    // or omit large JSONB columns on UPDATE events (our cover_concepts
+                    // is ~8KB with the full prompt metadata, right at the threshold),
+                    // and without this guard a selection-only update would wipe the UI.
+                    const nextCovers = payload.new.cover_concepts
+                    if (Array.isArray(nextCovers) && nextCovers.length > 0) {
+                        console.log('✅ Updating covers in real-time:', nextCovers.length, 'covers')
+                        setCovers(nextCovers as CoverDesign[])
+                    }
+
+                    // selected_cover_url is small and always reliable — update independently.
+                    if ('selected_cover_url' in payload.new) {
+                        setSelectedCoverId(payload.new.selected_cover_url ?? null)
                     }
                 }
             )

@@ -224,7 +224,22 @@ function PublishingHubContent() {
         },
         (payload) => {
           console.log('📊 Publishing progress updated:', payload.new)
-          setPublishingProgress(payload.new as PublishingProgress)
+          // Supabase Realtime can truncate or omit large JSONB columns on UPDATE
+          // events (our cover_concepts is ~8KB with full prompt metadata, right
+          // at the threshold). If it arrives empty but we already have it in
+          // state, keep the existing value so selecting a cover doesn't wipe
+          // the grid.
+          setPublishingProgress(prev => {
+            const incoming = payload.new as PublishingProgress
+            if (prev
+              && (!Array.isArray(incoming.cover_concepts)
+                || incoming.cover_concepts.length === 0)
+              && Array.isArray(prev.cover_concepts)
+              && prev.cover_concepts.length > 0) {
+              return { ...incoming, cover_concepts: prev.cover_concepts }
+            }
+            return incoming
+          })
         }
       )
       .subscribe()
