@@ -29,16 +29,21 @@ export default function CoverDesignSection({
     manuscriptId,
     onCoverSelect
 }: CoverDesignSectionProps) {
-    const [isSelecting, setIsSelecting] = useState(false)
+    // Track WHICH cover is being selected rather than a shared boolean, so only
+    // the clicked button shows "Selecting..." — not all four at once.
+    const [selectingUrl, setSelectingUrl] = useState<string | null>(null)
 
     const coverConcepts = progress?.cover_concepts || []
     const selectedCover = progress?.selected_cover_url
     const generationStatus = progress?.cover_generation_status
 
     async function handleSelectCover(coverUrl: string) {
-        setIsSelecting(true)
-        await onCoverSelect(coverUrl)
-        setIsSelecting(false)
+        setSelectingUrl(coverUrl)
+        try {
+            await onCoverSelect(coverUrl)
+        } finally {
+            setSelectingUrl(null)
+        }
     }
 
     return (
@@ -160,10 +165,10 @@ export default function CoverDesignSection({
                                         {!isThisCoverSelected && (
                                             <button
                                                 onClick={() => handleSelectCover(cover.url)}
-                                                disabled={isSelecting}
+                                                disabled={selectingUrl !== null}
                                                 className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-white text-teal-600 rounded-lg font-semibold hover:bg-teal-50 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
-                                                {isSelecting ? 'Selecting...' : 'Select This Cover'}
+                                                {selectingUrl === cover.url ? 'Selecting...' : 'Select This Cover'}
                                             </button>
                                         )}
                                     </div>

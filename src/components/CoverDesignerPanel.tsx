@@ -13,7 +13,9 @@ export default function CoverDesignerPanel({ manuscriptId }: CoverDesignerPanelP
     const [covers, setCovers] = useState<CoverDesign[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [selectedCoverId, setSelectedCoverId] = useState<string | null>(null)
-    const [isSelecting, setIsSelecting] = useState(false)
+    // Track WHICH cover is being selected rather than a shared boolean, so only
+    // the clicked button shows "Selecting..." — not all four at once.
+    const [selectingUrl, setSelectingUrl] = useState<string | null>(null)
 
     // Load covers on mount
     useEffect(() => {
@@ -93,7 +95,7 @@ export default function CoverDesignerPanel({ manuscriptId }: CoverDesignerPanelP
     }
 
     async function handleSelectCover(coverUrl: string) {
-        setIsSelecting(true)
+        setSelectingUrl(coverUrl)
 
         const supabase = createClient()
 
@@ -116,7 +118,7 @@ export default function CoverDesignerPanel({ manuscriptId }: CoverDesignerPanelP
             alert('Error selecting cover. Please try again.')
         }
 
-        setIsSelecting(false)
+        setSelectingUrl(null)
     }
 
     if (isLoading) {
@@ -199,16 +201,16 @@ export default function CoverDesignerPanel({ manuscriptId }: CoverDesignerPanelP
                                 {!isSelected && (
                                     <button
                                         onClick={() => handleSelectCover(cover.url)}
-                                        disabled={isSelecting}
+                                        disabled={selectingUrl !== null}
                                         className="px-6 py-3 bg-teal-600 text-white rounded-lg font-bold hover:bg-teal-700 transition-all shadow-lg disabled:opacity-50"
                                     >
-                                        {isSelecting ? 'Selecting...' : 'Select This Cover'}
+                                        {selectingUrl === cover.url ? 'Selecting...' : 'Select This Cover'}
                                     </button>
                                 )}
                                 {isSelected && (
                                     <button
                                         onClick={() => handleSelectCover(cover.url)}
-                                        disabled={isSelecting}
+                                        disabled={selectingUrl !== null}
                                         className="px-6 py-3 bg-white text-teal-600 rounded-lg font-bold hover:bg-gray-100 transition-all shadow-lg"
                                     >
                                         Selected ✓
