@@ -39,3 +39,19 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# private content / reference materials — never commit these
+# (These folders sit alongside the codebase but contain credentials,
+# manuscripts, third-party brief documents, and reference code that
+# do not belong in the repo.)
+/AuthorsLab/
+/AuthorsLab Site/
+/Books/
+/Clarence Knowledge Code.docx
+
+# stray Word/RTF documents at repo root
+/sk.docx
+*.rtf
+
+# Word lock files (Word creates these when a doc is open)
+~$*
