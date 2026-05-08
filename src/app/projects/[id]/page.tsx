@@ -34,8 +34,10 @@ export default async function ProjectIndexPage({
   const status = manuscript.status
 
   let defaultTab = 'author-studio'
-  if (status === 'complete') {
-    defaultTab = 'marketing'   // post-launch lives in Marketing's Performance section
+  if (status === 'ghostwriting') {
+    defaultTab = 'ghostwriter'   // Write-path projects start on Ghostwriter
+  } else if (status === 'complete') {
+    defaultTab = 'marketing'     // post-launch lives in Marketing's Performance section
   } else if (phase === 4) {
     defaultTab = 'publishing'
   } else if (phase === 5) {

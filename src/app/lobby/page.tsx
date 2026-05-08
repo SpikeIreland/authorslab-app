@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { NewProjectModal } from './_components/NewProjectModal'
 
 // ============================================================================
 // Types — must mirror /api/lobby/projects/route.ts
@@ -47,6 +48,18 @@ function deriveStageStates(p: LobbyProject): Record<StageKey, StageState> {
     }
   }
 
+  // Write-path projects from the new-project fork — Ghostwriter is the
+  // active stage; everything downstream is pending (not skipped).
+  if (status === 'ghostwriting') {
+    return {
+      ghostwriter: 'active',
+      author_studio: 'pending',
+      design: 'pending',
+      publishing: 'pending',
+      marketing: 'pending',
+    }
+  }
+
   return {
     ghostwriter: 'skipped',
     author_studio: phase >= 1 && phase <= 3 ? 'active' : phase > 3 ? 'complete' : 'pending',
@@ -67,6 +80,7 @@ function editorForPhase(phase: number | null): string | null {
 // Warm "Next:" sentence based on phase.
 function nextActionFor(p: LobbyProject): string {
   if (p.status === 'complete') return 'Live and available — review sales or run a campaign'
+  if (p.status === 'ghostwriting') return 'Eden is waiting to introduce your ghostwriter'
   const phase = p.current_phase_number ?? 1
   if (phase === 1) return 'Alex is reading your manuscript'
   if (phase === 2) return 'Sam is reviewing your manuscript with you'
@@ -125,6 +139,7 @@ export default function LobbyPage() {
   const [projects, setProjects] = useState<LobbyProject[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [newProjectModalOpen, setNewProjectModalOpen] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -225,13 +240,14 @@ export default function LobbyPage() {
             </p>
           </div>
 
-          {/* Start a new project — placeholder routes to existing onboarding for v1 */}
-          <Link
-            href="/onboarding"
+          {/* Start a new project — opens the Write/Edit fork modal */}
+          <button
+            type="button"
+            onClick={() => setNewProjectModalOpen(true)}
             className="block w-full text-center px-4 py-3 mb-4 border border-dashed border-slate-300 rounded-md text-sm text-slate-600 hover:bg-white hover:border-slate-400 transition-colors"
           >
             + Start a new project
-          </Link>
+          </button>
 
           {loading && (
             <p className="text-sm text-slate-500 py-8 text-center">Loading projects…</p>
@@ -251,12 +267,13 @@ export default function LobbyPage() {
               <p className="text-sm text-slate-600 mb-6">
                 Start your first project — upload a manuscript or draft from scratch with a Ghostwriter.
               </p>
-              <Link
-                href="/onboarding"
+              <button
+                type="button"
+                onClick={() => setNewProjectModalOpen(true)}
                 className="inline-block px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-sm font-medium"
               >
                 Start a new project
-              </Link>
+              </button>
             </div>
           )}
 
@@ -283,6 +300,11 @@ export default function LobbyPage() {
 
         </div>
       </main>
+
+      <NewProjectModal
+        open={newProjectModalOpen}
+        onClose={() => setNewProjectModalOpen(false)}
+      />
     </div>
   )
 }

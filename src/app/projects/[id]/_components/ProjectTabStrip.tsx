@@ -33,8 +33,14 @@ function deriveTabState(
     return tabId === 'ghostwriter' ? 'skipped' : 'complete'
   }
 
+  // Write-path projects from the new-project fork — Ghostwriter is the
+  // active stage; everything downstream is pending.
+  if (status === 'ghostwriting') {
+    if (tabId === 'ghostwriter') return 'active'
+    return 'pending'
+  }
+
   // Existing manuscripts (uploaded via legacy onboarding) skipped Ghostwriter.
-  // The new Write/Edit fork will set this differently for new projects.
   if (tabId === 'ghostwriter') return 'skipped'
 
   const p = phase ?? 1
