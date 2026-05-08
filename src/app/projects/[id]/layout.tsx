@@ -98,8 +98,10 @@ export default async function ProjectLayout({
         status={manuscript.status}
       />
 
-      {/* Tab content slot */}
-      <main className="flex-1 overflow-y-auto bg-white">
+      {/* Tab content slot — flex container so tab pages can fill the height
+          (e.g. Design's three-panel layout) or scroll naturally
+          (e.g. placeholder tabs). */}
+      <main className="flex-1 overflow-hidden bg-white flex flex-col min-h-0">
         {children}
       </main>
     </div>
