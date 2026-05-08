@@ -76,14 +76,10 @@ function nextActionFor(p: LobbyProject): string {
   return 'Open the project to keep going'
 }
 
-// Where "Open →" should route. Maps to the existing studio pages until the
-// project shell is built.
+// Where "Open →" should route. Lands the writer in the new project shell;
+// the shell's index page picks the right default tab based on phase.
 function openHrefFor(p: LobbyProject): string {
-  const phase = p.current_phase_number ?? 1
-  if (phase === 4) return `/publishing-hub?manuscriptId=${p.id}`
-  if (phase === 5) return `/marketing-hub?manuscriptId=${p.id}`
-  // Default — phases 1, 2, 3, or anything else — go to the existing studio.
-  return `/author-studio?manuscriptId=${p.id}`
+  return `/projects/${p.id}`
 }
 
 // "Updated 2 days ago", "Updated today", etc.
