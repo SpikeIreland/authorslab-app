@@ -1,5 +1,43 @@
 # SIS Methodology / AuthorsLab — Project Ledger
 
+## 2026-07-24 — Entry 17: DP-AS-02 E1 ACCEPTED (verified); E2/E3 gated on Paul's n8n work
+
+Platform chat filed DP-AS-02 plan + completion (app side). Spot-verified
+before acceptance: 8 startJourney sites (7 studio + 1 transition) covering 11
+webhook fires ✓ · zero silent .catch handlers ✓ · lib's only write =
+startJourney insert (scan on arrival), poll select-only ✓. **E1 accepted;
+dispatch stays OPEN** — E2 (kill-test) and E3 (happy path) await n8n
+instrumentation: Paul pushes their branch, instruments alex-chat first (their
+§6 has the three UPDATE statements verbatim), runs the §2/§3 protocols.
+Offered a temporary audit trigger for E3's zero-write proof. Acceptance filed
+to their folder. Their ship-then-instrument degradation design (un-instrumented
+workflows reap honestly instead of breaking) noted with approval.
+
+**Paul's queue:** push redesign branch · instrument alex-chat · kill-test ·
+tell platform chat DP-AS-04 response is waiting (done via their folder).
+
+## 2026-07-24 — Entry 16: DP-AS-04 schema request ANSWERED, APPLIED, VERIFIED
+
+Platform chat's schema request (AL-PDC-DP04-SR) processed. Key answer: the
+`notifications` table EXISTS in the live estate (33 rows, predates repo
+migrations — their repo-grep couldn't see it; F-002/F-009 pattern). Ruling:
+one ledger, their design applied as DELTA (`d_as_04_notifications_uco`):
+journey_id + template_id columns, partial unique (journey_id, template_id),
+unread index, their two triggers verbatim (adapted to user_id/message/type
+shape), sensor allocated as **inv_13_silent_receipt** and registered — board
+now 13 sensors.
+
+**Verified live:** E1 ack row on synthetic J1 (snapshot-visibility gotcha
+noted for their tests) · E2 exactly 2 notices after double terminal write
+(OLD-guard + ON CONFLICT both proven) · inv_13 = 0 · test rows cleaned.
+
+**Flagged, not fixed:** legacy ALL policy on notifications permits
+authenticated self-INSERT (their design wanted trigger/service-role only) —
+stands for now (live legacy behaviour risk), queued for a policy-tightening
+pass. Response filed to their folder:
+`docs/sis/platform-dev/2026-07-24-DP-AS-04-schema-response.md`. DP-AS-04
+app-side CLEARED.
+
 ## 2026-07-24 — Entry 15: Verification delta ACCEPTED — DP-AS-02 cleared
 
 Platform chat's first act delivered as specified:

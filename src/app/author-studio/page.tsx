@@ -10,6 +10,7 @@ import { BookOpen, RefreshCw } from 'lucide-react'
 import { VersionsDropdown } from '@/components/VersionsDropdown'
 import Mark from 'mark.js'
 import { FeedbackModal } from '@/components/FeedbackModal'
+import { NotificationBell } from '@/components/NotificationBell'
 import {
   DndContext,
   closestCenter,
@@ -2599,6 +2600,9 @@ function StudioContent() {
               >
                 🔒 Beta Feedback
               </button>
+
+              {/* DP-AS-04: notifications bell (UCO in-app surface) */}
+              <NotificationBell variant="dark" />
 
               <div className="flex items-center gap-2">
                 {authorProfile?.profile_image_url ? (
