@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { N8N_WEBHOOKS } from '@/lib/n8n-config'
+import { startJourney } from '@/lib/as_journeys'
 
 interface Manuscript {
   id: string
@@ -99,6 +100,29 @@ function TransitionContent() {
       setIsGeneratingVersion(true)
       console.log(`📦 Generating Phase ${fromPhase} manuscript version...`)
 
+      // DP-AS-02: scan on arrival for the phase_transition journey.
+      // Map from-phase editor name to as_journeys editor_name constraint set
+      // (alex/sam/jordan) — Taylor and Quinn phases (4/5) are outside this
+      // line's journey typing and shouldn't reach this webhook.
+      const journeyEditor: 'alex' | 'sam' | 'jordan' | undefined =
+        fromPhase === 1 ? 'alex' :
+        fromPhase === 2 ? 'sam' :
+        fromPhase === 3 ? 'jordan' : undefined
+
+      let journey_id: string | undefined
+      try {
+        const started = await startJourney(supabase, {
+          journey_type: 'phase_transition',
+          manuscript_id: manuscriptId!,
+          editor_name: journeyEditor,
+        })
+        journey_id = started.journey_id
+      } catch (journeyErr) {
+        console.error('Failed to start phase_transition journey:', journeyErr)
+        // Continue without journey_id — the webhook fires without corpse coverage
+        // (documented deviation; the outer try/catch still catches HTTP errors).
+      }
+
       try {
         const versionResponse = await fetch(
           N8N_WEBHOOKS.generateManuscriptVersion,
@@ -111,7 +135,8 @@ function TransitionContent() {
               editorName: editorName,
               authorEmail: authorProfile?.email,
               authorFirstName: authorProfile?.first_name,
-              manuscriptTitle: manuscriptData?.title
+              manuscriptTitle: manuscriptData?.title,
+              journey_id,
             })
           }
         )

@@ -28,6 +28,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { N8N_WEBHOOKS } from '@/lib/n8n-config'
+import { startJourney, pollJourney, terminalUserMessage } from '@/lib/as_journeys'
 
 // Import types and helpers
 import type {
@@ -629,7 +630,17 @@ function StudioContent() {
         })
         .eq('id', manuscript.id)
 
-      // Trigger lightweight analysis workflows (no PDF report)
+      // DP-AS-02: scan on arrival for the fresh-analysis journey.
+      // Same journey_type ('full_analysis') — this is the lightweight variant
+      // that only fires the two summary sub-workflows, no PDF report path.
+      const { journey_id } = await startJourney(supabase, {
+        journey_type: 'full_analysis',
+        manuscript_id: manuscript.id,
+        editor_name: 'alex',
+        size_hint: { word_count: manuscript.current_word_count },
+      })
+
+      // Trigger the two lightweight sub-workflows carrying journey_id.
       await Promise.all([
         // 1. Generate summary + key points
         fetch(WEBHOOKS.alexGenerateSummary, {
@@ -637,9 +648,10 @@ function StudioContent() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             manuscriptId: manuscript.id,
-            userId: manuscript.author_id
+            userId: manuscript.author_id,
+            journey_id,
           })
-        }).catch(() => console.log('✅ Summary webhook triggered')),
+        }),
 
         // 2. Chapter summaries
         fetch(WEBHOOKS.alexGenerateChapterSummaries, {
@@ -647,50 +659,41 @@ function StudioContent() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             manuscriptId: manuscript.id,
-            userId: manuscript.author_id
+            userId: manuscript.author_id,
+            journey_id,
           })
-        }).catch(() => console.log('✅ Chapter summaries webhook triggered'))
+        })
       ])
 
-      // Poll for completion - check for NEW values (not null)
-      let attempts = 0
-      const maxAttempts = 180 // 6 minutes (every 2 seconds)
+      // Poll the journey row until terminal, then read content once.
+      const result = await pollJourney(supabase, journey_id, { intervalMs: 2000 })
 
-      const pollInterval = setInterval(async () => {
-        attempts++
-
+      if (result.status === 'ready' || result.status === 'complete') {
         const { data: manuscriptData } = await supabase
           .from('manuscripts')
           .select('manuscript_summary, full_analysis_key_points')
           .eq('id', manuscript?.id)
           .single()
 
-        // Check if new values have arrived (they'll be non-null once the workflow completes)
-        if (manuscriptData?.manuscript_summary && manuscriptData?.full_analysis_key_points) {
-          clearInterval(pollInterval)
-          setFreshAnalysisInProgress(false)
+        setFreshAnalysisInProgress(false)
 
-          // Update local manuscript state
+        if (manuscriptData) {
           setManuscript(prev => prev ? {
             ...prev,
             manuscript_summary: manuscriptData.manuscript_summary,
             full_analysis_key_points: manuscriptData.full_analysis_key_points
           } : null)
-
-          await addChatMessage(
-            editorName,
-            `✅ All done! My notes have been updated to reflect your current manuscript structure.\n\n` +
-            `Feel free to continue editing or click on any chapter to see my updated feedback.`
-          )
-        } else if (attempts >= maxAttempts) {
-          clearInterval(pollInterval)
-          setFreshAnalysisInProgress(false)
-          await addChatMessage(
-            editorName,
-            `⚠️ The analysis is taking longer than expected. Please try again in a moment.`
-          )
         }
-      }, 2000)
+
+        await addChatMessage(
+          editorName,
+          `✅ All done! My notes have been updated to reflect your current manuscript structure.\n\n` +
+          `Feel free to continue editing or click on any chapter to see my updated feedback.`
+        )
+      } else {
+        setFreshAnalysisInProgress(false)
+        await addChatMessage(editorName, terminalUserMessage(result, 'fresh analysis'))
+      }
 
     } catch (error) {
       console.error('Error running fresh analysis:', error)
@@ -926,43 +929,58 @@ function StudioContent() {
         console.log('✅ Updated phases - analysis started')
       }
 
-      // Trigger all THREE workflows simultaneously
+      // DP-AS-02: scan on arrival — one journey per user action, per D7 §7 Q1.
+      // The primary workflow (alexFullAnalysis) owns writeback; the two
+      // sub-workflows share the same journey_id in their payload.
+      const { journey_id } = await startJourney(supabase, {
+        journey_type: 'full_analysis',
+        manuscript_id: manuscript.id,
+        editor_name: 'alex',
+        size_hint: { word_count: manuscript.current_word_count },
+      })
+
+      // Trigger all THREE workflows simultaneously, carrying the journey_id.
+      // No silent .catch here — errors bubble to the outer try/catch and
+      // surface as an honest failure state (corpse on every path).
       await Promise.all([
-        // 1. Full analysis (PDF report)
+        // 1. Full analysis (PDF report) — primary; owns journey_id writeback
         fetch(WEBHOOKS.alexFullAnalysis, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             manuscriptId: manuscript.id,
-            userId: manuscript.author_id
+            userId: manuscript.author_id,
+            journey_id,
           })
-        }).catch(() => console.log('✅ Full analysis webhook triggered')),
+        }),
 
-        // 2. Generate summary + key points
+        // 2. Generate summary + key points — sub-workflow of the same journey
         fetch(WEBHOOKS.alexGenerateSummary, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             manuscriptId: manuscript.id,
-            userId: manuscript.author_id
+            userId: manuscript.author_id,
+            journey_id,
           })
-        }).catch(() => console.log('✅ Summary webhook triggered')),
+        }),
 
-        // 3. Chapter summaries
+        // 3. Chapter summaries — sub-workflow of the same journey
         fetch(WEBHOOKS.alexGenerateChapterSummaries, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             manuscriptId: manuscript.id,
-            userId: manuscript.author_id
+            userId: manuscript.author_id,
+            journey_id,
           })
-        }).catch(() => console.log('✅ Chapter summaries webhook triggered'))
+        })
       ])
 
-      console.log('✅ All analysis workflows triggered successfully')
+      console.log('✅ All analysis workflows triggered — polling journey', journey_id)
 
-      // Poll for completion
-      pollForAnalysisCompletion()
+      // Poll the journey row (pure read); domain content read once at ready.
+      pollForAnalysisCompletion(journey_id)
 
     } catch (error) {
       console.error('Error triggering analysis:', error)
@@ -971,33 +989,33 @@ function StudioContent() {
     }
   }
 
-  const pollForAnalysisCompletion = async () => {
+  // DP-AS-02: journey-driven poll. Reads as_journeys until terminal state,
+  // then does a single content read from manuscripts for display.
+  const pollForAnalysisCompletion = async (journey_id: string) => {
     const supabase = createClient()
-    let attempts = 0
-    const maxAttempts = 100 // 5 minutes
 
-    const pollInterval = setInterval(async () => {
-      attempts++
+    try {
+      const result = await pollJourney(supabase, journey_id, { intervalMs: 3000 })
 
-      const { data: manuscriptData } = await supabase
-        .from('manuscripts')
-        .select('manuscript_summary, full_analysis_key_points, report_pdf_url')
-        .eq('id', manuscript?.id)
-        .single()
+      if (result.status === 'ready' || result.status === 'complete') {
+        // One-off content read at terminal state — not a poll.
+        const { data: manuscriptData } = await supabase
+          .from('manuscripts')
+          .select('manuscript_summary, full_analysis_key_points, report_pdf_url')
+          .eq('id', manuscript?.id)
+          .single()
 
-      // Check if summary exists (not full_analysis_completed_at)
-      if (manuscriptData?.manuscript_summary && manuscriptData?.full_analysis_key_points) {
-        clearInterval(pollInterval)
         setFullAnalysisInProgress(false)
         setAnalysisComplete(true)
 
-        // Update local manuscript state
-        setManuscript(prev => prev ? {
-          ...prev,
-          manuscript_summary: manuscriptData.manuscript_summary,
-          full_analysis_key_points: manuscriptData.full_analysis_key_points,
-          report_pdf_url: manuscriptData.report_pdf_url
-        } : null)
+        if (manuscriptData) {
+          setManuscript(prev => prev ? {
+            ...prev,
+            manuscript_summary: manuscriptData.manuscript_summary,
+            full_analysis_key_points: manuscriptData.full_analysis_key_points,
+            report_pdf_url: manuscriptData.report_pdf_url
+          } : null)
+        }
 
         await addChatMessage(
           editorName,
@@ -1006,15 +1024,16 @@ function StudioContent() {
           `**Ready to start editing?**\n` +
           `Click on any chapter and hit "Start Editing" to see my specific notes. We'll work through them together, one chapter at a time.`
         )
-      } else if (attempts >= maxAttempts) {
-        clearInterval(pollInterval)
+      } else {
+        // Terminal failure (failed / rejected / reaped) — honest surface, no spinner.
         setFullAnalysisInProgress(false)
-        await addChatMessage(
-          editorName,
-          '⚠️ Analysis is taking longer than expected. Please refresh the page in a moment.'
-        )
+        await addChatMessage(editorName, terminalUserMessage(result, 'analysis'))
       }
-    }, 3000) // Poll every 3 seconds
+    } catch (error) {
+      console.error('pollForAnalysisCompletion error:', error)
+      setFullAnalysisInProgress(false)
+      await addChatMessage(editorName, 'The analysis status became unreachable. Please refresh and try again.')
+    }
   }
 
   // Realtime subscription for PDF report completion
@@ -2033,16 +2052,31 @@ function StudioContent() {
           activePhase.phase_number === 3 ? WEBHOOKS.jordanChat :
             WEBHOOKS.alexChat
 
+      const editor_name: 'alex' | 'sam' | 'jordan' =
+        activePhase.phase_number === 2 ? 'sam' :
+          activePhase.phase_number === 3 ? 'jordan' : 'alex'
+
+      // DP-AS-02: scan on arrival for the editor_chat journey.
+      const supabase = createClient()
+      const chapterNumber = chapters[currentChapterIndex]?.chapter_number
+      const { journey_id } = await startJourney(supabase, {
+        journey_type: 'editor_chat',
+        manuscript_id: manuscript.id,
+        chapter_number: chapterNumber,
+        editor_name,
+      })
+
       // Build the payload with full context
       const payload = {
         message: message,
         manuscriptId: manuscript.id,
-        chapterNumber: chapters[currentChapterIndex]?.chapter_number,
+        chapterNumber: chapterNumber,
         chapterTitle: chapters[currentChapterIndex]?.title || '',
         chapterContent: editorContent,
         manuscriptTitle: manuscript.title,
         analysisComplete: analysisComplete,
         authorFirstName: authorFirstName,
+        journey_id,
         ...(discussingIssue && {
           isNoteDiscussion: true,
           issueId: discussingIssue.id,
@@ -2248,30 +2282,55 @@ function StudioContent() {
       }
 
       // 2. Trigger next editor's reading
+      // DP-AS-02: scan on arrival for each next-editor full_analysis journey.
+      // We do not await the poll here — the next editor's tab will pick up
+      // completion via the existing pollForSamReading flow when the author
+      // enters that phase. But the journey_id must be created so the corpse
+      // path exists if the workflow silently fails between phases.
       if (activePhase.phase_number === 1) {
         // Completing Phase 1 → Trigger Sam's reading
         console.log('🚀 Starting Sam\'s manuscript reading...')
-
-        fetch(WEBHOOKS.samFullAnalysis, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            manuscriptId: manuscript.id,
-            userId: manuscript.author_id
+        try {
+          const { journey_id } = await startJourney(supabase, {
+            journey_type: 'full_analysis',
+            manuscript_id: manuscript.id,
+            editor_name: 'sam',
+            size_hint: { word_count: manuscript.current_word_count },
           })
-        }).catch(() => console.log('✅ Sam reading triggered'))
+          fetch(WEBHOOKS.samFullAnalysis, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              manuscriptId: manuscript.id,
+              userId: manuscript.author_id,
+              journey_id,
+            })
+          })
+        } catch (err) {
+          console.error('Failed to start Sam full-analysis journey:', err)
+        }
       } else if (activePhase.phase_number === 2) {
         // Completing Phase 2 → Trigger Jordan's reading
         console.log('🚀 Starting Jordan\'s manuscript reading...')
-
-        fetch(WEBHOOKS.jordanFullAnalysis, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            manuscriptId: manuscript.id,
-            userId: manuscript.author_id
+        try {
+          const { journey_id } = await startJourney(supabase, {
+            journey_type: 'full_analysis',
+            manuscript_id: manuscript.id,
+            editor_name: 'jordan',
+            size_hint: { word_count: manuscript.current_word_count },
           })
-        }).catch(() => console.log('✅ Jordan reading triggered'))
+          fetch(WEBHOOKS.jordanFullAnalysis, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              manuscriptId: manuscript.id,
+              userId: manuscript.author_id,
+              journey_id,
+            })
+          })
+        } catch (err) {
+          console.error('Failed to start Jordan full-analysis journey:', err)
+        }
       }
 
       // 3. Transition to next phase
@@ -2388,20 +2447,34 @@ function StudioContent() {
           activePhase.phase_number === 3 ? WEBHOOKS.jordanChapterAnalysis :
             WEBHOOKS.alexChapterAnalysis
 
+      const editor_name: 'alex' | 'sam' | 'jordan' =
+        activePhase.phase_number === 2 ? 'sam' :
+          activePhase.phase_number === 3 ? 'jordan' : 'alex'
+
+      // DP-AS-02: scan on arrival for chapter analysis journey.
+      const supabase = createClient()
+      const { journey_id } = await startJourney(supabase, {
+        journey_type: 'chapter_analysis',
+        manuscript_id: manuscript.id,
+        chapter_number: chapterNumber,
+        editor_name,
+      })
+
       await fetch(analysisWebhook, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           manuscriptId: manuscript.id,
           chapterNumber: chapterNumber,
-          userId: manuscript.author_id
+          userId: manuscript.author_id,
+          journey_id,
         })
-      }).catch(() => console.log('✅ Analysis webhook triggered'))
+      })
 
       clearInterval(msgInterval)
 
-      // Poll for issues
-      pollForChapterIssues(chapterNumber)
+      // Poll the journey row, then read issues once at terminal ready.
+      pollForChapterIssues(chapterNumber, journey_id)
 
     } catch (error) {
       clearInterval(msgInterval)
@@ -2411,42 +2484,35 @@ function StudioContent() {
   }
 
 
-  // Poll for chapter issues to appear
-  function pollForChapterIssues(chapterNumber: number) {
-    let attempts = 0
-    const maxAttempts = 20
+  // DP-AS-02: journey-driven poll for chapter analysis.
+  async function pollForChapterIssues(chapterNumber: number, journey_id: string) {
+    const supabase = createClient()
 
-    const pollInterval = setInterval(async () => {
-      attempts++
+    try {
+      const result = await pollJourney(supabase, journey_id, { intervalMs: 2000 })
 
-      // Load issues and get the actual count
-      const supabase = createClient()
-      const { data: issues } = await supabase
-        .from('manuscript_issues')
-        .select('*')
-        .eq('manuscript_id', manuscript!.id)
-        .eq('chapter_number', chapterNumber)
-        .eq('phase_number', activePhase!.phase_number)
-        .neq('status', 'dismissed')
+      // Update chapter status regardless of outcome — the chapter isn't
+      // "analyzing" any more from the user's perspective.
+      setChapterEditingStatus(prev => ({
+        ...prev,
+        [chapterNumber]: 'ready'
+      }))
 
-      const issueCount = issues?.length || 0
+      if (result.status === 'ready' || result.status === 'complete') {
+        // One-off content read at terminal state — count issues from the source.
+        const { data: issues } = await supabase
+          .from('manuscript_issues')
+          .select('id')
+          .eq('manuscript_id', manuscript!.id)
+          .eq('chapter_number', chapterNumber)
+          .eq('phase_number', activePhase!.phase_number)
+          .neq('status', 'dismissed')
 
-      console.log(`Polling attempt ${attempts}: Found ${issueCount} issues`)
-
-      // Stop polling if we found issues OR reached max attempts
-      if (issueCount > 0 || attempts >= maxAttempts) {
-        clearInterval(pollInterval)
-
-        // Update the chapter editing status
-        setChapterEditingStatus(prev => ({
-          ...prev,
-          [chapterNumber]: 'ready'
-        }))
+        const issueCount = issues?.length || 0
 
         // Reload the issues into state
         await loadChapterIssues(chapterNumber)
 
-        // Add chat message
         if (issueCount > 0) {
           await addChatMessage(
             editorName,
@@ -2458,8 +2524,18 @@ function StudioContent() {
             `✅ Analysis complete! This chapter looks good.`
           )
         }
+      } else {
+        // failed / rejected / reaped — honest surface, no spinner.
+        await addChatMessage(editorName, terminalUserMessage(result, 'chapter analysis'))
       }
-    }, 2000)
+    } catch (error) {
+      console.error('pollForChapterIssues error:', error)
+      setChapterEditingStatus(prev => ({
+        ...prev,
+        [chapterNumber]: 'ready'
+      }))
+      await addChatMessage(editorName, 'The analysis status became unreachable. Please try again.')
+    }
   }
 
   // Get filtered issues
@@ -3223,6 +3299,13 @@ function StudioContent() {
                               ? manuscriptData.author_profiles[0]
                               : manuscriptData?.author_profiles
 
+                            // DP-AS-02: scan on arrival for phase_transition journey.
+                            const { journey_id } = await startJourney(supabase, {
+                              journey_type: 'phase_transition',
+                              manuscript_id: manuscript!.id,
+                              editor_name: 'jordan',
+                            })
+
                             await fetch(
                               N8N_WEBHOOKS.generateManuscriptVersion,
                               {
@@ -3234,12 +3317,13 @@ function StudioContent() {
                                   editorName: 'Jordan',
                                   authorEmail: authorProfile?.email,
                                   authorFirstName: authorProfile?.first_name,
-                                  manuscriptTitle: manuscript?.title
+                                  manuscriptTitle: manuscript?.title,
+                                  journey_id,
                                 })
                               }
                             )
 
-                            console.log('✅ Phase 3 version generation triggered')
+                            console.log('✅ Phase 3 version generation triggered — journey', journey_id)
                           } catch (error) {
                             console.error('Version generation error:', error)
                           }
