@@ -55,3 +55,6 @@ next-env.d.ts
 
 # Word lock files (Word creates these when a doc is open)
 ~$*
+
+# macOS text-clipping artifacts (accidental drag-drops)
+*.textClipping
