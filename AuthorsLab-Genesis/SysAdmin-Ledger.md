@@ -1,4 +1,28 @@
-# SIS Methodology / AuthorsLab — Project Ledger
+# SIS – System Admin — Project Ledger
+
+## 2026-07-24 — Entry 18: Chat taxonomy named · HTTP-nodes handover to AL
+
+**Ecosystem naming (Paul's ruling):** this chat = **SIS – System Admin** (the
+persistent system/method). **AL – System Admin** exists and coordinates all
+AuthorsLab build chats (platform-dev, ghostwriter). **CL – System Admin** =
+Clarence's equivalent. Handover flow: SIS defines method → per-plant SysAdmins
+coordinate → build chats execute. (The planned "AuthorsLab handover doc from
+this chat" is superseded in part — AL – System Admin already exists; a fuller
+state-transfer package remains available on request.)
+
+**Handover note shipped:** `2026-07-24-SIS-to-AL-http-nodes-ruling.md`
+(AL-SIS-HN-001) → docs/sis/. Evidence-based (Anthropic node v1 parameter
+surface inspected via n8n API): node lacks usage metadata, stop_reason
+(silent-truncation hazard, maxTokens default 1024), cache_control, raw error
+bodies, per-call timeout — breaks LMO ledger, SPC, corpse discipline.
+Recommended ruling: raw HTTP via a single shared **Craft Call Cell** (journey
+write + HTTP + LMO ledger row + max_tokens-fail gate + raw-error corpse);
+migration opportunistic-when-touched, folding into the DP-AS-02 n8n pass;
+new workflows Craft-Call-only. AL to confirm against their instance, ratify,
+and spec the Cell as their dispatch. Caveat recorded: inspection ran on the
+spikeislandstudios instance.
+
+
 
 ## 2026-07-24 — Entry 17: DP-AS-02 E1 ACCEPTED (verified); E2/E3 gated on Paul's n8n work
 
