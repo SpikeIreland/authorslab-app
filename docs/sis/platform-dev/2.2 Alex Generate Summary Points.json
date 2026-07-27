@@ -1,0 +1,836 @@
+{
+    "name": "2.2 Alex Generate Summary Points",
+    "nodes": [
+        {
+            "parameters": {
+                "model": {
+                    "__rl": true,
+                    "value": "claude-sonnet-4-6",
+                    "mode": "list",
+                    "cachedResultName": "Claude Sonnet 4.6"
+                },
+                "options": {
+                    "maxTokensToSample": 4000,
+                    "thinking": false
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+            "typeVersion": 1.3,
+            "position": [
+                480,
+                -1488
+            ],
+            "id": "a0fe5592-aa27-4785-9ee9-b5ea03f128bd",
+            "name": "Anthropic Chat Model",
+            "credentials": {
+                "anthropicApi": {
+                    "id": "PzYKN7Dg419GPPGR",
+                    "name": "AuthorsLab Anthropic Key"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "promptType": "define",
+                "text": "=Analyze the structural elements of this complete manuscript:\n\n**Manuscript:** {{ $json.manuscriptTitle }}\n**Author:** {{ $json.authorName }}\n**Genre:** {{ $json.genre }}\n**Total Word Count:** {{ $json.totalWordCount }}\n**Total Chapters:** {{ $json.totalChapters }}\n\n**FULL MANUSCRIPT TEXT:**\n{{ $json.fullText }}\n\n---\n\n**ANALYSIS REQUIREMENTS:**\n\nProvide a comprehensive structural analysis focusing on:\n\n## 1. OVERALL STORY ARCHITECTURE\n- How is the narrative organized? (Three-act structure? Five-act? Hero's journey?)\n- Are major plot points (inciting incident, midpoint, climax, resolution) effectively placed?\n- Does the story structure serve the genre conventions?\n- Reference specific chapters where key structural moments occur\n\n## 2. PACING ARCHITECTURE\n- How does pacing evolve across the manuscript?\n- Which sections (by chapter range) feel slow or rushed?\n- Where does momentum build effectively vs. where it stalls?\n- Identify the strongest-paced chapters and what makes them work\n\n## 3. CHAPTER ORGANIZATION\n- Do chapters consistently begin with hooks and end with momentum?\n- Is there a pattern to chapter structure that works or doesn't work?\n- Which chapters feel essential vs. which might be candidates for cutting/combining?\n- How effective are chapter transitions?\n\n## 4. ACT TRANSITIONS\n- How smooth are the transitions between major story sections?\n- Are act breaks clearly defined and impactful?\n- Does the middle section maintain tension and forward momentum?\n\n## 5. STRUCTURAL STRENGTHS TO LEVERAGE\n- What structural choices are working exceptionally well?\n- Which chapters demonstrate the strongest structure?\n- What patterns should be replicated throughout?\n\n## 6. HIGH-IMPACT STRUCTURAL RECOMMENDATIONS\nProvide 3-5 specific, actionable recommendations that would most significantly improve the manuscript's structure. For each:\n- Identify the specific issue (with chapter references)\n- Explain why it matters\n- Provide a concrete solution\n- Estimate the impact on reader engagement\n\n---\n\n**OUTPUT FORMAT:**\n\nWrite your analysis in clear, professional prose organized by the sections above. Use specific chapter numbers and quote brief phrases when referencing examples. This analysis will be included in a comprehensive report for the author.\n\nFocus on strategic, manuscript-level insights that will guide major structural revisions.",
+                "messages": {
+                    "messageValues": [
+                        {
+                            "message": "You are Alex, a professional developmental editor specializing in structural analysis. You analyze entire manuscripts to identify structural strengths and issues that impact narrative flow, pacing, and reader engagement across the whole story.\n\nYour analysis must be:\n- Strategic and big-picture focused\n- Specific with references to actual content\n- Evidence-based with chapter numbers and examples\n- Professional but encouraging in tone\n- Focused on manuscript-level patterns, not individual scenes"
+                        }
+                    ]
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.chainLlm",
+            "typeVersion": 1.6,
+            "position": [
+                400,
+                -1712
+            ],
+            "id": "4bc234cd-d7c1-49fb-b8ad-8fa3232202a5",
+            "name": "Structural Analysis"
+        },
+        {
+            "parameters": {
+                "model": {
+                    "__rl": true,
+                    "value": "claude-sonnet-4-6",
+                    "mode": "list",
+                    "cachedResultName": "Claude Sonnet 4.6"
+                },
+                "options": {
+                    "maxTokensToSample": 4000,
+                    "thinking": false
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+            "typeVersion": 1.3,
+            "position": [
+                480,
+                -1088
+            ],
+            "id": "5657da3d-1d45-4a04-9c6e-1e271e8b7e7a",
+            "name": "Anthropic Chat Model1",
+            "credentials": {
+                "anthropicApi": {
+                    "id": "PzYKN7Dg419GPPGR",
+                    "name": "AuthorsLab Anthropic Key"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "promptType": "define",
+                "text": "=Analyze the character development across this complete manuscript:\n\n**Manuscript:** {{ $json.manuscriptTitle }}\n**Author:** {{ $json.authorName }}\n**Genre:** {{ $json.genre }}\n**Total Chapters:** {{ $json.totalChapters }}\n\n**FULL MANUSCRIPT TEXT:**\n{{ $json.fullText }}\n\n---\n\n**ANALYSIS REQUIREMENTS:**\n\nProvide a comprehensive character analysis focusing on:\n\n## 1. PROTAGONIST DEVELOPMENT\n- Does the protagonist have a clear, compelling arc from beginning to end?\n- How does their character evolve across the manuscript?\n- Are their motivations clear, consistent, and believable?\n- Which chapters show the strongest character development?\n\n## 2. CHARACTER VOICE & CONSISTENCY\n- Does each major character have a distinctive voice?\n- Is character voice maintained consistently throughout?\n- Where does voice feel most authentic vs. where it weakens?\n- Reference specific dialogue examples by chapter\n\n## 3. SUPPORTING CHARACTERS\n- Do secondary characters serve clear purposes in the story?\n- Are they sufficiently developed or are some underutilized?\n- Which supporting characters are most effective and why?\n- Are there characters who could be cut or combined?\n\n## 4. CHARACTER RELATIONSHIPS\n- How do character relationships evolve across the manuscript?\n- Are key relationships given adequate development?\n- Where do character dynamics feel most authentic?\n- Which relationship arcs need strengthening?\n\n## 5. DIALOGUE EFFECTIVENESS\n- Does dialogue reveal character and advance plot?\n- Where does dialogue feel most natural and engaging?\n- Are there patterns of weak dialogue that need addressing?\n- Reference specific strong and weak dialogue examples by chapter\n\n## 6. CHARACTER STRENGTHS TO LEVERAGE\n- Which characters are working exceptionally well?\n- What character moments are most compelling?\n- Which character techniques should be replicated?\n\n## 7. HIGH-IMPACT CHARACTER RECOMMENDATIONS\nProvide 3-5 specific, actionable recommendations for character development. For each:\n- Identify the specific issue (with chapter references)\n- Explain the impact on reader engagement\n- Provide concrete solutions\n- Suggest implementation approach\n\n---\n\n**OUTPUT FORMAT:**\n\nWrite your analysis in clear, professional prose organized by the sections above. Use specific chapter numbers and character names when referencing examples. This analysis will be included in a comprehensive report for the author.\n\nFocus on how character development impacts reader emotional investment and story effectiveness.",
+                "messages": {
+                    "messageValues": [
+                        {
+                            "message": "You are Alex, a professional developmental editor specializing in character development. You analyze entire manuscripts to assess character arcs, voice consistency, relationships, and authenticity across the complete story.\n\nYour analysis must be:\n- Focused on character journeys from beginning to end\n- Specific with references to key character moments\n- Evidence-based with chapter numbers and examples\n- Professional but encouraging in tone\n- Strategic about character impact on reader engagement"
+                        }
+                    ]
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.chainLlm",
+            "typeVersion": 1.6,
+            "position": [
+                400,
+                -1312
+            ],
+            "id": "c8348b0a-df85-4aed-93d8-2798e010e0df",
+            "name": "Character Analysis"
+        },
+        {
+            "parameters": {
+                "model": {
+                    "__rl": true,
+                    "value": "claude-sonnet-4-6",
+                    "mode": "list",
+                    "cachedResultName": "Claude Sonnet 4.6"
+                },
+                "options": {
+                    "maxTokensToSample": 4000,
+                    "thinking": false
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+            "typeVersion": 1.3,
+            "position": [
+                480,
+                224
+            ],
+            "id": "5785ab46-8cdb-4ca0-9d13-58d129950071",
+            "name": "Anthropic Chat Model2",
+            "credentials": {
+                "anthropicApi": {
+                    "id": "PzYKN7Dg419GPPGR",
+                    "name": "AuthorsLab Anthropic Key"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "promptType": "define",
+                "text": "=Analyze the thematic development across this complete manuscript:\n\n**Manuscript:** {{ $json.manuscriptTitle }}\n**Author:** {{ $json.authorName }}\n**Genre:** {{ $json.genre }}\n**Total Chapters:** {{ $json.totalChapters }}\n\n**FULL MANUSCRIPT TEXT:**\n{{ $json.fullText }}\n\n---\n\n**ANALYSIS REQUIREMENTS:**\n\nProvide a comprehensive thematic analysis focusing on:\n\n## 1. CORE THEMES\n- What are the manuscript's central themes?\n- Are themes clearly established and developed?\n- How do themes evolve from beginning to end?\n- Which chapters most strongly convey thematic content?\n\n## 2. THEMATIC INTEGRATION\n- Are themes woven naturally into the story?\n- Where does theme feel organic vs. heavy-handed?\n- How well do plot and character serve thematic development?\n- Reference specific strong thematic moments by chapter\n\n## 3. SYMBOLIC ELEMENTS\n- What symbols or motifs appear throughout?\n- Are symbols used effectively and consistently?\n- Do symbols deepen meaning without feeling forced?\n- Which symbolic elements are most powerful?\n\n## 4. THEMATIC CONSISTENCY\n- Are themes maintained consistently throughout?\n- Where do themes get lost or muddled?\n- Do all major story elements support the themes?\n- Are there thematic contradictions that need addressing?\n\n## 5. THEMATIC DEPTH\n- Do themes offer meaningful insight or resonance?\n- Are themes explored with sufficient complexity?\n- Where could thematic exploration be deepened?\n- Which chapters achieve the strongest thematic impact?\n\n## 6. GENRE & THEME ALIGNMENT\n- Do themes align well with genre expectations?\n- Are themes sophisticated enough for the target audience?\n- How do themes compare to successful books in this genre?\n\n## 7. HIGH-IMPACT THEMATIC RECOMMENDATIONS\nProvide 3-5 specific, actionable recommendations for thematic development. For each:\n- Identify the specific issue (with chapter references)\n- Explain the impact on story meaning and resonance\n- Provide concrete solutions\n- Suggest implementation approach\n\n---\n\n**OUTPUT FORMAT:**\n\nWrite your analysis in clear, professional prose organized by the sections above. Use specific chapter numbers when referencing thematic elements. This analysis will be included in a comprehensive report for the author.\n\nFocus on how themes create deeper meaning and emotional resonance with readers.",
+                "messages": {
+                    "messageValues": [
+                        {
+                            "message": "You are Alex, a professional developmental editor specializing in thematic development. You analyze entire manuscripts to assess theme clarity, symbolic integration, thematic consistency, and meaningful depth across the complete story.\n\nYour analysis must be:\n- Focused on thematic coherence and depth\n- Specific with references to thematic moments\n- Evidence-based with chapter numbers\n- Professional but encouraging in tone\n- Strategic about theme's impact on story resonance"
+                        }
+                    ]
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.chainLlm",
+            "typeVersion": 1.6,
+            "position": [
+                400,
+                -16
+            ],
+            "id": "e0d44869-7e59-4694-872f-13242a294719",
+            "name": "Thematic Analysis"
+        },
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "generate-summary-points",
+                "responseMode": "responseNode",
+                "options": {
+                    "binaryPropertyName": "data",
+                    "rawBody": true,
+                    "responseHeaders": {
+                        "entries": [
+                            {
+                                "name": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ]
+                    }
+                }
+            },
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 2,
+            "position": [
+                -496,
+                -816
+            ],
+            "id": "14657200-b19b-483b-9162-678092172844",
+            "name": "Webhook",
+            "webhookId": "4fa17454-194d-4223-b652-166774d4af9f"
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "={\n  \"success\": true,\n  \"message\": \"Full manuscript analysis completed\",\n  \"analysisComplete\": true,\n  \"timestamp\": \"{{ $now.toISO() }}\"\n}",
+                "options": {
+                    "responseCode": 200,
+                    "responseHeaders": {
+                        "entries": [
+                            {
+                                "name": "Access-Control-Allow-Origin",
+                                "value": "*"
+                            },
+                            {
+                                "name": "'Access-Control-Allow-Methods",
+                                "value": "POST, OPTIONS"
+                            },
+                            {
+                                "name": "Access-Control-Allow-Headers",
+                                "value": "Content-Type"
+                            }
+                        ]
+                    }
+                }
+            },
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1.2,
+            "position": [
+                2000,
+                -1008
+            ],
+            "id": "d7dfc177-ed48-4977-840e-bd186941c5a3",
+            "name": "Respond to Webhook"
+        },
+        {
+            "parameters": {
+                "model": {
+                    "__rl": true,
+                    "value": "claude-sonnet-4-6",
+                    "mode": "list",
+                    "cachedResultName": "Claude Sonnet 4.6"
+                },
+                "options": {
+                    "maxTokensToSample": 4000,
+                    "thinking": false
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+            "typeVersion": 1.3,
+            "position": [
+                480,
+                -688
+            ],
+            "id": "bec854f8-bc9d-4063-baff-1eadd6d37475",
+            "name": "Anthropic Chat Model4",
+            "credentials": {
+                "anthropicApi": {
+                    "id": "PzYKN7Dg419GPPGR",
+                    "name": "AuthorsLab Anthropic Key"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "model": {
+                    "__rl": true,
+                    "value": "claude-sonnet-4-6",
+                    "mode": "list",
+                    "cachedResultName": "Claude Sonnet 4.6"
+                },
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+            "typeVersion": 1.3,
+            "position": [
+                480,
+                -288
+            ],
+            "id": "5c1569d1-ef33-4a5f-a55b-9bdb26fd6581",
+            "name": "Anthropic Chat Model5",
+            "credentials": {
+                "anthropicApi": {
+                    "id": "PzYKN7Dg419GPPGR",
+                    "name": "AuthorsLab Anthropic Key"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "promptType": "define",
+                "text": "=Analyze the plot development across this complete manuscript:\n\n**Manuscript:** {{ $json.manuscriptTitle }}\n**Author:** {{ $json.authorName }}\n**Genre:** {{ $json.genre }}\n**Total Chapters:** {{ $json.totalChapters }}\n\n**FULL MANUSCRIPT TEXT:**\n{{ $json.fullText }}\n\n---\n\n**ANALYSIS REQUIREMENTS:**\n\nProvide a comprehensive plot analysis focusing on:\n\n## 1. MAIN PLOT PROGRESSION\n- Is the central conflict clear and compelling?\n- How does the plot escalate from beginning to end?\n- Are there plot holes or logic issues?\n- Which chapters contain the strongest plot moments?\n\n## 2. CONFLICT & STAKES\n- Are stakes clearly established and escalating?\n- Does the conflict feel urgent and meaningful?\n- Where does tension build most effectively?\n- Which sections lose momentum and why?\n\n## 3. PLOT TWISTS & REVEALS\n- Are plot revelations well-timed and earned?\n- Do twists feel surprising yet inevitable?\n- Are key information reveals paced effectively?\n- Reference specific reveal moments by chapter\n\n## 4. SUBPLOT INTEGRATION\n- How many subplots are running concurrently?\n- Are subplots integrated smoothly with the main plot?\n- Do all subplots resolve satisfyingly?\n- Are there subplots that could be cut or strengthened?\n\n## 5. CAUSE & EFFECT\n- Does the plot follow clear cause-and-effect logic?\n- Are character decisions driving plot forward?\n- Where does plot feel contrived vs. organic?\n- Reference specific strong and weak causal chains by chapter\n\n## 6. PLOT RESOLUTION\n- Does the ending resolve major plot threads?\n- Are resolutions earned and satisfying?\n- Are there loose ends that need addressing?\n- How effective is the climax?\n\n## 7. HIGH-IMPACT PLOT RECOMMENDATIONS\nProvide 3-5 specific, actionable recommendations for plot improvement. For each:\n- Identify the specific issue (with chapter references)\n- Explain the impact on story logic and reader satisfaction\n- Provide concrete solutions\n- Suggest implementation approach\n\n---\n\n**OUTPUT FORMAT:**\n\nWrite your analysis in clear, professional prose organized by the sections above. Use specific chapter numbers when referencing plot points. This analysis will be included in a comprehensive report for the author.\n\nFocus on plot mechanics that keep readers engaged and the story logic sound.",
+                "messages": {
+                    "messageValues": [
+                        {
+                            "message": "You are Alex, a professional developmental editor specializing in plot development. You analyze entire manuscripts to assess plot logic, conflict progression, subplot integration, and narrative tension across the complete story.\n\nYour analysis must be:\n- Focused on plot mechanics and story logic\n- Specific with references to key plot moments\n- Evidence-based with chapter numbers\n- Professional but encouraging in tone\n- Strategic about plot's impact on reader engagement"
+                        }
+                    ]
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.chainLlm",
+            "typeVersion": 1.6,
+            "position": [
+                400,
+                -912
+            ],
+            "id": "9adaca74-a9b4-4c6a-8aeb-33bf9eb786b4",
+            "name": "Plot Development Analysis"
+        },
+        {
+            "parameters": {
+                "promptType": "define",
+                "text": "=Analyze the pacing and flow across this complete manuscript:\n\n**Manuscript:** {{ $json.manuscriptTitle }}\n**Author:** {{ $json.authorName }}\n**Genre:** {{ $json.genre }}\n**Total Chapters:** {{ $json.totalChapters }}\n\n**FULL MANUSCRIPT TEXT:**\n{{ $json.fullText }}\n\n---\n\n**ANALYSIS REQUIREMENTS:**\n\nProvide a comprehensive pacing analysis focusing on:\n\n## 1. OVERALL PACING RHYTHM\n- How does pacing vary across the manuscript?\n- Is there effective variation between fast and slow sections?\n- Which chapters have the most effective pacing?\n- Where does momentum stall or rush inappropriately?\n\n## 2. SCENE-LEVEL PACING\n- Are individual scenes paced effectively?\n- Is there good balance of action, dialogue, and introspection?\n- Which scenes demonstrate ideal pacing?\n- Reference specific strong and weak examples by chapter\n\n## 3. INFORMATION REVEAL\n- Is information released at an engaging pace?\n- Where does exposition slow momentum?\n- Are there info-dumps that need breaking up?\n- Which chapters handle information reveal most skillfully?\n\n## 4. TENSION MANAGEMENT\n- How effectively is tension built and released?\n- Are there enough \"breather\" moments between high-tension scenes?\n- Where could tension be increased for better engagement?\n- Reference specific tension patterns by chapter range\n\n## 5. CHAPTER PACING PATTERNS\n- Do chapters have consistent internal pacing patterns?\n- Are chapter lengths appropriate for their content?\n- Which chapters feel too long or too short?\n- Are chapter endings creating momentum to continue reading?\n\n## 6. READING MOMENTUM\n- Where is the manuscript most \"unputdownable\"?\n- Where might readers lose interest or skim?\n- How well does pacing serve the genre expectations?\n- Which sections need acceleration or deceleration?\n\n## 7. HIGH-IMPACT PACING RECOMMENDATIONS\nProvide 3-5 specific, actionable recommendations for pacing improvement. For each:\n- Identify the specific issue (with chapter references)\n- Explain the impact on reader engagement\n- Provide concrete solutions\n- Suggest implementation approach\n\n---\n\n**OUTPUT FORMAT:**\n\nWrite your analysis in clear, professional prose organized by the sections above. Use specific chapter numbers when referencing pacing patterns. This analysis will be included in a comprehensive report for the author.\n\nFocus on how pacing affects reader engagement and the manuscript's overall momentum.",
+                "messages": {
+                    "messageValues": [
+                        {
+                            "message": "You are Alex, a professional developmental editor specializing in pacing and narrative flow. You analyze entire manuscripts to assess reading momentum, scene-level pacing, information reveal timing, and overall narrative rhythm.\n\nYour analysis must be:\n- Focused on reader experience and momentum\n- Specific with references to pacing patterns\n- Evidence-based with chapter numbers\n- Professional but encouraging in tone\n- Strategic about pacing's impact on reader engagement"
+                        }
+                    ]
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.chainLlm",
+            "typeVersion": 1.6,
+            "position": [
+                400,
+                -512
+            ],
+            "id": "ec8939db-88ba-47cb-b29c-1145a2e34061",
+            "name": "Pacing & Flow Analysis"
+        },
+        {
+            "parameters": {
+                "jsCode": "const manuscript = $('Fetch Manuscript').first().json;\nconst chapters = $('Fetch Chapters').all().map(item => item.json);\n\nconsole.log('Processing manuscript:', manuscript.title);\nconsole.log('Total chapters:', chapters.length);\n\n// Calculate actual total word count from all chapters\nconst fullText = chapters.map(c => c.content).filter(c => c).join('\\n\\n');\nconst actualWordCount = fullText.split(/\\s+/).filter(w => w.length > 0).length;\n\n// Build structure for analysis nodes\nconst manuscriptData = {\n  manuscriptId: manuscript.id,\n  authorName: manuscript.author_name || 'Author',\n  manuscriptTitle: manuscript.title,\n  genre: manuscript.genre || 'Fiction',\n  totalWordCount: actualWordCount, // ← Changed from wordCount\n  totalChapters: chapters.length,   // ← Changed from chapterCount\n  \n  // Full text for analysis\n  fullText: fullText,\n  \n  // Structured chapters with all data (keep for other uses)\n  chapters: chapters.map((ch, index) => ({\n    chapterId: ch.id,\n    chapterNumber: ch.chapter_number,\n    title: ch.title || `Chapter ${ch.chapter_number}`,\n    content: ch.content,\n    wordCount: ch.content ? ch.content.split(/\\s+/).filter(w => w.length > 0).length : 0,\n    previousChapterTitle: index > 0 ? chapters[index - 1].title : null,\n    nextChapterTitle: index < chapters.length - 1 ? chapters[index + 1].title : null,\n    progressPercent: Math.round(((index + 1) / chapters.length) * 100)\n  })),\n  \n  // Story context for AI nodes (keep for compatibility)\n  storyContext: {\n    totalChapters: chapters.length,\n    genre: manuscript.genre || 'Unknown',\n    totalWordCount: actualWordCount\n  },\n  \n  // Metadata\n  analysisDate: new Date().toLocaleDateString('en-US', { \n    year: 'numeric', \n    month: 'long', \n    day: 'numeric' \n  })\n};\n\nconsole.log('Processed data:', JSON.stringify({\n  title: manuscriptData.manuscriptTitle,\n  totalChapters: manuscriptData.totalChapters,\n  totalWordCount: manuscriptData.totalWordCount,\n  genre: manuscriptData.genre\n}, null, 2));\n\nreturn { json: manuscriptData };"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                176,
+                -816
+            ],
+            "id": "d6b92135-afb3-42c6-8292-65a324a5d11c",
+            "name": "Manuscript Processing"
+        },
+        {
+            "parameters": {
+                "jsCode": "// Final Response - Code Node (JavaScript)\n// This creates the final success response for the main workflow\n\nreturn {\n  json: {\n    success: true,\n    message: \"Phase 1 analysis completed successfully\",\n    submissionId: $json.submissionId,\n    authorName: $json.authorName,\n    bookTitle: $json.bookTitle,\n    wordCount: $json.wordCount,\n    analysisComplete: true,\n    emailDelivered: true,\n    processingTime: new Date().toISOString(),\n    status: \"completed\",\n    \n    // Additional useful data\n    phaseType: \"developmental_analysis\",\n    phaseNumber: 1,\n    reportGenerated: true,\n    s3Key: $json.s3Key || null,\n    accessToken: $json.accessToken || null\n  }\n};"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1776,
+                -1008
+            ],
+            "id": "c27df57d-a858-4758-ac53-e39d4a534c0f",
+            "name": "Success Response"
+        },
+        {
+            "parameters": {
+                "operation": "executeQuery",
+                "query": "UPDATE manuscripts \nSET \n  full_analysis_completed_at = NOW(),\n  status = 'editing',\n  updated_at = NOW()\nWHERE id = '{{ $('Webhook').first().json.body.manuscriptId }}'\nRETURNING id, title, status, full_analysis_completed_at;",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.postgres",
+            "typeVersion": 2.6,
+            "position": [
+                1552,
+                -1008
+            ],
+            "id": "8464a6c4-7892-45b4-a2bb-75e3cfb7ccd3",
+            "name": "Mark Analysis Complete",
+            "credentials": {
+                "postgres": {
+                    "id": "LzOLBpaxWz7JUDoN",
+                    "name": "Author Database"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "operation": "executeQuery",
+                "query": "SELECT * \nFROM manuscripts\nWHERE id = '{{ $('Webhook').first().json.body.manuscriptId }}'",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.postgres",
+            "typeVersion": 2.6,
+            "position": [
+                -272,
+                -816
+            ],
+            "id": "8aa99de9-1fc7-4e3f-b520-e7584066ddf5",
+            "name": "Fetch Manuscript",
+            "alwaysOutputData": true,
+            "credentials": {
+                "postgres": {
+                    "id": "LzOLBpaxWz7JUDoN",
+                    "name": "Author Database"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "operation": "executeQuery",
+                "query": "SELECT * \nFROM chapters\nWHERE manuscript_id = '{{ $('Webhook').first().json.body.manuscriptId }}'\nORDER BY chapter_number ASC",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.postgres",
+            "typeVersion": 2.6,
+            "position": [
+                -48,
+                -816
+            ],
+            "id": "c8dc9680-9aa4-43ce-a540-22cd6ed419ed",
+            "name": "Fetch Chapters",
+            "credentials": {
+                "postgres": {
+                    "id": "LzOLBpaxWz7JUDoN",
+                    "name": "Author Database"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "promptType": "define",
+                "text": "=Based on these 5 analyses of the manuscript, create a 2-3 sentence summary that captures:\n1. The core story/premise\n2. The main character's journey\n3. The central conflict or theme\n\nMake it succinct and focused on what the author is TRYING to achieve.\n\nSTRUCTURAL ANALYSIS:\n{{ $('Structural Analysis').first().json.output || $('Structural Analysis').first().json.text }}\n\nCHARACTER ANALYSIS:\n{{ $('Character Analysis').first().json.output || $('Character Analysis').first().json.text }}\n\nPLOT ANALYSIS:\n{{ $('Plot Development Analysis').first().json.output || $('Plot Development Analysis').first().json.text }}\n\nPACING ANALYSIS:\n{{ $('Pacing & Flow Analysis').first().json.output || $('Pacing & Flow Analysis').first().json.text }}\n\nTHEME ANALYSIS:\n{{ $('Thematic Analysis').first().json.output || $('Thematic Analysis').first().json.text }}\n\nProvide ONLY the 2-3 sentence summary, no preamble.",
+                "messages": {
+                    "messageValues": [
+                        {
+                            "message": "You are Alex, a developmental editor who has just completed a comprehensive analysis of a manuscript. Your task is to distill the essence of this story into a concise summary that will serve as a reference point for future chapter-by-chapter work with the author.  Focus on clarity and brevity - this summary will be used repeatedly as context, so make every word count."
+                        }
+                    ]
+                },
+                "batching": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.chainLlm",
+            "typeVersion": 1.7,
+            "position": [
+                976,
+                -608
+            ],
+            "id": "6c11f82e-4485-4d0c-ac2d-9d1f71e5ed60",
+            "name": "Generate Summary"
+        },
+        {
+            "parameters": {
+                "model": {
+                    "__rl": true,
+                    "value": "claude-sonnet-4-6",
+                    "mode": "list",
+                    "cachedResultName": "Claude Sonnet 4.6"
+                },
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+            "typeVersion": 1.3,
+            "position": [
+                1056,
+                -384
+            ],
+            "id": "589d3c2d-ce20-4ed1-ab7f-884d1c2d5eae",
+            "name": "Anthropic Chat Model6",
+            "credentials": {
+                "anthropicApi": {
+                    "id": "PzYKN7Dg419GPPGR",
+                    "name": "AuthorsLab Anthropic Key"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "numberInputs": 5
+            },
+            "type": "n8n-nodes-base.merge",
+            "typeVersion": 3.2,
+            "position": [
+                752,
+                -864
+            ],
+            "id": "88d52e2b-9fd7-4f20-b0fa-66475234e6a4",
+            "name": "Merge"
+        },
+        {
+            "parameters": {
+                "operation": "executeQuery",
+                "query": "UPDATE manuscripts \nSET \n  manuscript_summary = $summary${{ $json.text }}$summary$,\n  updated_at = NOW()\nWHERE id = '{{ $('Webhook').first().json.body.manuscriptId }}'\nRETURNING id, manuscript_summary;",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.postgres",
+            "typeVersion": 2.6,
+            "position": [
+                1328,
+                -608
+            ],
+            "id": "d0f67730-09d5-4d1f-8194-4e42e4857805",
+            "name": "Store Summary",
+            "credentials": {
+                "postgres": {
+                    "id": "LzOLBpaxWz7JUDoN",
+                    "name": "Author Database"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "model": {
+                    "__rl": true,
+                    "value": "claude-sonnet-4-6",
+                    "mode": "list",
+                    "cachedResultName": "Claude Sonnet 4.6"
+                },
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+            "typeVersion": 1.3,
+            "position": [
+                1056,
+                -896
+            ],
+            "id": "78033ed1-43f9-4db3-bf01-22081752f9ce",
+            "name": "Anthropic Chat Model7",
+            "credentials": {
+                "anthropicApi": {
+                    "id": "PzYKN7Dg419GPPGR",
+                    "name": "AuthorsLab Anthropic Key"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "operation": "executeQuery",
+                "query": "UPDATE manuscripts \nSET \n  full_analysis_key_points = $keypoints${{ $json.text }}$keypoints$,\n  updated_at = NOW()\nWHERE id = '{{ $('Webhook').first().json.body.manuscriptId }}'\nRETURNING id, full_analysis_key_points;",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.postgres",
+            "typeVersion": 2.6,
+            "position": [
+                1328,
+                -1008
+            ],
+            "id": "58a1a60a-4a81-45f8-bd5f-bba4c708d92e",
+            "name": "Store Key Points",
+            "credentials": {
+                "postgres": {
+                    "id": "LzOLBpaxWz7JUDoN",
+                    "name": "Author Database"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "promptType": "define",
+                "text": "=Based on these 5 comprehensive analyses, create 5-7 bullet points that capture the KEY TAKEAWAYS:\n\nStructure Analysis:\n{{ $('Structural Analysis').first().json.text }}\n\nCharacter Analysis:\n{{ $('Character Analysis').first().json.text }}\n\nPlot Analysis:\n{{ $('Plot Development Analysis').first().json.text }}\n\nPacing Analysis:\n{{ $('Pacing & Flow Analysis').first().json.text }}\n\nTheme Analysis:\n{{ $('Thematic Analysis').first().json.text }}\n\nFormat as a simple bullet list (use • for bullets). Each point should be one clear, actionable insight. Example:\n- Strong character arcs with clear motivation\n- Plot progression is logical but climax needs more tension\n- Pacing drags in middle section (chapters 8-12)\n- Theme of redemption is consistently woven throughout\n- Dialogue is authentic and moves story forward\n\nReturn ONLY the bullet points, nothing else.",
+                "messages": {
+                    "messageValues": [
+                        {
+                            "message": "You are Alex, a developmental editor who has just completed a comprehensive 5-dimensional analysis of a manuscript. Your task is to distill the most important takeaways into 5-7 concise bullet points that will serve as quick reference for future chapter work.\n\nFocus on actionable insights and overall patterns, not chapter-specific details."
+                        }
+                    ]
+                },
+                "batching": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.chainLlm",
+            "typeVersion": 1.7,
+            "position": [
+                976,
+                -1120
+            ],
+            "id": "c2a04f4d-2ad4-447a-bafb-16618fb63b30",
+            "name": "Generate Key Points"
+        }
+    ],
+    "pinData": {},
+    "connections": {
+        "Anthropic Chat Model": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "Structural Analysis",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Structural Analysis": {
+            "main": [
+                [
+                    {
+                        "node": "Merge",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Anthropic Chat Model1": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "Character Analysis",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Character Analysis": {
+            "main": [
+                [
+                    {
+                        "node": "Merge",
+                        "type": "main",
+                        "index": 1
+                    }
+                ]
+            ]
+        },
+        "Anthropic Chat Model2": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "Thematic Analysis",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Thematic Analysis": {
+            "main": [
+                [
+                    {
+                        "node": "Merge",
+                        "type": "main",
+                        "index": 4
+                    }
+                ]
+            ]
+        },
+        "Webhook": {
+            "main": [
+                [
+                    {
+                        "node": "Fetch Manuscript",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Anthropic Chat Model4": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "Plot Development Analysis",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Anthropic Chat Model5": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "Pacing & Flow Analysis",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Plot Development Analysis": {
+            "main": [
+                [
+                    {
+                        "node": "Merge",
+                        "type": "main",
+                        "index": 2
+                    }
+                ]
+            ]
+        },
+        "Pacing & Flow Analysis": {
+            "main": [
+                [
+                    {
+                        "node": "Merge",
+                        "type": "main",
+                        "index": 3
+                    }
+                ]
+            ]
+        },
+        "Manuscript Processing": {
+            "main": [
+                [
+                    {
+                        "node": "Structural Analysis",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Character Analysis",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Plot Development Analysis",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Pacing & Flow Analysis",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Thematic Analysis",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Success Response": {
+            "main": [
+                [
+                    {
+                        "node": "Respond to Webhook",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Mark Analysis Complete": {
+            "main": [
+                [
+                    {
+                        "node": "Success Response",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Fetch Manuscript": {
+            "main": [
+                [
+                    {
+                        "node": "Fetch Chapters",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Fetch Chapters": {
+            "main": [
+                [
+                    {
+                        "node": "Manuscript Processing",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Generate Summary": {
+            "main": [
+                [
+                    {
+                        "node": "Store Summary",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Anthropic Chat Model6": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "Generate Summary",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Merge": {
+            "main": [
+                [
+                    {
+                        "node": "Generate Summary",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Generate Key Points",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Store Summary": {
+            "main": [
+                []
+            ]
+        },
+        "Store Key Points": {
+            "main": [
+                [
+                    {
+                        "node": "Mark Analysis Complete",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Generate Key Points": {
+            "main": [
+                [
+                    {
+                        "node": "Store Key Points",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Anthropic Chat Model7": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "Generate Key Points",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "active": true,
+    "settings": {
+        "executionOrder": "v1",
+        "binaryMode": "separate",
+        "availableInMCP": true
+    },
+    "versionId": "586a5330-5974-4d25-9ba2-c2f4d5909d8d",
+    "meta": {
+        "templateCredsSetupCompleted": true,
+        "instanceId": "9a61ad3a4b4343955ebf6507bf60bd76631c703df83526bf98c5c403fa94f01c"
+    },
+    "nodeGroups": [],
+    "id": "G5WgEHKUocdFT5vZ",
+    "tags": []
+}
