@@ -1,39 +1,12 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { MarketingFooter } from '@/components/marketing/MarketingFooter'
 
 export default function PricingPage() {
   return (
     <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <nav className="border-b border-gray-200 bg-white sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-blue-900 to-blue-700 bg-clip-text text-transparent">
-              📚 AuthorsLab.ai
-            </Link>
-            <div className="flex items-center gap-6">
-              <Link href="/how-it-works" className="text-gray-700 hover:text-blue-900 font-semibold">
-                How It Works
-              </Link>
-              <Link href="/pricing" className="text-blue-900 font-semibold border-b-2 border-blue-900">
-                Pricing
-              </Link>
-              <Link href="/editors" className="text-gray-700 hover:text-blue-900 font-semibold">
-                Our Editors
-              </Link>
-              <Link href="/faq" className="text-gray-700 hover:text-blue-900 font-semibold">
-                FAQ
-              </Link>
-              <Link href="/login" className="text-gray-700 hover:text-blue-900 font-semibold">
-                Sign In
-              </Link>
-              <Link href="/signup">
-                <Button>Get Started</Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <MarketingNav active="/pricing" />
 
       {/* Hero Section */}
       <section className="py-20 bg-gradient-to-br from-blue-50 to-purple-50">
@@ -543,6 +516,8 @@ export default function PricingPage() {
           </div>
         </div>
       </section>
+
+      <MarketingFooter />
     </div>
   )
 }

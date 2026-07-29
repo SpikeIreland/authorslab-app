@@ -146,15 +146,19 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center p-6">
-      <div className="bg-white rounded-3xl shadow-2xl p-10 w-full max-w-md">
+    <div className="min-h-screen bg-ivory flex flex-col items-center justify-center p-6">
+      <Link href="/" className="flex items-center justify-center gap-2 mb-6">
+        <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-sage to-sage-deep flex items-center justify-center font-serif text-lg text-white">A</span>
+        <span className="font-serif text-lg text-ink">AuthorsLab</span>
+      </Link>
+      <div className="bg-paper border border-line rounded-2xl shadow-[0_8px_40px_rgba(44,44,42,0.10)] p-10 w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Create Account</h1>
-          <p className="text-gray-600">Join AuthorsLab.ai and start your writing journey</p>
+          <h1 className="text-4xl font-medium font-serif text-ink mb-2">Begin.</h1>
+          <p className="text-muted">Join AuthorsLab and start your writing journey</p>
         </div>
 
         {error && (
-          <div className="bg-red-50 border-2 border-red-500 text-red-900 px-4 py-3 rounded-xl mb-6">
+          <div className="bg-status-high/10 border border-status-high/30 text-status-high px-4 py-3 rounded-xl mb-6">
             {error}
           </div>
         )}
@@ -162,7 +166,7 @@ export default function SignupPage() {
         <form onSubmit={handleSignup} className="space-y-5">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label htmlFor="firstName" className="block text-sm font-medium text-ink mb-2">
                 First Name
               </label>
               <input
@@ -171,13 +175,13 @@ export default function SignupPage() {
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 required
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition-all"
+                className="w-full px-4 py-3 border border-line rounded-lg focus:border-sage-deep focus:outline-none transition-all text-ink"
                 placeholder="John"
               />
             </div>
 
             <div>
-              <label htmlFor="lastName" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label htmlFor="lastName" className="block text-sm font-medium text-ink mb-2">
                 Last Name
               </label>
               <input
@@ -186,14 +190,14 @@ export default function SignupPage() {
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 required
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition-all"
+                className="w-full px-4 py-3 border border-line rounded-lg focus:border-sage-deep focus:outline-none transition-all text-ink"
                 placeholder="Doe"
               />
             </div>
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-ink mb-2">
               Email
             </label>
             <input
@@ -202,13 +206,13 @@ export default function SignupPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition-all"
+              className="w-full px-4 py-3 border border-line rounded-lg focus:border-sage-deep focus:outline-none transition-all text-ink"
               placeholder="you@example.com"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label htmlFor="password" className="block text-sm font-medium text-ink mb-2">
               Password
             </label>
             <input
@@ -218,13 +222,13 @@ export default function SignupPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition-all"
+              className="w-full px-4 py-3 border border-line rounded-lg focus:border-sage-deep focus:outline-none transition-all text-ink"
               placeholder="••••••••"
             />
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-ink mb-2">
               Confirm Password
             </label>
             <input
@@ -234,7 +238,7 @@ export default function SignupPage() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition-all"
+              className="w-full px-4 py-3 border border-line rounded-lg focus:border-sage-deep focus:outline-none transition-all text-ink"
               placeholder="••••••••"
             />
           </div>
@@ -242,23 +246,23 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-sage-deep hover:bg-sage-deep/90 text-white py-4 rounded-lg font-semibold text-lg transition-all disabled:bg-line disabled:cursor-not-allowed"
           >
             {isLoading ? 'Creating Account...' : 'Sign Up'}
           </button>
         </form>
 
         <div className="mt-6 text-center">
-          <p className="text-gray-600">
+          <p className="text-muted">
             Already have an account?{' '}
-            <Link href="/login" className="text-blue-600 font-semibold hover:text-blue-700">
+            <Link href="/login" className="text-sage-deep font-semibold hover:underline">
               Log In
             </Link>
           </p>
         </div>
 
-        <div className="mt-6 pt-6 border-t border-gray-200 text-center">
-          <Link href="/" className="text-gray-600 hover:text-gray-900 font-medium">
+        <div className="mt-6 pt-6 border-t border-line text-center">
+          <Link href="/" className="text-sage-deep hover:underline font-medium">
             ← Back to Home
           </Link>
         </div>

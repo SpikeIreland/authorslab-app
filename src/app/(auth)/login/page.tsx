@@ -82,28 +82,32 @@ function LoginContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center p-6">
-      <div className="bg-white rounded-3xl shadow-2xl p-10 w-full max-w-md">
+    <div className="min-h-screen bg-ivory flex flex-col items-center justify-center p-6">
+      <Link href="/" className="flex items-center justify-center gap-2 mb-6">
+        <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-sage to-sage-deep flex items-center justify-center font-serif text-lg text-white">A</span>
+        <span className="font-serif text-lg text-ink">AuthorsLab</span>
+      </Link>
+      <div className="bg-paper border border-line rounded-2xl shadow-[0_8px_40px_rgba(44,44,42,0.10)] p-10 w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-          <p className="text-gray-600">Log in to continue your writing journey</p>
+          <h1 className="text-4xl font-medium font-serif text-ink mb-2">Welcome back.</h1>
+          <p className="text-muted">Log in to continue your writing journey</p>
         </div>
 
         {verified && (
-          <div className="bg-green-50 border-2 border-green-500 text-green-900 px-4 py-3 rounded-xl mb-6">
-            ✅ Email verified! You can now log in.
+          <div className="bg-sage-bg border border-sage-deep/30 text-sage-deep px-4 py-3 rounded-xl mb-6">
+            Email verified! You can now log in.
           </div>
         )}
 
         {error && (
-          <div className="bg-red-50 border-2 border-red-500 text-red-900 px-4 py-3 rounded-xl mb-6">
+          <div className="bg-status-high/10 border border-status-high/30 text-status-high px-4 py-3 rounded-xl mb-6">
             {error}
           </div>
         )}
 
         <form onSubmit={handleLogin} className="space-y-5">
           <div>
-            <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-ink mb-2">
               Email
             </label>
             <input
@@ -112,13 +116,13 @@ function LoginContent() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition-all"
+              className="w-full px-4 py-3 border border-line rounded-lg focus:border-sage-deep focus:outline-none transition-all text-ink"
               placeholder="you@example.com"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label htmlFor="password" className="block text-sm font-medium text-ink mb-2">
               Password
             </label>
             <input
@@ -127,17 +131,17 @@ function LoginContent() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition-all"
+              className="w-full px-4 py-3 border border-line rounded-lg focus:border-sage-deep focus:outline-none transition-all text-ink"
               placeholder="••••••••"
             />
           </div>
 
           <div className="flex items-center justify-between">
             <label className="flex items-center">
-              <input type="checkbox" className="mr-2 rounded" />
-              <span className="text-sm text-gray-600">Remember me</span>
+              <input type="checkbox" className="mr-2 rounded accent-sage-deep" />
+              <span className="text-sm text-muted">Remember me</span>
             </label>
-            <Link href="/forgot-password" className="text-sm text-blue-600 hover:text-blue-700 font-semibold">
+            <Link href="/forgot-password" className="text-sm text-sage-deep hover:underline font-semibold">
               Forgot password?
             </Link>
           </div>
@@ -145,23 +149,23 @@ function LoginContent() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-sage-deep hover:bg-sage-deep/90 text-white py-4 rounded-lg font-semibold text-lg transition-all disabled:bg-line disabled:cursor-not-allowed"
           >
             {isLoading ? 'Logging in...' : 'Log In'}
           </button>
         </form>
 
         <div className="mt-6 text-center">
-          <p className="text-gray-600">
+          <p className="text-muted">
             Don&apos;t have an account?{' '}
-            <Link href="/signup" className="text-blue-600 font-semibold hover:text-blue-700">
+            <Link href="/signup" className="text-sage-deep font-semibold hover:underline">
               Sign Up
             </Link>
           </p>
         </div>
 
-        <div className="mt-6 pt-6 border-t border-gray-200 text-center">
-          <Link href="/" className="text-gray-600 hover:text-gray-900 font-medium">
+        <div className="mt-6 pt-6 border-t border-line text-center">
+          <Link href="/" className="text-sage-deep hover:underline font-medium">
             ← Back to Home
           </Link>
         </div>
@@ -173,8 +177,8 @@ function LoginContent() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+      <div className="min-h-screen bg-ivory flex items-center justify-center">
+        <div className="text-muted">Loading...</div>
       </div>
     }>
       <LoginContent />

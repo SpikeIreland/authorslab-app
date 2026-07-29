@@ -4,6 +4,8 @@ import { useState, FormEvent, ChangeEvent, DragEvent } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { N8N_WEBHOOKS } from '@/lib/n8n-config'
+import { MarketingNav } from '@/components/marketing/MarketingNav'
+import { MarketingFooter } from '@/components/marketing/MarketingFooter'
 
 export default function FreeAnalysisPage() {
   const [file, setFile] = useState<File | null>(null)
@@ -163,13 +165,7 @@ export default function FreeAnalysisPage() {
   if (isSuccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
-        <nav className="border-b border-gray-200 bg-white">
-          <div className="container mx-auto px-4 py-4">
-            <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-blue-900 to-blue-700 bg-clip-text text-transparent">
-              📚 AuthorsLab.ai
-            </Link>
-          </div>
-        </nav>
+        <MarketingNav />
 
         <div className="container mx-auto px-4 py-20">
           <div className="max-w-3xl mx-auto">
@@ -205,13 +201,7 @@ export default function FreeAnalysisPage() {
   if (isSubmitting) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
-        <nav className="border-b border-gray-200 bg-white">
-          <div className="container mx-auto px-4 py-4">
-            <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-blue-900 to-blue-700 bg-clip-text text-transparent">
-              📚 AuthorsLab.ai
-            </Link>
-          </div>
-        </nav>
+        <MarketingNav />
 
         <div className="container mx-auto px-4 py-20">
           <div className="max-w-3xl mx-auto">
@@ -232,27 +222,7 @@ export default function FreeAnalysisPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
-      {/* Navigation */}
-      <nav className="border-b border-gray-200 bg-white sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-blue-900 to-blue-700 bg-clip-text text-transparent">
-              📚 AuthorsLab.ai
-            </Link>
-            <div className="flex items-center gap-6">
-              <Link href="/how-it-works" className="text-gray-700 hover:text-blue-900 font-semibold">
-                How It Works
-              </Link>
-              <Link href="/pricing" className="text-gray-700 hover:text-blue-900 font-semibold">
-                Pricing
-              </Link>
-              <Link href="/signup">
-                <Button>Get Started</Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <MarketingNav />
 
       {/* Hero Header */}
       <div className="bg-gradient-to-r from-green-500 to-green-600 text-white py-16 relative overflow-hidden">
@@ -333,7 +303,7 @@ export default function FreeAnalysisPage() {
             </p>
             <Link href="/pricing">
               <Button className="bg-white text-red-600 hover:bg-gray-100 text-lg px-8 py-6">
-                Upgrade to Complete Author Package - $399
+                Explore AuthorsLab membership
               </Button>
             </Link>
           </div>
@@ -508,6 +478,8 @@ export default function FreeAnalysisPage() {
           </form>
         </div>
       </div>
+
+      <MarketingFooter />
     </div>
   )
 }
