@@ -1,0 +1,350 @@
+{
+  "name": "2.5 Alex Chat",
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract Parameters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Manuscript Context": {
+      "main": [
+        [
+          {
+            "node": "Build Alex Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Parameters": {
+      "main": [
+        [
+          {
+            "node": "Journey: Received",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Journey: Received": {
+      "main": [
+        [
+          {
+            "node": "Fetch Manuscript Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Alex Prompt": {
+      "main": [
+        [
+          {
+            "node": "Call Craft Call Cell",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Craft Call Cell": {
+      "main": [
+        [
+          {
+            "node": "Handle Cell Return",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Handle Cell Return": {
+      "main": [
+        [
+          {
+            "node": "Reply Success?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply Success?": {
+      "main": [
+        [
+          {
+            "node": "Journey: Ready",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Journey: Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Journey: Ready": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Journey: Failed": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "alex-chat",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        496,
+        -80
+      ],
+      "id": "15e8c8bf-29ff-4a8b-a457-9c40ad7425a4",
+      "name": "Webhook",
+      "webhookId": "32833822-6e6b-409f-9446-24c63f05eff7"
+    },
+    {
+      "parameters": {
+        "jsCode": "const fullInput = $input.first().json;\nconst body = fullInput.body || fullInput || {};\n\nreturn [{\n  json: {\n    message: body.message || '',\n    manuscriptId: body.manuscriptId,\n    chapterNumber: body.chapterNumber,\n    chapterTitle: body.chapterTitle || '',\n    chapterContent: body.chapterContent || '',\n    manuscriptTitle: body.manuscriptTitle || '',\n    authorFirstName: body.authorFirstName || 'Author',\n    analysisComplete: body.analysisComplete || false,\n    journey_id: body.journey_id || null,\n    isNoteDiscussion: body.isNoteDiscussion || false,\n    noteContent: body.noteContent || '',\n    noteQuestion: body.noteQuestion || '',\n    noteType: body.noteType || ''\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        -80
+      ],
+      "id": "af419109-d293-4c22-97fa-d833916f9ae0",
+      "name": "Extract Parameters"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  m.manuscript_summary,\n  m.full_analysis_key_points,\n  m.genre,\n  m.title as manuscript_title,\n  c.chapter_summary,\n  c.title as current_chapter_title,\n  prev_ch.chapter_summary as previous_chapter_summary,\n  prev_ch.title as previous_chapter_title,\n  next_ch.chapter_summary as next_chapter_summary,\n  next_ch.title as next_chapter_title\nFROM manuscripts m\nLEFT JOIN chapters c \n  ON c.manuscript_id = m.id \n  AND c.chapter_number = {{ $('Extract Parameters').first().json.chapterNumber }}\nLEFT JOIN chapters prev_ch\n  ON prev_ch.manuscript_id = m.id\n  AND prev_ch.chapter_number = {{ $('Extract Parameters').first().json.chapterNumber }} - 1\nLEFT JOIN chapters next_ch\n  ON next_ch.manuscript_id = m.id\n  AND next_ch.chapter_number = {{ $('Extract Parameters').first().json.chapterNumber }} + 1\nWHERE m.id = '{{ $('Extract Parameters').first().json.manuscriptId }}'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1168,
+        -80
+      ],
+      "id": "76380aca-01dc-416f-8859-73cc5fcf5f7e",
+      "name": "Fetch Manuscript Context"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================================\n// BUILD ALEX PROMPT - DIRECT API FORMAT\n// ============================================================================\n\nconst params = $('Extract Parameters').first().json;\nconst context = $('Fetch Manuscript Context').first().json || {};\n\nconsole.log('=== BUILDING ALEX PROMPT ===');\nconsole.log('Author:', params.authorFirstName);\nconsole.log('Chapter:', params.chapterNumber);\nconsole.log('Is Note Discussion:', params.isNoteDiscussion);\n\n// ============================================================================\n// SYSTEM PROMPT - ALEX'S CORE IDENTITY\n// ============================================================================\nconst systemPrompt = `You are Alex, a 38-year-old developmental editor with 12 years of experience helping authors transform manuscripts into publication-ready work. You specialize in structural storytelling and character development.\n\n## WHO YOU ARE\n\nYou're the kind of editor authors dream of working with - someone who genuinely gets excited about story craft, who remembers every detail of their manuscript, and who pushes them to be better while making them feel supported. You've read thousands of manuscripts, but you approach each one with fresh eyes and authentic curiosity.\n\n## YOUR VOICE\n\nYou speak like a smart, engaged colleague - not a formal report. Your responses are:\n- Conversational and warm, but substantive\n- Specific to THIS manuscript (you reference actual characters, scenes, chapters by name)\n- Direct when something isn't working, but always constructive\n- Genuinely curious about the author's creative choices\n- Free of corporate-speak, jargon, or overly formal language\n\n## WHAT YOU KNOW\n\nYou have complete knowledge of this manuscript:\n- Title: \"${params.manuscriptTitle}\"\n- Author: ${params.authorFirstName}\n- Genre: ${context.genre || 'Fiction'}\n- Full manuscript summary and key story elements\n- All chapter summaries and how they connect\n- The current chapter being discussed\n\n## HOW YOU ENGAGE\n\n**In conversation:**\n- Skip formal greetings - you're mid-collaboration\n- Reference specific story elements naturally (\"When Marcus confronts Elena in Chapter 7...\")\n- Show your thinking (\"What strikes me about this scene is...\")\n- Ask questions that reveal deeper issues, not just surface problems\n- If you disagree with a choice, explain your reasoning thoughtfully\n\n**When discussing your own notes:**\n- Own your observations - you wrote them, explain your thinking\n- Engage genuinely with the author's creative reasoning\n- Be willing to change your mind if their explanation is compelling\n- Never say \"Great question\" when they're responding to YOUR note\n\n## RELATIONSHIP AWARENESS\n\nChapter ${params.chapterNumber} suggests ${params.chapterNumber <= 5 ? 'early collaboration - be encouraging while building trust' : params.chapterNumber <= 15 ? 'established working relationship - be more direct about patterns you see' : 'deep partnership - be very direct, challenge assumptions confidently'}.\n\n## WHAT TO AVOID\n\n- Stage directions (*smiles*, *leans forward*)\n- Generic praise that could apply to any manuscript\n- Prescriptive commands (\"You must...\")\n- Repeating the same phrases\n- Forgetting details you should know about their story\n- Being so diplomatic you fail to be useful`;\n\n// ============================================================================\n// USER PROMPT - THE ACTUAL CONVERSATION\n// ============================================================================\nlet userPrompt = '';\n\nif (params.isNoteDiscussion) {\n  // Author is responding to one of Alex's notes\n  userPrompt = `I'm discussing a note you left on Chapter ${params.chapterNumber}: \"${params.chapterTitle}\"\n\n**Your original observation:**\n\"${params.noteContent}\"\n\n**Your discussion prompt:**\n\"${params.noteQuestion}\"\n\n**Element type:** ${params.noteType}\n\n**My response:**\n${params.message}\n\n---\n\nEngage with my explanation. If I've convinced you, acknowledge it genuinely. If you still have concerns, explain what you're still wrestling with. Reference specific story elements to ground the discussion.`;\n\n} else {\n  // Direct conversation\n  userPrompt = `**Current Chapter:** ${params.chapterNumber} - \"${params.chapterTitle}\"\n\n**My message:**\n${params.message}\n\n---\n\nRespond naturally as Alex. Reference specific story elements from the manuscript context when relevant.`;\n}\n\n// Add manuscript context to user prompt\nuserPrompt += `\\n\\n---\\n\\n**MANUSCRIPT CONTEXT FOR REFERENCE:**\n\nStory Summary:\n${context.manuscript_summary || 'Not available'}\n\nKey Story Elements:\n${context.full_analysis_key_points || 'Not available'}\n\nChapter Arc:\n- Previous: ${context.previous_chapter_title ? `Chapter ${params.chapterNumber - 1}: \"${context.previous_chapter_title}\" - ${context.previous_chapter_summary || 'No summary'}` : 'This is the first chapter'}\n- Current: Chapter ${params.chapterNumber}: \"${params.chapterTitle}\" - ${context.chapter_summary || 'No summary yet'}\n- Next: ${context.next_chapter_title ? `Chapter ${params.chapterNumber + 1}: \"${context.next_chapter_title}\" - ${context.next_chapter_summary || 'No summary'}` : 'This is the last chapter'}\n\nCurrent Chapter Content:\n${params.chapterContent || 'Not available'}`;\n\nconsole.log('=== PROMPT BUILT ===');\nconsole.log('System prompt length:', systemPrompt.length);\nconsole.log('User prompt length:', userPrompt.length);\n\nreturn [{\n  json: {\n    ...params,\n    context,\n    systemPrompt,\n    userPrompt\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1392,
+        -80
+      ],
+      "id": "baba0513-0063-4996-9958-a7ef8cc7b4bf",
+      "name": "Build Alex Prompt"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($('Handle Cell Return').first().json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2512,
+        -80
+      ],
+      "id": "ab55e19d-2d0a-4ad8-a6fe-5c4ea24676a7",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.as_journeys SET status = 'received', received_at = NOW() WHERE id = NULLIF($1, '')::uuid RETURNING id, status",
+        "options": {
+          "queryReplacement": "={{ $('Extract Parameters').first().json.journey_id }}"
+        }
+      },
+      "id": "72bfe3dd-646b-4898-8fd7-ec1ece46e209",
+      "name": "Journey: Received",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        944,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "crXhG5caNVHBmglo",
+          "cachedResultName": "Craft Call \u2014 Cell (DP-CC-01)"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "journey_id": "={{ $('Extract Parameters').first().json.journey_id }}",
+            "station_id": "alex.chat",
+            "model_requested": "claude-sonnet-4-5-20250929",
+            "system": "={{ $('Build Alex Prompt').first().json.systemPrompt }}",
+            "messages": "={{ [{role: 'user', content: $('Build Alex Prompt').first().json.userPrompt}] }}",
+            "max_tokens": 2048,
+            "temperature": 0.7
+          }
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "b62a4818-7faa-4e7f-abe2-d923658ea452",
+      "name": "Call Craft Call Cell",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1616,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const cellReturn = $input.first().json;\nconst params = $('Extract Parameters').first().json;\n\nlet responseText = '';\nlet terminalReason = null;\n\nif (cellReturn.ok) {\n  responseText = cellReturn.content || '';\n} else {\n  terminalReason = cellReturn.terminal_reason || 'unknown';\n  if (terminalReason === 'max_tokens_truncation') {\n    responseText = 'That response ran long \u2014 could you ask a more focused question?';\n  } else if (terminalReason === 'validation_failed') {\n    responseText = 'Sorry, something went wrong on my end. Please try again.';\n  } else {\n    responseText = \"I'm having trouble connecting. Let me help based on what I see in your manuscript.\";\n  }\n}\n\nreturn [{ json: {\n  ok: !!cellReturn.ok,\n  success: !!cellReturn.ok,\n  response: responseText,\n  alexResponse: responseText,\n  chapterNumber: params.chapterNumber,\n  isNoteDiscussion: params.isNoteDiscussion,\n  timestamp: new Date().toISOString(),\n  journey_id: params.journey_id,\n  cell_terminal_reason: terminalReason,\n  cell_model: cellReturn.model || null,\n  cell_input_tokens: cellReturn.input_tokens || null,\n  cell_output_tokens: cellReturn.output_tokens || null,\n  cell_latency_ms: cellReturn.latency_ms || null,\n  cell_cost_usd: cellReturn.cost_estimate_usd || null\n}}];"
+      },
+      "id": "459dd951-7942-4b26-8f52-e4b13c15fe2c",
+      "name": "Handle Cell Return",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "reply-ok",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ec4c46a8-7801-4a87-a1c1-8b93d654ff70",
+      "name": "Reply Success?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2064,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.as_journeys SET status = 'ready', completed_at = NOW() WHERE id = NULLIF($1, '')::uuid RETURNING id, status",
+        "options": {
+          "queryReplacement": "={{ $('Handle Cell Return').first().json.journey_id }}"
+        }
+      },
+      "id": "88dfec8e-6d1b-4edf-b710-0513b0235a4a",
+      "name": "Journey: Ready",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2288,
+        -176
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.as_journeys SET status = 'failed', completed_at = NOW(), terminal_reason = $2 WHERE id = NULLIF($1, '')::uuid RETURNING id, status",
+        "options": {
+          "queryReplacement": "={{ $('Handle Cell Return').first().json.journey_id }},{{ $('Handle Cell Return').first().json.cell_terminal_reason || 'unknown' }}"
+        }
+      },
+      "id": "5cb04ed2-e7e1-4d49-91ae-31cf4f7b4360",
+      "name": "Journey: Failed",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2288,
+        16
+      ]
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  }
+}

@@ -1,0 +1,301 @@
+{
+  "name": "1.0 Manuscript Cleanup (Re-upload)",
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Delete Issues",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Issues": {
+      "main": [
+        [
+          {
+            "node": "Delete Chapters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Chapters": {
+      "main": [
+        [
+          {
+            "node": "Delete Chat History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Chat History": {
+      "main": [
+        [
+          {
+            "node": "Delete Versions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Versions": {
+      "main": [
+        [
+          {
+            "node": "Reset Publishing Progress",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reset Publishing Progress": {
+      "main": [
+        [
+          {
+            "node": "Reset Editing Phases",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reset Editing Phases": {
+      "main": [
+        [
+          {
+            "node": "Update Manuscript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Manuscript": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "manuscript-cleanup",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "caa7fb2c-fd88-4826-a55d-92e5bb0164be",
+      "name": "Webhook",
+      "webhookId": "manuscript-cleanup-webhook"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Delete all chapter analysis issues\nDELETE FROM manuscript_issues \nWHERE manuscript_id = $1;\n\n-- Return count of deleted issues\nSELECT 'issues_deleted' as step;",
+        "options": {
+          "queryReplacement": "={{ [ $json.body.manuscriptId ] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        224,
+        0
+      ],
+      "id": "f34c489d-ff48-4bf3-9a7a-abb5091ef81b",
+      "name": "Delete Issues",
+      "credentials": {
+        "postgres": {
+          "id": "DKtQyHOvK3ea9lZG",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Delete all chapters\nDELETE FROM chapters \nWHERE manuscript_id = $1;\n\nSELECT 'chapters_deleted' as step;",
+        "options": {
+          "queryReplacement": "={{ [ $('Webhook').first().json.body.manuscriptId ] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        448,
+        0
+      ],
+      "id": "2fe1e313-29da-4b3f-a9a7-9f72aee95bd8",
+      "name": "Delete Chapters",
+      "credentials": {
+        "postgres": {
+          "id": "DKtQyHOvK3ea9lZG",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Delete all chat history\nDELETE FROM editor_chat_history \nWHERE manuscript_id = $1;\n\nSELECT 'chat_deleted' as step;",
+        "options": {
+          "queryReplacement": "={{ [ $('Webhook').first().json.body.manuscriptId ] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        672,
+        0
+      ],
+      "id": "ab56dbd1-8b2a-4d8a-9f32-9e2a45f1a8b3",
+      "name": "Delete Chat History",
+      "credentials": {
+        "postgres": {
+          "id": "DKtQyHOvK3ea9lZG",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Delete all version snapshots\nDELETE FROM manuscript_versions \nWHERE manuscript_id = $1;\n\nSELECT 'versions_deleted' as step;",
+        "options": {
+          "queryReplacement": "={{ [ $('Webhook').first().json.body.manuscriptId ] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        880,
+        0
+      ],
+      "id": "aa298ee2-835e-40bf-a831-d6fa3fa59704",
+      "name": "Delete Versions",
+      "credentials": {
+        "postgres": {
+          "id": "DKtQyHOvK3ea9lZG",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Update manuscript with new content and reset all analysis\nUPDATE manuscripts SET\n  title = $2,\n  genre = $3,\n  current_word_count = $4,\n  full_text = $5,\n  manuscript_summary = NULL,\n  full_analysis_key_points = NULL,\n  full_analysis_text = NULL,\n  report_pdf_url = NULL,\n  analysis_started_at = NULL,\n  full_analysis_completed_at = NULL,\n  developmental_phase_completed_at = NULL,\n  developmental_version = NULL,\n  developmental_version_created_at = NULL,\n  line_editing_started_at = NULL,\n  line_editing_ready_at = NULL,\n  sam_initial_thoughts = NULL,\n  copy_editing_started_at = NULL,\n  copy_editing_ready_at = NULL,\n  jordan_initial_thoughts = NULL,\n  alex_report_pdf_url = NULL,\n  sam_report_pdf_url = NULL,\n  jordan_report_pdf_url = NULL,\n  taylor_report_pdf_url = NULL,\n  quinn_report_pdf_url = NULL,\n  updated_at = NOW()\nWHERE id = $1;\n\nSELECT 'manuscript_updated' as step;",
+        "options": {
+          "queryReplacement": "={{ [\n  $('Webhook').first().json.body.manuscriptId,\n  $('Webhook').first().json.body.title,\n  $('Webhook').first().json.body.genre,\n  $('Webhook').first().json.body.wordCount,\n  $('Webhook').first().json.body.fullText\n] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1104,
+        0
+      ],
+      "id": "aaed12bf-469a-4658-b8c3-1491a3632d33",
+      "name": "Reset Publishing Progress",
+      "credentials": {
+        "postgres": {
+          "id": "DKtQyHOvK3ea9lZG",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Reset all phases to pending except Phase 1\nUPDATE editing_phases SET\n  phase_status = 'pending',\n  started_at = NULL,\n  completed_at = NULL,\n  ai_read_started_at = NULL,\n  ai_read_completed_at = NULL,\n  report_pdf_url = NULL,\n  chapters_analyzed = 0,\n  chapters_approved = 0,\n  updated_at = NOW()\nWHERE manuscript_id = $1 AND phase_number != 1;\n\n-- Set Phase 1 to active\nUPDATE editing_phases SET\n  phase_status = 'active',\n  started_at = NULL,\n  completed_at = NULL,\n  ai_read_started_at = NULL,\n  ai_read_completed_at = NULL,\n  report_pdf_url = NULL,\n  chapters_analyzed = 0,\n  chapters_approved = 0,\n  updated_at = NOW()\nWHERE manuscript_id = $1 AND phase_number = 1;\n\nSELECT 'phases_reset' as step;",
+        "options": {
+          "queryReplacement": "={{ [ $('Webhook').first().json.body.manuscriptId ] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1328,
+        0
+      ],
+      "id": "db5b0620-b410-4a31-a375-c49ea801f66b",
+      "name": "Reset Editing Phases",
+      "credentials": {
+        "postgres": {
+          "id": "DKtQyHOvK3ea9lZG",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Update manuscript with new content and reset analysis\nUPDATE manuscripts SET\n  title = $2,\n  genre = $3,\n  current_word_count = $4,\n  full_text = $5,\n  manuscript_summary = NULL,\n  full_analysis_key_points = NULL,\n  full_analysis_text = NULL,\n  report_pdf_url = NULL,\n  analysis_started_at = NULL,\n  updated_at = NOW()\nWHERE id = $1;\n\nSELECT 'manuscript_updated' as step;",
+        "options": {
+          "queryReplacement": "={{ [\n  $('Webhook').first().json.body.manuscriptId,\n  $('Webhook').first().json.body.title,\n  $('Webhook').first().json.body.genre,\n  $('Webhook').first().json.body.wordCount,\n  $('Webhook').first().json.body.fullText\n] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1552,
+        0
+      ],
+      "id": "e9c72f02-7a84-4c06-a3c1-e6b6cae2fa28",
+      "name": "Update Manuscript",
+      "credentials": {
+        "postgres": {
+          "id": "DKtQyHOvK3ea9lZG",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"manuscriptId\": \"{{ $('Webhook').first().json.body.manuscriptId }}\",\n  \"message\": \"Manuscript cleanup and update complete\",\n  \"timestamp\": \"{{ new Date().toISOString() }}\"\n}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1760,
+        0
+      ],
+      "id": "dd14939f-c5bc-43da-8d1b-d2562b159041",
+      "name": "Respond Success"
+    }
+  ]
+}

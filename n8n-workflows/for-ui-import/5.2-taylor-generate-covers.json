@@ -1,0 +1,453 @@
+{
+  "name": "5.2 Taylor Generate Covers",
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": true
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Set Generating Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Cover Prompts": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call DALL-E 3": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Image": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare for Storage": {
+      "main": [
+        [
+          {
+            "node": "Upload to Supabase Storage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to Supabase Storage": {
+      "main": [
+        [
+          {
+            "node": "Format Cover Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Cover Data": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect All Covers": {
+      "main": [
+        [
+          {
+            "node": "Build Final Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Final Update": {
+      "main": [
+        [
+          {
+            "node": "Update Publishing Progress",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Publishing Progress": {
+      "main": [
+        [
+          {
+            "node": "Add Taylor Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Collect All Covers",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call DALL-E 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Download Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Prepare for Storage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Generating Status": {
+      "main": [
+        [
+          {
+            "node": "Prepare Cover Prompts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "taylor-generate-covers",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        -16
+      ],
+      "id": "8c51f571-f4e5-4d49-9348-b8e05db1af51",
+      "name": "Webhook",
+      "webhookId": "72c20f6d-c6a7-4da0-8282-be990dbec454"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json.body || $json;\n\nconst manuscriptId = data.manuscriptId;\nconst genre = data.genre || 'Fiction';\nconst mood = data.mood || 'atmospheric';\nconst colors = data.colors || '';\nconst elements = data.elements || '';\nconst title = data.manuscriptTitle || 'the book';\n\n// Base prompt template\nconst basePrompt = `Professional book cover design for a ${genre} novel. ${mood} atmosphere. ${elements}. ${colors}. High quality, detailed, cinematic composition. Space for title text at top. No text, no letters, no words. Cover design only.`;\n\n// Generate 4 variations\nconst variations = [\n  `${basePrompt} Landscape orientation, dramatic lighting.`,\n  `${basePrompt} Portrait orientation, soft focus background.`,\n  `${basePrompt} Detailed composition, intense colors.`,\n  `${basePrompt} Wide environmental view, epic scale.`\n];\n\n// Return array of items - one per prompt\nreturn variations.map((prompt, index) => ({\n  manuscriptId,\n  manuscriptTitle: title,\n  genre,\n  prompt: prompt,\n  promptIndex: index + 1,\n  timestamp: new Date().toISOString()\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        -16
+      ],
+      "id": "0a871645-eef9-40b9-859b-902202a292ab",
+      "name": "Prepare Cover Prompts"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/images/generations",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer <REMOVED - recreate as OpenAI credential in authorslab>"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"dall-e-3\",\n  \"prompt\": \"={{ $json.prompt }}\",\n  \"n\": 1,\n  \"size\": \"1024x1024\",\n  \"quality\": \"standard\",\n  \"response_format\": \"url\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        -16
+      ],
+      "id": "b1bb9f14-823f-4ca0-a5d6-ff5a12e4d8fe",
+      "name": "Call DALL-E 3"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.data[0].url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0\""
+            },
+            {
+              "name": "Accept",
+              "value": "image/png,image/*,*/*"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "file"
+            }
+          },
+          "timeout": 120000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1328,
+        -16
+      ],
+      "id": "66f73017-c57c-473b-bc35-c96be4a5fdea",
+      "name": "Download Image",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the binary data from Download Image\nconst binaryData = $input.first().binary;\n\n// Get manuscriptId from Webhook (most reliable)\nconst manuscriptId = $(\"Webhook\").first().json.body.manuscriptId;\n\n// Get current item from the loop - use itemIndex from Split In Batches\nconst loopNode = $(\"Loop Over Items\");\nconst currentRunIndex =\n  loopNode.first().json.index !== undefined\n    ? loopNode.first().json.index\n    : $runIndex || 0;\n\n// Get the matching prompt from Prepare Cover Prompts\nconst allPrompts = $(\"Prepare Cover Prompts\").all();\nconst currentPrompt = allPrompts[currentRunIndex]?.json || allPrompts[0]?.json;\nconst coverIndex = currentPrompt.promptIndex || currentRunIndex + 1;\n\nconsole.log(\"\ud83d\udcc1 Preparing storage:\", {\n  manuscriptId,\n  coverIndex,\n  currentRunIndex,\n});\n\nreturn {\n  json: {\n    manuscriptId: manuscriptId,\n    fileName: `cover-${coverIndex}.png`,\n    storagePath: `${manuscriptId}/cover-${coverIndex}.png`,\n    prompt: currentPrompt.prompt || \"Generated cover\",\n    coverIndex: coverIndex,\n  },\n  binary: binaryData,\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1776,
+        -16
+      ],
+      "id": "6c61ab03-047d-4b42-9c59-bcfb6f21d1a2",
+      "name": "Prepare for Storage"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://itlkncjiifbgvmvuejgm.supabase.co/storage/v1/object/manuscript-covers/{{ $json.storagePath }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer <REMOVED - recreate as Supabase Service Key credential in authorslab>"
+            },
+            {
+              "name": "Content-Type",
+              "value": "image/png"
+            },
+            {
+              "name": "x-upsert",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2000,
+        -16
+      ],
+      "id": "8e4cb4ec-a689-4321-aaf0-475216b1d8a8",
+      "name": "Upload to Supabase Storage",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const uploadResponse = $input.first().json;\nconst storageData = $(\"Prepare for Storage\").first().json;\n\n// Get the current iteration index from the loop\nconst allPreparedItems = $(\"Prepare for Storage\").all();\nconst currentItemIndex = allPreparedItems.findIndex(\n  (item) => item.json.storagePath === storageData.storagePath,\n);\nconst coverIndex =\n  currentItemIndex >= 0 ? currentItemIndex + 1 : storageData.coverIndex || 1;\n\n// Construct public URL\nconst publicUrl = `https://itlkncjiifbgvmvuejgm.supabase.co/storage/v1/object/public/manuscript-covers/${storageData.storagePath}`;\n\nreturn {\n  id: coverIndex,\n  url: publicUrl,\n  prompt: storageData.prompt,\n  selected: false,\n  created_at: new Date().toISOString(),\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2224,
+        64
+      ],
+      "id": "51a255ac-1aa4-420d-a067-1485e901abf9",
+      "name": "Format Cover Data"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        880,
+        -208
+      ],
+      "id": "1c2f915f-dda1-42ef-a698-f09a575cae22",
+      "name": "Collect All Covers"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = $input.first().json;\nconst covers = inputData.data || [];\n\n// Get manuscriptId from Webhook (most reliable source)\nconst manuscriptId = $('Webhook').first().json.body.manuscriptId;\n\nconsole.log('\ud83d\udce6 Building final update:', {\n  manuscriptId,\n  coversCount: covers.length\n});\n\nreturn {\n  manuscriptId,\n  coverConcepts: covers,\n  totalCovers: covers.length,\n  completedAt: new Date().toISOString()\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        -208
+      ],
+      "id": "7ff377bf-9d34-4042-8b8b-d4ffbb90311b",
+      "name": "Build Final Update"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE publishing_progress\nSET \n  cover_concepts = $1::jsonb,\n  cover_generation_status = 'complete',\n  updated_at = NOW()\nWHERE manuscript_id = $2\nRETURNING *;",
+        "options": {
+          "queryReplacement": "={{ [ JSON.stringify($json.coverConcepts), $json.manuscriptId ] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1328,
+        -208
+      ],
+      "id": "0ea4623e-280c-40cc-a42c-ffe0da16fa4d",
+      "name": "Update Publishing Progress"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO editor_chat_history (\n  manuscript_id,\n  phase_number,\n  sender,\n  message\n) VALUES (\n  $1,\n  4,\n  'Taylor',\n  '\ud83c\udfa8 Your cover designs are ready! I''ve generated 4 professional concepts based on your genre and preferences. Click the \"Cover Designer\" panel above to view them. Take your time choosing - you can always ask me to generate more variations if needed!'\n)\nRETURNING *;",
+        "options": {
+          "queryReplacement": "={{ [ $('Webhook').first().json.body.manuscriptId ] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1552,
+        -208
+      ],
+      "id": "6dd3df11-6096-4526-8dd4-ae3416c9af19",
+      "name": "Add Taylor Message"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        656,
+        -16
+      ],
+      "id": "ec264f35-49aa-45f1-a7b0-73cd3ec1f656",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "amount": 20
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1104,
+        -16
+      ],
+      "id": "b6788fc3-3e87-49ed-b230-aff2e45c039f",
+      "name": "Wait",
+      "webhookId": "d1a36606-544f-44b7-b828-c688455a6a5d"
+    },
+    {
+      "parameters": {
+        "amount": 20
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1552,
+        -16
+      ],
+      "id": "8956f0bd-cabd-4bc5-a6ab-d1a6c6db1f9d",
+      "name": "Wait1",
+      "webhookId": "71f564ea-677f-4a91-a075-377d4a82e13c"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE publishing_progress\nSET \n  cover_generation_status = 'generating',\n  updated_at = NOW()\nWHERE manuscript_id = '{{ $json.body.manuscriptId }}'\nRETURNING *;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        208,
+        -16
+      ],
+      "id": "9b7945be-3b63-4dbe-b5dc-449d6187a450",
+      "name": "Set Generating Status"
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

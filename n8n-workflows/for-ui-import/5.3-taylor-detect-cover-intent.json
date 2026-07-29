@@ -1,0 +1,183 @@
+{
+  "name": "5.3 Taylor Detect Cover Intent",
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract Cover Preferences",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extract Cover Preferences",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Cover Preferences": {
+      "main": [
+        [
+          {
+            "node": "Parse and Prepare",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse and Prepare": {
+      "main": [
+        [
+          {
+            "node": "Trigger Cover Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger Cover Generation": {
+      "main": [
+        [
+          {
+            "node": "Immediate Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "taylor-detect-cover-intent",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "4cb9be32-8a6b-45a0-8371-cb37c0d712f6",
+      "name": "Webhook",
+      "webhookId": "63cca93e-3a6a-40b9-bf6e-2b63b44e190d"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=User's message: {{ $json.body.userMessage }}\n\nGenre: {{ $json.body.manuscriptData.genre }}\n\nExtract the cover design preferences from their message. If they haven't specified details, suggest appropriate defaults for a {{ $json.body.manuscriptData.genre }} book.\n\nReturn ONLY the JSON object, nothing else.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an expert at understanding user preferences for book cover design. Extract the key details from the user's message about what kind of cover they want.  Return ONLY valid JSON in this exact format: {   \"mood\": \"dark, mysterious, atmospheric\",   \"colors\": \"deep blues, purples, blacks\",   \"elements\": \"forest, magical effects, ethereal quality\",   \"style\": \"cinematic, detailed, professional\" }  If the user hasn't specified something, use appropriate defaults for their genre."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        224,
+        0
+      ],
+      "id": "3f1b51b6-2439-4815-8098-b0c48cd32c88",
+      "name": "Extract Cover Preferences"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-4-20250514",
+          "cachedResultName": "Claude 4 Sonnet"
+        },
+        "options": {
+          "maxTokensToSample": 500,
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        304,
+        224
+      ],
+      "id": "48ad18d3-fa96-43d5-bfce-4d22543df05f",
+      "name": "Anthropic Chat Model"
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiResponse = $input.first().json;\nlet coverPrefs;\n\ntry {\n  // Try to parse the AI response\n  const responseText = aiResponse.output || aiResponse.text || aiResponse.content[0].text;\n  // Remove markdown code blocks if present\n  const cleanedText = responseText.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim();\n  coverPrefs = JSON.parse(cleanedText);\n} catch (error) {\n  // Fallback to defaults\n  coverPrefs = {\n    mood: \"atmospheric, engaging\",\n    colors: \"vibrant, eye-catching\",\n    elements: \"genre-appropriate imagery\",\n    style: \"professional, cinematic\"\n  };\n}\n\nconst webhookData = $('Webhook').first().json.body;\n\nreturn {\n  manuscriptId: webhookData.manuscriptId,\n  genre: webhookData.manuscriptData.genre,\n  manuscriptTitle: webhookData.manuscriptData.title,\n  mood: coverPrefs.mood,\n  colors: coverPrefs.colors,\n  elements: coverPrefs.elements,\n  style: coverPrefs.style,\n  readyToGenerate: true\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        0
+      ],
+      "id": "3046ee07-4d20-4ae1-96e4-bb5fa5bc9fef",
+      "name": "Parse and Prepare"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://spikeislandstudios.app.n8n.cloud/webhook/taylor-generate-covers",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"manuscriptId\": \"{{ $json.manuscriptId }}\",\n  \"genre\": \"{{ $json.genre }}\",\n  \"mood\": \"{{ $json.mood }}\",\n  \"colors\": \"{{ $json.colors }}\",\n  \"elements\": \"{{ $json.elements }}\",\n  \"manuscriptTitle\": \"{{ $json.manuscriptTitle }}\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          },
+          "timeout": 2000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        800,
+        0
+      ],
+      "id": "31002cad-bea6-4355-84b5-d1719eaabcd4",
+      "name": "Trigger Cover Generation",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  success: true,\n  message: \"Cover generation started\",\n  response:\n    \"\ud83c\udfa8 Hang on! Let me create some cover designs. This will take a few minutes so I'll let you know when they're done but you'll be able to view them in the Cover Design Panel\",\n  estimatedTime: \"few minutes\",\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        0
+      ],
+      "id": "1a1dd287-b7c6-4af9-b0fb-9519fcc8b2fa",
+      "name": "Immediate Response"
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

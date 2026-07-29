@@ -1,0 +1,337 @@
+{
+  "name": "3.3 Sam Chat",
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "connections": {
+    "Fetch Sam's Issues": {
+      "main": [
+        [
+          {
+            "node": "Build Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Context": {
+      "main": [
+        [
+          {
+            "node": "Build Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Journey: Received",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Journey: Received": {
+      "main": [
+        [
+          {
+            "node": "Fetch Sam's Issues",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Prompt": {
+      "main": [
+        [
+          {
+            "node": "Call Craft Call Cell",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Craft Call Cell": {
+      "main": [
+        [
+          {
+            "node": "Handle Cell Return",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Handle Cell Return": {
+      "main": [
+        [
+          {
+            "node": "Reply Success?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply Success?": {
+      "main": [
+        [
+          {
+            "node": "Journey: Ready",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Journey: Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Journey: Ready": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Journey: Failed": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sam-chat",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1696,
+        80
+      ],
+      "id": "c3bb90c9-13aa-4cef-a582-388a7dfb128a",
+      "name": "Webhook",
+      "webhookId": "be267ce3-6b00-44f0-9d4f-72e3ea4beb8c"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($('Handle Cell Return').first().json) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        320,
+        80
+      ],
+      "id": "102f7958-54a8-4517-8145-4542a602526d",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  id,\n  element_type,\n  severity,\n  quoted_text,\n  issue_description,\n  editor_suggestion,\n  status\nFROM manuscript_issues\nWHERE manuscript_id = '{{ $('Webhook').first().json.body.manuscriptId }}'\n  AND chapter_number = {{ $('Webhook').first().json.body.chapterNumber }}\n  AND phase_number = 2\n  AND status != 'dismissed'\nORDER BY created_at;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1248,
+        80
+      ],
+      "id": "ad3a59b6-bcfa-4f1f-9002-d9e135d4c255",
+      "name": "Fetch Sam's Issues"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get webhook data from the Webhook node\nconst webhookData = $('Webhook').first().json;\nconst body = webhookData.body || webhookData;\n\n// Get issues from current input (SQL results)\nconst issues = $input.all();\n\nconsole.log('\ud83d\udcca Building context:', {\n  manuscriptId: body.manuscriptId,\n  chapterNumber: body.chapterNumber,\n  issueCount: issues.length\n});\n\n// Format Sam's issues for context\nconst issuesText = issues.length > 0 \n  ? issues.map((item, index) => {\n      const issue = item.json;\n      return `${index + 1}. [${issue.element_type}] \"${issue.quoted_text}\"\n   Issue: ${issue.issue_description}\n   Your suggestion: ${issue.editor_suggestion}`;\n    }).join('\\n\\n')\n  : 'No issues flagged yet for this chapter.';\n\n// Check if this is a \"Discuss\" button click\nconst isNoteDiscussion = !!body.issueId;\n\nconsole.log('Context details:', {\n  isNoteDiscussion,\n  issueCount: issues.length,\n  hasContext: !!body.context\n});\n\n// Build the context object\nconst context = {\n  manuscriptTitle: body.context?.manuscriptTitle || body.manuscriptTitle || 'Untitled',\n  chapterNumber: body.chapterNumber || body.context?.chapterNumber,\n  chapterTitle: body.context?.chapterTitle || body.chapterTitle || 'Chapter ' + body.chapterNumber,\n  chapterContent: body.context?.chapterContent || body.chapterContent || '',\n  samIssues: issuesText,\n  authorMessage: body.message,\n  authorFirstName: body.authorFirstName || 'there',\n  isNoteDiscussion: isNoteDiscussion\n};\n\n// If discussing a specific issue, add that context\nif (isNoteDiscussion && issues.length > 0) {\n  const specificIssue = issues.find(item => item.json.id === body.issueId);\n  \n  if (specificIssue) {\n    context.discussingIssue = {\n      category: specificIssue.json.element_type,\n      quotedText: specificIssue.json.quoted_text,\n      issue: specificIssue.json.issue_description,\n      suggestion: specificIssue.json.editor_suggestion\n    };\n    \n    console.log('\u2705 Found specific issue for discussion:', context.discussingIssue.category);\n  }\n}\n\nconsole.log('\u2705 Context built successfully');\n\nreturn { json: context };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1024,
+        80
+      ],
+      "id": "ddb9542d-b3cc-4285-a523-e85391260580",
+      "name": "Build Context"
+    },
+    {
+      "parameters": {
+        "jsCode": "const context = $json;\n\n// Build the prompt based on whether it's a discussion\nlet prompt = `MANUSCRIPT: \"${context.manuscriptTitle}\"\nCHAPTER: ${context.chapterNumber} - \"${context.chapterTitle}\"\n\nYOUR FLAGGED ISSUES FOR THIS CHAPTER:\n${context.samIssues}\n\nCHAPTER EXCERPT:\n${context.chapterContent}\n\n---\n\n`;\n\nif (context.isNoteDiscussion && context.discussingIssue) {\n  prompt += `DISCUSSION CONTEXT:\nThe author clicked \"Discuss\" on one of your editorial notes. Here's what you flagged:\n\nCategory: ${context.discussingIssue.category}\nQuoted Text: \"${context.discussingIssue.quotedText}\"\nYour Note: ${context.discussingIssue.issue}\nYour Suggestion: ${context.discussingIssue.suggestion}\n\nThe author is asking: \"${context.authorMessage}\"\n\nExplain your thinking about this note naturally - walk them through your editorial reasoning.`;\n} else {\n  prompt += `AUTHOR'S MESSAGE:\n${context.authorMessage}\n\nRespond as Sam would - specific, enthusiastic, and focused on prose craft.`;\n}\n\nreturn {\n  json: {\n    prompt: prompt\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -800,
+        80
+      ],
+      "id": "e7c413ed-ca5f-4508-8924-4de25fe4c29d",
+      "name": "Build Prompt"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.as_journeys SET status = 'received', received_at = NOW() WHERE id = NULLIF($1, '')::uuid RETURNING id, status",
+        "options": {
+          "queryReplacement": "={{ $('Webhook').first().json.body.journey_id }}"
+        }
+      },
+      "id": "b4ebdc4e-f729-4544-befc-cdc07c7ae149",
+      "name": "Journey: Received",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1472,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "crXhG5caNVHBmglo",
+          "cachedResultName": "Craft Call \u2014 Cell (DP-CC-01)"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "journey_id": "={{ $('Webhook').first().json.body.journey_id }}",
+            "station_id": "sam.chat",
+            "model_requested": "claude-haiku-4-5-20251001",
+            "system": "You are Sam, a professional line editor who helps authors polish their prose.  Your personality: - Enthusiastic and encouraging about good writing - Conversational and warm, not academic - Specific and actionable in your feedback - Focused on craft over rules - Appreciates beautiful language - Uses emoji \u2728 occasionally to emphasize excitement  Your responses should: - Be clear and conversational - Explain craft decisions in accessible terms - Provide specific examples from the text - Encourage the author's voice while suggesting improvements - Balance honesty with encouragement - Focus on the reader's experience  When discussing issues: - Quote the specific text - Explain what could be stronger and why - Suggest improvements that enhance their voice - Discuss the craft element at play (rhythm, word choice, etc.) - Make it a conversation, not a lecture  You have access to the chapter content and your flagged suggestions. Help authors see the potential in their prose.",
+            "messages": "={{ [{role: 'user', content: $('Build Prompt').first().json.prompt}] }}",
+            "max_tokens": 4096,
+            "temperature": 0.7
+          }
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "326fe643-7473-48f3-85f3-df542aede3cd",
+      "name": "Call Craft Call Cell",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -576,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const cellReturn = $input.first().json;\n\nlet responseText = '';\nlet terminalReason = null;\n\nif (cellReturn.ok) {\n  responseText = cellReturn.content || '';\n} else {\n  terminalReason = cellReturn.terminal_reason || 'unknown';\n  if (terminalReason === 'max_tokens_truncation') {\n    responseText = 'That response ran long \u2014 could you ask a more focused question?';\n  } else if (terminalReason === 'validation_failed') {\n    responseText = 'Sorry, something went wrong on my end. Please try again.';\n  } else {\n    responseText = \"I'm having trouble connecting right now. Try again in a moment.\";\n  }\n}\n\nreturn [{ json: {\n  ok: !!cellReturn.ok,\n  response: responseText,\n  cell_terminal_reason: terminalReason,\n  cell_model: cellReturn.model || null,\n  cell_input_tokens: cellReturn.input_tokens || null,\n  cell_output_tokens: cellReturn.output_tokens || null,\n  cell_latency_ms: cellReturn.latency_ms || null,\n  cell_cost_usd: cellReturn.cost_estimate_usd || null\n}}];"
+      },
+      "id": "3d250028-ebdf-4d3c-b289-31183eaef4fe",
+      "name": "Handle Cell Return",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -352,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cell-ok",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "213f78fc-c616-4007-8a81-995599b2011d",
+      "name": "Reply Success?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -128,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.as_journeys SET status = 'ready', completed_at = NOW() WHERE id = NULLIF($1, '')::uuid RETURNING id, status",
+        "options": {
+          "queryReplacement": "={{ $('Webhook').first().json.body.journey_id }}"
+        }
+      },
+      "id": "e66c146a-4e5e-4089-aa72-97b7266ac680",
+      "name": "Journey: Ready",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        96,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.as_journeys SET status = 'failed', completed_at = NOW(), terminal_reason = $2 WHERE id = NULLIF($1, '')::uuid RETURNING id, status",
+        "options": {
+          "queryReplacement": "={{ $('Webhook').first().json.body.journey_id }},{{ $('Handle Cell Return').first().json.cell_terminal_reason || 'unknown' }}"
+        }
+      },
+      "id": "693bb3ca-2bab-476f-a07f-294e072e02ea",
+      "name": "Journey: Failed",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        96,
+        176
+      ]
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  }
+}

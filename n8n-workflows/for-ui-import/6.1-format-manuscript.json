@@ -1,0 +1,574 @@
+{
+  "name": "6.1 Format Manuscript",
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Set Initial Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load All Chapters": {
+      "main": [
+        [
+          {
+            "node": "Load Front Matter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Front Matter": {
+      "main": [
+        [
+          {
+            "node": "Load Back Matter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Back Matter": {
+      "main": [
+        [
+          {
+            "node": "Compile Complete Manuscript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Status (Processing Started)": {
+      "main": [
+        [
+          {
+            "node": "Load Manuscript Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compile Complete Manuscript": {
+      "main": [
+        [
+          {
+            "node": "Check Formats Needed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Publishing Progress": {
+      "main": [
+        [
+          {
+            "node": "Error Handler - Update to Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Formats Needed": {
+      "main": [
+        [
+          {
+            "node": "Final Manuscript PDF",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Convert HTML to DOCX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final Manuscript PDF": {
+      "main": [
+        [
+          {
+            "node": "Store Version",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Initial Variables": {
+      "main": [
+        [
+          {
+            "node": "Update Status (Processing Started)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Version": {
+      "main": [
+        [
+          {
+            "node": "Update Publishing Progress",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Manuscript Metadata": {
+      "main": [
+        [
+          {
+            "node": "Load All Chapters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert HTML to DOCX": {
+      "main": [
+        [
+          {
+            "node": "Download DOCX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download DOCX": {
+      "main": [
+        [
+          {
+            "node": "Upload to Database",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "format-manuscript",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        -96
+      ],
+      "id": "0ae03b0f-79ef-401e-925d-ab3cd143c4ef",
+      "name": "Webhook",
+      "webhookId": "8db569e6-aa10-4797-b4de-675573907cc8"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  id,\n  chapter_number,\n  title,\n  content\nFROM chapters\nWHERE manuscript_id = '{{ $(\"Set Initial Variables\").item.json.manuscriptId }}'\nORDER BY chapter_number ASC;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        896,
+        -96
+      ],
+      "id": "4321e3e7-20f9-43e6-a012-2ac85817f096",
+      "name": "Load All Chapters",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT front_matter\nFROM publishing_progress\nWHERE manuscript_id = '{{ $(\"Set Initial Variables\").item.json.manuscriptId }}';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1120,
+        -96
+      ],
+      "id": "304ed0b3-70c5-4cab-baab-00599f31e60e",
+      "name": "Load Front Matter",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT back_matter\nFROM publishing_progress\nWHERE manuscript_id = '{{ $(\"Set Initial Variables\").item.json.manuscriptId }}';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1344,
+        -96
+      ],
+      "id": "c71b1a9b-d983-4077-ad25-804650264381",
+      "name": "Load Back Matter",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all the data from previous nodes\nconst chapters = $(\"Load All Chapters\").all();\nconst frontMatterData = $(\"Load Front Matter\").first().json;\nconst backMatterData = $(\"Load Back Matter\").first().json;\nconst metadataRaw = $(\"Load Manuscript Metadata\").first().json;\nconst settings = $(\"Set Initial Variables\").first().json;\n\n// Parse front and back matter (they come as JSONB from Postgres)\nconst frontMatter = frontMatterData.front_matter || {};\nconst backMatter = backMatterData.back_matter || {};\n\n// Format author name from Postgres results\nconst authorName = metadataRaw.first_name + \" \" + metadataRaw.last_name;\nconst bookTitle = metadataRaw.title;\n\n// Build HTML structure\nlet html = \"<!DOCTYPE html>\\n\";\nhtml += '<html lang=\"en\">\\n';\nhtml += \"<head>\\n\";\nhtml += '  <meta charset=\"UTF-8\">\\n';\nhtml += \"  <title>\" + bookTitle + \"</title>\\n\";\nhtml += \"  <style>\\n\";\nhtml += \"    body {\\n\";\nhtml += \"      font-family: '\" + settings.fontFamily + \"', serif;\\n\";\nhtml += \"      font-size: \" + settings.fontSize + \"pt;\\n\";\nhtml += \"      line-height: \" + settings.lineSpacing + \";\\n\";\nhtml +=\n  \"      margin: \" +\n  settings.margins.top +\n  \"in \" +\n  settings.margins.outer +\n  \"in \" +\n  settings.margins.bottom +\n  \"in \" +\n  settings.margins.inner +\n  \"in;\\n\";\nhtml += \"    }\\n\";\nhtml += \"    h1.book-title {\\n\";\nhtml += \"      text-align: center;\\n\";\nhtml += \"      font-size: 32pt;\\n\";\nhtml += \"      margin-top: 3in;\\n\";\nhtml += \"      margin-bottom: 0.5in;\\n\";\nhtml += \"      page-break-before: always;\\n\";\nhtml += \"    }\\n\";\nhtml += \"    h2.chapter-title {\\n\";\nhtml += \"      text-align: \" + settings.chapterStyle + \";\\n\";\nhtml += \"      font-size: 18pt;\\n\";\nhtml += \"      margin-top: 2in;\\n\";\nhtml += \"      margin-bottom: 1in;\\n\";\nhtml += \"      page-break-before: always;\\n\";\nhtml += \"    }\\n\";\nhtml += \"    p {\\n\";\nhtml += \"      text-indent: 0.5in;\\n\";\nhtml += \"      margin: 0;\\n\";\nhtml += \"      text-align: justify;\\n\";\nhtml += \"    }\\n\";\nhtml += \"    p.first-paragraph {\\n\";\nhtml += \"      text-indent: 0;\\n\";\nhtml += \"    }\\n\";\nhtml += \"    p.scene-break {\\n\";\nhtml += \"      text-align: center;\\n\";\nhtml += \"      text-indent: 0;\\n\";\nhtml += \"      margin: 1em 0;\\n\";\nhtml += \"    }\\n\";\nhtml += \"    .copyright-page {\\n\";\nhtml += \"      page-break-before: always;\\n\";\nhtml += \"      font-size: 10pt;\\n\";\nhtml += \"      text-align: left;\\n\";\nhtml += \"    }\\n\";\nhtml += \"    .dedication {\\n\";\nhtml += \"      page-break-before: always;\\n\";\nhtml += \"      text-align: center;\\n\";\nhtml += \"      font-style: italic;\\n\";\nhtml += \"      margin-top: 3in;\\n\";\nhtml += \"    }\\n\";\nhtml += \"    .author-bio {\\n\";\nhtml += \"      page-break-before: always;\\n\";\nhtml += \"      margin-top: 1in;\\n\";\nhtml += \"    }\\n\";\nhtml += \"    @page {\\n\";\nhtml +=\n  \"      margin: \" +\n  settings.margins.top +\n  \"in \" +\n  settings.margins.outer +\n  \"in \" +\n  settings.margins.bottom +\n  \"in \" +\n  settings.margins.inner +\n  \"in;\\n\";\nhtml += \"    }\\n\";\nhtml += \"  </style>\\n\";\nhtml += \"</head>\\n\";\nhtml += \"<body>\\n\";\n\n// FRONT MATTER - Title Page\nif (frontMatter.title_page) {\n  html += '<div class=\"title-page\">\\n';\n  html +=\n    '  <h1 class=\"book-title\">' +\n    (frontMatter.title_page.title || bookTitle) +\n    \"</h1>\\n\";\n\n  if (frontMatter.title_page.subtitle) {\n    html +=\n      '  <p style=\"text-align:center; font-size:18pt; margin-top:0.5in;\">' +\n      frontMatter.title_page.subtitle +\n      \"</p>\\n\";\n  }\n\n  html +=\n    '  <p style=\"text-align:center; margin-top:2in; font-size:14pt;\">' +\n    (frontMatter.title_page.author || authorName) +\n    \"</p>\\n\";\n  html += \"</div>\\n\";\n}\n\n// FRONT MATTER - Copyright Page\nif (frontMatter.copyright_page) {\n  html += '<div class=\"copyright-page\">\\n';\n  html +=\n    \"  <p>Copyright \u00a9 \" +\n    (frontMatter.copyright_page.copyright_year || new Date().getFullYear()) +\n    \" \" +\n    (frontMatter.title_page?.author || authorName) +\n    \"</p>\\n\";\n\n  if (frontMatter.copyright_page.publisher) {\n    html +=\n      \"  <p>Published by \" + frontMatter.copyright_page.publisher + \"</p>\\n\";\n  }\n\n  if (frontMatter.copyright_page.isbn) {\n    html += \"  <p>ISBN: \" + frontMatter.copyright_page.isbn + \"</p>\\n\";\n  }\n\n  html += \"  <br><br>\\n\";\n  html +=\n    \"  <p>\" + (frontMatter.copyright_page.copyright_notice || \"\") + \"</p>\\n\";\n  html += \"  <br>\\n\";\n  html += \"  <p>\" + (frontMatter.copyright_page.disclaimer || \"\") + \"</p>\\n\";\n  html += \"</div>\\n\";\n}\n\n// FRONT MATTER - Dedication\nif (frontMatter.dedication && frontMatter.dedication.text) {\n  html += '<div class=\"dedication\">\\n';\n  html += \"  <p>\" + frontMatter.dedication.text + \"</p>\\n\";\n  html += \"</div>\\n\";\n}\n\n// FRONT MATTER - Acknowledgements\nif (frontMatter.acknowledgements && frontMatter.acknowledgements.text) {\n  const ackText = frontMatter.acknowledgements.text.replace(/\\n\\n/g, \"</p><p>\");\n  html += '<div style=\"page-break-before: always;\">\\n';\n  html += '  <h2 style=\"text-align: center;\">Acknowledgements</h2>\\n';\n  html += '  <p class=\"first-paragraph\">' + ackText + \"</p>\\n\";\n  html += \"</div>\\n\";\n}\n\n// FRONT MATTER - Epigraph\nif (frontMatter.epigraph && frontMatter.epigraph.quote) {\n  html +=\n    '<div style=\"page-break-before: always; text-align: center; margin-top: 3in; font-style: italic;\">\\n';\n  html += '  <p>\"' + frontMatter.epigraph.quote + '\"</p>\\n';\n  html +=\n    '  <p style=\"margin-top: 1em;\">\u2014 ' +\n    frontMatter.epigraph.attribution +\n    \"</p>\\n\";\n  html += \"</div>\\n\";\n}\n\n// FRONT MATTER - Preface\nif (frontMatter.preface && frontMatter.preface.text) {\n  const prefaceText = frontMatter.preface.text.replace(/\\n\\n/g, \"</p><p>\");\n  html += '<div style=\"page-break-before: always;\">\\n';\n  html += '  <h2 style=\"text-align: center;\">Preface</h2>\\n';\n  html += '  <p class=\"first-paragraph\">' + prefaceText + \"</p>\\n\";\n  html += \"</div>\\n\";\n}\n\n// MAIN CONTENT - Chapters\nchapters.forEach(function (chapter) {\n  const chapterData = chapter.json;\n\n  // Detect prologue/epilogue by chapter number\n  const isPrologue = chapterData.chapter_number === 0;\n  const isEpilogue = chapterData.chapter_number === 999;\n\n  // Build chapter title\n  let chapterTitle = \"\";\n  if (isPrologue) {\n    chapterTitle = \"Prologue\";\n  } else if (isEpilogue) {\n    chapterTitle = \"Epilogue\";\n  } else {\n    chapterTitle = \"Chapter \" + chapterData.chapter_number;\n    if (chapterData.title) {\n      chapterTitle +=\n        '<br><span style=\"font-size:14pt; font-weight:normal;\">' +\n        chapterData.title +\n        \"</span>\";\n    }\n  }\n\n  html += '<h2 class=\"chapter-title\">' + chapterTitle + \"</h2>\\n\";\n\n  // Process chapter content\n  if (chapterData.content) {\n    const paragraphs = chapterData.content.split(\"\\n\\n\");\n\n    paragraphs.forEach(function (para, pIndex) {\n      para = para.trim();\n      if (!para) return;\n\n      // Check if it's a scene break\n      if (para === \"***\" || para === \"* * *\" || para === settings.sceneBreak) {\n        html += '<p class=\"scene-break\">' + settings.sceneBreak + \"</p>\\n\";\n      } else {\n        const isFirstPara = pIndex === 0;\n        html +=\n          \"<p\" +\n          (isFirstPara ? ' class=\"first-paragraph\"' : \"\") +\n          \">\" +\n          para +\n          \"</p>\\n\";\n      }\n    });\n  }\n});\n\n// BACK MATTER - Author Bio\nif (backMatter.author_bio && backMatter.author_bio.bio_text) {\n  html += '<div class=\"author-bio\">\\n';\n  html += '  <h2 style=\"text-align: center;\">About the Author</h2>\\n';\n\n  if (backMatter.author_bio.author_tagline) {\n    html +=\n      '  <p style=\"text-align: center; font-style: italic; margin-bottom: 1em;\">' +\n      backMatter.author_bio.author_tagline +\n      \"</p>\\n\";\n  }\n\n  const bioText = backMatter.author_bio.bio_text.replace(/\\n\\n/g, \"</p><p>\");\n  html += '  <p class=\"first-paragraph\">' + bioText + \"</p>\\n\";\n  html += \"</div>\\n\";\n}\n\n// BACK MATTER - Author Note\nif (backMatter.author_note && backMatter.author_note.text) {\n  const noteText = backMatter.author_note.text.replace(/\\n\\n/g, \"</p><p>\");\n  html += '<div style=\"page-break-before: always;\">\\n';\n  html += '  <h2 style=\"text-align: center;\">A Note from the Author</h2>\\n';\n  html += '  <p class=\"first-paragraph\">' + noteText + \"</p>\\n\";\n  html += \"</div>\\n\";\n}\n\n// BACK MATTER - Next Book Preview\nif (\n  backMatter.next_book_preview &&\n  backMatter.next_book_preview.title &&\n  backMatter.next_book_preview.preview_text\n) {\n  const previewText = backMatter.next_book_preview.preview_text.replace(\n    /\\n\\n/g,\n    \"</p><p>\",\n  );\n  html += '<div style=\"page-break-before: always;\">\\n';\n  html += '  <h2 style=\"text-align: center;\">Coming Soon</h2>\\n';\n  html +=\n    '  <h3 style=\"text-align: center; font-size: 16pt; font-weight: normal; margin-bottom: 1in;\">' +\n    backMatter.next_book_preview.title +\n    \"</h3>\\n\";\n  html += '  <p class=\"first-paragraph\">' + previewText + \"</p>\\n\";\n  html += \"</div>\\n\";\n}\n\n// Close HTML\nhtml += \"</body>\\n\";\nhtml += \"</html>\";\n\n// Return the complete HTML and metadata\nreturn [\n  {\n    json: {\n      html: html,\n      manuscriptId: settings.manuscriptId,\n      title: bookTitle,\n      author: frontMatter.title_page?.author || authorName,\n      formats: settings.formats,\n      settings: settings,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        -96
+      ],
+      "id": "d1035d1e-3555-40f2-b235-e24d0a32eb98",
+      "name": "Compile Complete Manuscript"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE publishing_progress\nSET \n  formatting_status = 'processing',\n  formatting_started_at = NOW()\nWHERE manuscript_id = '{{ $(\"Set Initial Variables\").item.json.manuscriptId }}'\nRETURNING *;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        448,
+        -96
+      ],
+      "id": "c84680ea-be95-4e4b-8761-ab06fa2b54c7",
+      "name": "Update Status (Processing Started)"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE publishing_progress\nSET \n  formatting_status = 'completed',\n  formatting_completed_at = NOW(),\n  formatted_files = jsonb_set(\n    COALESCE(formatted_files, '{}'::jsonb),\n    '{pdf_url}',\n    '\"https://itlkncjiifbgvmvuejgm.supabase.co/storage/v1/object/public/manuscript-formats/{{ $(\"Set Initial Variables\").item.json.manuscriptId }}/{{ $(\"Set Initial Variables\").item.json.manuscriptId }}.pdf\"'::jsonb\n  )\nWHERE manuscript_id = '{{ $(\"Set Initial Variables\").item.json.manuscriptId }}'\nRETURNING *;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2512,
+        -224
+      ],
+      "id": "fe73c195-dd2a-4042-bb58-28f7275ac4e1",
+      "name": "Update Publishing Progress"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE publishing_progress\nSET \n  formatting_status = 'failed',\n  formatting_error = '{{ $json.error.message }}'\nWHERE manuscript_id = '{{ $(\"Set Initial Variables\").item.json.manuscriptId }}';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2736,
+        -224
+      ],
+      "id": "199e736d-3883-4618-8bed-82cbf98af014",
+      "name": "Error Handler - Update to Failed"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.formats }}",
+                    "rightValue": "pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "15bc1de0-1139-458c-9c3c-c46acd870498"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Generate PDF"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "2c8df858-869b-447c-ab25-24cee179fe6e",
+                    "leftValue": "={{ $json.formats }}",
+                    "rightValue": "docx",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Generate DOCX"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        1792,
+        -96
+      ],
+      "id": "db1f4ac2-22de-4155-9017-6d335c9611df",
+      "name": "Check Formats Needed",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "resource": "pdf",
+        "pdfTemplateId": "cee77b23e127e78a",
+        "jsonParameters": true,
+        "download": true,
+        "propertiesJson": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.apiTemplateIo",
+      "typeVersion": 1,
+      "position": [
+        2064,
+        -224
+      ],
+      "id": "c453e866-cb5b-4cc5-a376-7d683581131b",
+      "name": "Final Manuscript PDF"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://itlkncjiifbgvmvuejgm.supabase.co/storage/v1/object/manuscript-formats/{{ $('Set Initial Variables').item.json.manuscriptId }}/{{ $('Set Initial Variables').item.json.manuscriptId }}.pdf",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer <REMOVED - recreate as Supabase Service Key credential in authorslab>"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/pdf"
+            },
+            {
+              "name": "x-upsert",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2288,
+        -224
+      ],
+      "id": "3e28bb41-0013-41f2-b3d2-eaf366e6733f",
+      "name": "Store Version"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "abb90631-5acc-4d84-b8dc-eabfe10d2c09",
+              "name": "manuscriptId",
+              "value": "={{ $json.body.manuscriptId }}",
+              "type": "string"
+            },
+            {
+              "id": "d9cf2f67-a377-4e30-8b79-c18763156979",
+              "name": "formats",
+              "value": "={{ $json.body.formats }}",
+              "type": "string"
+            },
+            {
+              "id": "aabdaa85-de55-4d24-b623-41c3e7fe990a",
+              "name": "trimSize",
+              "value": "={{ $json.body.settings.trim_size || '6x9' }}",
+              "type": "string"
+            },
+            {
+              "id": "8a902790-5de1-488d-9c95-1fe9e3cf34cb",
+              "name": "fontFamily",
+              "value": "={{ $json.body.settings.font_family || 'Garamond' }}",
+              "type": "string"
+            },
+            {
+              "id": "a3b98338-2dc7-47d6-b413-b3caebdc2281",
+              "name": "fontSize",
+              "value": "={{ $json.body.settings.font_size || 12 }}",
+              "type": "string"
+            },
+            {
+              "id": "3f67f589-2f08-4212-be3f-42c7830eadb9",
+              "name": "lineSpacing",
+              "value": "={{ $json.body.settings.line_spacing || 1.5 }}",
+              "type": "string"
+            },
+            {
+              "id": "93b88f9a-aa17-49d8-b532-deb54e4311f7",
+              "name": "chapterStyle",
+              "value": "={{ $json.body.settings.chapter_style || 'centered' }}",
+              "type": "string"
+            },
+            {
+              "id": "91254f98-302a-45c4-8ddd-d7af4c9ff9b2",
+              "name": "sceneBreak",
+              "value": "={{ $json.body.settings.scene_break || '***' }}",
+              "type": "string"
+            },
+            {
+              "id": "3c84558d-5818-466b-90a1-95b923b60601",
+              "name": "margins",
+              "value": "={{ $json.body.settings.margins }}",
+              "type": "string"
+            },
+            {
+              "id": "f2c6a869-f744-47c6-8ea7-872d67f9b059",
+              "name": "timestamp",
+              "value": "={{ new Date().toISOString() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": "={{ false }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        -96
+      ],
+      "id": "60741d6c-8d9c-4931-b381-da9f41ac91be",
+      "name": "Set Initial Variables"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  m.id,\n  m.title,\n  m.genre,\n  ap.first_name,\n  ap.last_name\nFROM manuscripts m\nINNER JOIN author_profiles ap ON m.author_id = ap.id\nWHERE m.id = '{{ $(\"Set Initial Variables\").item.json.manuscriptId }}';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "d6057e8f-7dd8-4112-84f2-bc6b7d930384",
+      "name": "Load Manuscript Metadata",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://v2.convertapi.com/convert/html/to/docx",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"Parameters\": [\n    {\n      \"Name\": \"File\",\n      \"FileValue\": {\n        \"Name\": \"manuscript.html\",\n        \"Data\": \"={{ $json.html }}\"\n      }\n    },\n    {\n      \"Name\": \"FileName\",\n      \"Value\": \"={{ $json.title }}.docx\"\n    },\n    {\n      \"Name\": \"PageSize\",\n      \"Value\": \"{{ $json.settings.pageSize || 'letter' }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2064,
+        -32
+      ],
+      "id": "263ca612-a901-46aa-9073-0c71be43cf66",
+      "name": "Convert HTML to DOCX"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.Files[0].Url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2272,
+        -32
+      ],
+      "id": "6fabb315-4e16-43fa-922b-3a176406e41e",
+      "name": "Download DOCX"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{\n  \"bucket\": \"manuscript-versions\",\n  \"path\": \"={{ $('Set Initial Variables').item.json.manuscriptId }}/{{ $json.title }}.docx\",\n  \"file\": \"={{ $binary.data }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2480,
+        -32
+      ],
+      "id": "cef305c0-869f-40f6-a313-999c735a4e26",
+      "name": "Upload to Database"
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

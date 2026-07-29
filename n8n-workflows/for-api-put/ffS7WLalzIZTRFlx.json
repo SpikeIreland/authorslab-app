@@ -1,0 +1,397 @@
+{
+  "name": "Token Validation",
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Token Validation Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract Token Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Token Data": {
+      "main": [
+        [
+          {
+            "node": "Validate Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Token": {
+      "main": [
+        [
+          {
+            "node": "Check Token Valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Token Valid": {
+      "main": [
+        [
+          {
+            "node": "Generate Auto Session",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Token Invalid Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Auto Session": {
+      "main": [
+        [
+          {
+            "node": "Create Auto Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Auto Session": {
+      "main": [
+        [
+          {
+            "node": "Clear Setup Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clear Setup Token": {
+      "main": [
+        [
+          {
+            "node": "Token Valid Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "validate-portal-token",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -800,
+        192
+      ],
+      "id": "c47dea32-1f1d-42d9-9507-e362adf85f66",
+      "name": "Token Validation Webhook",
+      "webhookId": "validate-portal-token"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "token-email-1",
+              "name": "email",
+              "value": "={{ $json.body.email || $json.query.email }}",
+              "type": "string"
+            },
+            {
+              "id": "token-value-1",
+              "name": "token",
+              "value": "={{ $json.body.token || $json.query.token }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -576,
+        192
+      ],
+      "id": "e82087eb-f0ed-453c-9316-f48533b8eafb",
+      "name": "Extract Token Data"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=SELECT \n  ap.*,\n  CASE \n    WHEN ap.onboarding_complete IS NULL OR ap.onboarding_complete = FALSE THEN FALSE\n    ELSE TRUE \n  END as onboarding_complete,\n  CASE \n    WHEN ap.portal_setup_token = '{{ $('Extract Token Data').first().json.token }}' \n         AND (ap.token_expires_at IS NULL OR ap.token_expires_at > NOW()) \n    THEN TRUE \n    ELSE FALSE \n  END as token_valid\nFROM author_profiles ap \nWHERE ap.email = '{{ $('Extract Token Data').first().json.email }}'\nLIMIT 1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -368,
+        192
+      ],
+      "id": "afb7a3ce-b582-4907-ac38-7fb20238359e",
+      "name": "Validate Token",
+      "credentials": {
+        "postgres": {
+          "id": "DKtQyHOvK3ea9lZG",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "token-check-1",
+              "leftValue": "={{ $json.token_valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equal"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -144,
+        192
+      ],
+      "id": "5cd3084c-f34e-46a8-aa4a-a611840a194b",
+      "name": "Check Token Valid"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "auto-session-1",
+              "name": "sessionToken",
+              "value": "={{ 'auto_session_' + Date.now() + '_' + Math.random().toString(36).substring(2, 15) }}",
+              "type": "string"
+            },
+            {
+              "id": "auto-expires-1",
+              "name": "expiresAt",
+              "value": "={{ new Date(Date.now() + 24*60*60*1000).toISOString() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        80,
+        80
+      ],
+      "id": "c76748fb-8410-4ed9-bb32-e8a79f4bed93",
+      "name": "Generate Auto Session"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "user_sessions",
+          "mode": "list",
+          "cachedResultName": "user_sessions"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user_id": "={{ $('Validate Token').first().json.id }}",
+            "session_token": "={{ $('Generate Auto Session').first().json.sessionToken }}",
+            "expires_at": "={{ $('Generate Auto Session').first().json.expiresAt }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "session_token",
+              "displayName": "session_token",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "expires_at",
+              "displayName": "expires_at",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "last_activity",
+              "displayName": "last_activity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "user_agent",
+              "displayName": "user_agent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ip_address",
+              "displayName": "ip_address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        304,
+        80
+      ],
+      "id": "67e2a0c1-dc5d-49a9-8f3a-aced5a91f044",
+      "name": "Create Auto Session",
+      "credentials": {
+        "postgres": {
+          "id": "DKtQyHOvK3ea9lZG",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=UPDATE author_profiles \nSET \n  last_login = NOW(),\n  portal_setup_token = NULL,\n  token_expires_at = NULL \nWHERE email = '{{ $('Extract Token Data').first().json.email }}'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        528,
+        80
+      ],
+      "id": "da68b543-5f76-40bc-900c-b2e08bd68941",
+      "name": "Clear Setup Token",
+      "credentials": {
+        "postgres": {
+          "id": "DKtQyHOvK3ea9lZG",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"valid\": true,\n  \"user\": {\n    \"id\": \"{{ $('Validate Token').first().json.id }}\",\n    \"email\": \"{{ $('Validate Token').first().json.email }}\",\n    \"firstName\": \"{{ $('Validate Token').first().json.first_name }}\",\n    \"lastName\": \"{{ $('Validate Token').first().json.last_name }}\"\n  },\n  \"session\": {\n    \"token\": \"{{ $('Generate Auto Session').first().json.sessionToken }}\",\n    \"expiresAt\": \"{{ $('Generate Auto Session').first().json.expiresAt }}\"\n  },\n  \"onboardingComplete\": {{ $('Validate Token').first().json.onboarding_complete }},\n  \"redirectTo\": \"{{ $('Validate Token').first().json.onboarding_complete ? '/author-login/author-dashboard/' : '/author-login/author-onboarding/' }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.2,
+      "position": [
+        752,
+        80
+      ],
+      "id": "666e8f31-e52f-40b5-87ca-dfce7b1b9bc2",
+      "name": "Token Valid Response"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": false,\n  \"valid\": false,\n  \"error\": \"Invalid or expired token\",\n  \"message\": \"Please log in manually\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        288
+      ],
+      "id": "38738c1f-a07f-45ae-ae2e-3c0e444ac4d1",
+      "name": "Token Invalid Response"
+    }
+  ]
+}

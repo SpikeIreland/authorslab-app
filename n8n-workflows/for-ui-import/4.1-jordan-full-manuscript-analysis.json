@@ -1,0 +1,612 @@
+{
+  "name": "4.1 Jordan Full Manuscript Analysis",
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "connections": {
+    "Parse Response": {
+      "main": [
+        [
+          {
+            "node": "Report Formatting",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Store Editor's Thoughts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Report Formatting": {
+      "main": [
+        [
+          {
+            "node": "Create a pdf",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a pdf": {
+      "main": [
+        [
+          {
+            "node": "Extract pdf url",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract pdf url": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Extract ManuscriptID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract ManuscriptID": {
+      "main": [
+        [
+          {
+            "node": "Update Report URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Report URL": {
+      "main": [
+        [
+          {
+            "node": "Fetch Author Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Author Email": {
+      "main": [
+        [
+          {
+            "node": "Prepare Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Email": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Journey: Received",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Journey: Received": {
+      "main": [
+        [
+          {
+            "node": "Fetch Manuscript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Manuscript": {
+      "main": [
+        [
+          {
+            "node": "Build Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Prompt": {
+      "main": [
+        [
+          {
+            "node": "Call Cell",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Cell": {
+      "main": [
+        [
+          {
+            "node": "Chapter Context Assessment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chapter Context Assessment": {
+      "main": [
+        [
+          {
+            "node": "Reply Success?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply Success?": {
+      "main": [
+        [
+          {
+            "node": "Parse Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Journey: Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Editor's Thoughts": {
+      "main": [
+        [
+          {
+            "node": "Journey: Ready",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Journey: Ready": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Journey: Failed": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "jordan-full-manuscript-analysis",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -624,
+        -416
+      ],
+      "id": "08823c7c-0d54-4f7d-84bb-325b5dac4fcc",
+      "name": "Webhook",
+      "webhookId": "1b415f7a-2193-44c2-8dec-f9966613a0d5"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=SELECT \n  m.id, \n  m.title, \n  m.genre, \n  m.manuscript_summary, \n  m.full_analysis_key_points, \n  m.current_word_count, \n  m.author_id,\n  ap.first_name as author_first_name, \n  ap.last_name as author_last_name,\n  mv.content as line_edited_version\nFROM manuscripts m \nJOIN author_profiles ap ON m.author_id = ap.id\nLEFT JOIN manuscript_versions mv ON m.id = mv.manuscript_id \n  AND mv.phase_number = 2 \n  AND mv.version_type = 'approved_snapshot'\nWHERE m.id = '{{ $json.body.manuscriptId }}'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -176,
+        -416
+      ],
+      "id": "15b7974f-95a6-4c55-8523-ec8256a4275f",
+      "name": "Fetch Manuscript",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Jordan has read the manuscript\",\n  \"manuscriptId\": \"{{ $json.manuscriptId }}\",\n  \"timestamp\": \"{{ $json.timestamp }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1616,
+        -320
+      ],
+      "id": "e6edf32e-b096-4060-81dd-f83285ebe852",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract Jordan's initial thoughts\nconst response = $input.first().json;\nconst jordanThoughts = response.output || response.text || '';\n\nconsole.log('=== JORDAN INITIAL THOUGHTS ===');\nconsole.log('Response length:', jordanThoughts.length);\n\n// Get manuscript ID from webhook\nconst manuscriptId = $('Webhook').first().json.body.manuscriptId;\n\nreturn {\n  json: {\n    manuscriptId: manuscriptId,\n    jordanThoughts: jordanThoughts.trim(),\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        944,
+        -512
+      ],
+      "id": "0afb5e0c-d0eb-4df5-bb5c-94ff7c4b171c",
+      "name": "Parse Response"
+    },
+    {
+      "parameters": {
+        "jsCode": "const jordanThoughts =\n  $json.jordanThoughts ||\n  \"Jordan is analyzing the manuscript for technical excellence!\";\nconst manuscriptData = $(\"Fetch Manuscript\").first().json;\n\n// Convert markdown to HTML\nconst htmlAnalysis = jordanThoughts\n  .replace(/\\*\\*(.*?)\\*\\*/g, '<strong style=\"font-weight: 600;\">$1</strong>')\n  .replace(/\\*(.*?)\\*/g, \"<em>$1</em>\")\n  .replace(/\\n\\n/g, '</p><p style=\"margin: 15px 0; line-height: 1.6;\">')\n  .replace(/^/, '<p style=\"margin: 15px 0; line-height: 1.6;\">')\n  .replace(/$/, \"</p>\");\n\nconst currentDate = new Date().toLocaleDateString(\"en-US\", {\n  year: \"numeric\",\n  month: \"long\",\n  day: \"numeric\",\n});\n\nconst reportData = {\n  authorName:\n    `${manuscriptData.author_first_name || \"\"} ${manuscriptData.author_last_name || \"\"}`.trim() ||\n    \"Author\",\n  manuscriptTitle: manuscriptData.title || \"Untitled\",\n  analysisDate: currentDate,\n  totalWordCount: (manuscriptData.current_word_count || 0).toLocaleString(),\n  genre: manuscriptData.genre || \"Fiction\",\n  analysisReport: htmlAnalysis,\n  manuscriptId: $json.manuscriptId,\n};\n\nconsole.log(\"\u2705 Jordan report formatted for PDF\");\nreturn { json: reportData };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1168,
+        -608
+      ],
+      "id": "c3fdf146-aa78-4456-9c12-d31c68742384",
+      "name": "Report Formatting"
+    },
+    {
+      "parameters": {
+        "resource": "pdf",
+        "pdfTemplateId": "12b77b23ed8e7f8a",
+        "jsonParameters": true,
+        "download": true,
+        "propertiesJson": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.apiTemplateIo",
+      "typeVersion": 1,
+      "position": [
+        1392,
+        -608
+      ],
+      "id": "89b1f4ba-1feb-4a06-ad29-cc3799079fe8",
+      "name": "Create a pdf"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://itlkncjiifbgvmvuejgm.supabase.co/storage/v1/object/manuscript-reports/{{ $('Webhook').first().json.body.manuscriptId }}_report.pdf",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/pdf"
+            },
+            {
+              "name": "x-upsert",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1840,
+        -608
+      ],
+      "id": "951b9ef7-942a-4992-92d7-3a959a6826e5",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $json;\n\nif (response.status !== 'success') {\n  throw new Error('PDF generation failed');\n}\n\nconst pdfUrl = response.download_url || response.download_url_pdf;\nconst manuscriptId = $('Parse Response').first().json.manuscriptId;\n\nconsole.log('\u2705 PDF URL:', pdfUrl);\n\n// Pass through the binary data from \"Create a pdf\" node\nreturn {\n  json: {\n    pdfUrl: pdfUrl,\n    manuscriptId: manuscriptId\n  },\n  binary: $binary  // <-- This passes through the binary data\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1616,
+        -608
+      ],
+      "id": "ad31ea71-7ef7-4ec8-a656-6ae061a5685f",
+      "name": "Extract pdf url"
+    },
+    {
+      "parameters": {
+        "jsCode": "const key = $json.Key;\nconst match = key.match(/manuscript-reports\\/([a-f0-9-]+)_report\\.pdf/);  // Changed: removed \"sam_\"\nconst manuscriptId = match ? match[1] : null;\n\nif (!manuscriptId) {\n  throw new Error(`Could not extract manuscript ID from: ${key}`);\n}\n\nconst publicUrl = `https://itlkncjiifbgvmvuejgm.supabase.co/storage/v1/object/public/${key}`;\n\nconsole.log('\u2705 Sam PDF uploaded:', publicUrl);\n\nreturn {\n  json: {\n    manuscriptId: manuscriptId,\n    reportUrl: publicUrl\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2064,
+        -608
+      ],
+      "id": "d201ac0b-7400-460a-ad45-7f8929497617",
+      "name": "Extract ManuscriptID"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=UPDATE editing_phases \nSET \n  report_pdf_url = '{{ $json.reportUrl }}',\n  ai_read_completed_at = NOW()\nWHERE manuscript_id = '{{ $json.manuscriptId }}' \n  AND phase_number = 3\nRETURNING id, manuscript_id, phase_number;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2288,
+        -608
+      ],
+      "id": "8e7e5da9-4176-46b0-9137-97741203b4a5",
+      "name": "Update Report URL"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=SELECT \n  ap.email,\n  ap.first_name,\n  ap.last_name,\n  m.title as manuscript_title\nFROM manuscripts m\nJOIN author_profiles ap ON m.author_id = ap.id\nWHERE m.id = '{{ $(\"Extract ManuscriptID\").first().json.manuscriptId }}'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2512,
+        -608
+      ],
+      "id": "10fe16a5-0607-4baa-87f9-33a78b4a3015",
+      "name": "Fetch Author Email"
+    },
+    {
+      "parameters": {
+        "jsCode": "const author = $json;\nconst reportUrl = $('Extract ManuscriptID').first().json.reportUrl;\n\nreturn {\n  json: {\n    to: author.email,\n    subject: `\ud83d\udd0d Jordan's Copy Editing Report for \"${author.manuscript_title}\"`,\n    body: `Hi ${author.first_name},\n\nI've completed my technical review of your manuscript and I'm impressed with the quality Sam helped you achieve!\n\n\ud83d\udcc4 View your complete copy-editing report:\n${reportUrl}\n\nThe prose work is solid\u2014now let's ensure every detail is technically perfect. \ud83d\udd0d\n\nReady to polish? Head back to your Author Studio and click on any chapter to see my specific notes.\n\n\u2014Jordan\nYour Copy Editor`,\n    reportUrl: reportUrl\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2736,
+        -608
+      ],
+      "id": "290e46ff-76fe-4c2d-a3bb-3b4b9326c6f3",
+      "name": "Prepare Email"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=UPDATE editing_phases\nSET \n  ai_read_completed_at = NOW()\nWHERE manuscript_id = '{{ $json.manuscriptId }}'\n  AND phase_number = 3\nRETURNING id, manuscript_id, phase_number, editor_name, ai_read_completed_at;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1168,
+        -416
+      ],
+      "id": "c7ca99f1-68fb-4c76-b208-3b07e7c1b80a",
+      "name": "Store Editor's Thoughts"
+    },
+    {
+      "parameters": {
+        "fromEmail": "editors@authorslab.ai",
+        "toEmail": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "html": "=<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\">\n  <p style=\"font-size: 16px; color: #333;\">Hi {{ $('Fetch Author Email').first().json.first_name }},</p>\n  \n  <p style=\"font-size: 16px; color: #333;\">I've completed my technical review of your manuscript and I'm impressed with the quality Sam helped you achieve! \ud83d\udd0d</p>\n  \n  <div style=\"background: #eff6ff; border-left: 4px solid #2563eb; padding: 20px; margin: 20px 0;\">\n    <p style=\"margin: 0; font-size: 16px; color: #1e40af;\">\n      <strong>\ud83d\udcc4 Your Copy-Editing Report is Ready</strong>\n    </p>\n  </div>\n  \n  <p style=\"text-align: center; margin: 30px 0;\">\n    <a href=\"{{ $json.reportUrl }}\" style=\"background: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;\">View Jordan's Report</a>\n  </p>\n  \n  <p style=\"font-size: 16px; color: #333;\">The prose work is solid\u2014now let's ensure every detail is technically perfect.</p>\n  \n  <p style=\"font-size: 16px; color: #333;\">Ready to polish? Head back to your Author Studio and click on any chapter to see my specific notes.</p>\n  \n  <p style=\"font-size: 16px; color: #666; margin-top: 30px;\">\u2014Jordan<br><em>Your Copy Editor</em></p>\n</div>",
+        "options": {
+          "appendAttribution": false,
+          "attachments": "data"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2960,
+        -608
+      ],
+      "id": "34a6fba6-ab9a-4a98-afbd-5c36126b9797",
+      "name": "Send email",
+      "webhookId": "170c8f8f-a6bb-42d3-87cc-ece3bbd90c56"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.as_journeys SET status = 'received', received_at = NOW() WHERE id = NULLIF($1, '')::uuid RETURNING id, status",
+        "options": {
+          "queryReplacement": "={{ $('Webhook').first().json.body.journey_id }}"
+        }
+      },
+      "id": "a7e303a4-e733-4112-9bcc-60c54dd4512e",
+      "name": "Journey: Received",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -400,
+        -416
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ms = $('Fetch Manuscript').first().json;\n\nconst systemPrompt = `You are Jordan, a meticulous copy editor with a keen eye for technical excellence. \nYour role is to ensure the manuscript is grammatically flawless, internally consistent, \nand professionally polished.\n\nFocus areas:\n- Grammar and mechanics (subject-verb agreement, tense consistency, fragments)\n- Punctuation (commas, apostrophes, dialogue formatting, semicolons)\n- Consistency (spelling variations, capitalization, hyphenation)\n- Character detail consistency (ONLY if you can quote specific conflicting passages)\n- Timeline accuracy (ONLY if you can quote specific conflicting dates/events)\n- Style guide adherence (Chicago Manual of Style for fiction)\n\nCRITICAL RULE FOR CONSISTENCY CLAIMS:\nIf you claim a consistency issue (like \"character's eye color changes\" or \"timeline conflict\"), \nyou MUST provide:\n1. Quote from first instance: \"exact text showing detail A\"\n2. Quote from second instance: \"exact text showing contradictory detail B\"\n\nIf you cannot provide both quotes, DO NOT mention the inconsistency.\n\nYour personality:\n- Precise and methodical\n- Explains grammar rules clearly without being pedantic\n- Uses technical terminology appropriately\n- Appreciates well-crafted technical writing\n- Encouraging but detail-oriented\n- Values accuracy over finding issues\n\nGenerate a comprehensive report identifying:\n1. Most common grammar/punctuation patterns you observed\n2. Consistency issues you can document with specific quotes\n3. Timeline or factual discrepancies with quoted evidence\n4. Style guide violations\n5. Overall technical quality assessment\n\nBe thorough but not overwhelming. Focus on patterns rather than listing every instance.\nDO NOT speculate or mention issues you cannot directly prove with quotes from the manuscript.`;\n\nconst userPrompt = `You're meeting this author for the first time and just finished reading their line-edited manuscript.\n\nMANUSCRIPT: \"${ms.title}\"\nAUTHOR: ${ms.author_first_name}\nGENRE: ${ms.genre}\nWORD COUNT: ${ms.current_word_count}\n\nALEX'S DEVELOPMENTAL SUMMARY:\n${ms.manuscript_summary}\n\nSAM'S LINE EDITING NOTES:\n${ms.full_analysis_key_points}\n\nLINE-EDITED MANUSCRIPT (Your source material):\n${ms.line_edited_version}\n\n---\n\nGive your professional assessment as Jordan. Focus on:\n\n1. Overall technical quality (grammar, punctuation, consistency)\n2. Most common patterns you observed (e.g., \"consistent comma splices in dialogue tags\")\n3. Consistency issues YOU CAN DOCUMENT:\n   - ONLY mention character detail inconsistencies if you can quote both conflicting passages\n   - ONLY mention timeline issues if you can quote the contradictory dates/events\n   - Example format: \"In Chapter 3: 'his blue eyes sparkled' vs. Chapter 15: 'his brown eyes narrowed'\"\n4. Your game plan for copy editing this manuscript\n\nVERIFICATION RULE:\nBefore mentioning ANY consistency issue, ask yourself: \"Can I quote both instances from the manuscript?\"\nIf NO \u2192 Do not mention it\nIf YES \u2192 Include both quotes in your assessment\n\nBe methodical and precise, but encouraging. This author has already done great work with Alex and Sam - now you're here to ensure technical excellence. Focus on patterns and issues you can prove, not speculation. \ud83d\udd0d`;\n\nreturn [{ json: { system: systemPrompt, user: userPrompt } }];"
+      },
+      "id": "d1463140-c12f-46bd-99b9-bd8ece1be8ef",
+      "name": "Build Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        48,
+        -416
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "crXhG5caNVHBmglo",
+          "cachedResultName": "Craft Call \u2014 Cell (DP-CC-01)"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "journey_id": "={{ $('Webhook').first().json.body.journey_id }}",
+            "station_id": "jordan.full_analysis",
+            "model_requested": "claude-sonnet-4-5-20250929",
+            "system": "={{ $('Build Prompt').first().json.system }}",
+            "messages": "={{ [{role: 'user', content: $('Build Prompt').first().json.user}] }}",
+            "max_tokens": 4000,
+            "temperature": 0.2
+          }
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "b9e2e532-efb4-4aa6-be47-d440748a6e12",
+      "name": "Call Cell",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        272,
+        -416
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const cellReturn = $input.first().json;\nreturn [{ json: {\n  output: cellReturn.ok ? (cellReturn.content || '') : '',\n  ok: !!cellReturn.ok,\n  cell_terminal_reason: cellReturn.ok ? null : (cellReturn.terminal_reason || 'unknown'),\n  cell_model: cellReturn.model || null,\n  cell_input_tokens: cellReturn.input_tokens || null,\n  cell_output_tokens: cellReturn.output_tokens || null,\n  cell_latency_ms: cellReturn.latency_ms || null,\n  cell_cost_usd: cellReturn.cost_estimate_usd || null\n}}];"
+      },
+      "id": "4e7c5e07-8181-49a6-9d70-c327cbb6e532",
+      "name": "Chapter Context Assessment",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        496,
+        -416
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cell-ok",
+              "leftValue": "={{ $('Chapter Context Assessment').first().json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "3437f644-2b76-46e6-990a-64255bd45ed6",
+      "name": "Reply Success?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        720,
+        -416
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.as_journeys SET status = 'ready', completed_at = NOW() WHERE id = NULLIF($1, '')::uuid RETURNING id, status",
+        "options": {
+          "queryReplacement": "={{ $('Webhook').first().json.body.journey_id }}"
+        }
+      },
+      "id": "7a39dc92-e4a5-4a37-b4ea-0bf1ce169c1a",
+      "name": "Journey: Ready",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1392,
+        -416
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.as_journeys SET status = 'failed', completed_at = NOW(), terminal_reason = $2 WHERE id = NULLIF($1, '')::uuid RETURNING id, status",
+        "options": {
+          "queryReplacement": "={{ $('Webhook').first().json.body.journey_id }},{{ $('Chapter Context Assessment').first().json.cell_terminal_reason || 'unknown' }}"
+        }
+      },
+      "id": "35c7248d-0d2d-40be-bc43-41b3701616b2",
+      "name": "Journey: Failed",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1392,
+        -224
+      ]
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  }
+}

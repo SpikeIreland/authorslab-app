@@ -1,0 +1,279 @@
+{
+  "name": "2.1 Alex Generate Chapter Summaries",
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "connections": {
+    "Fetch Chapters": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Chapters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Chapter Summary": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Chapters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Chapters": {
+      "main": [
+        [
+          {
+            "node": "Format Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Fetch Chapters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Success Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Prompt": {
+      "main": [
+        [
+          {
+            "node": "Call Cell",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Cell": {
+      "main": [
+        [
+          {
+            "node": "Generate Chapter Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Chapter Summary": {
+      "main": [
+        [
+          {
+            "node": "Update Chapter Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "generate-chapter-summaries",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -128,
+        32
+      ],
+      "id": "2a28b0d6-96a2-4659-b194-65f29123a490",
+      "name": "Webhook",
+      "webhookId": "c684d5e9-1c23-4574-aa60-389997f179e7"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "'Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        768,
+        -160
+      ],
+      "id": "33371ebb-c9be-43d1-9a1f-5cad6202d3b9",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=SELECT id, chapter_number, title, content \nFROM chapters \nWHERE manuscript_id = '{{ $json.body.manuscriptId }}'\nORDER BY chapter_number ASC;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        96,
+        32
+      ],
+      "id": "23e08e37-f53d-4adc-8580-a9e872c9883b",
+      "name": "Fetch Chapters",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=UPDATE chapters \nSET \n  chapter_summary = $summary${{ $json.text }}$summary$,\n  updated_at = NOW()\nWHERE id = '{{ $('Loop Over Chapters').item.json.id }}'\nRETURNING id, chapter_number, chapter_summary;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1216,
+        112
+      ],
+      "id": "4e3a438e-235d-4fae-a425-7e3ce4d2e5eb",
+      "name": "Update Chapter Summary"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Count how many chapters were processed\nconst loopResults = $('Loop Over Chapters').all();\nconst chaptersProcessed = loopResults.length;\nconst manuscriptId = $('Webhook').first().json.body.manuscriptId;\n\nconsole.log(`\u2705 Generated summaries for ${chaptersProcessed} chapters`);\n\nreturn {\n  json: {\n    success: true,\n    manuscriptId: manuscriptId,\n    chaptersProcessed: chaptersProcessed,\n    message: `Chapter summaries generated for ${chaptersProcessed} chapters`,\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        -160
+      ],
+      "id": "f75ee125-a3f7-4c7f-9c72-a91dad156861",
+      "name": "Format Success Response"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        320,
+        32
+      ],
+      "id": "bcac59e1-50f6-4baf-bf7a-8bf1379c2d8f",
+      "name": "Loop Over Chapters"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const ch = $input.item.json;\n\nconst systemPrompt = `You are Alex, a developmental editor creating reference summaries. Create a concise 2-3 sentence summary that captures what happens in this chapter and why it matters to the overall story arc.  Focus on: key events, character decisions, and story progression.`;\n\nconst userPrompt = `Chapter ${ch.chapter_number}: \"${ch.title}\"\n\nContent:\n${ch.content}\n\nProvide a 2-3 sentence summary that captures the essential events and character developments. Return ONLY the summary text, no preamble or explanation.`;\n\nreturn { json: { system: systemPrompt, user: userPrompt, chapter_id: ch.id, chapter_number: ch.chapter_number } };"
+      },
+      "id": "dcbe01e9-5d3d-47d4-a091-397ddbfaecad",
+      "name": "Build Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "crXhG5caNVHBmglo",
+          "cachedResultName": "Craft Call \u2014 Cell (DP-CC-01)"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "journey_id": "={{ $('Webhook').first().json.body.journey_id }}",
+            "station_id": "alex.chapter_summaries",
+            "model_requested": "claude-sonnet-4-5-20250929",
+            "system": "={{ $json.system }}",
+            "messages": "={{ [{role: 'user', content: $json.user}] }}",
+            "max_tokens": 150,
+            "temperature": 0.3
+          }
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "0bbf3a05-7c3c-4d12-9888-84f6541edb12",
+      "name": "Call Cell",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        768,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const cellReturn = $input.first().json;\nreturn [{ json: {\n  text: cellReturn.ok ? (cellReturn.content || '') : '',\n  ok: !!cellReturn.ok,\n  cell_terminal_reason: cellReturn.ok ? null : (cellReturn.terminal_reason || 'unknown'),\n  cell_stop_reason: cellReturn.stop_reason || null,\n  cell_input_tokens: cellReturn.input_tokens || null,\n  cell_output_tokens: cellReturn.output_tokens || null,\n  cell_cost_usd: cellReturn.cost_estimate_usd || null\n}}];"
+      },
+      "id": "f884887c-9f3f-4bc2-851c-55a87328a568",
+      "name": "Generate Chapter Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        992,
+        32
+      ]
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  }
+}

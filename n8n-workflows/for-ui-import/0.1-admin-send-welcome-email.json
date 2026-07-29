@@ -1,0 +1,112 @@
+{
+  "name": "0.1 Admin Send Welcome Email",
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Compose Welcome Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compose Welcome Email": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send email": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "admin-send-welcome-email",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "cc12c271-0c57-478a-87bb-b0fbeb062e81",
+      "name": "Webhook",
+      "webhookId": "20d325ae-c25f-4e7b-a74f-9646d51937b2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get beta tester details from webhook\nconst firstName = $json.body.firstName;\nconst lastName = $json.body.lastName;\nconst email = $json.body.email;\nconst tempPassword = $json.body.tempPassword;\n\n// Compose welcome email\nconst subject = `Welcome to AuthorsLab.ai Beta Program, ${firstName}!`;\n\nconst htmlBody = `\n<!DOCTYPE html>\n<html>\n<head>\n    <style>\n        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; }\n        .container { max-width: 600px; margin: 0 auto; padding: 20px; }\n        .header { background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }\n        .content { background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; }\n        .credentials { background: #f3f4f6; border-left: 4px solid #3b82f6; padding: 20px; margin: 20px 0; border-radius: 4px; }\n        .button { display: inline-block; background: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 20px 0; }\n        .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 14px; }\n        .highlight { color: #2563eb; font-weight: 600; }\n        .warning { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; border-radius: 4px; }\n    </style>\n</head>\n<body>\n    <div class=\"container\">\n        <div class=\"header\">\n            <h1 style=\"margin: 0; font-size: 28px;\">\ud83d\udcda Welcome to AuthorsLab.ai</h1>\n            <p style=\"margin: 10px 0 0 0; opacity: 0.9;\">Beta Tester Program</p>\n        </div>\n        \n        <div class=\"content\">\n            <p>Hi ${firstName},</p>\n            \n            <p>Welcome to the AuthorsLab.ai Beta Program! We're thrilled to have you join us as we revolutionize manuscript editing with AI-powered collaboration.</p>\n            \n            <p>Carl has invited you to be part of this exclusive beta testing program where you'll work with our AI editing team: <span class=\"highlight\">Alex</span> (developmental), <span class=\"highlight\">Sam</span> (line editing), and <span class=\"highlight\">Jordan</span> (copy editing).</p>\n            \n            <h3>\ud83d\udd11 Your Login Credentials</h3>\n            <div class=\"credentials\">\n                <p><strong>Email:</strong> ${email}</p>\n                <p><strong>Temporary Password:</strong> <code style=\"background: white; padding: 4px 8px; border-radius: 4px; font-size: 16px;\">${tempPassword}</code></p>\n            </div>\n            \n            <div class=\"warning\">\n                <strong>\u26a0\ufe0f Important:</strong> Please change your password after your first login for security.\n            </div>\n            \n            <div style=\"text-align: center;\">\n                <a href=\"https://authorslab.ai/login\" class=\"button\">Log In to AuthorsLab.ai</a>\n            </div>\n            \n            <h3>\ud83d\ude80 Getting Started</h3>\n            <ol>\n                <li><strong>Log in</strong> using the credentials above</li>\n                <li><strong>Complete onboarding</strong> - upload your manuscript and tell us about your project</li>\n                <li><strong>Meet Alex</strong> - your developmental editor will analyze your manuscript</li>\n                <li><strong>Start editing</strong> - work chapter by chapter with real-time AI collaboration</li>\n            </ol>\n            \n            <h3>\ud83d\udcac Questions or Feedback?</h3>\n            <p>Carl is here to support you throughout the beta program. Reply to this email anytime, or reach out directly if you have questions, feedback, or encounter any issues.</p>\n            \n            <p>We're excited to see how AuthorsLab.ai helps transform your manuscript!</p>\n            \n            <p>Happy writing,<br>\n            <strong>The AuthorsLab.ai Team</strong></p>\n        </div>\n        \n        <div class=\"footer\">\n            <p>AuthorsLab.ai - AI-Powered Manuscript Editing</p>\n            <p style=\"font-size: 12px; color: #9ca3af;\">This is an automated email from the beta program admin system.</p>\n        </div>\n    </div>\n</body>\n</html>\n`;\n\nreturn {\n  json: {\n    to: email,\n    subject: subject,\n    html: htmlBody,\n    firstName: firstName,\n    lastName: lastName\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "d6f2c568-c83f-4ba8-9874-9000fb0f9a56",
+      "name": "Compose Welcome Email"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Welcome email sent successfully\",\n  \"recipient\": \"{{ $('Webhook').first().json.body.email }}\"\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        672,
+        0
+      ],
+      "id": "38605718-6a5c-4734-bf48-6182e9391bcd",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "fromEmail": "editors@authorslab.ai",
+        "toEmail": "={{ $json.to }}",
+        "subject": "Welcome to AuthorsLab.ai - Your Account is Ready! \ud83c\udf89",
+        "html": "=<html>\n<head>\n  <style>\n    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n    .container { max-width: 600px; margin: 0 auto; padding: 20px; }\n    .header { background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }\n    .content { background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; }\n    .credentials { background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #16a34a; }\n    .prep-box { background: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b; }\n    .checklist { background: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #16a34a; }\n    .button { display: inline-block; background: #16a34a; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 20px 0; }\n    .signature { margin-top: 30px; padding-top: 20px; border-top: 2px solid #16a34a; }\n    .example { background: white; padding: 10px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 13px; margin: 10px 0; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <h1 style=\"margin: 0; font-size: 28px;\">\ud83d\udcda Welcome to AuthorsLab.ai</h1>\n    </div>\n    \n    <div class=\"content\">\n      <h2 style=\"color: #16a34a; margin-top: 0;\">Hi {{ $json.firstName }}! \ud83d\udc4b</h2>\n      \n      <p>Great news! Your AuthorsLab.ai beta tester account has been created and is ready to use.</p>\n      \n      <p>I'm Alex, your developmental editor. Together, we'll transform your manuscript through five phases of professional editing, from story structure all the way to publication and marketing.</p>\n      \n      <div class=\"credentials\">\n        <h3 style=\"margin-top: 0; color: #16a34a;\">Your Login Credentials</h3>\n        <p style=\"margin: 5px 0;\"><strong>Email:</strong> {{ $('Webhook').first().json.body.email }}</p>\n        <p style=\"margin: 5px 0;\"><strong>Temporary Password:</strong> <code style=\"background: white; padding: 4px 8px; border-radius: 4px; font-size: 14px;\">{{ $('Webhook').first().json.body.tempPassword }}</code></p>\n      </div>\n      \n      <p><strong>\u26a0\ufe0f Important:</strong> Please change your password after logging in for the first time.</p>\n      \n      <!-- PREPARATION SECTION -->\n      <div class=\"prep-box\">\n        <h3 style=\"color: #f59e0b; margin-top: 0;\">\ud83d\udccb Before You Log In: Prepare Your Manuscript</h3>\n        <p style=\"margin-top: 0;\">After logging in, you'll be asked to upload your manuscript. Here's what you need to have ready:</p>\n        \n        <h4 style=\"color: #f59e0b; margin-bottom: 10px;\">1. Convert to PDF Format</h4>\n        <p style=\"margin: 5px 0;\">We currently accept <strong>PDF files only</strong>. If your manuscript is in Word (.docx), save it as a PDF first.</p>\n        \n        <h4 style=\"color: #f59e0b; margin-bottom: 10px;\">2. Format Your Chapter Markers</h4>\n        <p style=\"margin: 5px 0;\">Before converting to PDF, make sure your chapters are clearly labeled:</p>\n        \n        <div class=\"example\">\nPrologue<br>\n<br>\nChapter 1<br>\n<br>\nChapter 2 - The Journey Begins<br>\n<br>\nChapter 3<br>\n<br>\nEpilogue\n        </div>\n        \n        <p><strong>\u2705 Good chapter markers:</strong></p>\n        <ul style=\"margin: 5px 0 10px 20px;\">\n          <li>\"Prologue\" (if you have one)</li>\n          <li>\"Chapter 1\" or \"Chapter 1 - Your Title\"</li>\n          <li>\"Chapter 2\", \"Chapter 3\", etc.</li>\n          <li>\"Epilogue\" (if you have one)</li>\n        </ul>\n        \n        <p><strong>\u274c Avoid:</strong></p>\n        <ul style=\"margin: 5px 0 10px 20px;\">\n          <li>Missing chapter numbers</li>\n          <li>Roman numerals (use 1, 2, 3 instead)</li>\n          <li>Inconsistent formatting between chapters</li>\n        </ul>\n        \n        <h4 style=\"color: #f59e0b; margin-bottom: 10px; margin-top: 15px;\">3. Know Your Details</h4>\n        <p style=\"margin: 5px 0;\">You'll need to provide:</p>\n        <ul style=\"margin: 5px 0 0 20px;\">\n          <li><strong>Book Title</strong> - Your manuscript's title</li>\n          <li><strong>Genre</strong> - Fiction category (e.g., Fantasy, Romance, Thriller)</li>\n          <li><strong>Number of Chapters</strong> - Count your numbered chapters only (don't include Prologue or Epilogue)</li>\n          <li><strong>Prologue/Epilogue</strong> - Just tick the boxes if you have them</li>\n        </ul>\n      </div>\n      \n      <!-- WHAT HAPPENS NEXT -->\n      <div class=\"checklist\">\n        <h3 style=\"color: #16a34a; margin-top: 0;\">\u2705 What Happens After Upload</h3>\n        <ol style=\"margin: 10px 0 0 20px; padding: 0;\">\n          <li style=\"margin-bottom: 8px;\">Your manuscript is processed and chapters are automatically parsed</li>\n          <li style=\"margin-bottom: 8px;\">You'll be taken to your Author Studio</li>\n          <li style=\"margin-bottom: 8px;\">Click \"Read My Manuscript\" and I'll spend about 5 minutes analyzing your story</li>\n          <li style=\"margin-bottom: 8px;\">You'll get a comprehensive PDF report by email (~15 minutes)</li>\n          <li style=\"margin-bottom: 8px;\">Then we start editing together, one chapter at a time!</li>\n        </ol>\n      </div>\n      \n      <div style=\"text-align: center;\">\n        <a href=\"https://authorslab.ai/login\" class=\"button\">Login to Your Studio \u2192</a>\n      </div>\n      \n      <p>As a beta tester, you get <strong>full access to all editing phases</strong> completely free. Your feedback helps us build the best AI editing platform for authors.</p>\n      \n      <p>Have questions about formatting or the upload process? Just reply to this email - I'm here to help!</p>\n      \n      <div class=\"signature\">\n        <p style=\"margin: 0; color: #16a34a; font-weight: bold; font-size: 16px;\">\u2014 Alex, Your Developmental Editor</p>\n        <p style=\"margin: 5px 0; color: #666; font-size: 14px;\">\ud83d\udc54 Phase 1: Story Structure & Character Development</p>\n        <p style=\"margin: 10px 0 0 0;\">\n          <a href=\"https://authorslab.ai\" style=\"color: #16a34a; text-decoration: none; font-weight: 500;\">\ud83d\udcda AuthorsLab.ai</a>\n        </p>\n      </div>\n    </div>\n  </div>\n</body>\n</html>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "b7f72508-84ed-4c74-9a27-c99ab05fb7ca",
+      "name": "Send email",
+      "webhookId": "170c8f8f-a6bb-42d3-87cc-ece3bbd90c56"
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

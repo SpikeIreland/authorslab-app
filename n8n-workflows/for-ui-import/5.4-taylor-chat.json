@@ -1,0 +1,616 @@
+{
+  "name": "5.4 Taylor Chat",
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Fetch Manuscript Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Publishing Progress",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Manuscript Data": {
+      "main": [
+        [
+          {
+            "node": "Merge Data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Publishing Progress": {
+      "main": [
+        [
+          {
+            "node": "Merge Data1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Build Enhanced Context": {
+      "main": [
+        [
+          {
+            "node": "Build Taylor Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Taylor Prompt": {
+      "main": [
+        [
+          {
+            "node": "Build API Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Data1": {
+      "main": [
+        [
+          {
+            "node": "Build Enhanced Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Claude API with Tools": {
+      "main": [
+        [
+          {
+            "node": "Parse Claude Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build API Request": {
+      "main": [
+        [
+          {
+            "node": "Call Claude API with Tools",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Claude Response": {
+      "main": [
+        [
+          {
+            "node": "IF Tool Use",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Tool Use": {
+      "main": [
+        [
+          {
+            "node": "Prepare Cover Generation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Text Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger taylor-generate-covers": {
+      "main": [
+        [
+          {
+            "node": "Build Tool Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Text Response": {
+      "main": [
+        [
+          {
+            "node": "Merge Responses",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Build Tool Response": {
+      "main": [
+        [
+          {
+            "node": "Merge Responses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Responses": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Cover Generation": {
+      "main": [
+        [
+          {
+            "node": "Trigger taylor-generate-covers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "taylor-chat",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1440,
+        -464
+      ],
+      "id": "23f0647a-4c2c-4580-8b99-805449a0c3e8",
+      "name": "Webhook",
+      "webhookId": "d28ec42e-d0ac-44e4-a54b-5153681a409d"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  title,\n  genre,\n  current_word_count,\n  total_chapters,\n  manuscript_summary\nFROM manuscripts\nWHERE id = '{{ $json.body.manuscriptId }}';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1216,
+        -560
+      ],
+      "id": "feb8b821-acee-460c-8d99-4473d801e4a7",
+      "name": "Fetch Manuscript Data"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  COALESCE(selected_cover_url, NULL) as selected_cover_url,\n  COALESCE(cover_concepts, '[]'::jsonb) as cover_concepts,\n  COALESCE(cover_generation_status, NULL) as cover_generation_status,\n  COALESCE(current_step, 'assessment') as current_step,\n  COALESCE(assessment_completed, false) as assessment_completed,\n  COALESCE(publishing_goal, 'not specified') as publishing_goal,\n  COALESCE(experience, 'not specified') as experience,\n  COALESCE(timeline, 'not specified') as timeline,\n  COALESCE(platforms, '[]'::jsonb) as platforms,\n  COALESCE(formats, '[]'::jsonb) as formats\nFROM publishing_progress\nWHERE manuscript_id = '{{ $json.body.manuscriptId }}'\nLIMIT 1;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1216,
+        -368
+      ],
+      "id": "aecd73a4-c0f3-4a05-b14c-9f0e11b8fda1",
+      "name": "Fetch Publishing Progress"
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhookData = $(\"Webhook\").first().json;\nconst body = webhookData.body || webhookData;\n\nconst manuscript = $(\"Fetch Manuscript Data\").first()?.json || {};\nconst progressResults = $(\"Fetch Publishing Progress\").all();\nconst progress = progressResults.length > 0 ? progressResults[0].json : {};\n\nconsole.log(\"\ud83d\udcda Building Taylor context:\", {\n  manuscriptId: body.manuscriptId,\n  hasManuscript: !!manuscript.title,\n  hasProgress: !!progress.assessment_completed,\n  hasSummary: !!manuscript.manuscript_summary,\n});\n\n// Handle missing publishing progress gracefully\nconst safeProgress = {\n  selected_cover_url: progress.selected_cover_url || null,\n  current_step: progress.current_step || \"assessment\",\n  assessment_completed: progress.assessment_completed || false,\n  publishing_goal: progress.publishing_goal || \"not specified\",\n  experience: progress.experience || \"not specified\", // \u2705 Changed from experience_level\n  timeline: progress.timeline || \"not specified\",\n  platforms: progress.platforms || [], // \u2705 Added platforms\n  formats: progress.formats || [], // \u2705 Added formats\n  cover_concepts: progress.cover_concepts || [],\n  cover_generation_status: progress.cover_generation_status || null,\n};\n\n// Build comprehensive context\nconst context = {\n  // Manuscript basics\n  manuscriptTitle: manuscript.title || \"Untitled\",\n  genre: manuscript.genre || \"Fiction\",\n  wordCount: manuscript.current_word_count || 0,\n  chapterCount: manuscript.total_chapters || 0,\n\n  // Manuscript summary\n  summary: manuscript.manuscript_summary || \"Summary not available\",\n\n  // Publishing context (with safe defaults)\n  hasCover: !!safeProgress.selected_cover_url,\n  coverUrl: safeProgress.selected_cover_url,\n  currentStep: safeProgress.current_step,\n  assessmentComplete: safeProgress.assessment_completed,\n  publishingGoal: safeProgress.publishing_goal,\n  experience: safeProgress.experience, // \u2705 Changed from experienceLevel\n  timeline: safeProgress.timeline,\n  platforms: safeProgress.platforms, // \u2705 Added\n  formats: safeProgress.formats, // \u2705 Added\n  // Cover information\n  coverConcepts: safeProgress.cover_concepts,\n  coverCount: Array.isArray(safeProgress.cover_concepts)\n    ? safeProgress.cover_concepts.length\n    : 0,\n  coverGenerationStatus: safeProgress.cover_generation_status,\n\n  // Author's current message\n  authorMessage: body.message,\n  authorFirstName: body.authorFirstName || \"there\",\n};\n\nconsole.log(\"\u2705 Taylor context built successfully\");\n\nreturn { json: context };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -768,
+        -464
+      ],
+      "id": "2157dee4-86fe-4de3-a48f-ca1126b36a20",
+      "name": "Build Enhanced Context"
+    },
+    {
+      "parameters": {
+        "jsCode": "const context = $json;\n\nconst systemPrompt = `You are Taylor, a warm and professional publishing specialist helping authors navigate their publishing journey.\n\nMANUSCRIPT CONTEXT:\nTitle: \"${context.manuscriptTitle}\"\nGenre: ${context.genre}\nWord Count: ${context.wordCount.toLocaleString()} words (${context.chapterCount} chapters)\n\n${\n  context.summary !== \"Summary not available\"\n    ? `\nMANUSCRIPT SUMMARY:\n${context.summary}\n`\n    : \"\"\n}\n\nPUBLISHING CONTEXT:\n- Publishing Goal: ${context.publishingGoal}\n- Author Experience: ${context.experience}\n- Timeline: ${context.timeline}\n- Cover Status: ${context.hasCover ? \"Cover selected\" : context.coverCount > 0 ? `${context.coverCount} cover concepts generated (not yet selected)` : \"No covers yet\"}\n- Cover Generation: ${context.coverGenerationStatus === \"generating\" ? \"Currently generating...\" : \"Ready\"}\n\nYOUR PERSONALITY:\n- Warm, encouraging, professional\n- Genuinely excited about their journey\n- Ask thoughtful questions\n- Explain concepts clearly\n- Patient and supportive\n- Use emojis occasionally (\ud83d\udcda, \ud83c\udfa8, \ud83d\ude80, \u2728)\n\nCOVER GENERATION TOOL:\nYou have access to the generate_covers tool. Use it when the author requests cover creation - even if covers already exist. Authors often want to explore multiple options or try different styles.\n\n\u2705 DO use the tool immediately:\n- \"Create my cover\"\n- \"Generate cover designs\" \n- \"Generate more covers\"\n- \"Create new covers\"\n- \"I want a dark moody cover with blues\"\n- \"Design covers for me\"\n- \"Try different cover styles\"\n- Any explicit request to create/generate/design covers\n\n\u274c DO NOT use the tool:\n- Just discussing cover concepts without requesting creation\n- Gathering preferences before they're ready\n- Teaching about design principles\n- \"I'll think about it\"\n- \"What do you think about...\"\n\nIMPORTANT: If the author says \"create\", \"generate\", or \"design\" covers - USE THE TOOL. Don't ask for confirmation if they've already given a clear instruction. You can generate new covers even if previous covers exist.\n\nBefore calling generate_covers:\n1. Ensure you understand their preferences (mood, colors, elements)\n2. If unclear, ask clarifying questions FIRST\n3. Only call when you have enough info AND they've requested creation\n\nWhen discussing covers (without generating):\n- Reference their genre and story\n- Ask about mood, emotions, target audience\n- Discuss genre conventions\n- Build excitement\n\nKeep responses concise and conversational.`;\n\nconst userPrompt = `${context.authorMessage}`;\n\nreturn {\n  json: {\n    systemPrompt: systemPrompt,\n    userPrompt: userPrompt,\n  },\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -544,
+        -464
+      ],
+      "id": "82acf354-26e7-431a-a076-0427faeb70db",
+      "name": "Build Taylor Prompt"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1472,
+        -464
+      ],
+      "id": "782f351a-820c-4744-a45b-37f4e2bbd2f0",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -992,
+        -464
+      ],
+      "id": "ed4d74d7-098f-4751-b2f7-69a32995b80c",
+      "name": "Merge Data1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "anthropicApi",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"x-api-key\": \"<REMOVED - recreate as AuthorsLab_Anthropic_Key credential in authorslab>\",\n  \"anthropic-version\": \"2023-06-01\",\n  \"content-type\": \"application/json\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -96,
+        -464
+      ],
+      "id": "ca9b91d7-183b-431c-a2a0-a903ada473b2",
+      "name": "Call Claude API with Tools"
+    },
+    {
+      "parameters": {
+        "jsCode": "const promptData = $input.first().json;\n\nreturn {\n  json: {\n    model: \"claude-sonnet-4-20250514\",\n    max_tokens: 4096,\n    temperature: 0.8,\n    system: promptData.systemPrompt,\n    messages: [\n      {\n        role: \"user\",\n        content: promptData.userPrompt,\n      },\n    ],\n    tools: [\n      {\n        name: \"generate_covers\",\n        description:\n          \"Generate 4 professional AI cover designs based on user's preferences. Only use this tool when the user explicitly requests cover creation or design. Do NOT use for discussing cover concepts or gathering preferences.\",\n        input_schema: {\n          type: \"object\",\n          properties: {\n            mood: {\n              type: \"string\",\n              description:\n                \"The atmosphere or emotional tone (e.g., 'dark and mysterious', 'bright and uplifting', 'atmospheric and moody')\",\n            },\n            colors: {\n              type: \"string\",\n              description:\n                \"Specific color palette or color families (e.g., 'deep blues and purples', 'warm earth tones', 'black and gold')\",\n            },\n            elements: {\n              type: \"string\",\n              description:\n                \"Visual elements or imagery to include (e.g., 'forest scene with magical effects', 'urban skyline', 'abstract geometric shapes')\",\n            },\n            style: {\n              type: \"string\",\n              description:\n                \"Overall visual style (e.g., 'cinematic and detailed', 'minimalist', 'illustrated', 'photographic')\",\n            },\n          },\n          required: [\"mood\", \"colors\", \"elements\"],\n        },\n      },\n    ],\n  },\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -320,
+        -464
+      ],
+      "id": "1f5e6bfe-dd8d-4e01-9973-cc9dfc46c370",
+      "name": "Build API Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const apiResponse = $input.first().json;\n\nconsole.log(\"\ud83e\udd16 Claude API Response:\", JSON.stringify(apiResponse, null, 2));\n\nconst content = apiResponse.content || [];\nconst toolUse = content.find((block) => block.type === \"tool_use\");\nconst textBlock = content.find((block) => block.type === \"text\");\n\nif (toolUse) {\n  console.log(\"\ud83d\udd27 Tool use detected:\", toolUse.name);\n  console.log(\"\ud83d\udccb Tool input:\", JSON.stringify(toolUse.input, null, 2));\n\n  return {\n    json: {\n      responseType: \"tool_use\",\n      toolName: toolUse.name,\n      toolInput: toolUse.input,\n      toolUseId: toolUse.id,\n      hasText: !!textBlock,\n      textResponse: textBlock?.text || \"\",\n    },\n  };\n} else if (textBlock) {\n  console.log(\"\ud83d\udcac Text response detected\");\n\n  return {\n    json: {\n      responseType: \"text\",\n      textResponse: textBlock.text,\n    },\n  };\n} else {\n  console.error(\"\u274c Unexpected response format\");\n\n  return {\n    json: {\n      responseType: \"error\",\n      textResponse:\n        \"I'm having trouble responding right now. Please try again.\",\n    },\n  };\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        128,
+        -464
+      ],
+      "id": "5f48bffb-2088-43bc-8afa-08c35166a21c",
+      "name": "Parse Claude Response"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f824c350-9657-4667-8d0e-784b6a1aaadd",
+              "leftValue": "={{ $json.responseType }}",
+              "rightValue": "tool_use",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        352,
+        -464
+      ],
+      "id": "4beda0e8-95f0-4c23-9334-ff31cb402d2b",
+      "name": "IF Tool Use"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://spikeislandstudios.app.n8n.cloud/webhook/taylor-generate-covers",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"manuscriptId\": \"{{ $json.manuscriptId }}\",\n  \"genre\": \"{{ $json.genre }}\",\n  \"mood\": \"{{ $json.mood }}\",\n  \"colors\": \"{{ $json.colors }}\",\n  \"elements\": \"{{ $json.elements }}\",\n  \"style\": \"{{ $json.style }}\",\n  \"manuscriptTitle\": \"={{ $json.manuscriptTitle }}\"\n}",
+        "options": {
+          "timeout": 1000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        800,
+        -560
+      ],
+      "id": "aff3a9b4-eaee-47f2-8c77-dff443429116",
+      "name": "Trigger taylor-generate-covers",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const toolData = $(\"Prepare Cover Generation\").first().json;\n\nreturn {\n  json: {\n    response:\n      toolData.originalMessage ||\n      \"\ud83c\udfa8 Perfect! I'm generating 4 professional cover designs based on your preferences. \" +\n        \"This will take about 2-3 minutes. Your new covers will appear in the Cover Designer panel automatically!\",\n    success: true,\n    action: \"cover_generation_started\",\n  },\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        -560
+      ],
+      "id": "db7cf246-5e1f-4b00-9618-f6539608fc5b",
+      "name": "Build Tool Response"
+    },
+    {
+      "parameters": {
+        "jsCode": "const responseData = $input.first().json;\n\nreturn {\n  json: {\n    response: responseData.textResponse,\n    success: true,\n    action: \"conversation\",\n  },\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        -368
+      ],
+      "id": "e55d3f95-46a4-4497-9424-530d38b2fd9f",
+      "name": "Build Text Response"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1248,
+        -464
+      ],
+      "id": "ed1b02c4-156f-4f96-b930-d3cbfaa8a1bc",
+      "name": "Merge Responses",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "content": "## Data Fetching\n",
+        "height": 528,
+        "width": 432,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1536,
+        -688
+      ],
+      "typeVersion": 1,
+      "id": "515f6fdb-eda7-4209-9f83-1f8cb9c3cdc9",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Response Handling\n",
+        "height": 528,
+        "width": 224,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1072,
+        -688
+      ],
+      "typeVersion": 1,
+      "id": "81c13996-57c0-41ba-9e68-bd91ab7ccaed",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Processing",
+        "height": 528,
+        "width": 656,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -832,
+        -688
+      ],
+      "typeVersion": 1,
+      "id": "f6df98b0-987b-4ce5-a274-4b87eacf4d1e",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Decision",
+        "height": 528,
+        "width": 192
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        304,
+        -688
+      ],
+      "typeVersion": 1,
+      "id": "64be5212-5f69-4dd9-bb5e-4cc6ec2eb3c4",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Processing",
+        "height": 528,
+        "width": 208,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        80,
+        -688
+      ],
+      "typeVersion": 1,
+      "id": "f8bb8078-b05d-47ba-ab85-d6e5c4bdce0d",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## External Calls",
+        "height": 528,
+        "width": 224,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -160,
+        -688
+      ],
+      "typeVersion": 1,
+      "id": "b0a729c5-a69f-4d67-80b8-6562c08cffbe",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## Processing",
+        "height": 528,
+        "width": 208,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        512,
+        -688
+      ],
+      "typeVersion": 1,
+      "id": "56a7cb5e-be3c-4650-90e9-280fba847e7b",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## External Calls",
+        "height": 528,
+        "width": 224,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        736,
+        -688
+      ],
+      "typeVersion": 1,
+      "id": "474338de-f329-4a9c-bf84-543eb7bbd689",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "## Processing",
+        "height": 528,
+        "width": 208,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        976,
+        -688
+      ],
+      "typeVersion": 1,
+      "id": "0a5875b5-a9ba-4576-bc52-94256de4bb5f",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "## Response Handling\n",
+        "height": 528,
+        "width": 480,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1200,
+        -688
+      ],
+      "typeVersion": 1,
+      "id": "d1fdaf11-78d6-47f0-9617-b4c72f6cb57f",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhookData = $(\"Webhook\").first().json.body;\nconst toolData = $input.first().json;\n\nconsole.log(\"\ud83c\udfa8 Tool input:\", toolData.toolInput);\n\nconst { mood, colors, elements, style } = toolData.toolInput;\n\nreturn {\n  json: {\n    manuscriptId: webhookData.manuscriptId,\n    genre: webhookData.manuscriptData?.genre || \"fiction\",\n    mood: mood || \"atmospheric, engaging\",\n    colors: colors || \"genre-appropriate colors\",\n    elements: elements || \"professional imagery\",\n    style: style || \"cinematic, detailed\",\n    manuscriptTitle: webhookData.manuscriptData?.title || \"the book\",\n    toolUseId: toolData.toolUseId,\n    originalMessage: toolData.textResponse || \"\",\n  },\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        -560
+      ],
+      "id": "f53cf609-7e4f-40e6-8f15-9f8bcd3ceef0",
+      "name": "Prepare Cover Generation"
+    }
+  ],
+  "meta": null
+}

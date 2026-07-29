@@ -1,0 +1,396 @@
+{
+  "name": "1.5 Generate Manuscript Versions",
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "connections": {
+    "Fetch Manuscript Content": {
+      "main": [
+        [
+          {
+            "node": "Fetch Author Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Manuscript Version": {
+      "main": [
+        [
+          {
+            "node": "Format Manuscript for PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Version": {
+      "main": [
+        [
+          {
+            "node": "Build Storage URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Manuscript Versions with URL": {
+      "main": [
+        [
+          {
+            "node": "Send Completion Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Completion Email": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Version Data": {
+      "main": [
+        [
+          {
+            "node": "Save Manuscript Version",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a pdf": {
+      "main": [
+        [
+          {
+            "node": "Store Version",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Manuscript for PDF": {
+      "main": [
+        [
+          {
+            "node": "Create a pdf",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Author Email": {
+      "main": [
+        [
+          {
+            "node": "Prepare Version Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Storage URL": {
+      "main": [
+        [
+          {
+            "node": "Update Manuscript Versions with URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Journey: Received",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Journey: Received": {
+      "main": [
+        [
+          {
+            "node": "Fetch Manuscript Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send email": {
+      "main": [
+        [
+          {
+            "node": "Journey: Ready",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "generate-manuscript-version",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        -16
+      ],
+      "id": "1be55de3-b95e-42bd-97d1-bac3923b9b87",
+      "name": "Webhook",
+      "webhookId": "311644dd-d412-47fb-a759-a1f67784f651"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=SELECT \n  m.id,\n  m.title,\n  m.author_id,\n  string_agg(\n    c.title || E'\\n\\n' || c.content, \n    E'\\n\\n---\\n\\n' \n    ORDER BY c.chapter_number\n  ) as full_content\nFROM manuscripts m\nJOIN chapters c ON c.manuscript_id = m.id\nWHERE m.id = '{{ $json.body.manuscriptId }}'\nGROUP BY m.id;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        448,
+        -16
+      ],
+      "id": "1fc0bbb3-8c92-4ac0-9ebb-eaaa09fbf0ea",
+      "name": "Fetch Manuscript Content"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO manuscript_versions (\n  manuscript_id,\n  phase_number,\n  version_type,\n  content,\n  word_count,\n  created_by_editor\n)\nVALUES (\n  '{{ $json.manuscript_id }}',\n  {{ $json.phase_number }},\n  'approved_snapshot',\n  '{{ $json.full_content.replace(/'/g, \"''\") }}',\n  {{ $json.word_count }},\n  '{{ $json.editor_name }}'\n)\nRETURNING id, manuscript_id, phase_number;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1120,
+        -16
+      ],
+      "id": "9512cc7b-7d3c-4a1f-9a09-32c3972aad1f",
+      "name": "Save Manuscript Version",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=UPDATE manuscript_versions\nSET file_url = '{{ $json.fileUrl }}'\nWHERE manuscript_id = '{{ $json.manuscriptId }}'\n  AND phase_number = {{ $json.phaseNumber }}\n  AND version_type = 'approved_snapshot'\nRETURNING id, file_url;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2240,
+        -16
+      ],
+      "id": "f06d19f7-970f-4664-afe1-6109272cc540",
+      "name": "Update Manuscript Versions with URL"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://itlkncjiifbgvmvuejgm.supabase.co/storage/v1/object/manuscript-versions/{{ $('Webhook').first().json.body.manuscriptId }}_phase{{ $('Webhook').first().json.body.phaseNumber }}_approved.pdf",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/pdf"
+            },
+            {
+              "name": "x-upsert",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1792,
+        -16
+      ],
+      "id": "277d8b5b-c1cc-41ed-a652-aacab862466d",
+      "name": "Store Version"
+    },
+    {
+      "parameters": {
+        "jsCode": "// After uploading files and updating database\nconst author = $('Fetch Author Email').first().json\nconst docxUrl = $json.docxUrl\nconst pdfUrl = $json.pdfUrl\n\nconst editorName = $('Webhook').first().json.body.editorName\nconst phaseNumber = $('Webhook').first().json.body.phaseNumber\n\nreturn {\n  json: {\n    to: author.email,\n    subject: `\ud83c\udf89 Phase ${phaseNumber} Complete - Your Manuscript with ${editorName}`,\n    firstName: author.first_name,\n    manuscriptTitle: author.manuscript_title,\n    editorName: editorName,\n    phaseNumber: phaseNumber,\n    docxUrl: docxUrl,\n    pdfUrl: pdfUrl\n  }\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2464,
+        -16
+      ],
+      "id": "b58d90ad-3e4b-4f58-a6cd-e7d520669787",
+      "name": "Send Completion Email"
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhookData = $('Webhook').first().json.body;\nconst manuscriptData = $('Fetch Manuscript Content').first().json;\n\nreturn {\n  json: {\n    manuscript_id: webhookData.manuscriptId,\n    phase_number: webhookData.phaseNumber,\n    editor_name: webhookData.editorName,\n    full_content: manuscriptData.full_content,\n    word_count: manuscriptData.full_content.split(/\\s+/).filter(w => w.length > 0).length\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        -16
+      ],
+      "id": "4e7d5973-29a3-442f-912f-f171339eb4d1",
+      "name": "Prepare Version Data"
+    },
+    {
+      "parameters": {
+        "resource": "pdf",
+        "pdfTemplateId": "e0277b23e6c9db42",
+        "jsonParameters": true,
+        "download": true,
+        "propertiesJson": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.apiTemplateIo",
+      "typeVersion": 1,
+      "position": [
+        1568,
+        -16
+      ],
+      "id": "5c2b212d-49a7-4661-92a5-3b2bdeb5d5b2",
+      "name": "Create a pdf"
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhookData = $('Webhook').first().json.body;\nconst manuscriptData = $('Fetch Manuscript Content').first().json;\nconst authorData = $('Fetch Author Email').first().json; // If you have this node\n\n// Format the manuscript content as HTML\n// Assuming chapters are separated by \"---\" or similar\nlet chapters = manuscriptData.full_content.split(/\\n---\\n/);\n\n// Build HTML content\nlet htmlContent = '';\n\nchapters.forEach((chapter, index) => {\n  // Extract chapter title if it exists (first line)\n  const lines = chapter.trim().split('\\n');\n  const firstLine = lines[0];\n  \n  // Check if first line looks like a chapter title (short, all caps, or starts with \"Chapter\")\n  const isChapterTitle = firstLine.length < 50 && \n    (firstLine.toUpperCase() === firstLine || firstLine.startsWith('Chapter') || firstLine.startsWith('CHAPTER'));\n  \n  if (isChapterTitle) {\n    htmlContent += `<h1>${firstLine}</h1>\\n`;\n    // Rest of the chapter\n    const chapterBody = lines.slice(1).join('\\n');\n    const paragraphs = chapterBody.split('\\n\\n');\n    paragraphs.forEach(para => {\n      if (para.trim()) {\n        htmlContent += `<p>${para.trim()}</p>\\n`;\n      }\n    });\n  } else {\n    // No clear title, just use \"Chapter X\"\n    htmlContent += `<h1>Chapter ${index + 1}</h1>\\n`;\n    const paragraphs = chapter.split('\\n\\n');\n    paragraphs.forEach(para => {\n      if (para.trim()) {\n        htmlContent += `<p>${para.trim()}</p>\\n`;\n      }\n    });\n  }\n});\n\n// Prepare data for API Template\nreturn {\n  json: {\n    manuscriptTitle: manuscriptData.title || webhookData.manuscriptTitle,\n    authorName: authorData?.first_name && authorData?.last_name \n      ? `${authorData.first_name} ${authorData.last_name}` \n      : webhookData.authorFirstName || 'Author',\n    phaseNumber: webhookData.phaseNumber,\n    editorName: webhookData.editorName,\n    completionDate: new Date().toLocaleDateString('en-US', { \n      year: 'numeric', \n      month: 'long', \n      day: 'numeric' \n    }),\n    manuscriptContent: htmlContent\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        -16
+      ],
+      "id": "a51dcf5e-9acd-4744-a1e7-320f920722d4",
+      "name": "Format Manuscript for PDF"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=SELECT \n  ap.email,\n  ap.first_name,\n  ap.last_name,\n  m.title as manuscript_title,\n  m.id as manuscript_id\nFROM manuscripts m\nJOIN author_profiles ap ON m.author_id = ap.id\nWHERE m.id = '{{ $(\"Webhook\").first().json.body.manuscriptId }}';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        672,
+        -16
+      ],
+      "id": "2216d648-7bfd-4238-9b1f-7f1c4baddb2a",
+      "name": "Fetch Author Email"
+    },
+    {
+      "parameters": {
+        "jsCode": "// After uploading to Supabase Storage, build the public URL\nconst webhookData = $('Webhook').first().json.body;\nconst uploadResponse = $json;\n\n// Build the public URL for the uploaded file\nconst filename = `${webhookData.manuscriptId}_phase${webhookData.phaseNumber}_approved.pdf`;\nconst publicUrl = `https://itlkncjiifbgvmvuejgm.supabase.co/storage/v1/object/public/manuscript-versions/${filename}`;\n\nconsole.log('\u2705 File uploaded, public URL:', publicUrl);\n\nreturn {\n  json: {\n    fileUrl: publicUrl,\n    manuscriptId: webhookData.manuscriptId,\n    phaseNumber: webhookData.phaseNumber\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2016,
+        -16
+      ],
+      "id": "09ca519f-3ddb-4cd5-9019-5bb427753811",
+      "name": "Build Storage URL"
+    },
+    {
+      "parameters": {
+        "fromEmail": "editors@authorslab.ai",
+        "toEmail": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "html": "=<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\">\n  <h1 style=\"color: #2c3e50;\">\ud83c\udf89 Congratulations, {{ $json.firstName }}!</h1>\n  \n  <p style=\"font-size: 16px; color: #333;\">\n    You've completed <strong>Phase {{ $json.phaseNumber }}</strong> with {{ $json.editorName }}! \n    Your manuscript \"<strong>{{ $json.manuscriptTitle }}</strong>\" is ready for the next step.\n  </p>\n  \n  <div style=\"background: #f8f9fa; border-left: 4px solid #27ae60; padding: 20px; margin: 20px 0;\">\n    <h3 style=\"margin-top: 0;\">\ud83d\udcda Your Finished Manuscript</h3>\n    <p style=\"margin-bottom: 10px;\">Download your approved version:</p>\n    \n    <div style=\"margin: 15px 0;\">\n      <a href=\"{{ $json.docxUrl }}\" style=\"display: inline-block; background: #2196F3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin-right: 10px;\">\n        \ud83d\udcc4 Download DOCX\n      </a>\n      <a href=\"{{ $('Update Manuscript Versions with URL').first().json.file_url }}\" style=\"display: inline-block; background: #E53935; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;\">\n        \ud83d\udcd5 Download PDF\n      </a>\n    </div>\n  </div>\n  \n  <p style=\"font-size: 14px; color: #666;\">\n    \ud83d\udca1 <strong>Tip:</strong> These versions are also available in your Author Studio dropdown \n    at the top of the page. Perfect for sharing with beta readers or keeping as backups!\n  </p>\n  \n  <hr style=\"border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;\">\n  \n  <h3>What's Next?</h3>\n  <p>\n    You're now ready to work with <strong>Sam, your Line Editor</strong>. \n    Sam will help polish your prose, strengthen your sentences, and make every word shine. \u2728\n  </p>\n  \n  <p style=\"text-align: center; margin: 30px 0;\">\n    <a href=\"https://authorslab.ai/author-studio\" style=\"display: inline-block; background: #9333ea; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: bold;\">\n      Continue to Author Studio\n    </a>\n  </p>\n  \n  <p style=\"font-size: 14px; color: #999; margin-top: 40px;\">\n    Keep up the amazing work!<br>\n    \u2014 The AuthorsLab.ai Team\n  </p>\n</div>",
+        "options": {
+          "appendAttribution": false,
+          "attachments": "data"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2688,
+        -16
+      ],
+      "id": "90b5d474-21e9-4555-a0de-6e5b940ca9e0",
+      "name": "Send email",
+      "webhookId": "170c8f8f-a6bb-42d3-87cc-ece3bbd90c56"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.as_journeys SET status = 'received', received_at = NOW() WHERE id = NULLIF($1, '')::uuid RETURNING id, status",
+        "options": {
+          "queryReplacement": "={{ $('Webhook').first().json.body.journey_id }}"
+        }
+      },
+      "id": "e288fef5-80df-4d88-aef3-328a0d05c217",
+      "name": "Journey: Received",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        224,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.as_journeys SET status = 'ready', completed_at = NOW() WHERE id = NULLIF($1, '')::uuid RETURNING id, status",
+        "options": {
+          "queryReplacement": "={{ $('Webhook').first().json.body.journey_id }}"
+        }
+      },
+      "id": "fc976dec-a24c-475c-91f7-9a2908aba0b3",
+      "name": "Journey: Ready",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2912,
+        -16
+      ]
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  }
+}

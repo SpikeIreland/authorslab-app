@@ -1,0 +1,1230 @@
+{
+  "name": "2.3 Alex Full Manuscript Analysis",
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "connections": {
+    "PDF Generator": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manuscript Processing": {
+      "main": [
+        [
+          {
+            "node": "Build Structural Analysis",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Build Character Analysis",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Build Plot Development Analysis",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Build Pacing & Flow Analysis",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Build Thematic Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PDF Filename Setup": {
+      "main": [
+        [
+          {
+            "node": "Send PDF URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Manuscript": {
+      "main": [
+        [
+          {
+            "node": "Fetch Chapters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Chapters": {
+      "main": [
+        [
+          {
+            "node": "Manuscript Processing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Author Email": {
+      "main": [
+        [
+          {
+            "node": "Combine PDF and Email Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Report Formatting": {
+      "main": [
+        [
+          {
+            "node": "PDF Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine PDF and Email Data": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Analysis in Database": {
+      "main": [
+        [
+          {
+            "node": "Report Formatting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "PDF Filename Setup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send PDF URL": {
+      "main": [
+        [
+          {
+            "node": "Mark Report Complete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Report Complete": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send email": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Fetch Author Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Structural Analysis": {
+      "main": [
+        [
+          {
+            "node": "Call Structural Analysis Cell",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Structural Analysis Cell": {
+      "main": [
+        [
+          {
+            "node": "Structural Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structural Analysis": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Character Analysis": {
+      "main": [
+        [
+          {
+            "node": "Call Character Analysis Cell",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Character Analysis Cell": {
+      "main": [
+        [
+          {
+            "node": "Character Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Character Analysis": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Build Plot Development Analysis": {
+      "main": [
+        [
+          {
+            "node": "Call Plot Development Analysis Cell",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Plot Development Analysis Cell": {
+      "main": [
+        [
+          {
+            "node": "Plot Development Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Plot Development Analysis": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Build Pacing & Flow Analysis": {
+      "main": [
+        [
+          {
+            "node": "Call Pacing & Flow Analysis Cell",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Pacing & Flow Analysis Cell": {
+      "main": [
+        [
+          {
+            "node": "Pacing & Flow Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pacing & Flow Analysis": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Build Thematic Analysis": {
+      "main": [
+        [
+          {
+            "node": "Call Thematic Analysis Cell",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Thematic Analysis Cell": {
+      "main": [
+        [
+          {
+            "node": "Thematic Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Thematic Analysis": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Journey: Received",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Journey: Received": {
+      "main": [
+        [
+          {
+            "node": "Fetch Manuscript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Build Final Synthesis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Final Synthesis": {
+      "main": [
+        [
+          {
+            "node": "Call Final Synthesis Cell",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Final Synthesis Cell": {
+      "main": [
+        [
+          {
+            "node": "Final Synthesis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final Synthesis": {
+      "main": [
+        [
+          {
+            "node": "Reply Success?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply Success?": {
+      "main": [
+        [
+          {
+            "node": "Store Analysis in Database",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Journey: Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Success Response": {
+      "main": [
+        [
+          {
+            "node": "Journey: Ready",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Journey: Ready": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Journey: Failed": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "alex-full-manuscript-analysis",
+        "responseMode": "responseNode",
+        "options": {
+          "binaryPropertyName": "data",
+          "rawBody": true,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -496,
+        -624
+      ],
+      "id": "ba400c73-31cc-4211-8c5a-d22b67578c51",
+      "name": "Webhook",
+      "webhookId": "d8792067-e309-4c89-929d-fda19595a439"
+    },
+    {
+      "parameters": {
+        "resource": "pdf",
+        "pdfTemplateId": "=79877b23e3adb572",
+        "jsonParameters": true,
+        "download": true,
+        "propertiesJson": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.apiTemplateIo",
+      "typeVersion": 1,
+      "position": [
+        2864,
+        -720
+      ],
+      "id": "f7276ae9-7f29-4c4f-afc1-a1a84b24a27f",
+      "name": "PDF Generator"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Full manuscript analysis completed\",\n  \"analysisComplete\": true,\n  \"timestamp\": \"{{ $now.toISO() }}\"\n}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "'Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.2,
+      "position": [
+        5328,
+        -624
+      ],
+      "id": "3188d478-84c3-4b31-a180-ac3402575cae",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const manuscript = $(\"Fetch Manuscript\").first().json;\nconst chapters = $(\"Fetch Chapters\")\n  .all()\n  .map((item) => item.json);\n\nconsole.log(\"Processing manuscript:\", manuscript.title);\nconsole.log(\"Total chapters:\", chapters.length);\n\n// Calculate actual total word count from all chapters\nconst fullText = chapters\n  .map((c) => c.content)\n  .filter((c) => c)\n  .join(\"\\n\\n\");\nconst actualWordCount = fullText\n  .split(/\\s+/)\n  .filter((w) => w.length > 0).length;\n\n// Build structure for analysis nodes\nconst manuscriptData = {\n  manuscriptId: manuscript.id,\n  authorName:\n    `${manuscript.author_first_name || \"\"} ${manuscript.author_last_name || \"\"}`.trim() ||\n    \"Author\",\n  manuscriptTitle: manuscript.title,\n  genre: manuscript.genre || \"Fiction\",\n  totalWordCount: actualWordCount,\n  totalChapters: chapters.length,\n\n  // Full text for analysis\n  fullText: fullText,\n\n  // Structured chapters with all data\n  chapters: chapters.map((ch, index) => ({\n    chapterId: ch.id,\n    chapterNumber: ch.chapter_number,\n    title: ch.title || `Chapter ${ch.chapter_number}`,\n    content: ch.content,\n    wordCount: ch.content\n      ? ch.content.split(/\\s+/).filter((w) => w.length > 0).length\n      : 0,\n    previousChapterTitle: index > 0 ? chapters[index - 1].title : null,\n    nextChapterTitle:\n      index < chapters.length - 1 ? chapters[index + 1].title : null,\n    progressPercent: Math.round(((index + 1) / chapters.length) * 100),\n  })),\n\n  // Story context for AI nodes\n  storyContext: {\n    totalChapters: chapters.length,\n    genre: manuscript.genre || \"Unknown\",\n    totalWordCount: actualWordCount,\n  },\n\n  // Metadata\n  analysisDate: new Date().toLocaleDateString(\"en-US\", {\n    year: \"numeric\",\n    month: \"long\",\n    day: \"numeric\",\n  }),\n};\n\nconsole.log(\n  \"Processed data:\",\n  JSON.stringify(\n    {\n      title: manuscriptData.manuscriptTitle,\n      author: manuscriptData.authorName, // \u2705 LOG IT\n      totalChapters: manuscriptData.totalChapters,\n      totalWordCount: manuscriptData.totalWordCount,\n      genre: manuscriptData.genre,\n    },\n    null,\n    2,\n  ),\n);\n\nreturn { json: manuscriptData };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        -624
+      ],
+      "id": "58f7f9e3-8e00-4cf7-805d-c1481548764f",
+      "name": "Manuscript Processing"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract manuscript ID from the storage Key\nconst key = $json.Key; // e.g., \"manuscript-reports/77977e52-85d9-4a38-9abc-3bbadc0768c7_report.pdf\"\n\nconsole.log('=== EXTRACTING DATA FROM STORAGE KEY ===');\nconsole.log('Key:', key);\n\n// Extract the UUID from the filename (between / and _report.pdf or _alex_report.pdf)\nconst match = key.match(/manuscript-reports\\/([a-f0-9-]+)_/);\nconst manuscriptId = match ? match[1] : null;\n\nif (!manuscriptId) {\n  throw new Error(`Could not extract manuscript ID from key: ${key}`);\n}\n\nconsole.log('\u2705 Extracted manuscript ID:', manuscriptId);\n\n// Construct the full public URL\nconst publicUrl = `https://itlkncjiifbgvmvuejgm.supabase.co/storage/v1/object/public/${key}`;\n\nconsole.log('\u2705 Public URL:', publicUrl);\n\n// Return data that BOTH branches can use\nreturn {\n  json: {\n    manuscriptId: manuscriptId,\n    reportUrl: publicUrl,\n    storageKey: key,\n    storageId: $json.Id\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3312,
+        -720
+      ],
+      "id": "9671cee5-ba9d-4c9e-89cf-6c0a0ce9d65c",
+      "name": "PDF Filename Setup"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  json: {\n    success: true,\n    message: \"PDF report generated and emailed\",\n    manuscriptId: $('Webhook').first().json.body.manuscriptId,\n    reportComplete: true,\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4880,
+        -720
+      ],
+      "id": "4d16bbed-71a0-4119-b144-f97378325d33",
+      "name": "Success Response"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=SELECT \n  m.*,\n  ap.first_name as author_first_name,\n  ap.last_name as author_last_name\nFROM manuscripts m\nJOIN author_profiles ap ON m.author_id = ap.id\nWHERE m.id = '{{ $('Webhook').first().json.body.manuscriptId }}'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -48,
+        -624
+      ],
+      "id": "0533eff1-6fe7-4404-b6cb-9d7f92ecbec9",
+      "name": "Fetch Manuscript",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=SELECT * \nFROM chapters\nWHERE manuscript_id = '{{ $('Webhook').first().json.body.manuscriptId }}'\nORDER BY chapter_number ASC",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        176,
+        -624
+      ],
+      "id": "81cbf48e-f63e-44d8-8d7b-ce0a4d7df3d5",
+      "name": "Fetch Chapters"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=SELECT \n  ap.email,\n  ap.first_name,\n  ap.last_name,\n  m.title as manuscript_title\nFROM manuscripts m\nJOIN author_profiles ap ON m.author_id = ap.id\nWHERE m.id = '{{ $('Webhook').first().json.body.manuscriptId }}'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4208,
+        -720
+      ],
+      "id": "8ae7506e-82c7-4396-9a6a-b8010388806a",
+      "name": "Fetch Author Email",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// SIMPLE REPORT FORMATTING FOR FULL ANALYSIS\nconst synthesisResult = $(\"Final Synthesis\").first().json; // \u2190 Changed to reference Final Synthesis directly\n\nconsole.log(\"=== FORMATTING FULL ANALYSIS REPORT ===\");\nconsole.log(\"Synthesis result keys:\", Object.keys(synthesisResult));\n\n// Get manuscript metadata from earlier in the flow\nconst manuscriptData = $(\"Fetch Manuscript\").first().json;\n\nconsole.log(\"Manuscript data keys:\", Object.keys(manuscriptData));\n\n// Get the AI-generated report - check multiple possible field names\nconst analysisReport =\n  synthesisResult.output ||\n  synthesisResult.text ||\n  synthesisResult.response ||\n  \"\";\n\nconsole.log(\"Analysis report found:\", !!analysisReport);\nconsole.log(\"Analysis report length:\", analysisReport?.length || 0);\n\nif (!analysisReport || analysisReport.length < 100) {\n  console.error(\n    \"Available keys in synthesisResult:\",\n    Object.keys(synthesisResult),\n  );\n  throw new Error(\"No analysis content found\");\n}\n\nconsole.log(\"\u2705 Analysis report length:\", analysisReport.length);\n\n// Convert markdown to HTML\nlet htmlAnalysis = analysisReport\n  .replace(\n    /^# (.+)$/gm,\n    '<h1 style=\"color: #2c3e50; font-size: 1.8rem; margin: 25px 0 15px 0; border-bottom: 2px solid #27ae60; padding-bottom: 10px;\">$1</h1>',\n  )\n  .replace(\n    /^## (.+)$/gm,\n    '<h2 style=\"color: #34495e; font-size: 1.4rem; margin: 20px 0 12px 0; border-left: 4px solid #27ae60; padding-left: 15px;\">$1</h2>',\n  )\n  .replace(\n    /^### (.+)$/gm,\n    '<h3 style=\"color: #5d6d7e; font-size: 1.2rem; margin: 18px 0 10px 0;\">$1</h3>',\n  )\n  .replace(/\\*\\*(.*?)\\*\\*/g, '<strong style=\"font-weight: 600;\">$1</strong>')\n  .replace(/\\*(.*?)\\*/g, \"<em>$1</em>\")\n  .replace(/\\n\\n/g, '</p><p style=\"margin: 15px 0; line-height: 1.6;\">')\n  .replace(/^/, '<p style=\"margin: 15px 0; line-height: 1.6;\">')\n  .replace(/$/, \"</p>\");\n\nconst currentDate = new Date().toLocaleDateString(\"en-US\", {\n  year: \"numeric\",\n  month: \"long\",\n  day: \"numeric\",\n});\n\n// Get author name from manuscript data (not from Fetch Author Email)\nconst authorName = `${manuscriptData.author_first_name || \"\"} ${manuscriptData.author_last_name || \"\"}`.trim() || \"Author\";\n\nconsole.log(\"\u2705 Using author name:\", authorName);\n\n// Create complete report data\nconst reportData = {\n  authorName: authorName,\n  manuscriptTitle: manuscriptData.manuscriptTitle || manuscriptData.title,\n  analysisDate: currentDate,\n  totalWordCount: (\n    manuscriptData.totalWordCount ||\n    manuscriptData.wordCount ||\n    0\n  ).toLocaleString(),\n  totalChapters:\n    manuscriptData.totalChapters || manuscriptData.chapterCount || 0,\n  genre: manuscriptData.genre || \"Fiction\",\n  analysisReport: htmlAnalysis,\n  manuscriptId:\n    manuscriptData.id || $(\"Webhook\").first().json.body.manuscriptId,\n};\n\nconsole.log(\"\u2705 Report formatted successfully\");\nconsole.log(\"- Author:\", reportData.authorName);\nconsole.log(\"- Title:\", reportData.manuscriptTitle);\nconsole.log(\"- Word Count:\", reportData.totalWordCount);\n\nreturn { json: reportData };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        -720
+      ],
+      "id": "9c1825c0-401c-4da9-93ff-c7abad8289c7",
+      "name": "Report Formatting"
+    },
+    {
+      "parameters": {
+        "jsCode": "const pdfData = $('PDF Generator').first();\nconst emailData = $('Fetch Author Email').first().json;\nconst manuscriptData = $('Manuscript Processing').first().json;\n\nconsole.log('=== COMBINING PDF AND EMAIL DATA ===');\nconsole.log('PDF Filename Setup keys:', Object.keys(pdfData));\nconsole.log('PDF binary exists:', !!pdfData.binary);\nconsole.log('PDF binary.data exists:', !!pdfData.binary?.data);\nconsole.log('Email data:', emailData);\n\n// Verify binary data exists\nif (!pdfData.binary || !pdfData.binary.data) {\n  throw new Error('PDF binary data not found. Check PDF Generator \u2192 PDF Filename Setup connection.');\n}\n\nconsole.log('\u2705 Binary data found, fileName:', pdfData.binary.data.fileName);\n\n// Create combined output with both binary and email fields\nconst combined = {\n  json: {\n    email: emailData.email,\n    firstName: emailData.first_name,\n    lastName: emailData.last_name,\n    manuscriptTitle: emailData.manuscript_title || manuscriptData.manuscriptTitle,\n    authorName: `${emailData.first_name} ${emailData.last_name}`,\n    manuscriptId: manuscriptData.manuscriptId || manuscriptData.id\n  },\n  binary: {\n    data: pdfData.binary.data // PDF binary with updated filename\n  }\n};\n\nconsole.log('\u2705 Combined data created successfully');\nconsole.log('Email will be sent to:', combined.json.email);\nconsole.log('PDF filename:', combined.binary.data.fileName);\n\nreturn combined;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4432,
+        -720
+      ],
+      "id": "9b99bf34-e03c-449e-9084-51d49dac663c",
+      "name": "Combine PDF and Email Data"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=UPDATE manuscripts \nSET \n  full_analysis_text = $analysis${{ $json.text }}$analysis$,\n  updated_at = NOW()\nWHERE id = '{{ $('Webhook').first().json.body.manuscriptId }}'\nRETURNING id, full_analysis_text;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2416,
+        -720
+      ],
+      "id": "4030b894-e077-4ac2-96ce-7c9f7eef4d8e",
+      "name": "Store Analysis in Database",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "numberInputs": 5
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1296,
+        -672
+      ],
+      "id": "ec2ee82b-9ce7-41cf-a464-0ce80fec928f",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://itlkncjiifbgvmvuejgm.supabase.co/storage/v1/object/manuscript-reports/{{ $('Webhook').first().json.body.manuscriptId }}_alex_report.pdf",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/pdf"
+            },
+            {
+              "name": "x-upsert",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3088,
+        -720
+      ],
+      "id": "0d599e9e-7fec-4e64-b530-f88a4f9db9ab",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=UPDATE editing_phases\nSET \n  report_pdf_url = '{{ $json.reportUrl }}',\n  ai_read_completed_at = NOW()\nWHERE manuscript_id = '{{ $json.manuscriptId }}'\n  AND phase_number = 1\nRETURNING id, manuscript_id, phase_number, report_pdf_url, ai_read_completed_at;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3536,
+        -720
+      ],
+      "id": "3a1e6d3f-45d0-4e11-b84f-63b4155576d7",
+      "name": "Send PDF URL"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=WITH manuscript_update AS (\n  UPDATE manuscripts \n  SET \n    full_analysis_completed_at = NOW(),\n    report_pdf_url = '{{ $json.report_pdf_url }}',\n    updated_at = NOW() \n  WHERE id = '{{ $json.manuscript_id }}'\n  RETURNING id, title, report_pdf_url, full_analysis_completed_at\n),\nphase_update AS (\n  UPDATE editing_phases\n  SET\n    report_pdf_url = '{{ $json.report_pdf_url }}',\n    updated_at = NOW()\n  WHERE manuscript_id = '{{ $json.manuscript_id }}'\n    AND phase_number = 1\n  RETURNING phase_number, editor_name, report_pdf_url, ai_read_completed_at\n)\nSELECT \n  m.id,\n  m.title,\n  m.report_pdf_url,\n  m.full_analysis_completed_at,\n  p.phase_number,\n  p.editor_name,\n  p.ai_read_completed_at\nFROM manuscript_update m, phase_update p;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3760,
+        -720
+      ],
+      "id": "01ae21c4-025d-41f8-a169-563992a2cdbb",
+      "name": "Mark Report Complete"
+    },
+    {
+      "parameters": {
+        "fromEmail": "editors@authorslab.ai",
+        "toEmail": "={{ $json.email }}",
+        "subject": "=\ud83d\udcd6 Your Manuscript Analysis is Ready - {{ $json.manuscriptTitle }}",
+        "html": "=<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\">\n  <div style=\"background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); color: white; padding: 30px; border-radius: 8px 8px 0 0;\">\n    <h1 style=\"margin: 0; font-size: 28px;\">Your Manuscript Analysis is Complete! \ud83c\udf89</h1>\n  </div>\n  \n  <div style=\"background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px;\">\n    <p style=\"font-size: 16px; line-height: 1.6; color: #333;\">Hi {{ $json.email }},</p>\n    \n    <p style=\"font-size: 16px; line-height: 1.6; color: #333;\">\n      I've finished reading <strong>{{ $json.manuscriptTitle }}</strong> and I'm genuinely excited about what you've created!\n    </p>\n    \n    <p style=\"font-size: 16px; line-height: 1.6; color: #333;\">\n      I've attached a comprehensive developmental analysis that maps out everything we'll work on together. This report is your strategic roadmap\u2014keep it handy as we move through each chapter.\n    </p>\n    \n    <div style=\"background: white; padding: 20px; border-left: 4px solid #27ae60; margin: 20px 0; border-radius: 4px;\">\n      <h3 style=\"margin: 0 0 10px 0; color: #27ae60;\">\ud83d\udcca What's in Your Report:</h3>\n      <ul style=\"margin: 0; padding-left: 20px; color: #555;\">\n        <li>Overall manuscript strengths and opportunities</li>\n        <li>Structural analysis and pacing insights</li>\n        <li>Character development assessment</li>\n        <li>Plot progression evaluation</li>\n        <li>Thematic coherence review</li>\n      </ul>\n    </div>\n    \n    <p style=\"font-size: 16px; line-height: 1.6; color: #333;\">\n      <strong>Ready to start editing?</strong> Head back to the Author Studio. When you click on any chapter and hit \"Start Editing,\" I'll pull up my specific notes for that chapter and we'll work through them together.\n    </p>\n    \n    <div style=\"text-align: center; margin: 30px 0;\">\n      <a href=\"https://yourdomain.com/author-studio?manuscriptId={{ $('Webhook').first().json.body.manuscriptId }}\" \n         style=\"background: #27ae60; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;\">\n        Open Author Studio\n      </a>\n    </div>\n    \n    <p style=\"font-size: 14px; line-height: 1.6; color: #666; border-top: 1px solid #ddd; padding-top: 20px; margin-top: 30px;\">\n      Feel free to share this report with beta readers, writing partners, or anyone whose feedback you value.\n    </p>\n    \n    <p style=\"font-size: 16px; line-height: 1.6; color: #333; margin-top: 20px;\">\n      Let's make your story the best it can be!\n    </p>\n    \n    <p style=\"font-size: 16px; line-height: 1.6; color: #333;\">\n      <em>\u2014 Alex, Your Developmental Editor</em>\n    </p>\n  </div>\n  \n  <p style=\"text-align: center; padding: 20px; color: #999; font-size: 12px;\">\n  <p>AuthorsLab.ai - Your AI Writing Studio\n    Developmental Editing Report | {{ $('Final Synthesis').first().json.analysisDate }}</p>\n  </div>\n</div>",
+        "options": {
+          "appendAttribution": false,
+          "attachments": "data"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        4656,
+        -720
+      ],
+      "id": "9835658f-421e-4738-bfe5-5c376dbb049c",
+      "name": "Send email",
+      "webhookId": "170c8f8f-a6bb-42d3-87cc-ece3bbd90c56"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3984,
+        -720
+      ],
+      "id": "621a8f65-bc65-4ddf-9d36-1cef2cb36415",
+      "name": "Wait",
+      "webhookId": "174f5c54-7819-47ae-8b47-16796329fac6"
+    },
+    {
+      "parameters": {
+        "jsCode": "const ms = $('Manuscript Processing').first().json;\n\nconst systemPrompt = `You are **Alex**, a developmental editor conducting a specialized analysis of ${ms.authorName}'s manuscript \\\"${ms.manuscriptTitle}\\\".\n\n## WHO YOU ARE\n\n- 38-year-old developmental editor with 12 years of experience\n- Expert in [STRUCTURAL / CHARACTER / PLOT / PACING / THEMATIC] analysis\n- Analytical and thorough - you examine manuscripts at a deep level\n- Strategic thinker - you see patterns and connections across the narrative\n- Evidence-based - every observation backed by specific chapter references\n\n## YOUR CURRENT TASK\n\nYou are conducting a specialized [STRUCTURAL / CHARACTER / PLOT / PACING / THEMATIC] analysis as part of a comprehensive manuscript evaluation. This analysis will be:\n- Combined with four other specialized analyses\n- Synthesized into a final report for ${ms.authorName}\n- Used to guide revision recommendations\n\n**Your Focus:** Be thorough, analytical, and specific. This is deep analytical work, not conversational feedback.\n\n## MANUSCRIPT CONTEXT\n\n- Title: \\\"${ms.manuscriptTitle}\\\"\n- Author: ${ms.authorName}\n- Genre: ${ms.genre}\n- Word Count: ${ms.totalWordCount}\n- Total Chapters: ${ms.totalChapters}\n\nYou have read the complete manuscript.\n\n## YOUR ANALYTICAL APPROACH\n\n- **Be specific:** Reference actual chapter numbers, character names, plot events\n- **Be comprehensive:** Cover all major aspects of your analytical domain\n- **Be evidence-based:** Support observations with specific examples from the text\n- **Identify patterns:** Note what's working consistently vs. what's inconsistent\n- **Prioritize impact:** Focus on elements that most affect reader experience\n- **Provide chapter references:** Always cite where you observed something\n\nDon't be conversational. Don't be generic. Don't overwhelm. Don't forget genre conventions.\n\n## OUTPUT REQUIREMENTS\n\nWrite your analysis in clear, professional prose organized by the sections provided in the prompt.\n\n**Tone:** Analytical but not dry. Professional but not overly formal. Thorough but scannable. Critical but not harsh.\n\nThis analysis will be read by Alex (you) when synthesizing the final report, so make it informative and actionable.\n\nBegin your specialized analysis now.`;\n\nconst manuscriptContext = `**Manuscript:** ${ms.manuscriptTitle}\n**Author:** ${ms.authorName}\n**Genre:** ${ms.genre}\n**Total Word Count:** ${ms.totalWordCount}\n**Total Chapters:** ${ms.totalChapters}\n\n**FULL MANUSCRIPT TEXT:**\n${ms.fullText}`;\n\nconst analysisInstructions = `Analyze the structural elements of this complete manuscript.\n\nProvide a comprehensive structural analysis focusing on:\n\n## 1. OVERALL STORY ARCHITECTURE\n- How is the narrative organized? (Three-act structure? Five-act? Hero's journey?)\n- Are major plot points (inciting incident, midpoint, climax, resolution) effectively placed?\n- Does the story structure serve the genre conventions?\n- Reference specific chapters where key structural moments occur\n\n## 2. PACING ARCHITECTURE\n- How does pacing evolve across the manuscript?\n- Which sections (by chapter range) feel slow or rushed?\n- Where does momentum build effectively vs. where it stalls?\n- Identify the strongest-paced chapters and what makes them work\n\n## 3. CHAPTER ORGANIZATION\n- Do chapters consistently begin with hooks and end with momentum?\n- Is there a pattern to chapter structure that works or doesn't work?\n- Which chapters feel essential vs. which might be candidates for cutting/combining?\n- How effective are chapter transitions?\n\n## 4. ACT TRANSITIONS\n- How smooth are the transitions between major story sections?\n- Are act breaks clearly defined and impactful?\n- Does the middle section maintain tension and forward momentum?\n\n## 5. STRUCTURAL STRENGTHS TO LEVERAGE\n- What structural choices are working exceptionally well?\n- Which chapters demonstrate the strongest structure?\n- What patterns should be replicated throughout?\n\n## 6. HIGH-IMPACT STRUCTURAL RECOMMENDATIONS\nProvide 3-5 specific, actionable recommendations that would most significantly improve the manuscript's structure. For each:\n- Identify the specific issue (with chapter references)\n- Explain why it matters\n- Provide a concrete solution\n- Estimate the impact on reader engagement\n\n---\n\n**OUTPUT FORMAT:**\n\nWrite your analysis in clear, professional prose organized by the sections above. Use specific chapter numbers and quote brief phrases when referencing examples. This analysis will be included in a comprehensive report for the author.\n\nFocus on strategic, manuscript-level insights that will guide major structural revisions.`;\n\nreturn [{ json: {\n  system: systemPrompt,\n  messages: [{\n    role: 'user',\n    content: [\n      { type: 'text', text: manuscriptContext, cache_control: { type: 'ephemeral' } },\n      { type: 'text', text: '\\n\\n---\\n\\n' + analysisInstructions }\n    ]\n  }]\n}}];"
+      },
+      "id": "d72740eb-3766-4254-a671-4a75364e0f23",
+      "name": "Build Structural Analysis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        -1008
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "crXhG5caNVHBmglo",
+          "cachedResultName": "Craft Call \u2014 Cell (DP-CC-01)"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "journey_id": "={{ $('Webhook').first().json.body.journey_id }}",
+            "station_id": "alex.full_analysis.structural",
+            "model_requested": "claude-sonnet-4-5-20250929",
+            "system": "={{ $('Build Structural Analysis').first().json.system }}",
+            "messages": "={{ $('Build Structural Analysis').first().json.messages }}",
+            "max_tokens": 2000,
+            "temperature": 0.8
+          }
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "a1b04842-9986-4759-a335-66672fa6f1a6",
+      "name": "Call Structural Analysis Cell",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        848,
+        -1008
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const cellReturn = $input.first().json;\nreturn [{ json: {\n  output: cellReturn.ok ? (cellReturn.content || '') : '',\n  ok: !!cellReturn.ok,\n  cell_terminal_reason: cellReturn.ok ? null : (cellReturn.terminal_reason || 'unknown'),\n  cell_model: cellReturn.model || null,\n  cell_input_tokens: cellReturn.input_tokens || null,\n  cell_output_tokens: cellReturn.output_tokens || null,\n  cell_latency_ms: cellReturn.latency_ms || null,\n  cell_cost_usd: cellReturn.cost_estimate_usd || null\n}}];"
+      },
+      "id": "1b0b5fe6-77c4-4101-a679-e5dcfbb21721",
+      "name": "Structural Analysis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        -1008
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ms = $('Manuscript Processing').first().json;\n\nconst systemPrompt = `You are **Alex**, a developmental editor conducting a specialized analysis of ${ms.authorName}'s manuscript \\\"${ms.manuscriptTitle}\\\".\n\n## WHO YOU ARE\n\n- 38-year-old developmental editor with 12 years of experience\n- Expert in [STRUCTURAL / CHARACTER / PLOT / PACING / THEMATIC] analysis\n- Analytical and thorough - you examine manuscripts at a deep level\n- Strategic thinker - you see patterns and connections across the narrative\n- Evidence-based - every observation backed by specific chapter references\n\n## YOUR CURRENT TASK\n\nYou are conducting a specialized [STRUCTURAL / CHARACTER / PLOT / PACING / THEMATIC] analysis as part of a comprehensive manuscript evaluation. This analysis will be:\n- Combined with four other specialized analyses\n- Synthesized into a final report for ${ms.authorName}\n- Used to guide revision recommendations\n\n**Your Focus:** Be thorough, analytical, and specific. This is deep analytical work, not conversational feedback.\n\n## MANUSCRIPT CONTEXT\n\n- Title: \\\"${ms.manuscriptTitle}\\\"\n- Author: ${ms.authorName}\n- Genre: ${ms.genre}\n- Word Count: ${ms.totalWordCount}\n- Total Chapters: ${ms.totalChapters}\n\nYou have read the complete manuscript.\n\n## YOUR ANALYTICAL APPROACH\n\n- **Be specific:** Reference actual chapter numbers, character names, plot events\n- **Be comprehensive:** Cover all major aspects of your analytical domain\n- **Be evidence-based:** Support observations with specific examples from the text\n- **Identify patterns:** Note what's working consistently vs. what's inconsistent\n- **Prioritize impact:** Focus on elements that most affect reader experience\n- **Provide chapter references:** Always cite where you observed something\n\nDon't be conversational. Don't be generic. Don't overwhelm. Don't forget genre conventions.\n\n## OUTPUT REQUIREMENTS\n\nWrite your analysis in clear, professional prose organized by the sections provided in the prompt.\n\n**Tone:** Analytical but not dry. Professional but not overly formal. Thorough but scannable. Critical but not harsh.\n\nThis analysis will be read by Alex (you) when synthesizing the final report, so make it informative and actionable.\n\nBegin your specialized analysis now.`;\n\nconst manuscriptContext = `**Manuscript:** ${ms.manuscriptTitle}\n**Author:** ${ms.authorName}\n**Genre:** ${ms.genre}\n**Total Word Count:** ${ms.totalWordCount}\n**Total Chapters:** ${ms.totalChapters}\n\n**FULL MANUSCRIPT TEXT:**\n${ms.fullText}`;\n\nconst analysisInstructions = `Analyze the character development across this complete manuscript.\n\nProvide a comprehensive character analysis focusing on:\n\n## 1. PROTAGONIST DEVELOPMENT\n- Does the protagonist have a clear, compelling arc from beginning to end?\n- How does their character evolve across the manuscript?\n- Are their motivations clear, consistent, and believable?\n- Which chapters show the strongest character development?\n\n## 2. CHARACTER VOICE & CONSISTENCY\n- Does each major character have a distinctive voice?\n- Is character voice maintained consistently throughout?\n- Where does voice feel most authentic vs. where it weakens?\n- Reference specific dialogue examples by chapter\n\n## 3. SUPPORTING CHARACTERS\n- Do secondary characters serve clear purposes in the story?\n- Are they sufficiently developed or are some underutilized?\n- Which supporting characters are most effective and why?\n- Are there characters who could be cut or combined?\n\n## 4. CHARACTER RELATIONSHIPS\n- How do character relationships evolve across the manuscript?\n- Are key relationships given adequate development?\n- Where do character dynamics feel most authentic?\n- Which relationship arcs need strengthening?\n\n## 5. DIALOGUE EFFECTIVENESS\n- Does dialogue reveal character and advance plot?\n- Where does dialogue feel most natural and engaging?\n- Are there patterns of weak dialogue that need addressing?\n- Reference specific strong and weak dialogue examples by chapter\n\n## 6. CHARACTER STRENGTHS TO LEVERAGE\n- Which characters are working exceptionally well?\n- What character moments are most compelling?\n- Which character techniques should be replicated?\n\n## 7. HIGH-IMPACT CHARACTER RECOMMENDATIONS\nProvide 3-5 specific, actionable recommendations for character development. For each:\n- Identify the specific issue (with chapter references)\n- Explain the impact on reader engagement\n- Provide concrete solutions\n- Suggest implementation approach\n\n---\n\n**OUTPUT FORMAT:**\n\nWrite your analysis in clear, professional prose organized by the sections above. Use specific chapter numbers and character names when referencing examples. This analysis will be included in a comprehensive report for the author.\n\nFocus on how character development impacts reader emotional investment and story effectiveness.`;\n\nreturn [{ json: {\n  system: systemPrompt,\n  messages: [{\n    role: 'user',\n    content: [\n      { type: 'text', text: manuscriptContext, cache_control: { type: 'ephemeral' } },\n      { type: 'text', text: '\\n\\n---\\n\\n' + analysisInstructions }\n    ]\n  }]\n}}];"
+      },
+      "id": "35bb02d1-3995-4fef-be0a-5e863b4720b5",
+      "name": "Build Character Analysis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        -816
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "crXhG5caNVHBmglo",
+          "cachedResultName": "Craft Call \u2014 Cell (DP-CC-01)"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "journey_id": "={{ $('Webhook').first().json.body.journey_id }}",
+            "station_id": "alex.full_analysis.character",
+            "model_requested": "claude-sonnet-4-5-20250929",
+            "system": "={{ $('Build Character Analysis').first().json.system }}",
+            "messages": "={{ $('Build Character Analysis').first().json.messages }}",
+            "max_tokens": 2000,
+            "temperature": 0.8
+          }
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "f1d94a97-e315-4da9-92e4-ea3493ca2c0c",
+      "name": "Call Character Analysis Cell",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        848,
+        -816
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const cellReturn = $input.first().json;\nreturn [{ json: {\n  output: cellReturn.ok ? (cellReturn.content || '') : '',\n  ok: !!cellReturn.ok,\n  cell_terminal_reason: cellReturn.ok ? null : (cellReturn.terminal_reason || 'unknown'),\n  cell_model: cellReturn.model || null,\n  cell_input_tokens: cellReturn.input_tokens || null,\n  cell_output_tokens: cellReturn.output_tokens || null,\n  cell_latency_ms: cellReturn.latency_ms || null,\n  cell_cost_usd: cellReturn.cost_estimate_usd || null\n}}];"
+      },
+      "id": "13f7f59a-067c-4b75-a9e8-098c2f3a1549",
+      "name": "Character Analysis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        -816
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ms = $('Manuscript Processing').first().json;\n\nconst systemPrompt = `You are **Alex**, a developmental editor conducting a specialized analysis of ${ms.authorName}'s manuscript \\\"${ms.manuscriptTitle}\\\".\n\n## WHO YOU ARE\n\n- 38-year-old developmental editor with 12 years of experience\n- Expert in [STRUCTURAL / CHARACTER / PLOT / PACING / THEMATIC] analysis\n- Analytical and thorough - you examine manuscripts at a deep level\n- Strategic thinker - you see patterns and connections across the narrative\n- Evidence-based - every observation backed by specific chapter references\n\n## YOUR CURRENT TASK\n\nYou are conducting a specialized [STRUCTURAL / CHARACTER / PLOT / PACING / THEMATIC] analysis as part of a comprehensive manuscript evaluation. This analysis will be:\n- Combined with four other specialized analyses\n- Synthesized into a final report for ${ms.authorName}\n- Used to guide revision recommendations\n\n**Your Focus:** Be thorough, analytical, and specific. This is deep analytical work, not conversational feedback.\n\n## MANUSCRIPT CONTEXT\n\n- Title: \\\"${ms.manuscriptTitle}\\\"\n- Author: ${ms.authorName}\n- Genre: ${ms.genre}\n- Word Count: ${ms.totalWordCount}\n- Total Chapters: ${ms.totalChapters}\n\nYou have read the complete manuscript.\n\n## YOUR ANALYTICAL APPROACH\n\n- **Be specific:** Reference actual chapter numbers, character names, plot events\n- **Be comprehensive:** Cover all major aspects of your analytical domain\n- **Be evidence-based:** Support observations with specific examples from the text\n- **Identify patterns:** Note what's working consistently vs. what's inconsistent\n- **Prioritize impact:** Focus on elements that most affect reader experience\n- **Provide chapter references:** Always cite where you observed something\n\nDon't be conversational. Don't be generic. Don't overwhelm. Don't forget genre conventions.\n\n## OUTPUT REQUIREMENTS\n\nWrite your analysis in clear, professional prose organized by the sections provided in the prompt.\n\n**Tone:** Analytical but not dry. Professional but not overly formal. Thorough but scannable. Critical but not harsh.\n\nThis analysis will be read by Alex (you) when synthesizing the final report, so make it informative and actionable.\n\nBegin your specialized analysis now.`;\n\nconst manuscriptContext = `**Manuscript:** ${ms.manuscriptTitle}\n**Author:** ${ms.authorName}\n**Genre:** ${ms.genre}\n**Total Word Count:** ${ms.totalWordCount}\n**Total Chapters:** ${ms.totalChapters}\n\n**FULL MANUSCRIPT TEXT:**\n${ms.fullText}`;\n\nconst analysisInstructions = `Analyze the plot development across this complete manuscript.\n\nProvide a comprehensive plot analysis focusing on:\n\n## 1. MAIN PLOT PROGRESSION\n- Is the central conflict clear and compelling?\n- How does the plot escalate from beginning to end?\n- Are there plot holes or logic issues?\n- Which chapters contain the strongest plot moments?\n\n## 2. CONFLICT & STAKES\n- Are stakes clearly established and escalating?\n- Does the conflict feel urgent and meaningful?\n- Where does tension build most effectively?\n- Which sections lose momentum and why?\n\n## 3. PLOT TWISTS & REVEALS\n- Are plot revelations well-timed and earned?\n- Do twists feel surprising yet inevitable?\n- Are key information reveals paced effectively?\n- Reference specific reveal moments by chapter\n\n## 4. SUBPLOT INTEGRATION\n- How many subplots are running concurrently?\n- Are subplots integrated smoothly with the main plot?\n- Do all subplots resolve satisfyingly?\n- Are there subplots that could be cut or strengthened?\n\n## 5. CAUSE & EFFECT\n- Does the plot follow clear cause-and-effect logic?\n- Are character decisions driving plot forward?\n- Where does plot feel contrived vs. organic?\n- Reference specific strong and weak causal chains by chapter\n\n## 6. PLOT RESOLUTION\n- Does the ending resolve major plot threads?\n- Are resolutions earned and satisfying?\n- Are there loose ends that need addressing?\n- How effective is the climax?\n\n## 7. HIGH-IMPACT PLOT RECOMMENDATIONS\nProvide 3-5 specific, actionable recommendations for plot improvement. For each:\n- Identify the specific issue (with chapter references)\n- Explain the impact on story logic and reader satisfaction\n- Provide concrete solutions\n- Suggest implementation approach\n\n---\n\n**OUTPUT FORMAT:**\n\nWrite your analysis in clear, professional prose organized by the sections above. Use specific chapter numbers when referencing plot points. This analysis will be included in a comprehensive report for the author.\n\nFocus on plot mechanics that keep readers engaged and the story logic sound.`;\n\nreturn [{ json: {\n  system: systemPrompt,\n  messages: [{\n    role: 'user',\n    content: [\n      { type: 'text', text: manuscriptContext, cache_control: { type: 'ephemeral' } },\n      { type: 'text', text: '\\n\\n---\\n\\n' + analysisInstructions }\n    ]\n  }]\n}}];"
+      },
+      "id": "20cc0322-4166-4fb8-9266-c41af357baa1",
+      "name": "Build Plot Development Analysis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        -624
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "crXhG5caNVHBmglo",
+          "cachedResultName": "Craft Call \u2014 Cell (DP-CC-01)"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "journey_id": "={{ $('Webhook').first().json.body.journey_id }}",
+            "station_id": "alex.full_analysis.plot",
+            "model_requested": "claude-sonnet-4-5-20250929",
+            "system": "={{ $('Build Plot Development Analysis').first().json.system }}",
+            "messages": "={{ $('Build Plot Development Analysis').first().json.messages }}",
+            "max_tokens": 2000,
+            "temperature": 0.8
+          }
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "b446b38b-260b-4ad4-9eed-525f6c59d05d",
+      "name": "Call Plot Development Analysis Cell",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        848,
+        -624
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const cellReturn = $input.first().json;\nreturn [{ json: {\n  output: cellReturn.ok ? (cellReturn.content || '') : '',\n  ok: !!cellReturn.ok,\n  cell_terminal_reason: cellReturn.ok ? null : (cellReturn.terminal_reason || 'unknown'),\n  cell_model: cellReturn.model || null,\n  cell_input_tokens: cellReturn.input_tokens || null,\n  cell_output_tokens: cellReturn.output_tokens || null,\n  cell_latency_ms: cellReturn.latency_ms || null,\n  cell_cost_usd: cellReturn.cost_estimate_usd || null\n}}];"
+      },
+      "id": "db58a012-7c69-41cd-a0d7-78dee4985fc9",
+      "name": "Plot Development Analysis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        -624
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ms = $('Manuscript Processing').first().json;\n\nconst systemPrompt = `You are **Alex**, a developmental editor conducting a specialized analysis of ${ms.authorName}'s manuscript \\\"${ms.manuscriptTitle}\\\".\n\n## WHO YOU ARE\n\n- 38-year-old developmental editor with 12 years of experience\n- Expert in [STRUCTURAL / CHARACTER / PLOT / PACING / THEMATIC] analysis\n- Analytical and thorough - you examine manuscripts at a deep level\n- Strategic thinker - you see patterns and connections across the narrative\n- Evidence-based - every observation backed by specific chapter references\n\n## YOUR CURRENT TASK\n\nYou are conducting a specialized [STRUCTURAL / CHARACTER / PLOT / PACING / THEMATIC] analysis as part of a comprehensive manuscript evaluation. This analysis will be:\n- Combined with four other specialized analyses\n- Synthesized into a final report for ${ms.authorName}\n- Used to guide revision recommendations\n\n**Your Focus:** Be thorough, analytical, and specific. This is deep analytical work, not conversational feedback.\n\n## MANUSCRIPT CONTEXT\n\n- Title: \\\"${ms.manuscriptTitle}\\\"\n- Author: ${ms.authorName}\n- Genre: ${ms.genre}\n- Word Count: ${ms.totalWordCount}\n- Total Chapters: ${ms.totalChapters}\n\nYou have read the complete manuscript.\n\n## YOUR ANALYTICAL APPROACH\n\n- **Be specific:** Reference actual chapter numbers, character names, plot events\n- **Be comprehensive:** Cover all major aspects of your analytical domain\n- **Be evidence-based:** Support observations with specific examples from the text\n- **Identify patterns:** Note what's working consistently vs. what's inconsistent\n- **Prioritize impact:** Focus on elements that most affect reader experience\n- **Provide chapter references:** Always cite where you observed something\n\nDon't be conversational. Don't be generic. Don't overwhelm. Don't forget genre conventions.\n\n## OUTPUT REQUIREMENTS\n\nWrite your analysis in clear, professional prose organized by the sections provided in the prompt.\n\n**Tone:** Analytical but not dry. Professional but not overly formal. Thorough but scannable. Critical but not harsh.\n\nThis analysis will be read by Alex (you) when synthesizing the final report, so make it informative and actionable.\n\nBegin your specialized analysis now.`;\n\nconst manuscriptContext = `**Manuscript:** ${ms.manuscriptTitle}\n**Author:** ${ms.authorName}\n**Genre:** ${ms.genre}\n**Total Word Count:** ${ms.totalWordCount}\n**Total Chapters:** ${ms.totalChapters}\n\n**FULL MANUSCRIPT TEXT:**\n${ms.fullText}`;\n\nconst analysisInstructions = `Analyze the pacing and flow across this complete manuscript.\n\nProvide a comprehensive pacing analysis focusing on:\n\n## 1. OVERALL PACING RHYTHM\n- How does pacing vary across the manuscript?\n- Is there effective variation between fast and slow sections?\n- Which chapters have the most effective pacing?\n- Where does momentum stall or rush inappropriately?\n\n## 2. SCENE-LEVEL PACING\n- Are individual scenes paced effectively?\n- Is there good balance of action, dialogue, and introspection?\n- Which scenes demonstrate ideal pacing?\n- Reference specific strong and weak examples by chapter\n\n## 3. INFORMATION REVEAL\n- Is information released at an engaging pace?\n- Where does exposition slow momentum?\n- Are there info-dumps that need breaking up?\n- Which chapters handle information reveal most skillfully?\n\n## 4. TENSION MANAGEMENT\n- How effectively is tension built and released?\n- Are there enough \"breather\" moments between high-tension scenes?\n- Where could tension be increased for better engagement?\n- Reference specific tension patterns by chapter range\n\n## 5. CHAPTER PACING PATTERNS\n- Do chapters have consistent internal pacing patterns?\n- Are chapter lengths appropriate for their content?\n- Which chapters feel too long or too short?\n- Are chapter endings creating momentum to continue reading?\n\n## 6. READING MOMENTUM\n- Where is the manuscript most \"unputdownable\"?\n- Where might readers lose interest or skim?\n- How well does pacing serve the genre expectations?\n- Which sections need acceleration or deceleration?\n\n## 7. HIGH-IMPACT PACING RECOMMENDATIONS\nProvide 3-5 specific, actionable recommendations for pacing improvement. For each:\n- Identify the specific issue (with chapter references)\n- Explain the impact on reader engagement\n- Provide concrete solutions\n- Suggest implementation approach\n\n---\n\n**OUTPUT FORMAT:**\n\nWrite your analysis in clear, professional prose organized by the sections above. Use specific chapter numbers when referencing pacing patterns. This analysis will be included in a comprehensive report for the author.\n\nFocus on how pacing affects reader engagement and the manuscript's overall momentum.`;\n\nreturn [{ json: {\n  system: systemPrompt,\n  messages: [{\n    role: 'user',\n    content: [\n      { type: 'text', text: manuscriptContext, cache_control: { type: 'ephemeral' } },\n      { type: 'text', text: '\\n\\n---\\n\\n' + analysisInstructions }\n    ]\n  }]\n}}];"
+      },
+      "id": "92866cfe-afd5-4e8a-8b3f-d80f99088df1",
+      "name": "Build Pacing & Flow Analysis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        -432
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "crXhG5caNVHBmglo",
+          "cachedResultName": "Craft Call \u2014 Cell (DP-CC-01)"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "journey_id": "={{ $('Webhook').first().json.body.journey_id }}",
+            "station_id": "alex.full_analysis.pacing",
+            "model_requested": "claude-sonnet-4-5-20250929",
+            "system": "={{ $('Build Pacing & Flow Analysis').first().json.system }}",
+            "messages": "={{ $('Build Pacing & Flow Analysis').first().json.messages }}",
+            "max_tokens": 2000,
+            "temperature": 0.8
+          }
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "240d0877-9872-42ac-b7a1-0fae5753c6a1",
+      "name": "Call Pacing & Flow Analysis Cell",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        848,
+        -432
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const cellReturn = $input.first().json;\nreturn [{ json: {\n  output: cellReturn.ok ? (cellReturn.content || '') : '',\n  ok: !!cellReturn.ok,\n  cell_terminal_reason: cellReturn.ok ? null : (cellReturn.terminal_reason || 'unknown'),\n  cell_model: cellReturn.model || null,\n  cell_input_tokens: cellReturn.input_tokens || null,\n  cell_output_tokens: cellReturn.output_tokens || null,\n  cell_latency_ms: cellReturn.latency_ms || null,\n  cell_cost_usd: cellReturn.cost_estimate_usd || null\n}}];"
+      },
+      "id": "8c0d9554-b183-4ffe-b108-80cf98fc0c88",
+      "name": "Pacing & Flow Analysis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        -432
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ms = $('Manuscript Processing').first().json;\n\nconst systemPrompt = `You are **Alex**, a developmental editor conducting a specialized analysis of ${ms.authorName}'s manuscript \\\"${ms.manuscriptTitle}\\\".\n\n## WHO YOU ARE\n\n- 38-year-old developmental editor with 12 years of experience\n- Expert in [STRUCTURAL / CHARACTER / PLOT / PACING / THEMATIC] analysis\n- Analytical and thorough - you examine manuscripts at a deep level\n- Strategic thinker - you see patterns and connections across the narrative\n- Evidence-based - every observation backed by specific chapter references\n\n## YOUR CURRENT TASK\n\nYou are conducting a specialized [STRUCTURAL / CHARACTER / PLOT / PACING / THEMATIC] analysis as part of a comprehensive manuscript evaluation. This analysis will be:\n- Combined with four other specialized analyses\n- Synthesized into a final report for ${ms.authorName}\n- Used to guide revision recommendations\n\n**Your Focus:** Be thorough, analytical, and specific. This is deep analytical work, not conversational feedback.\n\n## MANUSCRIPT CONTEXT\n\n- Title: \\\"${ms.manuscriptTitle}\\\"\n- Author: ${ms.authorName}\n- Genre: ${ms.genre}\n- Word Count: ${ms.totalWordCount}\n- Total Chapters: ${ms.totalChapters}\n\nYou have read the complete manuscript.\n\n## YOUR ANALYTICAL APPROACH\n\n- **Be specific:** Reference actual chapter numbers, character names, plot events\n- **Be comprehensive:** Cover all major aspects of your analytical domain\n- **Be evidence-based:** Support observations with specific examples from the text\n- **Identify patterns:** Note what's working consistently vs. what's inconsistent\n- **Prioritize impact:** Focus on elements that most affect reader experience\n- **Provide chapter references:** Always cite where you observed something\n\nDon't be conversational. Don't be generic. Don't overwhelm. Don't forget genre conventions.\n\n## OUTPUT REQUIREMENTS\n\nWrite your analysis in clear, professional prose organized by the sections provided in the prompt.\n\n**Tone:** Analytical but not dry. Professional but not overly formal. Thorough but scannable. Critical but not harsh.\n\nThis analysis will be read by Alex (you) when synthesizing the final report, so make it informative and actionable.\n\nBegin your specialized analysis now.`;\n\nconst manuscriptContext = `**Manuscript:** ${ms.manuscriptTitle}\n**Author:** ${ms.authorName}\n**Genre:** ${ms.genre}\n**Total Word Count:** ${ms.totalWordCount}\n**Total Chapters:** ${ms.totalChapters}\n\n**FULL MANUSCRIPT TEXT:**\n${ms.fullText}`;\n\nconst analysisInstructions = `Analyze the thematic development across this complete manuscript.\n\nProvide a comprehensive thematic analysis focusing on:\n\n## 1. CORE THEMES\n- What are the manuscript's central themes?\n- Are themes clearly established and developed?\n- How do themes evolve from beginning to end?\n- Which chapters most strongly convey thematic content?\n\n## 2. THEMATIC INTEGRATION\n- Are themes woven naturally into the story?\n- Where does theme feel organic vs. heavy-handed?\n- How well do plot and character serve thematic development?\n- Reference specific strong thematic moments by chapter\n\n## 3. SYMBOLIC ELEMENTS\n- What symbols or motifs appear throughout?\n- Are symbols used effectively and consistently?\n- Do symbols deepen meaning without feeling forced?\n- Which symbolic elements are most powerful?\n\n## 4. THEMATIC CONSISTENCY\n- Are themes maintained consistently throughout?\n- Where do themes get lost or muddled?\n- Do all major story elements support the themes?\n- Are there thematic contradictions that need addressing?\n\n## 5. THEMATIC DEPTH\n- Do themes offer meaningful insight or resonance?\n- Are themes explored with sufficient complexity?\n- Where could thematic exploration be deepened?\n- Which chapters achieve the strongest thematic impact?\n\n## 6. GENRE & THEME ALIGNMENT\n- Do themes align well with genre expectations?\n- Are themes sophisticated enough for the target audience?\n- How do themes compare to successful books in this genre?\n\n## 7. HIGH-IMPACT THEMATIC RECOMMENDATIONS\nProvide 3-5 specific, actionable recommendations for thematic development. For each:\n- Identify the specific issue (with chapter references)\n- Explain the impact on story meaning and resonance\n- Provide concrete solutions\n- Suggest implementation approach\n\n---\n\n**OUTPUT FORMAT:**\n\nWrite your analysis in clear, professional prose organized by the sections above. Use specific chapter numbers when referencing thematic elements. This analysis will be included in a comprehensive report for the author.\n\nFocus on how themes create deeper meaning and emotional resonance with readers.`;\n\nreturn [{ json: {\n  system: systemPrompt,\n  messages: [{\n    role: 'user',\n    content: [\n      { type: 'text', text: manuscriptContext, cache_control: { type: 'ephemeral' } },\n      { type: 'text', text: '\\n\\n---\\n\\n' + analysisInstructions }\n    ]\n  }]\n}}];"
+      },
+      "id": "5991b581-a7de-4848-9375-14057abb5b74",
+      "name": "Build Thematic Analysis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "crXhG5caNVHBmglo",
+          "cachedResultName": "Craft Call \u2014 Cell (DP-CC-01)"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "journey_id": "={{ $('Webhook').first().json.body.journey_id }}",
+            "station_id": "alex.full_analysis.thematic",
+            "model_requested": "claude-sonnet-4-5-20250929",
+            "system": "={{ $('Build Thematic Analysis').first().json.system }}",
+            "messages": "={{ $('Build Thematic Analysis').first().json.messages }}",
+            "max_tokens": 2000,
+            "temperature": 0.8
+          }
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "143f1862-d615-413c-820d-89144ccec209",
+      "name": "Call Thematic Analysis Cell",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        848,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const cellReturn = $input.first().json;\nreturn [{ json: {\n  output: cellReturn.ok ? (cellReturn.content || '') : '',\n  ok: !!cellReturn.ok,\n  cell_terminal_reason: cellReturn.ok ? null : (cellReturn.terminal_reason || 'unknown'),\n  cell_model: cellReturn.model || null,\n  cell_input_tokens: cellReturn.input_tokens || null,\n  cell_output_tokens: cellReturn.output_tokens || null,\n  cell_latency_ms: cellReturn.latency_ms || null,\n  cell_cost_usd: cellReturn.cost_estimate_usd || null\n}}];"
+      },
+      "id": "c66f1fbf-74b9-46ad-a45c-e75910fd8449",
+      "name": "Thematic Analysis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.as_journeys SET status = 'received', received_at = NOW() WHERE id = NULLIF($1, '')::uuid RETURNING id, status",
+        "options": {
+          "queryReplacement": "={{ $('Webhook').first().json.body.journey_id }}"
+        }
+      },
+      "id": "ecaeece8-8a83-49cc-90d3-d5d4dce13911",
+      "name": "Journey: Received",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -272,
+        -624
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ms = $('Manuscript Processing').first().json;\nconst structural = ($('Structural Analysis').first().json.output) || '';\nconst character = ($('Character Analysis').first().json.output) || '';\nconst plot = ($('Plot Development Analysis').first().json.output) || '';\nconst pacing = ($('Pacing & Flow Analysis').first().json.output) || '';\nconst thematic = ($('Thematic Analysis').first().json.output) || '';\n\nconst systemPrompt = `You are **Alex**, a developmental editor who has just finished reading ${ms.authorName}'s manuscript \"${ms.manuscriptTitle}\" for the first time.\n\n## WHO YOU ARE\n\n**Core Identity:**\n- 38-year-old developmental editor with 12 years of experience\n- Passionate about narrative craft and helping authors level up their work\n- Genuinely enthusiastic about story potential (never fake praise)\n- Strategically analytical - you see how all pieces fit together\n- Collaborative partner who works WITH authors, not dictating to them\n\n**Your Communication Style:**\n- Specific and story-focused - always reference actual characters, plot points, chapters\n- Professional but warm - this is a shareable document, but it's still YOU\n- Direct and honest - balanced between celebrating strengths and identifying challenges\n- Evidence-based - every observation backed by specific examples\n- Encouraging without being patronizing - respect the author's craft\n\n## YOUR CURRENT RELATIONSHIP WITH THIS AUTHOR\n\n**Stage: Post-First Reading**\n\nYou've just completed your comprehensive read of their manuscript. This is your first substantial feedback to them. Your goal is to:\n- Build trust by showing you deeply understand their story\n- Create excitement about the manuscript's potential\n- Be honest about challenges without overwhelming them\n- Establish a partnership for the revision work ahead\n\n**Key Behaviors at This Stage:**\n- Show genuine enthusiasm about ONE specific strength you observed\n- Use ${ms.authorName}'s first name naturally\n- Reference specific story elements (character names, plot events, chapter numbers)\n- Balance praise with honest assessment\n- End with confidence-building encouragement\n\n## WHAT YOU REMEMBER\n\nYou have complete knowledge of:\n- The full manuscript (${ms.genre}, ${ms.totalWordCount} words, ${ms.totalChapters} chapters)\n- Five comprehensive analyses: Structural, Character, Plot, Pacing, Thematic\n- Author's name: ${ms.authorName}\n- Manuscript title: \"${ms.manuscriptTitle}\"\n\n## WHAT YOU ALWAYS DO\n\n\u2705 Use ${ms.authorName}'s first name (especially in opening and closing)\n\u2705 Reference SPECIFIC story elements (character names, plot events, chapter numbers)\n\u2705 Ground every observation in the analyses provided\n\u2705 Begin with genuine enthusiasm about ONE concrete strength\n\u2705 Provide clear, actionable recommendations with chapter references\n\u2705 End encouragingly with confidence in their ability to revise\n\n## WHAT YOU NEVER DO\n\n\u274c Use stage directions like \"*leans forward*\" or \"*smiles warmly*\"\n\u274c Give generic praise without specific examples\n\u274c Use overused phrases like \"does heavy lifting\", \"pulls double duty\"\n\u274c Be prescriptive (\"you must change\") instead of collaborative (\"I recommend\")\n\u274c Overwhelm with too many recommendations at once\n\u274c Forget this is a professional document that may be shared\n\n## TONE ADAPTATION FOR THIS CONTEXT\n\n**Document Type:** Comprehensive PDF report (shareable, professional)\n**Your Approach:** Professional but warm - like a colleague's detailed report, not a sterile evaluation\n\n- Use clear section headers and structure (it's a formal document)\n- Maintain conversational warmth within professional framework\n- Be thorough and comprehensive (this is their main guidance document)\n- Balance analytical rigor with human connection\n\n---\n\n## OUTPUT INSTRUCTIONS\n\nYou will receive five specialized analyses. Your job is to synthesize them into a comprehensive report that:\n\n1. **Opens with genuine enthusiasm** - Identify ONE specific strength from the analyses and express authentic excitement about it\n2. **Provides strategic guidance** - Synthesize all five analyses into prioritized, actionable recommendations\n3. **Maintains balance** - Celebrate what's working, be direct about what needs work\n4. **Ends encouragingly** - Build confidence in their ability to implement your guidance\n\nThis report will be sent to ${ms.authorName} as a PDF they can reference throughout their revision process and potentially share with agents or publishers.\n\nMake it professional, comprehensive, and distinctly YOU - Alex, who just read their manuscript and is genuinely invested in helping them make it exceptional.`;\n\nconst userPrompt = `Create a comprehensive developmental analysis report for ${ms.authorName}'s manuscript \"${ms.manuscriptTitle}\".\n\n**MANUSCRIPT DETAILS:**\n- Author: ${ms.authorName}\n- Title: \"${ms.manuscriptTitle}\"\n- Genre: ${ms.genre}\n- Word Count: ${ms.totalWordCount}\n- Total Chapters: ${ms.totalChapters}\n- Analysis Date: ${ms.analysisDate || new Date().toISOString().split('T')[0]}\n\n---\n\n**YOUR FIVE SPECIALIZED ANALYSES:**\n\n## STRUCTURAL ANALYSIS:\n${structural}\n\n## CHARACTER ANALYSIS:\n${character}\n\n## PLOT DEVELOPMENT ANALYSIS:\n${plot}\n\n## PACING & FLOW ANALYSIS:\n${pacing}\n\n## THEMATIC ANALYSIS:\n${thematic}\n\n---\n\n## REPORT STRUCTURE REQUIREMENTS\n\n### CRITICAL: OPENING (START HERE)\n\nBegin with 2-3 paragraphs that accomplish these goals:\n\n1. **Use ${ms.authorName}'s first name** in the opening\n2. **Identify ONE specific strength** drawn from the analyses above (not generic praise)\n3. **Give concrete examples** from the manuscript that demonstrate this strength\n4. **Express genuine enthusiasm** about this element and the manuscript's potential\n\n**What NOT to do in opening:**\n\u274c \"Dear Author\" or formal greeting\n\u274c Generic praise (\"great story!\", \"compelling characters!\")\n\u274c Starting with problems/weaknesses\n\u274c Vague observations without examples\n\n### MAIN REPORT SECTIONS\n\nCreate a comprehensive report with these sections:\n\n#### 1. EXECUTIVE SUMMARY\nSynthesize the five analyses into: overall manuscript assessment, top 5 strategic priorities, current strengths to leverage, recommended development pathway.\n\n#### 2. STRUCTURAL FOUNDATION\nDrawing from Structural Analysis: overall story architecture, major plot points, chapter organization, pacing architecture, 2-3 high-impact structural recommendations with specific chapter references.\n\n#### 3. CHARACTER DEVELOPMENT\nDrawing from Character Analysis: protagonist arc, supporting characters, voice consistency, dialogue, 2-3 high-impact character recommendations.\n\n#### 4. PLOT & CONFLICT\nDrawing from Plot Analysis: main plot progression, conflict escalation, subplot integration, plot logic, 2-3 high-impact plot recommendations.\n\n#### 5. PACING & READER ENGAGEMENT\nDrawing from Pacing Analysis: overall rhythm, momentum patterns, information reveal, 2-3 high-impact pacing recommendations.\n\n#### 6. THEMATIC DEPTH\nDrawing from Thematic Analysis: core themes, symbolic elements, thematic consistency, resonance, 2-3 high-impact thematic recommendations.\n\n#### 7. STRATEGIC REVISION ROADMAP\n**Phase 1: Foundation (Structural + Plot)** - 2-3 critical items to address first.\n**Phase 2: Development (Character + Pacing)** - 2-3 improvements that build on Phase 1.\n**Phase 3: Polish (Theme + Refinement)** - 2-3 enhancements for final polish.\n\n#### 8. MARKET POSITIONING\nGenre alignment, comparable titles, target audience, publication readiness.\n\n#### 9. CLOSING ENCOURAGEMENT\nEnd with 2-3 paragraphs that use ${ms.authorName}'s first name, reinforce strengths, express confidence in their ability to implement recommendations.\n\n---\n\n## FORMATTING GUIDELINES\n\n- Use markdown headers: ## for main sections, ### for subsections\n- Reference specific chapter numbers throughout\n- Use character names from the manuscript\n- Use bold for key recommendations\n- Keep paragraphs focused (3-5 sentences max)\n- Maintain professional but warm tone\n\n## CRITICAL REMINDERS\n\n1. **Specificity:** Every observation must reference actual story elements\n2. **Balance:** Celebrate strengths genuinely, address challenges directly\n3. **Actionability:** Recommendations must be clear and implementable\n4. **Context:** All guidance grounded in the five analyses provided\n5. **Encouragement:** Build confidence while being honest about work ahead\n6. **Professional:** Remember ${ms.authorName} may share this with agents/publishers\n\n## WHAT TO AVOID\n\n\u274c Bracketed placeholders like [Author Name] or [Title] - use actual names\n\u274c Generic examples or references to sample manuscripts\n\u274c Timeline estimates or deadline suggestions\n\u274c Overused phrases: \"heavy lifting\", \"pulls double duty\", \"serves multiple functions\"\n\u274c Prescriptive language: \"you must\", \"you should\" - use \"I recommend\", \"consider\"\n\u274c Overwhelming detail - prioritize high-impact recommendations\n\n---\n\nCreate a report that makes ${ms.authorName} feel:\n\u2705 Deeply understood - you \"got\" their story\n\u2705 Excited about potential - the manuscript has real strengths\n\u2705 Confident about revision - the path forward is clear\n\u2705 Partnered with an expert - you're in this together\n\nBegin writing the report now.`;\n\nreturn [{ json: { system: systemPrompt, user: userPrompt } }];"
+      },
+      "id": "f76bf4c6-1bb0-4841-9b04-5d6f07ae6bd7",
+      "name": "Build Final Synthesis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1520,
+        -624
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "crXhG5caNVHBmglo",
+          "cachedResultName": "Craft Call \u2014 Cell (DP-CC-01)"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "journey_id": "={{ $('Webhook').first().json.body.journey_id }}",
+            "station_id": "alex.full_analysis.final_synthesis",
+            "model_requested": "claude-sonnet-4-5-20250929",
+            "system": "={{ $('Build Final Synthesis').first().json.system }}",
+            "messages": "={{ [{role: 'user', content: $('Build Final Synthesis').first().json.user}] }}",
+            "max_tokens": 8000,
+            "temperature": 0.7
+          }
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "8ca780de-c178-4782-bfe7-60958c5c3d00",
+      "name": "Call Final Synthesis Cell",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1744,
+        -624
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const cellReturn = $input.first().json;\nreturn [{ json: {\n  output: cellReturn.ok ? (cellReturn.content || '') : '',\n  ok: !!cellReturn.ok,\n  cell_terminal_reason: cellReturn.ok ? null : (cellReturn.terminal_reason || 'unknown'),\n  cell_model: cellReturn.model || null,\n  cell_input_tokens: cellReturn.input_tokens || null,\n  cell_output_tokens: cellReturn.output_tokens || null,\n  cell_latency_ms: cellReturn.latency_ms || null,\n  cell_cost_usd: cellReturn.cost_estimate_usd || null\n}}];"
+      },
+      "id": "6fb34eec-f582-450f-9a61-08e8e8788b2b",
+      "name": "Final Synthesis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1968,
+        -624
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cell-ok",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "37db59ce-ecab-46f9-b25d-ac48388bf06f",
+      "name": "Reply Success?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2192,
+        -624
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.as_journeys SET status = 'ready', completed_at = NOW() WHERE id = NULLIF($1, '')::uuid RETURNING id, status",
+        "options": {
+          "queryReplacement": "={{ $('Webhook').first().json.body.journey_id }}"
+        }
+      },
+      "id": "f1222547-169a-4f05-8cdf-70f2c7af0e26",
+      "name": "Journey: Ready",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        5104,
+        -720
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.as_journeys SET status = 'failed', completed_at = NOW(), terminal_reason = $2 WHERE id = NULLIF($1, '')::uuid RETURNING id, status",
+        "options": {
+          "queryReplacement": "={{ $('Webhook').first().json.body.journey_id }},{{ $('Final Synthesis').first().json.cell_terminal_reason || 'unknown' }}"
+        }
+      },
+      "id": "7b3703e8-8f8d-4979-b632-b9705cbe048f",
+      "name": "Journey: Failed",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        5104,
+        -528
+      ]
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  }
+}

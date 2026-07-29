@@ -1,0 +1,103 @@
+{
+  "name": "1.1 Extract PDF",
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "extract-pdf-text",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8cc7abc7-43b2-4105-9652-093278b258c8",
+      "name": "Webhook",
+      "webhookId": "2e5690f8-5abb-4e81-92df-582061f9a587"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "file",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "55ae03b5-0ced-423d-9e83-29e9c58ed665",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "jsCode": "// The extracted text is directly in $json.text\nconst extractedText = $json.text || '';\n\nconsole.log('Extracted text length:', extractedText.length);\nconsole.log('First 200 chars:', extractedText.substring(0, 200));\n\nreturn {\n  json: {\n    success: true,\n    text: extractedText,\n    extractedText: extractedText,\n    textLength: extractedText.length,\n    pages: $json.numpages || 0,\n    metadata: {\n      producer: $json.info?.Producer || '',\n      creationDate: $json.info?.CreationDate || ''\n    }\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "34340fe8-760b-442d-8613-c1d508d73cb4",
+      "name": "Format Response"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        608,
+        0
+      ],
+      "id": "5e147174-dd38-4ce3-93dd-866d4bec623e",
+      "name": "Respond to Webhook"
+    }
+  ]
+}

@@ -1,0 +1,186 @@
+{
+  "name": "1.4 Parse Chapters",
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Retrieve Manuscript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve Manuscript": {
+      "main": [
+        [
+          {
+            "node": "Parse Chapters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Chapter Data": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Safe Chapter Storage": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Store Chapter Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Chapters": {
+      "main": [
+        [
+          {
+            "node": "Prepare Safe Chapter Storage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "parse-chapters",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "5c4958d3-8407-4191-86a6-0fab9f8da4d2",
+      "name": "Webhook",
+      "webhookId": "7dcac0da-7703-45cf-9e84-6559b80c8851"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, author_id, title, genre, full_text, current_word_count as word_count\nFROM manuscripts \nWHERE id = $1;",
+        "options": {
+          "queryReplacement": "={{ [ $json.body.manuscriptId ] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        224,
+        0
+      ],
+      "id": "939b81fe-8da5-4509-a1cf-4d740556bde1",
+      "name": "Retrieve Manuscript"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Clear existing chapters\nDELETE FROM chapters WHERE manuscript_id = $1;\n\n-- Insert chapters WITH content (including Prologue as 0, Epilogue as 999)\nINSERT INTO chapters (manuscript_id, chapter_number, title, content, created_at)\nSELECT \n  $1,\n  (value->>'number')::integer,\n  value->>'title',\n  value->>'content',\n  NOW()\nFROM json_array_elements($2::json) AS value;\n\n-- Update manuscript\nUPDATE manuscripts \nSET \n  status = 'analyzing', \n  total_chapters = (SELECT COUNT(*) FROM json_array_elements($2::json)) - \n    CASE WHEN EXISTS(SELECT 1 FROM json_array_elements($2::json) WHERE value->>'number' = '0') THEN 1 ELSE 0 END -\n    CASE WHEN EXISTS(SELECT 1 FROM json_array_elements($2::json) WHERE value->>'number' = '999') THEN 1 ELSE 0 END,\n  updated_at = NOW()\nWHERE id = $1;\n\n-- Return stored chapters\nSELECT chapter_number, title, LEFT(content, 100) as content_preview\nFROM chapters\nWHERE manuscript_id = $1\nORDER BY chapter_number;",
+        "options": {
+          "queryReplacement": "={{ [\n  $('Retrieve Manuscript').first().json.id,\n  JSON.stringify($('Prepare Safe Chapter Storage').first().json.chapters)\n] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1120,
+        0
+      ],
+      "id": "81234f43-1988-4cab-8bbf-3323e80dc35a",
+      "name": "Store Chapter Data",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"manuscriptId\": \"{{ $('Retrieve Manuscript').first().json.id }}\",\n  \"chapters\": {{ JSON.stringify($('Store Chapter Data').all()) }},\n  \"totalChapters\": {{ $('Store Chapter Data').all().length }},\n  \"database\": {\n    \"stored\": true,\n    \"timestamp\": \"{{ new Date().toISOString() }}\"\n  },\n  \"analysis\": {\n    \"method\": \"claude_api\",\n    \"completed\": true\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1344,
+        0
+      ],
+      "id": "099456af-2a50-4c6c-a82f-3bb360e8e079",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Updated Prepare Safe Chapter Storage Node\n// Handles both \"Chapter X\" and \"#N:\" formats for content splitting\n\nconst manuscriptText = $(\"Retrieve Manuscript\").first().json.full_text;\nconst manuscriptId = $(\"Retrieve Manuscript\").first().json.id;\nconst hasPrologue =\n  $(\"Webhook\").first().json.body?.hasPrologue === \"true\" ||\n  $(\"Webhook\").first().json.body?.hasPrologue === true;\nconst hasEpilogue =\n  $(\"Webhook\").first().json.body?.hasEpilogue === \"true\" ||\n  $(\"Webhook\").first().json.body?.hasEpilogue === true;\n\nconsole.log(\n  `Processing manuscript with Prologue: ${hasPrologue}, Epilogue: ${hasEpilogue}`,\n);\n\nif (!manuscriptText || manuscriptText.length < 100) {\n  throw new Error(\"No manuscript text available for chapter extraction\");\n}\n\n// Helper function to normalize content spacing while preserving paragraphs\nfunction normalizeContent(content) {\n  const lines = content.split(\"\\n\").slice(1); // Remove first line (chapter header)\n\n  const processedLines = [];\n\n  for (let i = 0; i < lines.length; i++) {\n    const currentLine = lines[i].trim();\n    const nextLine = lines[i + 1]?.trim() || \"\";\n\n    // Skip empty lines\n    if (!currentLine) {\n      // Empty line = paragraph break\n      processedLines.push(\"\\n\\n\");\n      continue;\n    }\n\n    // Check if this line ends a paragraph\n    const endsWithPunctuation = /[.!?\"]$/.test(currentLine);\n    const nextStartsWithCapital = /^[A-Z\"]/.test(nextLine);\n    const nextIsEmpty = !nextLine;\n\n    if (endsWithPunctuation && (nextStartsWithCapital || nextIsEmpty)) {\n      // End of paragraph\n      processedLines.push(currentLine + \"\\n\\n\");\n    } else if (!nextLine) {\n      // Last line\n      processedLines.push(currentLine);\n    } else {\n      // Mid-paragraph line break - convert to space\n      processedLines.push(currentLine + \" \");\n    }\n  }\n\n  return processedLines\n    .join(\"\")\n    .replace(/ {2,}/g, \" \") // Collapse multiple spaces\n    .replace(/\\s+([.,!?;:])/g, \"$1\") // Remove space before punctuation\n    .replace(/\\n{3,}/g, \"\\n\\n\") // Collapse multiple paragraph breaks\n    .trim();\n}\n\n// Detect which format this manuscript uses\nconst hasStandardChapters = /CHAPTER\\s+\\d+|Chapter\\s+\\d+/i.test(manuscriptText);\nconst hasHashtagChapters = /^#\\d+(?:\\s*[,&\\d\\s]*)(?::\\s*|\\s+)/m.test(\n  manuscriptText,\n);\n\nconsole.log(\n  `Format detection - Standard chapters: ${hasStandardChapters}, Hashtag chapters: ${hasHashtagChapters}`,\n);\n\n// SMART CHAPTER SPLITTING - handle both formats\nlet chapterPattern;\nif (hasHashtagChapters && !hasStandardChapters) {\n  // Hashtag format: #1: Title, #2: Title, etc.\n  // Also include Introduction as a potential section\n  chapterPattern =\n    /(?=(?:^#\\d+(?:\\s*[,&\\d\\s]*)(?::\\s*|\\s+)|^PROLOGUE|^Prologue|^EPILOGUE|^Epilogue|^Introduction\\s*$))/im;\n} else {\n  // Standard format (existing behavior)\n  chapterPattern =\n    /(?=(?:PROLOGUE|Prologue|CHAPTER\\s+\\d+|Chapter\\s+\\d+|EPILOGUE|Epilogue))/i;\n}\n\nconst rawSplits = manuscriptText\n  .split(chapterPattern)\n  .filter((section) => section.trim().length > 100);\n\nconsole.log(`Raw splits found: ${rawSplits.length} sections`);\n\n// Identify what each split is\nconst identifiedSections = rawSplits.map((section) => {\n  const firstLine = section.trim().substring(0, 200).split(\"\\n\")[0];\n\n  if (/^PROLOGUE|^Prologue/i.test(firstLine)) {\n    return { type: \"prologue\", content: section.trim() };\n  } else if (/^EPILOGUE|^Epilogue/i.test(firstLine)) {\n    return { type: \"epilogue\", content: section.trim() };\n  } else if (/^Introduction\\s*$/i.test(firstLine)) {\n    // Treat Introduction as prologue-like (chapter 0) if no explicit prologue\n    return { type: \"introduction\", content: section.trim() };\n  } else if (/^CHAPTER\\s+(\\d+)|^Chapter\\s+(\\d+)/i.test(firstLine)) {\n    // Standard chapter format\n    const match = firstLine.match(/CHAPTER\\s+(\\d+)|Chapter\\s+(\\d+)/i);\n    const num = parseInt(match[1] || match[2]);\n    return { type: \"chapter\", number: num, content: section.trim() };\n  } else if (/^#(\\d+)/.test(firstLine)) {\n    // Hashtag chapter format - extract first number\n    const match = firstLine.match(/^#(\\d+)/);\n    const num = parseInt(match[1]);\n    return { type: \"chapter\", number: num, content: section.trim() };\n  } else {\n    return { type: \"unknown\", content: section.trim() };\n  }\n});\n\nconsole.log(\n  \"Identified sections:\",\n  identifiedSections\n    .map((s) => `${s.type}${s.number ? \" \" + s.number : \"\"}`)\n    .join(\", \"),\n);\n\n// Extract chapter titles from the first line of each section\nconst extractTitle = (content, chapterNumber, isHashtagFormat) => {\n  const firstLine = content.split(\"\\n\")[0].trim();\n\n  if (isHashtagFormat) {\n    // Hashtag format: \"#1: Fatigue\" or \"#4 5 & 6: Weight Gain...\"\n    const hashtagTitle = firstLine.match(\n      /^#\\d+(?:\\s*[,&\\d\\s]*)(?::\\s*|\\s+)(.+)$/i,\n    );\n    if (hashtagTitle) {\n      return hashtagTitle[1].trim();\n    }\n  }\n\n  // Standard format: \"Chapter X - Title\"\n  const titleWithHyphen = firstLine.match(/Chapter\\s+\\d+\\s*-\\s*(.+)$/i);\n  if (titleWithHyphen) {\n    return titleWithHyphen[1].trim();\n  }\n\n  const titleWithoutHyphen = firstLine.match(/Chapter\\s+\\d+\\s+(.+)$/i);\n  if (titleWithoutHyphen) {\n    return titleWithoutHyphen[1].trim();\n  }\n\n  return `Chapter ${chapterNumber}`;\n};\n\n// Build final chapters array\nconst finalChapters = [];\nconst isHashtagFormat = hasHashtagChapters && !hasStandardChapters;\n\n// Add Prologue (chapter 0) if it exists\nconst prologueSection = identifiedSections.find((s) => s.type === \"prologue\");\nif (hasPrologue && prologueSection) {\n  finalChapters.push({\n    number: 0,\n    title: \"Prologue\",\n    content: normalizeContent(prologueSection.content),\n  });\n  console.log(\"Added Prologue as chapter 0\");\n}\n\n// Add Introduction as chapter 0 if no prologue but has introduction\nconst introSection = identifiedSections.find((s) => s.type === \"introduction\");\nif (!hasPrologue && introSection) {\n  finalChapters.push({\n    number: 0,\n    title: \"Introduction\",\n    content: normalizeContent(introSection.content),\n  });\n  console.log(\"Added Introduction as chapter 0\");\n}\n\n// Add numbered chapters - deduplicate by keeping the longest content for each number\nconst chapterSections = identifiedSections.filter((s) => s.type === \"chapter\");\n\n// Group by chapter number and keep the longest content\nconst chapterMap = new Map();\nchapterSections.forEach((section) => {\n  const existing = chapterMap.get(section.number);\n  if (!existing || section.content.length > existing.content.length) {\n    chapterMap.set(section.number, section);\n  }\n});\n\n// Convert map back to sorted array\nconst uniqueChapterSections = Array.from(chapterMap.values()).sort(\n  (a, b) => a.number - b.number,\n);\n\nconsole.log(\n  `Found ${chapterSections.length} chapter sections, deduplicated to ${uniqueChapterSections.length} unique chapters`,\n);\n\nuniqueChapterSections.forEach((section) => {\n  const title = extractTitle(section.content, section.number, isHashtagFormat);\n\n  finalChapters.push({\n    number: section.number,\n    title: title,\n    content: normalizeContent(section.content),\n  });\n});\n\nconsole.log(`Added ${uniqueChapterSections.length} numbered chapters`);\n\n// Add Epilogue (chapter 999) if it exists\nconst epilogueSection = identifiedSections.find((s) => s.type === \"epilogue\");\nif (hasEpilogue && epilogueSection) {\n  finalChapters.push({\n    number: 999,\n    title: \"Epilogue\",\n    content: normalizeContent(epilogueSection.content),\n  });\n  console.log(\"Added Epilogue as chapter 999\");\n}\n\n// Sanitize titles (escape quotes, limit length)\nconst sanitizedChapters = finalChapters.map((ch) => ({\n  number: ch.number,\n  title: ch.title.replace(/'/g, \"''\").substring(0, 255),\n  content: ch.content,\n}));\n\nconsole.log(\n  `\u2705 Final: ${sanitizedChapters.length} chapters prepared for storage`,\n);\n\nreturn {\n  json: {\n    manuscriptId: manuscriptId,\n    chapters: sanitizedChapters,\n    totalChapters: sanitizedChapters.length,\n    format: isHashtagFormat ? \"hashtag\" : \"standard\",\n  },\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ],
+      "id": "836670bf-c7df-4ba3-9540-77c9a2e10764",
+      "name": "Prepare Safe Chapter Storage"
+    },
+    {
+      "parameters": {
+        "jsCode": "console.log('Total chapters received:', $json.chapters ? $json.chapters.length : 'undefined');\nconsole.log('Chapter data:', JSON.stringify($json.chapters, null, 2));\n\nreturn { json: $json };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        0
+      ],
+      "id": "8a933ece-2319-40f0-bc39-1f596c414eb2",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Updated Parse Chapters Node\n// Handles both \"Chapter X - Title\" and \"#N: Title\" formats\n\nconst manuscriptText = $(\"Retrieve Manuscript\").first().json.full_text;\nconst expectedChapters =\n  parseInt($(\"Webhook\").first().json.body.expectedChapters) || 0;\n\n// Extract chapter titles using multiple regex patterns\n\n// Pattern 1: Standard \"Chapter X - Title\" or \"Chapter X Title\" format\nconst standardPattern = /^Chapter\\s+(\\d+)\\s*[-:]?\\s*(.*)$/gim;\n\n// Pattern 2: Hashtag format \"#N: Title\" or \"#N Title\"\n// Takes first number only (handles \"#4 5 & 6: Title\" as chapter 4)\nconst hashtagPattern = /^#(\\d+)(?:\\s*[,&\\d\\s]*)(?::\\s*|\\s+)(.+)$/gim;\n\nconst standardMatches = [...manuscriptText.matchAll(standardPattern)];\nconst hashtagMatches = [...manuscriptText.matchAll(hashtagPattern)];\n\nconsole.log(`Standard format matches: ${standardMatches.length}`);\nconsole.log(`Hashtag format matches: ${hashtagMatches.length}`);\n\n// Combine all matches\nconst allMatches = [\n  ...standardMatches.map((match) => ({\n    number: parseInt(match[1]),\n    title: match[2]?.trim() || `Chapter ${match[1]}`,\n  })),\n  ...hashtagMatches.map((match) => ({\n    number: parseInt(match[1]),\n    title: match[2]?.trim() || `Section ${match[1]}`,\n  })),\n];\n\n// Remove duplicates by number (keep first occurrence)\nconst uniqueChapters = [];\nconst seenNumbers = new Set();\n\nfor (const chapter of allMatches) {\n  if (!seenNumbers.has(chapter.number)) {\n    uniqueChapters.push(chapter);\n    seenNumbers.add(chapter.number);\n  }\n}\n\n// Sort by chapter number\nuniqueChapters.sort((a, b) => a.number - b.number);\n\nconsole.log(`Found ${uniqueChapters.length} unique chapters`);\nif (uniqueChapters.length > 0) {\n  console.log(\n    \"First 5 chapters:\",\n    uniqueChapters\n      .slice(0, 5)\n      .map((c) => `${c.number}: ${c.title}`)\n      .join(\", \"),\n  );\n}\n\nreturn {\n  json: {\n    success: true,\n    chapters: uniqueChapters,\n    totalChapters: uniqueChapters.length,\n    format:\n      hashtagMatches.length > standardMatches.length ? \"hashtag\" : \"standard\",\n  },\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "d837af87-65fe-4ca4-ace4-bcc8d98cc772",
+      "name": "Parse Chapters"
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

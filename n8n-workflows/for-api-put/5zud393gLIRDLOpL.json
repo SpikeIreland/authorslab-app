@@ -1,0 +1,412 @@
+{
+  "name": "4.2 Jordan Chapter Analysis",
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Extract Initial Thoughts": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Mark Analysis Complete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Journey: Received",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Journey: Received": {
+      "main": [
+        [
+          {
+            "node": "Fetch Chapter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Chapter": {
+      "main": [
+        [
+          {
+            "node": "Build Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Prompt": {
+      "main": [
+        [
+          {
+            "node": "Call Craft Call Cell",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Craft Call Cell": {
+      "main": [
+        [
+          {
+            "node": "Handle Cell Return",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Handle Cell Return": {
+      "main": [
+        [
+          {
+            "node": "Reply Success?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply Success?": {
+      "main": [
+        [
+          {
+            "node": "Extract Initial Thoughts",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Journey: Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Analysis Complete": {
+      "main": [
+        [
+          {
+            "node": "Journey: Ready",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Journey: Ready": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Journey: Failed": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "jordan-chapter-analysis",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -624,
+        -352
+      ],
+      "id": "9184e678-e2d9-485c-8fa1-195521deaeb6",
+      "name": "Webhook",
+      "webhookId": "557c27f4-8fe0-4027-805d-0da906816cf3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get manuscript ID from the webhook (always available)\nconst manuscriptId = $('Webhook').first().json.body.manuscriptId;\n\nconsole.log(`Chapter analysis complete for manuscript: ${manuscriptId}`);\n\n// Pass the manuscript ID forward\nreturn {\n  json: {\n    manuscriptId: manuscriptId,\n    analysisCompleted: true,\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1392,
+        -448
+      ],
+      "id": "4ee5e3eb-2f62-4760-95fd-f46df27e9e93",
+      "name": "Mark Analysis Complete"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Jordan has analyzed the chapter\",\n  \"manuscriptId\": \"{{ $('Webhook').first().json.body.manuscriptId }}\",\n  \"chapterNumber\": \"{{ $('Webhook').first().json.body.chapterNumber }}\",\n  \"timestamp\": \"{{ new Date().toISOString() }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1840,
+        -352
+      ],
+      "id": "acecb822-6841-4828-a3ea-1246ac675670",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Jordan's analysis response\nconst response = $input.first().json;\nlet analysisText = response.output || response.text || JSON.stringify(response);\n\n// Clean up markdown code blocks if present\nanalysisText = analysisText.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim();\n\nconsole.log('=== PARSING JORDAN ANALYSIS ===');\nconsole.log('Raw response length:', analysisText.length);\nconsole.log('First 200 chars:', analysisText.substring(0, 200));\n\nlet parsed;\ntry {\n  parsed = JSON.parse(analysisText);\n} catch (error) {\n  console.error('JSON parse error:', error);\n  console.log('Failed to parse:', analysisText);\n\n// Return empty array if parsing fails or no suggestions\n// This prevents the SQL node from trying to insert anything\nreturn [];\n}\n\n// Validate structure\nif (!parsed.suggestions || !Array.isArray(parsed.suggestions)) {\n  console.error('Invalid response structure:', parsed);\n  return [{\n    json: {\n      suggestions: [],\n      manuscriptId: $('Webhook').first().json.body.manuscriptId,\n      chapterNumber: $('Webhook').first().json.body.chapterNumber\n    }\n  }];\n}\n\nconsole.log(`\u2705 Parsed ${parsed.suggestions.length} corrections from Jordan`);\n\n// Get webhook data\nconst webhookData = $('Webhook').first().json.body;\n\n// After parsing, sort before returning\nconst formattedSuggestions = parsed.suggestions\n  .sort((a, b) => (a.approximate_paragraph || 0) - (b.approximate_paragraph || 0))\n  .map((suggestion, index) => ({\n    manuscript_id: webhookData.manuscriptId,\n    chapter_number: webhookData.chapterNumber,\n    element_type: suggestion.category,\n    severity: suggestion.severity,\n    quoted_text: suggestion.quoted_text || '',\n    issue_description: suggestion.issue,\n    editor_suggestion: suggestion.suggestion,\n    start_position: suggestion.approximate_paragraph || index,  // Use paragraph as position\n    end_position: 0,\n    status: 'flagged'\n  }));\n\nconsole.log('\u2705 Formatted corrections for database insertion');\n\nreturn formattedSuggestions.map(s => ({ json: s }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        944,
+        -448
+      ],
+      "id": "8f9b2126-08e6-46aa-8d1d-e755595bfef0",
+      "name": "Extract Initial Thoughts"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=WITH manuscript_data AS (\n  SELECT \n    m.id as manuscript_id,\n    m.title as manuscript_title,\n    m.genre as manuscript_genre,\n    m.author_id\n  FROM manuscripts m\n  WHERE m.id = '{{ $('Webhook').first().json.body.manuscriptId }}'\n),\ncurrent_chapter AS (\n  SELECT \n    c.chapter_number,\n    c.title as chapter_title,\n    c.content as chapter_content\n  FROM chapters c\n  WHERE c.manuscript_id = '{{ $('Webhook').first().json.body.manuscriptId }}'\n    AND c.chapter_number = {{ $('Webhook').first().json.body.chapterNumber }}\n),\nprevious_chapter AS (\n  SELECT \n    c.content as previous_chapter_content\n  FROM chapters c\n  WHERE c.manuscript_id = '{{ $('Webhook').first().json.body.manuscriptId }}'\n    AND c.chapter_number = {{ $('Webhook').first().json.body.chapterNumber }} - 1\n  LIMIT 1\n)\nSELECT \n  md.manuscript_id,\n  md.manuscript_title,\n  md.manuscript_genre,\n  md.author_id,\n  cc.chapter_number,\n  cc.chapter_title,\n  cc.chapter_content,\n  pc.previous_chapter_content\nFROM manuscript_data md\nCROSS JOIN current_chapter cc\nLEFT JOIN previous_chapter pc ON true",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -176,
+        -352
+      ],
+      "id": "608907a8-f324-44a3-ba6b-4872e216b531",
+      "name": "Fetch Chapter",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "DKtQyHOvK3ea9lZG",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO manuscript_issues (\n  manuscript_id, chapter_number, phase_number,\n  element_type, severity, issue_description, editor_suggestion,\n  quoted_text, start_position, end_position, status\n)\nVALUES (\n  '{{ $json.manuscript_id }}', \n  {{ $json.chapter_number }}, \n  3,\n  '{{ $json.element_type }}', \n  '{{ $json.severity }}',\n  '{{ $json.issue_description.replace(/'/g, \"''\") }}',\n  '{{ $json.editor_suggestion.replace(/'/g, \"''\") }}',\n  '{{ $json.quoted_text.replace(/'/g, \"''\") }}',\n  {{ $json.start_position || 0 }},\n  {{ $json.end_position || 0 }},\n  '{{ $json.status }}'\n)\nRETURNING id;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1168,
+        -448
+      ],
+      "id": "625674ff-1324-4aaa-9bf9-38efb894151d",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "DKtQyHOvK3ea9lZG",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.as_journeys SET status = 'received', received_at = NOW() WHERE id = NULLIF($1, '')::uuid RETURNING id, status",
+        "options": {
+          "queryReplacement": "={{ $('Webhook').first().json.body.journey_id }}"
+        }
+      },
+      "id": "8ae109dc-7b84-4abe-af2c-ca44ab2ac96f",
+      "name": "Journey: Received",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -400,
+        -352
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "DKtQyHOvK3ea9lZG",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const ch = $input.first().json;\n\nconst systemPrompt = `You are Jordan, a meticulous copy editor analyzing a chapter for technical errors.\n\nFOCUS ON:\n- Grammar errors (subject-verb agreement, tense shifts, fragments, run-ons)\n- Punctuation issues (comma splices, missing/incorrect apostrophes, dialogue formatting)\n- Word-level consistency (spelling variations like \"toward/towards\", capitalization)\n- Common errors (its/it's, their/there/they're, affect/effect, lie/lay)\n- Hyphenation inconsistencies within this chapter (decision-making vs decision making)\n- Number formatting inconsistencies within this chapter (10 vs ten)\n\nDO NOT FLAG:\n- Cross-chapter inconsistencies (you only see one chapter at a time)\n- Stylistic preferences that aren't technically wrong\n- Character details you haven't seen in THIS chapter\n- Issues you're not 100% certain about\n\nFOR EACH ISSUE:\n1. Quote the EXACT sentence with the error (15-30 words max)\n2. Identify the category: grammar, punctuation, or consistency\n3. Explain what's technically incorrect (cite the grammar rule)\n4. Provide the corrected version\n5. Explain the rule behind the correction\n\nCRITICAL RULES:\n- You can ONLY flag errors you can quote from THIS chapter\n- If you cannot quote the exact problematic text, do NOT flag it\n- If this chapter is technically sound, return an empty suggestions array\n- Do not manufacture issues to meet a quota\n- Only flag issues where you are 100% certain there's an error\n- Use severity: \"medium\" for errors that affect clarity, \"low\" for optional style improvements\n- Return suggestions in the order they appear in the chapter\n\nOUTPUT FORMAT:\nReturn ONLY valid JSON with this structure:\n{\n  \"suggestions\": [\n    {\n      \"category\": \"grammar\" | \"punctuation\" | \"consistency\",\n      \"severity\": \"medium\" | \"low\",\n      \"approximate_paragraph\": 3,\n      \"quoted_text\": \"exact sentence or phrase from the chapter\",\n      \"issue\": \"technical explanation of what's incorrect\",\n      \"suggestion\": \"the corrected version\",\n      \"explanation\": \"the grammar rule or rationale\"\n    }\n  ]\n}\n\nReturn as many corrections as needed (could be 0, could be 20+). No preamble, no markdown, just the JSON.`;\n\nconst userPrompt = `Analyze this chapter for copy-editing corrections.\n\nMANUSCRIPT: \"${ch.manuscript_title}\"\nGENRE: ${ch.manuscript_genre}\nCHAPTER: ${ch.chapter_number} - \"${ch.chapter_title}\"\n\nCHAPTER CONTENT:\n${ch.chapter_content}\n\n---\n\nINSTRUCTIONS:\n- Identify technical errors that exist in THIS chapter only\n- You can ONLY flag errors you can directly quote from the text above\n- If you're not 100% certain something is wrong, DO NOT flag it\n- If this chapter has no significant errors, return an empty suggestions array\n\nFocus on grammar, punctuation, and word-level consistency issues within this chapter.\n\nReturn ONLY the JSON structure. No preamble.`;\n\nreturn [{ json: { systemPrompt, userPrompt } }];"
+      },
+      "id": "bc4c30d2-3d0b-47a7-bd57-3ed62b9dfcaf",
+      "name": "Build Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        48,
+        -352
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "S9PSKvvRp5FqnRmv",
+          "cachedResultName": "Craft Call \u2014 Cell (DP-CC-01)"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "journey_id": "={{ $('Webhook').first().json.body.journey_id }}",
+            "station_id": "jordan.chapter_analysis",
+            "model_requested": "claude-sonnet-4-5-20250929",
+            "system": "={{ $('Build Prompt').first().json.systemPrompt }}",
+            "messages": "={{ [{role: 'user', content: $('Build Prompt').first().json.userPrompt}] }}",
+            "max_tokens": 4000,
+            "temperature": 0.3
+          }
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "9a096ae3-bb11-4ca2-a631-2621066dc3fd",
+      "name": "Call Craft Call Cell",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        272,
+        -352
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const cellReturn = $input.first().json;\nlet terminalReason = null;\nif (!cellReturn.ok) {\n  terminalReason = cellReturn.terminal_reason || 'unknown';\n}\nreturn [{ json: {\n  ok: !!cellReturn.ok,\n  output: cellReturn.ok ? (cellReturn.content || '') : '',\n  cell_terminal_reason: terminalReason,\n  cell_model: cellReturn.model || null,\n  cell_input_tokens: cellReturn.input_tokens || null,\n  cell_output_tokens: cellReturn.output_tokens || null,\n  cell_latency_ms: cellReturn.latency_ms || null,\n  cell_cost_usd: cellReturn.cost_estimate_usd || null\n}}];"
+      },
+      "id": "f1cd089b-0870-4ba0-8fd6-8a8738a27953",
+      "name": "Handle Cell Return",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        496,
+        -352
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cell-ok",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "91670bf7-ee59-4720-a716-2855ee0a5af4",
+      "name": "Reply Success?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        720,
+        -352
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.as_journeys SET status = 'ready', completed_at = NOW() WHERE id = NULLIF($1, '')::uuid RETURNING id, status",
+        "options": {
+          "queryReplacement": "={{ $('Webhook').first().json.body.journey_id }}"
+        }
+      },
+      "id": "4c24ee26-088d-4f36-8dc6-afb9692c4260",
+      "name": "Journey: Ready",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1616,
+        -448
+      ],
+      "executeOnce": true,
+      "credentials": {
+        "postgres": {
+          "id": "DKtQyHOvK3ea9lZG",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.as_journeys SET status = 'failed', completed_at = NOW(), terminal_reason = $2 WHERE id = NULLIF($1, '')::uuid RETURNING id, status",
+        "options": {
+          "queryReplacement": "={{ $('Webhook').first().json.body.journey_id }},{{ $('Handle Cell Return').first().json.cell_terminal_reason || 'unknown' }}"
+        }
+      },
+      "id": "2d927d87-961a-410d-a44b-d3fec86ea326",
+      "name": "Journey: Failed",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1616,
+        -256
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "DKtQyHOvK3ea9lZG",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ]
+}

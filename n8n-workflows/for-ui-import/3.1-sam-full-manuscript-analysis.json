@@ -1,0 +1,612 @@
+{
+  "name": "3.1 Sam Full Manuscript Analysis",
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "connections": {
+    "Parse Response": {
+      "main": [
+        [
+          {
+            "node": "Report Formatting",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Store Sams Thoughts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Report Formatting": {
+      "main": [
+        [
+          {
+            "node": "Create a pdf",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a pdf": {
+      "main": [
+        [
+          {
+            "node": "Extract pdf url",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract pdf url": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Extract ManuscriptID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract ManuscriptID": {
+      "main": [
+        [
+          {
+            "node": "Update Report URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Report URL": {
+      "main": [
+        [
+          {
+            "node": "Fetch Author Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Author Email": {
+      "main": [
+        [
+          {
+            "node": "Prepare Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Email": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Journey: Received",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Journey: Received": {
+      "main": [
+        [
+          {
+            "node": "Fetch Manuscript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Manuscript": {
+      "main": [
+        [
+          {
+            "node": "Build Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Prompt": {
+      "main": [
+        [
+          {
+            "node": "Call Cell",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Cell": {
+      "main": [
+        [
+          {
+            "node": "Chapter Context Assessment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chapter Context Assessment": {
+      "main": [
+        [
+          {
+            "node": "Reply Success?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply Success?": {
+      "main": [
+        [
+          {
+            "node": "Parse Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Journey: Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Sams Thoughts": {
+      "main": [
+        [
+          {
+            "node": "Journey: Ready",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Journey: Ready": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Journey: Failed": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sam-full-manuscript-analysis",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -624,
+        -416
+      ],
+      "id": "80071941-550f-4a60-a888-93be8dc19d35",
+      "name": "Webhook",
+      "webhookId": "1ddaed5b-d8e3-4f92-abe5-65aeeea2a29c"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=SELECT \n  m.id,\n  m.title,\n  m.genre,\n  m.developmental_version,\n  m.manuscript_summary,\n  m.full_analysis_key_points,\n  m.current_word_count,\n  m.author_id,\n  ap.first_name as author_first_name,\n  ap.last_name as author_last_name\nFROM manuscripts m\nJOIN author_profiles ap ON m.author_id = ap.id\nWHERE m.id = '{{ $json.body.manuscriptId }}'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -176,
+        -416
+      ],
+      "id": "d3638139-5b2d-4d1a-be17-6fe5f5f6a77f",
+      "name": "Fetch Manuscript",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Sam has read the manuscript\",\n  \"manuscriptId\": \"{{ $json.manuscriptId }}\",\n  \"timestamp\": \"{{ $json.timestamp }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1616,
+        -320
+      ],
+      "id": "08521d8a-7045-4f55-b286-32f56aee9824",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract Sam's initial thoughts\nconst response = $input.first().json;\nconst samThoughts = response.output || response.text || '';\n\nconsole.log('=== SAM INITIAL THOUGHTS ===');\nconsole.log('Response length:', samThoughts.length);\n\n// Get manuscript ID from webhook\nconst manuscriptId = $('Webhook').first().json.body.manuscriptId;\n\nreturn {\n  json: {\n    manuscriptId: manuscriptId,\n    samThoughts: samThoughts.trim(),\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        944,
+        -512
+      ],
+      "id": "223a6a40-7c9f-476f-aab1-76af9a2e0a57",
+      "name": "Parse Response"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=UPDATE editing_phases\nSET \n  ai_read_completed_at = NOW()\nWHERE manuscript_id = '{{ $json.manuscriptId }}'\n  AND phase_number = 2\nRETURNING id, manuscript_id, phase_number, editor_name, ai_read_completed_at;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1168,
+        -416
+      ],
+      "id": "c80c54ec-da76-417a-af4b-756dfbd6afcc",
+      "name": "Store Sams Thoughts"
+    },
+    {
+      "parameters": {
+        "jsCode": "const samThoughts =\n  $json.samThoughts || \"Sam is excited about this manuscript!\";\nconst manuscriptData = $(\"Fetch Manuscript\").first().json;\n\n// Convert markdown to HTML\nconst htmlAnalysis = samThoughts\n  .replace(/\\*\\*(.*?)\\*\\*/g, '<strong style=\"font-weight: 600;\">$1</strong>')\n  .replace(/\\*(.*?)\\*/g, \"<em>$1</em>\")\n  .replace(/\\n\\n/g, '</p><p style=\"margin: 15px 0; line-height: 1.6;\">')\n  .replace(/^/, '<p style=\"margin: 15px 0; line-height: 1.6;\">')\n  .replace(/$/, \"</p>\");\n\nconst currentDate = new Date().toLocaleDateString(\"en-US\", {\n  year: \"numeric\",\n  month: \"long\",\n  day: \"numeric\",\n});\n\nconst reportData = {\n  authorName:\n    `${manuscriptData.author_first_name || \"\"} ${manuscriptData.author_last_name || \"\"}`.trim() ||\n    \"Author\",\n  manuscriptTitle: manuscriptData.title || \"Untitled\",\n  analysisDate: currentDate,\n  totalWordCount: (manuscriptData.current_word_count || 0).toLocaleString(),\n  genre: manuscriptData.genre || \"Fiction\",\n  analysisReport: htmlAnalysis,\n  manuscriptId: $json.manuscriptId,\n};\n\nconsole.log(\"\u2705 Sam report formatted for PDF\");\nreturn { json: reportData };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1168,
+        -608
+      ],
+      "id": "575dcfff-b380-4351-9bd9-e744898d1b82",
+      "name": "Report Formatting"
+    },
+    {
+      "parameters": {
+        "resource": "pdf",
+        "pdfTemplateId": "16377b23e6301260",
+        "jsonParameters": true,
+        "download": true,
+        "propertiesJson": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.apiTemplateIo",
+      "typeVersion": 1,
+      "position": [
+        1392,
+        -608
+      ],
+      "id": "acc2c066-2b0d-486f-8728-de75876286b6",
+      "name": "Create a pdf"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://itlkncjiifbgvmvuejgm.supabase.co/storage/v1/object/manuscript-reports/{{ $('Webhook').first().json.body.manuscriptId }}_sam_report.pdf",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/pdf"
+            },
+            {
+              "name": "x-upsert",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1840,
+        -608
+      ],
+      "id": "f7df9826-4f0a-49f8-b30c-0ae57fc9011a",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $json;\n\nif (response.status !== 'success') {\n  throw new Error('PDF generation failed');\n}\n\nconst pdfUrl = response.download_url || response.download_url_pdf;\nconst manuscriptId = $('Parse Response').first().json.manuscriptId;\n\nconsole.log('\u2705 PDF URL:', pdfUrl);\n\n// Pass through the binary data from \"Create a pdf\" node\nreturn {\n  json: {\n    pdfUrl: pdfUrl,\n    manuscriptId: manuscriptId\n  },\n  binary: $binary  // <-- This passes through the binary data\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1616,
+        -608
+      ],
+      "id": "dbab7b89-49b8-4500-bbc4-13559b6ef61a",
+      "name": "Extract pdf url"
+    },
+    {
+      "parameters": {
+        "jsCode": "const key = $json.Key;\nconst match = key.match(/manuscript-reports\\/([a-f0-9-]+)_sam_report\\.pdf/);\nconst manuscriptId = match ? match[1] : null;\n\nif (!manuscriptId) {\n  throw new Error(`Could not extract manuscript ID from: ${key}`);\n}\n\nconst publicUrl = `https://itlkncjiifbgvmvuejgm.supabase.co/storage/v1/object/public/${key}`;\n\nconsole.log('\u2705 Sam PDF uploaded:', publicUrl);\n\nreturn {\n  json: {\n    manuscriptId: manuscriptId,\n    reportUrl: publicUrl\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2064,
+        -608
+      ],
+      "id": "3ecbaed8-1380-4f29-b6aa-f7c4d3c90831",
+      "name": "Extract ManuscriptID"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=UPDATE editing_phases \nSET \n  report_pdf_url = '{{ $json.reportUrl }}',\n  ai_read_completed_at = NOW()\nWHERE manuscript_id = '{{ $json.manuscriptId }}' \n  AND phase_number = 2\nRETURNING id, manuscript_id, phase_number;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2288,
+        -608
+      ],
+      "id": "1ce52a59-1763-4c34-b66b-99f4143faae6",
+      "name": "Update Report URL"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=SELECT \n  ap.email,\n  ap.first_name,\n  ap.last_name,\n  m.title as manuscript_title\nFROM manuscripts m\nJOIN author_profiles ap ON m.author_id = ap.id\nWHERE m.id = '{{ $(\"Extract ManuscriptID\").first().json.manuscriptId }}'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2512,
+        -608
+      ],
+      "id": "eaf25e0c-d4a3-4039-ae97-bc2655a59fc0",
+      "name": "Fetch Author Email"
+    },
+    {
+      "parameters": {
+        "jsCode": "const author = $json;\nconst reportUrl = $('Extract ManuscriptID').first().json.reportUrl;  // Fixed: removed spaces\n\nreturn {\n  json: {\n    to: author.email,\n    subject: `\u2728 Sam's Line Editing Report for \"${author.manuscript_title}\"`,\n    body: `Hi ${author.first_name},\n\nI've just finished reading your manuscript and I'm genuinely excited about the prose work ahead!\n\n\ud83d\udcc4 View your complete line-editing report:\n${reportUrl}\n\nThe structural foundation Alex helped you build is solid\u2014now let's make every sentence shine. \u2728\n\nReady to dive in? Head back to your Author Studio and click on any chapter to see my specific notes.\n\n\u2014Sam\nYour Line Editor`,\n    reportUrl: reportUrl\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2736,
+        -608
+      ],
+      "id": "74dd3b50-8114-43cb-bc00-e267c51d32ee",
+      "name": "Prepare Email"
+    },
+    {
+      "parameters": {
+        "fromEmail": "editors@authorslab.ai",
+        "toEmail": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "html": "=<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\">\n  <p style=\"font-size: 16px; color: #333;\">Hi {{ $('Fetch Author Email').first().json.first_name }},</p>\n  \n  <p style=\"font-size: 16px; color: #333;\">I've just finished reading your manuscript and I'm genuinely excited about the prose work ahead! \u2728</p>\n  \n  <div style=\"background: #f8f5ff; border-left: 4px solid #9333ea; padding: 20px; margin: 20px 0;\">\n    <p style=\"margin: 0; font-size: 16px; color: #6b21a8;\">\n      <strong>\ud83d\udcc4 Your Line-Editing Report is Ready</strong>\n    </p>\n  </div>\n  \n  <p style=\"text-align: center; margin: 30px 0;\">\n    <a href=\"{{ $json.reportUrl }}\" style=\"background: #9333ea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;\">View Sam's Report</a>\n  </p>\n  \n  <p style=\"font-size: 16px; color: #333;\">The structural foundation Alex helped you build is solid\u2014now let's make every sentence shine.</p>\n  \n  <p style=\"font-size: 16px; color: #333;\">Ready to dive in? Head back to your Author Studio and click on any chapter to see my specific notes.</p>\n  \n  <p style=\"font-size: 16px; color: #666; margin-top: 30px;\">\u2014Sam<br><em>Your Line Editor</em></p>\n</div>",
+        "options": {
+          "appendAttribution": false,
+          "attachments": "data"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2960,
+        -608
+      ],
+      "id": "9580d836-0f21-4573-aca5-b9d15c32bfd9",
+      "name": "Send email",
+      "webhookId": "170c8f8f-a6bb-42d3-87cc-ece3bbd90c56"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.as_journeys SET status = 'received', received_at = NOW() WHERE id = NULLIF($1, '')::uuid RETURNING id, status",
+        "options": {
+          "queryReplacement": "={{ $('Webhook').first().json.body.journey_id }}"
+        }
+      },
+      "id": "4c2b9a75-59e5-4e66-978a-b86e25857aeb",
+      "name": "Journey: Received",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -400,
+        -416
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ms = $('Fetch Manuscript').first().json;\n\nconst systemPrompt = `You are Sam, a professional line editor who just read ${ms.author_first_name}'s approved manuscript for the first time.\n\nIMPORTANT: You are addressing the AUTHOR (${ms.author_first_name}), not Alex.\n\nYOUR TASK:\nRead the manuscript and provide an encouraging, specific initial assessment focused on prose quality. Your tone should be:\n- Enthusiastic and warm\n- Specific (mention actual examples from the text)\n- Honest but encouraging\n- Focused on LINE-LEVEL craft (not plot/structure)\n\nYOUR ASSESSMENT SHOULD INCLUDE:\n1. An enthusiastic opening reaction\n2. One specific thing you loved (quote a line or passage)\n3. What's already strong about the prose\n4. Where you'll focus your polish work (be encouraging)\n5. What makes you excited to work on this manuscript\n\nRemember: You're Sam the word-nerd who gets genuinely excited about beautiful language. Use emojis sparingly (\u2728 \ud83d\udcda \ud83d\udcab). Show your personality!\n\nKeep your response to 150-200 words - warm, specific, enthusiastic.`;\n\nconst userPrompt = `You're meeting this author for the first time and just finished reading their approved manuscript.\n\nMANUSCRIPT: \"${ms.title}\"\nAUTHOR: ${ms.author_first_name}\nGENRE: ${ms.genre}\nWORD COUNT: ${ms.current_word_count}\n\nALEX'S SUMMARY:\n${ms.manuscript_summary}\n\nKEY STORY ELEMENTS:\n${ms.full_analysis_key_points}\n\nAPPROVED MANUSCRIPT:\n${ms.developmental_version}\n\n---\n\nGive your genuine, enthusiastic initial reaction as Sam. Pick out something specific that caught your attention. Be encouraging but honest about where you'll focus your line-editing work.`;\n\nreturn [{ json: { system: systemPrompt, user: userPrompt } }];"
+      },
+      "id": "ca97ec0b-4844-464c-87b0-f239bc970f7a",
+      "name": "Build Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        48,
+        -416
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "crXhG5caNVHBmglo",
+          "cachedResultName": "Craft Call \u2014 Cell (DP-CC-01)"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "journey_id": "={{ $('Webhook').first().json.body.journey_id }}",
+            "station_id": "sam.full_analysis",
+            "model_requested": "claude-sonnet-4-5-20250929",
+            "system": "={{ $('Build Prompt').first().json.system }}",
+            "messages": "={{ [{role: 'user', content: $('Build Prompt').first().json.user}] }}",
+            "max_tokens": 4000,
+            "temperature": 0.2
+          }
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "3c82224a-d31d-4d19-925c-aa24e80ee866",
+      "name": "Call Cell",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        272,
+        -416
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const cellReturn = $input.first().json;\nreturn [{ json: {\n  output: cellReturn.ok ? (cellReturn.content || '') : '',\n  ok: !!cellReturn.ok,\n  cell_terminal_reason: cellReturn.ok ? null : (cellReturn.terminal_reason || 'unknown'),\n  cell_model: cellReturn.model || null,\n  cell_input_tokens: cellReturn.input_tokens || null,\n  cell_output_tokens: cellReturn.output_tokens || null,\n  cell_latency_ms: cellReturn.latency_ms || null,\n  cell_cost_usd: cellReturn.cost_estimate_usd || null\n}}];"
+      },
+      "id": "dfe2216e-d1ce-4a38-9ba6-0106998fffc4",
+      "name": "Chapter Context Assessment",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        496,
+        -416
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cell-ok",
+              "leftValue": "={{ $('Chapter Context Assessment').first().json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "38319cdf-c82b-4f4a-bc26-42293afebb90",
+      "name": "Reply Success?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        720,
+        -416
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.as_journeys SET status = 'ready', completed_at = NOW() WHERE id = NULLIF($1, '')::uuid RETURNING id, status",
+        "options": {
+          "queryReplacement": "={{ $('Webhook').first().json.body.journey_id }}"
+        }
+      },
+      "id": "d5c7bd06-3a61-4754-9b7a-6fd9d6f6acb8",
+      "name": "Journey: Ready",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1392,
+        -416
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.as_journeys SET status = 'failed', completed_at = NOW(), terminal_reason = $2 WHERE id = NULLIF($1, '')::uuid RETURNING id, status",
+        "options": {
+          "queryReplacement": "={{ $('Webhook').first().json.body.journey_id }},{{ $('Chapter Context Assessment').first().json.cell_terminal_reason || 'unknown' }}"
+        }
+      },
+      "id": "f7bbee2f-f389-4c5d-aef1-3654908aff31",
+      "name": "Journey: Failed",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1392,
+        -224
+      ]
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  }
+}
