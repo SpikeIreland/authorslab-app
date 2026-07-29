@@ -4,8 +4,8 @@ export const dynamic = 'force-dynamic'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { AppShell } from '@/components/chrome/AppShell'
 
 // ============================================================================
 // Types
@@ -258,37 +258,9 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      {/* Top bar */}
-      <header className="bg-white border-b border-slate-200">
-        <div className="px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link href="/home" className="text-base font-medium text-slate-900">
-              AuthorsLab
-            </Link>
-            <nav className="flex items-center gap-1">
-              <Link
-                href="/home"
-                className="px-3 py-1.5 rounded-md text-sm font-medium bg-slate-100 text-slate-900"
-              >
-                Home
-              </Link>
-              <Link
-                href="/lobby"
-                className="px-3 py-1.5 rounded-md text-sm text-slate-600 hover:bg-slate-100"
-              >
-                Projects
-              </Link>
-            </nav>
-          </div>
-          <div className="text-sm text-slate-500">
-            {authorFirstName ? `Signed in as ${authorFirstName}` : ''}
-          </div>
-        </div>
-      </header>
-
+    <AppShell firstName={authorFirstName || undefined}>
       {/* Two-pane chat */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden h-[calc(100vh-56px)]">
         {/* Left: conversation history */}
         <aside className="w-[260px] border-r border-slate-200 bg-white flex flex-col flex-shrink-0">
           <div className="p-3 border-b border-slate-200">
@@ -407,7 +379,7 @@ export default function HomePage() {
                 <button
                   type="button"
                   className="px-3 py-1.5 border border-slate-300 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-50"
-                  onClick={() => alert('Lobby and project creation are coming next. For now, this conversation will be preserved.')}
+                  onClick={() => router.push('/lobby')}
                 >
                   Make this a project →
                 </button>
@@ -416,7 +388,7 @@ export default function HomePage() {
           </form>
         </section>
       </div>
-    </div>
+    </AppShell>
   )
 }
 

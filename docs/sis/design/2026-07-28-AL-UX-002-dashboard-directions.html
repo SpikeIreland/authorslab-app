@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AL-UX-002 · AuthorsLab project dashboard — three directions</title>
+<style>
+  /* ================= AuthorsLab palette (from the Eden surfaces) ============ */
+  :root{
+    --ivory:#FAF8F4;          /* app background          */
+    --paper:#FFFFFF;          /* cards                   */
+    --paper-warm:#FDFBF7;     /* soft card alt           */
+    --charcoal:#2C2C2A;       /* header / display ink    */
+    --ink:#2C2C2C;            /* body ink                */
+    --muted:#8A857C;          /* secondary ink (warm)    */
+    --faint:#B5AFA4;          /* tertiary ink            */
+    --line:#E8E2D8;           /* warm hairline           */
+    --line-soft:#F0EBE2;
+    --sage:#8FAF8A;           /* Eden / active           */
+    --sage-deep:#5C7A6B;      /* Reid / complete         */
+    --sage-bg:#EFF4EE;
+    --terracotta:#D4956A;     /* Ivy / Sam accent        */
+    --terracotta-bg:#FBF1E8;
+    --amber-bg:#FDF6EE;
+    --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:#EDE9E1;font-family:var(--sans);color:var(--ink);}
+
+  /* ================= Review toolbar (not part of the product) =============== */
+  .toolbar{position:sticky;top:0;z-index:50;background:var(--charcoal);color:#EDE9E1;
+    padding:10px 20px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
+  .toolbar .tag{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#B5AFA4;}
+  .toolbar .switch{display:flex;gap:6px;}
+  .toolbar button{font-family:var(--sans);font-size:13px;padding:7px 14px;border-radius:6px;
+    border:1px solid #4A4A46;background:transparent;color:#D8D3C8;cursor:pointer;}
+  .toolbar button.on{background:var(--sage);border-color:var(--sage);color:#20251F;font-weight:600;}
+  .toolbar .why{font-size:12.5px;color:#B5AFA4;flex:1;min-width:260px;}
+  .toolbar .why strong{color:#EDE9E1;font-weight:600;}
+
+  .frame{max-width:1280px;margin:22px auto 60px;box-shadow:0 8px 40px rgba(44,44,42,.18);
+    border-radius:10px;overflow:hidden;background:var(--ivory);min-width:1080px;}
+
+  /* ================= SHARED CHROME — the SIS grammar ======================== */
+  .brandbar{background:var(--charcoal);color:#F5F2EC;display:flex;align-items:center;
+    justify-content:space-between;padding:0 22px;height:56px;position:relative;}
+  .brandbar .left{display:flex;align-items:center;gap:16px;min-width:0;}
+  .mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--sage),var(--sage-deep));
+    display:flex;align-items:center;justify-content:center;font-family:var(--serif);
+    font-size:17px;color:#fff;}
+  .wordmark{font-family:var(--serif);font-size:17px;letter-spacing:.02em;}
+  .wordmark span{color:#B5AFA4;font-style:italic;font-size:14px;margin-left:6px;}
+  .brand-div{width:1px;height:22px;background:#4A4A46;}
+  .backlink{font-size:13px;color:#B5AFA4;text-decoration:none;display:flex;gap:6px;align-items:center;}
+  .backlink:hover{color:#F5F2EC;}
+  .centre-title{position:absolute;left:50%;transform:translateX(-50%);
+    font-family:var(--serif);font-size:15.5px;color:#F5F2EC;font-style:italic;}
+  .brandbar .right{display:flex;align-items:center;gap:14px;}
+  .bell{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#B5AFA4;position:relative;cursor:pointer;}
+  .bell:hover{background:#3A3A37;}
+  .bell .dot{position:absolute;top:7px;right:7px;width:7px;height:7px;border-radius:50%;
+    background:var(--terracotta);border:1.5px solid var(--charcoal);}
+  .avatar{display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 8px;border-radius:8px;}
+  .avatar:hover{background:#3A3A37;}
+  .avatar .circle{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#6B6B66,#4A4A46);
+    display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#F5F2EC;}
+  .avatar .name{font-size:13px;color:#D8D3C8;}
+  .avatar svg{opacity:.5;}
+
+  /* Journey tab strip */
+  .tabstrip{background:var(--ivory);border-bottom:1px solid var(--line);display:flex;
+    align-items:center;padding:0 22px;gap:2px;}
+  .tab{font-size:13.5px;padding:13px 14px;border-bottom:2px solid transparent;color:var(--muted);
+    display:flex;align-items:center;gap:7px;cursor:pointer;white-space:nowrap;}
+  .tab:hover{color:var(--ink);}
+  .tab.done{color:var(--sage-deep);}
+  .tab.done .tick{font-size:11px;}
+  .tab.current{color:var(--ink);border-bottom-color:var(--sage-deep);font-weight:600;}
+  .tab.active-stage .pulse{width:7px;height:7px;border-radius:50%;background:var(--sage);}
+  .tab.dim{color:var(--faint);}
+  .tab .soon{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;background:var(--line-soft);
+    color:var(--muted);padding:2px 7px;border-radius:99px;}
+  .tab-div{width:1px;height:20px;background:var(--line);margin:0 10px;}
+
+  main{background:var(--ivory);min-height:640px;}
+  .direction{display:none;}
+  .direction.show{display:block;}
+  .wrap{max-width:1080px;margin:0 auto;padding:34px 32px 56px;}
+
+  h1,h2,h3,.serif{font-family:var(--serif);font-weight:500;}
+  .kicker{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-family:var(--sans);}
+
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:12px;}
+
+  /* Personas */
+  .p-avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;
+    font-weight:600;flex-shrink:0;font-family:var(--sans);}
+  .p-alex{background:var(--sage);}
+  .p-sam{background:var(--terracotta);}
+  .p-jordan{background:var(--sage-deep);}
+  .p-eden{background:var(--sage);}
+  .p-riley{background:#A98A6B;}
+
+  /* Journey spine (Direction A) */
+  .spine{display:flex;align-items:flex-start;gap:0;margin:6px 0 0;}
+  .spine .node{flex:1;position:relative;text-align:center;}
+  .spine .node:not(:last-child):after{content:'';position:absolute;top:10px;left:calc(50% + 16px);
+    right:calc(-50% + 16px);height:2px;background:var(--line);}
+  .spine .node.done:not(:last-child):after{background:var(--sage-deep);opacity:.45;}
+  .spine .bullet{width:22px;height:22px;border-radius:50%;margin:0 auto 8px;display:flex;
+    align-items:center;justify-content:center;font-size:11px;position:relative;z-index:1;
+    background:var(--ivory);border:2px solid var(--line);color:var(--faint);}
+  .spine .done .bullet{background:var(--sage-deep);border-color:var(--sage-deep);color:#fff;}
+  .spine .live .bullet{background:var(--sage);border-color:var(--sage);color:#fff;box-shadow:0 0 0 4px var(--sage-bg);}
+  .spine .label{font-size:12.5px;color:var(--muted);}
+  .spine .done .label{color:var(--sage-deep);}
+  .spine .live .label{color:var(--ink);font-weight:600;}
+  .spine .sub{font-size:11px;color:var(--faint);margin-top:2px;}
+  .spine .skip .label{color:var(--faint);}
+  .spine .skip .sub{font-style:italic;}
+
+  /* ============ DIRECTION A — The Editor's Desk ============ */
+  .hero{display:flex;gap:22px;padding:26px 28px;align-items:flex-start;
+    background:linear-gradient(180deg,var(--paper) 0%,var(--paper-warm) 100%);}
+  .hero .p-avatar{width:64px;height:64px;font-size:24px;box-shadow:0 3px 12px rgba(212,149,106,.35);}
+  .hero h1{font-size:26px;line-height:1.25;margin:2px 0 8px;}
+  .hero .msg{font-size:14.5px;line-height:1.55;color:var(--muted);max-width:640px;}
+  .hero .msg em{color:var(--ink);font-style:italic;font-family:var(--serif);}
+  .cta-row{display:flex;gap:10px;margin-top:16px;align-items:center;}
+  .btn{font-size:13.5px;font-weight:600;padding:10px 18px;border-radius:8px;cursor:pointer;
+    border:1px solid transparent;font-family:var(--sans);}
+  .btn.primary{background:var(--sage-deep);color:#fff;}
+  .btn.primary:hover{background:#4E6A5D;}
+  .btn.ghost{background:transparent;border-color:var(--line);color:var(--ink);}
+  .btn.ghost:hover{background:var(--paper-warm);border-color:var(--faint);}
+  .cols{display:grid;grid-template-columns:1.6fr 1fr;gap:18px;margin-top:18px;}
+  .feed{padding:20px 24px;}
+  .feed h3{font-size:15px;margin-bottom:14px;}
+  .feed-item{display:flex;gap:12px;padding:11px 0;border-top:1px solid var(--line-soft);font-size:13.5px;}
+  .feed-item:first-of-type{border-top:none;}
+  .feed-item .p-avatar{width:28px;height:28px;font-size:12px;margin-top:1px;}
+  .feed-item .doc{width:28px;height:28px;border-radius:8px;background:var(--amber-bg);display:flex;
+    align-items:center;justify-content:center;font-size:13px;}
+  .feed-item .t{color:var(--ink);line-height:1.45;}
+  .feed-item .when{color:var(--faint);font-size:12px;margin-top:2px;}
+  .feed-item a{color:var(--sage-deep);text-decoration:none;font-weight:600;}
+  .facts{padding:20px 24px;}
+  .facts h3{font-size:15px;margin-bottom:12px;}
+  .fact{display:flex;justify-content:space-between;font-size:13.5px;padding:8px 0;border-top:1px solid var(--line-soft);}
+  .fact:first-of-type{border-top:none;}
+  .fact .k{color:var(--muted);}
+  .fact .v{font-weight:600;}
+  .team{display:flex;gap:8px;margin-top:14px;align-items:center;}
+  .team .p-avatar{width:30px;height:30px;font-size:12px;border:2px solid var(--paper);margin-left:-8px;}
+  .team .p-avatar:first-child{margin-left:0;}
+  .team .lbl{font-size:12px;color:var(--muted);margin-left:6px;}
+
+  /* ============ DIRECTION B — The Manuscript Room ============ */
+  .room{display:grid;grid-template-columns:300px 1fr;gap:26px;align-items:start;}
+  .bookwrap{text-align:center;}
+  .book{width:225px;height:330px;margin:4px auto 0;background:var(--charcoal);border-radius:4px 10px 10px 4px;
+    position:relative;box-shadow:12px 14px 34px rgba(44,44,42,.28), inset 6px 0 12px rgba(255,255,255,.06);
+    display:flex;flex-direction:column;justify-content:center;padding:30px 26px;color:#F5F2EC;}
+  .book:before{content:'';position:absolute;left:10px;top:0;bottom:0;width:1px;background:rgba(255,255,255,.18);}
+  .book .b-kicker{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--terracotta);margin-bottom:14px;}
+  .book .b-title{font-family:var(--serif);font-size:25px;line-height:1.2;}
+  .book .b-rule{width:36px;height:1px;background:var(--sage);margin:16px auto;}
+  .book .b-author{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:#B5AFA4;}
+  .bookmeta{margin-top:16px;font-size:13px;color:var(--muted);line-height:1.7;}
+  .bookmeta strong{color:var(--ink);}
+  .shelf{margin-top:18px;text-align:left;}
+  .shelf h3{font-size:13px;margin-bottom:8px;color:var(--muted);font-family:var(--sans);
+    font-weight:600;letter-spacing:.08em;text-transform:uppercase;}
+  .shelf .doc-row{display:flex;align-items:center;gap:10px;font-size:13px;padding:9px 12px;
+    border:1px solid var(--line);border-radius:9px;margin-bottom:7px;background:var(--paper);cursor:pointer;}
+  .shelf .doc-row:hover{border-color:var(--faint);}
+  .shelf .doc-row .ic{font-size:15px;}
+  .shelf .doc-row .nm{flex:1;}
+  .shelf .doc-row .sz{color:var(--faint);font-size:11.5px;}
+  .nextbar{display:flex;align-items:center;gap:14px;padding:16px 20px;margin-bottom:20px;}
+  .nextbar .p-avatar{width:40px;height:40px;font-size:16px;}
+  .nextbar .txt{flex:1;font-size:14px;}
+  .nextbar .txt strong{font-family:var(--serif);font-size:15px;}
+  .nextbar .txt .sub{color:var(--muted);font-size:13px;margin-top:1px;}
+  .stepper{padding:6px 24px 14px;}
+  .step{display:flex;gap:16px;position:relative;padding:16px 0;}
+  .step:not(:last-child):before{content:'';position:absolute;left:13px;top:44px;bottom:-8px;width:2px;background:var(--line);}
+  .step.done:not(:last-child):before{background:var(--sage-deep);opacity:.4;}
+  .step .bullet{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;
+    justify-content:center;font-size:12px;background:var(--ivory);border:2px solid var(--line);color:var(--faint);z-index:1;}
+  .step.done .bullet{background:var(--sage-deep);border-color:var(--sage-deep);color:#fff;}
+  .step.live .bullet{background:var(--sage);border-color:var(--sage);color:#fff;box-shadow:0 0 0 4px var(--sage-bg);}
+  .step .body{flex:1;}
+  .step .name{font-size:15px;font-weight:600;display:flex;gap:10px;align-items:baseline;}
+  .step .name .st{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:99px;}
+  .step.done .name .st{background:var(--sage-bg);color:var(--sage-deep);}
+  .step.live .name .st{background:var(--sage);color:#fff;}
+  .step.pend .name{color:var(--muted);font-weight:500;}
+  .step.pend .name .st{background:var(--line-soft);color:var(--muted);}
+  .step.skip .name{color:var(--faint);font-weight:500;}
+  .step .desc{font-size:13px;color:var(--muted);margin-top:4px;line-height:1.5;max-width:540px;}
+  .step .desc a{color:var(--sage-deep);font-weight:600;text-decoration:none;}
+  .step .mini-cta{margin-top:10px;}
+
+  /* ============ DIRECTION C — The Studio Board ============ */
+  .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
+  .tile{padding:16px 18px;}
+  .tile .k{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+  .tile .v{font-family:var(--serif);font-size:26px;margin-top:6px;}
+  .tile .s{font-size:12px;color:var(--faint);margin-top:3px;}
+  .tile .meter{height:5px;border-radius:99px;background:var(--line-soft);margin-top:12px;overflow:hidden;}
+  .tile .meter i{display:block;height:100%;border-radius:99px;background:var(--sage);}
+  .board{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px;}
+  .stage-card{padding:15px 15px 13px;display:flex;flex-direction:column;min-height:150px;}
+  .stage-card .hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .stage-card .nm{font-size:13.5px;font-weight:600;}
+  .stage-card .st{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    padding:2px 7px;border-radius:99px;display:flex;align-items:center;gap:4px;}
+  .stage-card.done .st{background:var(--sage-bg);color:var(--sage-deep);}
+  .stage-card.live .st{background:var(--sage);color:#fff;}
+  .stage-card.pend .st{background:var(--line-soft);color:var(--muted);}
+  .stage-card.skip .st{background:transparent;color:var(--faint);border:1px dashed var(--line);}
+  .stage-card.live{border-color:var(--sage);box-shadow:0 0 0 3px var(--sage-bg);}
+  .stage-card .who{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);margin:2px 0 8px;}
+  .stage-card .who .p-avatar{width:22px;height:22px;font-size:10px;}
+  .stage-card .note{font-size:12px;color:var(--muted);line-height:1.5;flex:1;}
+  .stage-card .go{font-size:12.5px;font-weight:600;color:var(--sage-deep);text-decoration:none;margin-top:8px;}
+  .stage-card.pend .go, .stage-card.skip .go{color:var(--faint);font-weight:500;}
+  .board-cols{display:grid;grid-template-columns:1.5fr 1fr;gap:14px;}
+  .acttable{padding:16px 20px;}
+  .acttable h3{font-size:14px;margin-bottom:8px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{text-align:left;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);
+    font-weight:600;padding:7px 8px;border-bottom:1px solid var(--line);}
+  td{padding:9px 8px;border-bottom:1px solid var(--line-soft);color:var(--ink);}
+  td.when{color:var(--faint);white-space:nowrap;}
+  td .p-avatar{width:20px;height:20px;font-size:9px;display:inline-flex;vertical-align:-5px;margin-right:7px;}
+  .gate{padding:16px 20px;}
+  .gate h3{font-size:14px;margin-bottom:10px;}
+  .gate .g-row{display:flex;gap:10px;align-items:flex-start;font-size:13px;padding:8px 0;border-top:1px solid var(--line-soft);}
+  .gate .g-row:first-of-type{border-top:none;}
+  .gate .g-ic{width:20px;height:20px;border-radius:50%;font-size:10px;display:flex;align-items:center;
+    justify-content:center;flex-shrink:0;margin-top:1px;}
+  .gate .ok .g-ic{background:var(--sage-bg);color:var(--sage-deep);}
+  .gate .todo .g-ic{background:var(--amber-bg);color:var(--terracotta);}
+  .gate .g-t{line-height:1.45;}
+  .gate .g-t .sub{color:var(--faint);font-size:12px;}
+
+  .foot-note{margin-top:26px;font-size:12px;color:var(--faint);text-align:center;font-style:italic;}
+</style>
+</head>
+<body>
+
+<!-- ======================= REVIEW TOOLBAR ======================= -->
+<div class="toolbar">
+  <span class="tag">AL-UX-002 · Project dashboard</span>
+  <div class="switch">
+    <button id="btnA" class="on" onclick="show('A')">A · The Editor’s Desk</button>
+    <button id="btnB" onclick="show('B')">B · The Manuscript Room</button>
+    <button id="btnC" onclick="show('C')">C · The Studio Board</button>
+  </div>
+  <div class="why" id="why"><strong>Persona-led.</strong> Your editor greets you and hands you the next step — the dashboard as a conversation resumed. Closest to the Eden/companion soul of the product.</div>
+</div>
+
+<div class="frame">
+
+  <!-- =================== SHARED CHROME (constant across all three) =================== -->
+  <header class="brandbar">
+    <div class="left">
+      <div style="display:flex;align-items:center;gap:9px;">
+        <div class="mark">A</div>
+        <div class="wordmark">AuthorsLab<span>Author</span></div>
+      </div>
+      <div class="brand-div"></div>
+      <a class="backlink" href="#">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 19l-7-7 7-7"/></svg>
+        Projects
+      </a>
+    </div>
+    <div class="centre-title">Diary of a Madman</div>
+    <div class="right">
+      <div class="bell">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+        <span class="dot"></span>
+      </div>
+      <div class="avatar">
+        <div class="circle">P</div>
+        <span class="name">Paul</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M19 9l-7 7-7-7"/></svg>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tabstrip">
+    <div class="tab current">Overview</div>
+    <div class="tab dim" title="Not needed — manuscript was uploaded">Ghostwriter</div>
+    <div class="tab active-stage"><span class="pulse"></span>Author Studio</div>
+    <div class="tab">Design</div>
+    <div class="tab">Publishing</div>
+    <div class="tab">Marketing</div>
+    <div class="tab-div"></div>
+    <div class="tab">Research</div>
+    <div class="tab dim">Script <span class="soon">Soon</span></div>
+  </nav>
+
+  <main>
+
+  <!-- ============================================================= -->
+  <!-- DIRECTION A — THE EDITOR'S DESK                               -->
+  <!-- ============================================================= -->
+  <section class="direction show" id="dirA">
+    <div class="wrap">
+
+      <div class="card hero">
+        <div class="p-avatar p-sam">S</div>
+        <div style="flex:1;">
+          <div class="kicker">Author Studio · Phase 2 of 3 · with Sam</div>
+          <h1>Welcome back, Paul. Sam has been through Chapter 4.</h1>
+          <p class="msg">“The Suicide Safety Net chapter is the strongest thing in the manuscript —
+            I’ve marked three places where slowing down would let it land even harder.
+            <em>When you’re ready, we’ll walk them together.</em>”</p>
+          <div class="cta-row">
+            <button class="btn primary">Continue with Sam →</button>
+            <button class="btn ghost">Read Sam’s Chapter 4 notes (PDF)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:18px;padding:22px 28px 18px;">
+        <div class="kicker" style="margin-bottom:16px;">Your book’s journey</div>
+        <div class="spine">
+          <div class="node skip">
+            <div class="bullet">–</div>
+            <div class="label">Ghostwriter</div>
+            <div class="sub">Not needed</div>
+          </div>
+          <div class="node done">
+            <div class="bullet">✓</div>
+            <div class="label">First read · Alex</div>
+            <div class="sub">Assessment filed</div>
+          </div>
+          <div class="node live">
+            <div class="bullet">●</div>
+            <div class="label">Line edit · Sam</div>
+            <div class="sub">Chapter 4 of 12</div>
+          </div>
+          <div class="node">
+            <div class="bullet"></div>
+            <div class="label">Final polish · Jordan</div>
+            <div class="sub">Awaiting Sam</div>
+          </div>
+          <div class="node">
+            <div class="bullet"></div>
+            <div class="label">Design &amp; Publishing</div>
+            <div class="sub">Then Marketing</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cols">
+        <div class="card feed">
+          <h3>Recently in the studio</h3>
+          <div class="feed-item">
+            <div class="p-avatar p-sam">S</div>
+            <div><div class="t">Sam finished line notes on <strong>Chapter 4 — “Mind Bomb”</strong> · 14 suggestions, 3 flagged as structural</div><div class="when">Today, 09:42</div></div>
+          </div>
+          <div class="feed-item">
+            <div class="doc">📄</div>
+            <div><div class="t"><a href="#">Chapter 3 revision</a> accepted — 2,180 words updated</div><div class="when">Yesterday</div></div>
+          </div>
+          <div class="feed-item">
+            <div class="p-avatar p-alex">A</div>
+            <div><div class="t">Alex’s <a href="#">Developmental Assessment</a> moved to your shelf</div><div class="when">Friday</div></div>
+          </div>
+          <div class="feed-item">
+            <div class="p-avatar p-sam">S</div>
+            <div><div class="t">You and Sam resolved 9 open points in <strong>Chapter 2</strong></div><div class="when">Last week</div></div>
+          </div>
+        </div>
+
+        <div class="card facts">
+          <h3>Diary of a Madman</h3>
+          <div class="fact"><span class="k">Genre</span><span class="v">Memoir</span></div>
+          <div class="fact"><span class="k">Length</span><span class="v">23,018 words</span></div>
+          <div class="fact"><span class="k">Chapters</span><span class="v">12</span></div>
+          <div class="fact"><span class="k">Phase</span><span class="v">Line edit — 2 of 3</span></div>
+          <div class="fact"><span class="k">Started</span><span class="v">June 2026</span></div>
+          <div class="team">
+            <div class="p-avatar p-alex" title="Alex — first read">A</div>
+            <div class="p-avatar p-sam" title="Sam — line edit">S</div>
+            <div class="p-avatar p-jordan" title="Jordan — final polish">J</div>
+            <span class="lbl">Your editorial team</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="foot-note">Direction A — the dashboard is a desk your editor is already sitting at.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================= -->
+  <!-- DIRECTION B — THE MANUSCRIPT ROOM                             -->
+  <!-- ============================================================= -->
+  <section class="direction" id="dirB">
+    <div class="wrap">
+      <div class="room">
+
+        <div class="bookwrap">
+          <div class="book">
+            <div class="b-kicker">A Memoir</div>
+            <div class="b-title">Diary of a<br>Madman</div>
+            <div class="b-rule"></div>
+            <div class="b-author">Paul Lyons</div>
+          </div>
+          <div class="bookmeta">
+            <strong>23,018 words</strong> · 12 chapters<br>
+            Uploaded June 2026 · Memoir
+          </div>
+          <div class="shelf">
+            <h3>On your shelf</h3>
+            <div class="doc-row"><span class="ic">📕</span><span class="nm">Developmental Assessment — Alex</span><span class="sz">PDF</span></div>
+            <div class="doc-row"><span class="ic">📗</span><span class="nm">Chapter 1–3 line notes — Sam</span><span class="sz">PDF</span></div>
+            <div class="doc-row"><span class="ic">📘</span><span class="nm">Manuscript v2.3 (current)</span><span class="sz">DOCX</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card nextbar">
+            <div class="p-avatar p-sam">S</div>
+            <div class="txt">
+              <strong>Next: walk Chapter 4 with Sam</strong>
+              <div class="sub">14 line suggestions are waiting — about 40 minutes together.</div>
+            </div>
+            <button class="btn primary">Open the studio →</button>
+          </div>
+
+          <div class="card stepper">
+            <div class="step skip">
+              <div class="bullet">–</div>
+              <div class="body">
+                <div class="name">Ghostwriter <span class="st" style="background:transparent;color:var(--faint);border:1px dashed var(--line);">Not needed</span></div>
+                <div class="desc">You arrived with a finished draft, so this stage stays closed.</div>
+              </div>
+            </div>
+            <div class="step done">
+              <div class="bullet">✓</div>
+              <div class="body">
+                <div class="name">First read — Alex <span class="st">Complete</span></div>
+                <div class="desc">Alex read the full manuscript and filed a developmental assessment:
+                  structure, voice, and the five chapters that carry the book. <a href="#">Read the assessment →</a></div>
+              </div>
+            </div>
+            <div class="step live">
+              <div class="bullet">●</div>
+              <div class="body">
+                <div class="name">Line edit — Sam <span class="st">In session</span></div>
+                <div class="desc">Working through the manuscript chapter by chapter, together.
+                  Chapter 4 of 12 · 9 points resolved this week.</div>
+                <div class="mini-cta"><button class="btn ghost">Continue Chapter 4 →</button></div>
+              </div>
+            </div>
+            <div class="step pend">
+              <div class="bullet">3</div>
+              <div class="body">
+                <div class="name">Final polish — Jordan <span class="st">Waiting</span></div>
+                <div class="desc">Jordan takes the line-edited draft through a final consistency and rhythm pass.</div>
+              </div>
+            </div>
+            <div class="step pend">
+              <div class="bullet">4</div>
+              <div class="body">
+                <div class="name">Design, Publishing &amp; Marketing <span class="st">Ahead</span></div>
+                <div class="desc">Cover concepts with Taylor, then platforms, then the launch plan with Riley.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="foot-note">Direction B — the dashboard is a room your book lives in; the object itself does the talking.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================= -->
+  <!-- DIRECTION C — THE STUDIO BOARD                                -->
+  <!-- ============================================================= -->
+  <section class="direction" id="dirC">
+    <div class="wrap">
+
+      <div class="tiles">
+        <div class="card tile">
+          <div class="k">Journey</div>
+          <div class="v">Phase 2 <span style="font-size:15px;color:var(--faint);">of 5</span></div>
+          <div class="s">Author Studio — line edit</div>
+          <div class="meter"><i style="width:38%;"></i></div>
+        </div>
+        <div class="card tile">
+          <div class="k">Manuscript</div>
+          <div class="v">23,018</div>
+          <div class="s">words · 12 chapters · v2.3</div>
+        </div>
+        <div class="card tile">
+          <div class="k">Editing session</div>
+          <div class="v">Ch. 4 <span style="font-size:15px;color:var(--faint);">of 12</span></div>
+          <div class="s">14 suggestions open</div>
+          <div class="meter"><i style="width:33%;"></i></div>
+        </div>
+        <div class="card tile">
+          <div class="k">Resolved with Sam</div>
+          <div class="v">96</div>
+          <div class="s">editorial points to date</div>
+        </div>
+      </div>
+
+      <div class="board">
+        <div class="card stage-card skip">
+          <div class="hd"><span class="nm">Ghostwriter</span><span class="st">Not needed</span></div>
+          <div class="note">Draft was uploaded complete — Eden’s desk stays closed for this book.</div>
+          <a class="go" href="#">—</a>
+        </div>
+        <div class="card stage-card done">
+          <div class="hd"><span class="nm">Author Studio · First read</span><span class="st">✓ Done</span></div>
+          <div class="who"><span class="p-avatar p-alex">A</span> Alex</div>
+          <div class="note">Full developmental assessment filed.</div>
+          <a class="go" href="#">Read assessment →</a>
+        </div>
+        <div class="card stage-card live">
+          <div class="hd"><span class="nm">Author Studio · Line edit</span><span class="st">● Live</span></div>
+          <div class="who"><span class="p-avatar p-sam">S</span> Sam</div>
+          <div class="note">Chapter 4 of 12 in session. 14 suggestions waiting.</div>
+          <a class="go" href="#">Continue →</a>
+        </div>
+        <div class="card stage-card pend">
+          <div class="hd"><span class="nm">Design</span><span class="st">Ahead</span></div>
+          <div class="who"><span class="p-avatar" style="background:var(--faint);">T</span> Taylor</div>
+          <div class="note">Cover concepts unlock when Jordan signs off the polish.</div>
+          <a class="go" href="#">Preview stage →</a>
+        </div>
+        <div class="card stage-card pend">
+          <div class="hd"><span class="nm">Publish &amp; Market</span><span class="st">Ahead</span></div>
+          <div class="who"><span class="p-avatar p-riley">R</span> Riley</div>
+          <div class="note">Platforms, metadata, then the launch plan.</div>
+          <a class="go" href="#">Preview stage →</a>
+        </div>
+      </div>
+
+      <div class="board-cols">
+        <div class="card acttable">
+          <h3>Studio activity</h3>
+          <table>
+            <thead><tr><th>What happened</th><th style="width:110px;">When</th></tr></thead>
+            <tbody>
+              <tr><td><span class="p-avatar p-sam">S</span>Line notes filed — Chapter 4, 14 suggestions</td><td class="when">Today 09:42</td></tr>
+              <tr><td><span class="p-avatar p-sam">S</span>Chapter 3 revision accepted (+2,180 words)</td><td class="when">Yesterday</td></tr>
+              <tr><td><span class="p-avatar p-alex">A</span>Developmental Assessment delivered</td><td class="when">Fri</td></tr>
+              <tr><td><span class="p-avatar p-sam">S</span>Nine points resolved — Chapter 2</td><td class="when">Last week</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card gate">
+          <h3>Before Jordan can begin</h3>
+          <div class="g-row ok"><div class="g-ic">✓</div><div class="g-t">Alex’s assessment reviewed<div class="sub">Done 21 June</div></div></div>
+          <div class="g-row ok"><div class="g-ic">✓</div><div class="g-t">Chapters 1–3 line edit complete<div class="sub">Resolved with Sam</div></div></div>
+          <div class="g-row todo"><div class="g-ic">4</div><div class="g-t">Chapters 4–12 line edit<div class="sub">In progress — Chapter 4 open</div></div></div>
+          <div class="g-row todo"><div class="g-ic">…</div><div class="g-t">Your sign-off on the edited draft<div class="sub">Unlocks the final polish</div></div></div>
+        </div>
+      </div>
+
+      <p class="foot-note">Direction C — the dashboard is a production board: state, gates, and momentum at a glance.</p>
+    </div>
+  </section>
+
+  </main>
+</div>
+
+<script>
+  const WHY = {
+    A: '<strong>Persona-led.</strong> Your editor greets you and hands you the next step — the dashboard as a conversation resumed. Closest to the Eden/companion soul of the product.',
+    B: '<strong>Book-led.</strong> The manuscript is the hero object; the journey is a quiet stepper beside it. Most “literary” of the three — the one a publisher instinctively recognises.',
+    C: '<strong>Status-led.</strong> Tiles, stage cards, and phase gates — the Clarence grammar in AuthorsLab clothing. Most information-dense; demos momentum and professionalism.'
+  };
+  function show(k){
+    for (const d of ['A','B','C']){
+      document.getElementById('dir'+d).classList.toggle('show', d===k);
+      document.getElementById('btn'+d).classList.toggle('on', d===k);
+    }
+    document.getElementById('why').innerHTML = WHY[k];
+  }
+</script>
+</body>
+</html>

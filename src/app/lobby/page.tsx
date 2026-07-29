@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { NewProjectModal } from './_components/NewProjectModal'
+import { AppShell } from '@/components/chrome/AppShell'
 
 // ============================================================================
 // Types — must mirror /api/lobby/projects/route.ts
@@ -199,36 +200,8 @@ export default function LobbyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      {/* Top bar — same pattern as /home */}
-      <header className="bg-white border-b border-slate-200">
-        <div className="px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link href="/home" className="text-base font-medium text-slate-900">
-              AuthorsLab
-            </Link>
-            <nav className="flex items-center gap-1">
-              <Link
-                href="/home"
-                className="px-3 py-1.5 rounded-md text-sm text-slate-600 hover:bg-slate-100"
-              >
-                Home
-              </Link>
-              <Link
-                href="/lobby"
-                className="px-3 py-1.5 rounded-md text-sm font-medium bg-slate-100 text-slate-900"
-              >
-                Projects
-              </Link>
-            </nav>
-          </div>
-          <div className="text-sm text-slate-500">
-            {authorFirstName ? `Signed in as ${authorFirstName}` : ''}
-          </div>
-        </div>
-      </header>
-
-      <main className="flex-1 overflow-y-auto">
+    <AppShell firstName={authorFirstName || undefined}>
+      <main className="flex-1 overflow-y-auto h-[calc(100vh-56px)]">
         <div className="max-w-3xl mx-auto px-6 py-8">
 
           <div className="flex items-baseline justify-between mb-5">
@@ -305,7 +278,7 @@ export default function LobbyPage() {
         open={newProjectModalOpen}
         onClose={() => setNewProjectModalOpen(false)}
       />
-    </div>
+    </AppShell>
   )
 }
 

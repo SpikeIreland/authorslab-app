@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AL-UX-003 · The Manuscript Room — Lobby + Project dashboard</title>
+<style>
+  :root{
+    --ivory:#FAF8F4; --paper:#FFFFFF; --paper-warm:#FDFBF7;
+    --charcoal:#2C2C2A; --ink:#2C2C2C; --muted:#8A857C; --faint:#B5AFA4;
+    --line:#E8E2D8; --line-soft:#F0EBE2;
+    --sage:#8FAF8A; --sage-deep:#5C7A6B; --sage-bg:#EFF4EE;
+    --terracotta:#D4956A; --terracotta-bg:#FBF1E8; --amber-bg:#FDF6EE;
+    --clay:#A98A6B;
+    --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:#EDE9E1;font-family:var(--sans);color:var(--ink);}
+
+  /* ---- review toolbar (not part of the product) ---- */
+  .toolbar{position:sticky;top:0;z-index:50;background:var(--charcoal);color:#EDE9E1;
+    padding:10px 20px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
+  .toolbar .tag{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#B5AFA4;}
+  .toolbar button{font-family:var(--sans);font-size:13px;padding:7px 14px;border-radius:6px;
+    border:1px solid #4A4A46;background:transparent;color:#D8D3C8;cursor:pointer;}
+  .toolbar button.on{background:var(--sage);border-color:var(--sage);color:#20251F;font-weight:600;}
+  .toolbar .why{font-size:12.5px;color:#B5AFA4;flex:1;min-width:240px;}
+
+  .frame{max-width:1320px;margin:22px auto 60px;box-shadow:0 8px 40px rgba(44,44,42,.18);
+    border-radius:10px;overflow:hidden;background:var(--ivory);min-width:1120px;
+    display:flex;min-height:760px;}
+
+  /* ================= LEFT RAIL — Home + Projects only ================= */
+  .rail{width:64px;background:var(--charcoal);display:flex;flex-direction:column;
+    align-items:center;padding:12px 0;gap:6px;flex-shrink:0;}
+  .rail .mark{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--sage),var(--sage-deep));
+    display:flex;align-items:center;justify-content:center;font-family:var(--serif);
+    font-size:19px;color:#fff;margin-bottom:14px;}
+  .rail .r-item{width:44px;height:44px;border-radius:10px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:2px;color:#8F8B82;cursor:pointer;position:relative;}
+  .rail .r-item:hover{background:#3A3A37;color:#D8D3C8;}
+  .rail .r-item.on{background:#3F423C;color:#CFE0CC;}
+  .rail .r-item.on:before{content:'';position:absolute;left:-10px;top:9px;bottom:9px;width:3px;
+    border-radius:0 3px 3px 0;background:var(--sage);}
+  .rail .r-item svg{width:19px;height:19px;}
+  .rail .r-lbl{font-size:8.5px;letter-spacing:.04em;}
+  .rail .spacer{flex:1;}
+
+  .stagecol{flex:1;display:flex;flex-direction:column;min-width:0;}
+
+  /* ================= HEADER ================= */
+  .brandbar{background:var(--charcoal);color:#F5F2EC;display:flex;align-items:center;
+    justify-content:space-between;padding:0 22px;height:56px;position:relative;
+    border-left:1px solid #3A3A37;}
+  .brandbar .left{display:flex;align-items:center;gap:16px;min-width:0;}
+  .wordmark{font-family:var(--serif);font-size:17px;letter-spacing:.02em;}
+  .wordmark span{color:#B5AFA4;font-style:italic;font-size:14px;margin-left:6px;}
+  .brand-div{width:1px;height:22px;background:#4A4A46;}
+  .backlink{font-size:13px;color:#B5AFA4;text-decoration:none;display:flex;gap:6px;align-items:center;cursor:pointer;}
+  .backlink:hover{color:#F5F2EC;}
+  .centre-title{position:absolute;left:50%;transform:translateX(-50%);
+    font-family:var(--serif);font-size:15.5px;color:#F5F2EC;font-style:italic;}
+  .brandbar .right{display:flex;align-items:center;gap:14px;}
+  .bell{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#B5AFA4;position:relative;cursor:pointer;}
+  .bell:hover{background:#3A3A37;}
+  .bell .dot{position:absolute;top:7px;right:7px;width:7px;height:7px;border-radius:50%;
+    background:var(--terracotta);border:1.5px solid var(--charcoal);}
+  .avatar{display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 8px;border-radius:8px;}
+  .avatar:hover{background:#3A3A37;}
+  .avatar .circle{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#6B6B66,#4A4A46);
+    display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#F5F2EC;}
+  .avatar .name{font-size:13px;color:#D8D3C8;}
+  .avatar svg{opacity:.5;}
+
+  /* ================= TAB STRIP (project view only) ================= */
+  .tabstrip{background:var(--ivory);border-bottom:1px solid var(--line);display:flex;
+    align-items:center;padding:0 22px;gap:2px;}
+  .tab{font-size:13.5px;padding:13px 14px;border-bottom:2px solid transparent;color:var(--muted);
+    display:flex;align-items:center;gap:7px;cursor:pointer;white-space:nowrap;}
+  .tab:hover{color:var(--ink);}
+  .tab.current{color:var(--ink);border-bottom-color:var(--sage-deep);font-weight:600;}
+  .tab.active-stage .pulse{width:7px;height:7px;border-radius:50%;background:var(--sage);}
+  .tab.dim{color:var(--faint);}
+  .tab .soon{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;background:var(--line-soft);
+    color:var(--muted);padding:2px 7px;border-radius:99px;}
+  .tab-div{width:1px;height:20px;background:var(--line);margin:0 10px;}
+
+  main{background:var(--ivory);flex:1;}
+  .view{display:none;}
+  .view.show{display:block;}
+  .wrap{max-width:1080px;margin:0 auto;padding:34px 32px 56px;}
+
+  h1,h2,h3,.serif{font-family:var(--serif);font-weight:500;}
+  .kicker{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:12px;}
+  .btn{font-size:13.5px;font-weight:600;padding:10px 18px;border-radius:8px;cursor:pointer;
+    border:1px solid transparent;font-family:var(--sans);white-space:nowrap;}
+  .btn.primary{background:var(--sage-deep);color:#fff;}
+  .btn.primary:hover{background:#4E6A5D;}
+  .btn.ghost{background:transparent;border-color:var(--line);color:var(--ink);}
+  .btn.ghost:hover{background:var(--paper-warm);border-color:var(--faint);}
+
+  .p-avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;
+    font-weight:600;flex-shrink:0;font-family:var(--sans);}
+  .p-alex{background:var(--sage);}
+  .p-sam{background:var(--terracotta);}
+  .p-jordan{background:var(--sage-deep);}
+  .p-eden{background:var(--sage);}
+
+  /* ======================================================================= */
+  /* VIEW 1 — THE LIBRARY (Lobby)                                            */
+  /* ======================================================================= */
+  .lib-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:26px;}
+  .lib-head h1{font-size:30px;}
+  .lib-head .sub{color:var(--muted);font-size:14px;margin-top:6px;}
+  .lib-head .count{font-size:13px;color:var(--faint);}
+
+  .bookcard{display:flex;gap:24px;padding:22px 26px;margin-bottom:16px;align-items:stretch;
+    transition:box-shadow .15s;cursor:pointer;}
+  .bookcard:hover{box-shadow:0 6px 24px rgba(44,44,42,.10);}
+  .minibook{width:92px;height:134px;border-radius:3px 7px 7px 3px;flex-shrink:0;position:relative;
+    display:flex;flex-direction:column;justify-content:center;padding:12px 10px;text-align:center;
+    box-shadow:6px 8px 18px rgba(44,44,42,.22), inset 3px 0 6px rgba(255,255,255,.07);}
+  .minibook:before{content:'';position:absolute;left:5px;top:0;bottom:0;width:1px;background:rgba(255,255,255,.2);}
+  .minibook .t{font-family:var(--serif);font-size:12.5px;line-height:1.25;}
+  .minibook .rule{width:18px;height:1px;margin:8px auto;}
+  .minibook .a{font-size:6.5px;letter-spacing:.16em;text-transform:uppercase;opacity:.75;}
+  .cover-charcoal{background:var(--charcoal);color:#F5F2EC;}
+  .cover-charcoal .rule{background:var(--sage);}
+  .cover-sage{background:var(--sage-deep);color:#FDF6EE;}
+  .cover-sage .rule{background:var(--terracotta);}
+  .cover-terra{background:linear-gradient(160deg,#D4956A,#B87C50);color:#4A1B0C;}
+  .cover-terra .rule{background:#4A1B0C;}
+
+  .bookbody{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .bookbody .row1{display:flex;align-items:baseline;justify-content:space-between;gap:16px;}
+  .bookbody h2{font-size:20px;}
+  .bookbody .upd{font-size:12px;color:var(--faint);white-space:nowrap;}
+  .bookbody .meta{font-size:13px;color:var(--muted);margin-top:3px;}
+
+  .mini-spine{display:flex;align-items:center;gap:6px;margin:14px 0 0;}
+  .ms-seg{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--faint);}
+  .ms-dot{width:9px;height:9px;border-radius:50%;background:var(--ivory);border:1.5px solid var(--line);}
+  .ms-seg.done .ms-dot{background:var(--sage-deep);border-color:var(--sage-deep);}
+  .ms-seg.done{color:var(--sage-deep);}
+  .ms-seg.live .ms-dot{background:var(--sage);border-color:var(--sage);box-shadow:0 0 0 3px var(--sage-bg);}
+  .ms-seg.live{color:var(--ink);font-weight:600;}
+  .ms-seg.skip{text-decoration:none;font-style:italic;}
+  .ms-line{width:22px;height:1.5px;background:var(--line);}
+  .ms-line.done{background:var(--sage-deep);opacity:.45;}
+
+  .booknext{display:flex;align-items:center;gap:12px;margin-top:auto;padding-top:14px;
+    border-top:1px solid var(--line-soft);}
+  .booknext .p-avatar{width:30px;height:30px;font-size:12px;}
+  .booknext .n-txt{flex:1;font-size:13.5px;min-width:0;}
+  .booknext .n-txt .lead{color:var(--muted);margin-right:6px;}
+  .booknext .go{font-size:13px;font-weight:600;color:var(--sage-deep);white-space:nowrap;}
+
+  .newbook{display:flex;align-items:center;justify-content:center;gap:12px;padding:22px;
+    border:1.5px dashed var(--line);border-radius:12px;color:var(--muted);font-size:14px;
+    cursor:pointer;background:transparent;}
+  .newbook:hover{border-color:var(--sage);color:var(--sage-deep);background:var(--paper-warm);}
+  .newbook .plus{width:30px;height:30px;border-radius:50%;border:1.5px solid currentColor;
+    display:flex;align-items:center;justify-content:center;font-size:16px;}
+
+  /* ======================================================================= */
+  /* VIEW 2 — PROJECT DASHBOARD (developed Direction B)                      */
+  /* ======================================================================= */
+  .room{display:grid;grid-template-columns:300px 1fr;gap:26px;align-items:start;}
+  .bookwrap{text-align:center;}
+  .book{width:225px;height:330px;margin:4px auto 0;background:var(--charcoal);border-radius:4px 10px 10px 4px;
+    position:relative;box-shadow:12px 14px 34px rgba(44,44,42,.28), inset 6px 0 12px rgba(255,255,255,.06);
+    display:flex;flex-direction:column;justify-content:center;padding:30px 26px;color:#F5F2EC;}
+  .book:before{content:'';position:absolute;left:10px;top:0;bottom:0;width:1px;background:rgba(255,255,255,.18);}
+  .book .b-kicker{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--terracotta);margin-bottom:14px;}
+  .book .b-title{font-family:var(--serif);font-size:25px;line-height:1.2;}
+  .book .b-rule{width:36px;height:1px;background:var(--sage);margin:16px auto;}
+  .book .b-author{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:#B5AFA4;}
+  .bookmeta{margin-top:16px;font-size:13px;color:var(--muted);line-height:1.7;}
+  .bookmeta strong{color:var(--ink);}
+  .shelf{margin-top:18px;text-align:left;}
+  .shelf h3{font-size:13px;margin-bottom:8px;color:var(--muted);font-family:var(--sans);
+    font-weight:600;letter-spacing:.08em;text-transform:uppercase;}
+  .doc-row{display:flex;align-items:center;gap:10px;font-size:13px;padding:9px 12px;
+    border:1px solid var(--line);border-radius:9px;margin-bottom:7px;background:var(--paper);cursor:pointer;}
+  .doc-row:hover{border-color:var(--faint);}
+  .doc-row .spine-ic{width:9px;height:16px;border-radius:2px;flex-shrink:0;}
+  .doc-row .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .doc-row .sz{color:var(--faint);font-size:11.5px;}
+
+  .greet{display:flex;gap:18px;padding:22px 26px;margin-bottom:20px;align-items:flex-start;
+    background:linear-gradient(180deg,var(--paper) 0%,var(--paper-warm) 100%);}
+  .greet .p-avatar{width:52px;height:52px;font-size:20px;box-shadow:0 3px 12px rgba(212,149,106,.35);}
+  .greet .g-kicker{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+  .greet h1{font-size:21px;margin:4px 0 6px;}
+  .greet .msg{font-size:13.5px;line-height:1.55;color:var(--muted);max-width:560px;}
+  .greet .msg em{color:var(--ink);font-family:var(--serif);}
+  .greet .cta-row{display:flex;gap:10px;margin-top:14px;}
+
+  .stepper{padding:6px 24px 14px;}
+  .step{display:flex;gap:16px;position:relative;padding:16px 0;}
+  .step:not(:last-child):before{content:'';position:absolute;left:13px;top:44px;bottom:-8px;width:2px;background:var(--line);}
+  .step.done:not(:last-child):before{background:var(--sage-deep);opacity:.4;}
+  .step .bullet{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;
+    justify-content:center;font-size:12px;background:var(--ivory);border:2px solid var(--line);color:var(--faint);z-index:1;}
+  .step.done .bullet{background:var(--sage-deep);border-color:var(--sage-deep);color:#fff;}
+  .step.live .bullet{background:var(--sage);border-color:var(--sage);color:#fff;box-shadow:0 0 0 4px var(--sage-bg);}
+  .step .body{flex:1;}
+  .step .name{font-size:15px;font-weight:600;display:flex;gap:10px;align-items:baseline;}
+  .step .name .st{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:99px;}
+  .step.done .name .st{background:var(--sage-bg);color:var(--sage-deep);}
+  .step.live .name .st{background:var(--sage);color:#fff;}
+  .step.pend .name{color:var(--muted);font-weight:500;}
+  .step.pend .name .st{background:var(--line-soft);color:var(--muted);}
+  .step.skip .name{color:var(--faint);font-weight:500;}
+  .step .desc{font-size:13px;color:var(--muted);margin-top:4px;line-height:1.5;max-width:540px;}
+  .step .desc a{color:var(--sage-deep);font-weight:600;text-decoration:none;}
+  .step .gatehint{margin-top:8px;font-size:12px;color:var(--faint);display:flex;gap:6px;align-items:center;}
+  .step .gatehint .g-ic{width:16px;height:16px;border-radius:50%;background:var(--amber-bg);
+    color:var(--terracotta);font-size:9px;display:flex;align-items:center;justify-content:center;}
+  .step .prog{display:flex;align-items:center;gap:10px;margin-top:10px;max-width:420px;}
+  .step .prog .meter{flex:1;height:5px;border-radius:99px;background:var(--line-soft);overflow:hidden;}
+  .step .prog .meter i{display:block;height:100%;background:var(--sage);border-radius:99px;}
+  .step .prog .pct{font-size:11.5px;color:var(--muted);white-space:nowrap;}
+  .step .mini-cta{margin-top:12px;display:flex;gap:8px;}
+
+  .foot-note{margin-top:26px;font-size:12px;color:var(--faint);text-align:center;font-style:italic;}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <span class="tag">AL-UX-003 · The Manuscript Room — developed</span>
+  <div style="display:flex;gap:6px;">
+    <button id="btnLib" class="on" onclick="show('Lib')">1 · The Library (Lobby)</button>
+    <button id="btnDash" onclick="show('Dash')">2 · Project dashboard</button>
+  </div>
+  <div class="why" id="why">Your three books as objects on a shelf — each carries its journey state and its next step. Rail: Home + Projects only, per the standing decision.</div>
+</div>
+
+<div class="frame">
+
+  <!-- ============ LEFT RAIL — Home + Projects (standing decision) ============ -->
+  <div class="rail">
+    <div class="mark">A</div>
+    <div class="r-item" title="Home — your companion">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-4 4v-4z"/></svg>
+      <span class="r-lbl">Home</span>
+    </div>
+    <div class="r-item on" title="Your projects">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 6.25A8.97 8.97 0 006 4c-1.05 0-2.06.18-3 .51v14.25A8.99 8.99 0 016 18.25c2.3 0 4.4.87 6 2.29m0-14.29a8.97 8.97 0 016-2.25c1.05 0 2.06.18 3 .51v14.25a8.99 8.99 0 00-3-.51c-2.3 0-4.4.87-6 2.29m0-14.29v14.29"/></svg>
+      <span class="r-lbl">Projects</span>
+    </div>
+    <div class="spacer"></div>
+  </div>
+
+  <div class="stagecol">
+
+    <!-- ============ HEADER ============ -->
+    <header class="brandbar">
+      <div class="left">
+        <div class="wordmark">AuthorsLab<span>Author</span></div>
+        <span id="hdr-ctx" style="display:none;align-items:center;gap:16px;">
+          <span class="brand-div"></span>
+          <a class="backlink" onclick="show('Lib')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 19l-7-7 7-7"/></svg>
+            Projects
+          </a>
+        </span>
+      </div>
+      <div class="centre-title" id="hdr-title"></div>
+      <div class="right">
+        <div class="bell">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+          <span class="dot"></span>
+        </div>
+        <div class="avatar">
+          <div class="circle">P</div>
+          <span class="name">Paul</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M19 9l-7 7-7-7"/></svg>
+        </div>
+      </div>
+    </header>
+
+    <!-- ============ TAB STRIP (project view only) ============ -->
+    <nav class="tabstrip" id="tabstrip" style="display:none;">
+      <div class="tab current">Overview</div>
+      <div class="tab dim" title="Not needed — manuscript was uploaded">Ghostwriter</div>
+      <div class="tab active-stage"><span class="pulse"></span>Author Studio</div>
+      <div class="tab">Design</div>
+      <div class="tab">Publishing</div>
+      <div class="tab">Marketing</div>
+      <div class="tab-div"></div>
+      <div class="tab">Research</div>
+      <div class="tab dim">Script <span class="soon">Soon</span></div>
+    </nav>
+
+    <main>
+
+    <!-- =================================================================== -->
+    <!-- VIEW 1 — THE LIBRARY                                                -->
+    <!-- =================================================================== -->
+    <section class="view show" id="viewLib">
+      <div class="wrap">
+        <div class="lib-head">
+          <div>
+            <h1>Good morning, Paul.</h1>
+            <div class="sub">Three books in the making.</div>
+          </div>
+          <div class="count">2 in the studio · 1 with Eden</div>
+        </div>
+
+        <!-- Book 1 — Diary of a Madman -->
+        <article class="card bookcard" onclick="show('Dash')">
+          <div class="minibook cover-charcoal">
+            <div class="t">Diary of a<br>Madman</div>
+            <div class="rule"></div>
+            <div class="a">Paul Lyons</div>
+          </div>
+          <div class="bookbody">
+            <div class="row1">
+              <h2>Diary of a Madman</h2>
+              <span class="upd">Updated today</span>
+            </div>
+            <div class="meta">Memoir · 23,018 words · 12 chapters</div>
+            <div class="mini-spine">
+              <span class="ms-seg skip" title="Not needed"><span class="ms-dot"></span>Ghostwriter</span>
+              <span class="ms-line done"></span>
+              <span class="ms-seg done"><span class="ms-dot"></span>First read</span>
+              <span class="ms-line done"></span>
+              <span class="ms-seg live"><span class="ms-dot"></span>Line edit · Ch. 4 of 12</span>
+              <span class="ms-line"></span>
+              <span class="ms-seg"><span class="ms-dot"></span>Polish</span>
+              <span class="ms-line"></span>
+              <span class="ms-seg"><span class="ms-dot"></span>Design → Launch</span>
+            </div>
+            <div class="booknext">
+              <div class="p-avatar p-sam">S</div>
+              <div class="n-txt"><span class="lead">Next:</span>walk Chapter 4 with Sam — 14 suggestions waiting</div>
+              <span class="go">Open →</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Book 2 — The Tenets of Transcending -->
+        <article class="card bookcard">
+          <div class="minibook cover-sage">
+            <div class="t">The Tenets of Transcending</div>
+            <div class="rule"></div>
+            <div class="a">Paul Lyons</div>
+          </div>
+          <div class="bookbody">
+            <div class="row1">
+              <h2>The Tenets of Transcending</h2>
+              <span class="upd">Updated yesterday</span>
+            </div>
+            <div class="meta">Spiritual philosophy · 9,414 words · 10 tenets</div>
+            <div class="mini-spine">
+              <span class="ms-seg skip" title="Not needed"><span class="ms-dot"></span>Ghostwriter</span>
+              <span class="ms-line done"></span>
+              <span class="ms-seg live"><span class="ms-dot"></span>First read · Alex</span>
+              <span class="ms-line"></span>
+              <span class="ms-seg"><span class="ms-dot"></span>Line edit</span>
+              <span class="ms-line"></span>
+              <span class="ms-seg"><span class="ms-dot"></span>Polish</span>
+              <span class="ms-line"></span>
+              <span class="ms-seg"><span class="ms-dot"></span>Design → Launch</span>
+            </div>
+            <div class="booknext">
+              <div class="p-avatar p-alex">A</div>
+              <div class="n-txt"><span class="lead">Now:</span>Alex is reading your manuscript — assessment due tomorrow</div>
+              <span class="go">Open →</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Book 3 — Caveman Manuscript -->
+        <article class="card bookcard">
+          <div class="minibook cover-terra">
+            <div class="t">Caveman<br>Manuscript</div>
+            <div class="rule"></div>
+            <div class="a">Paul Lyons</div>
+          </div>
+          <div class="bookbody">
+            <div class="row1">
+              <h2>Caveman Manuscript</h2>
+              <span class="upd">Updated last week</span>
+            </div>
+            <div class="meta">Personal development · Early draft · 1,600 words seeded</div>
+            <div class="mini-spine">
+              <span class="ms-seg live"><span class="ms-dot"></span>Ghostwriter · with Eden</span>
+              <span class="ms-line"></span>
+              <span class="ms-seg"><span class="ms-dot"></span>First read</span>
+              <span class="ms-line"></span>
+              <span class="ms-seg"><span class="ms-dot"></span>Line edit</span>
+              <span class="ms-line"></span>
+              <span class="ms-seg"><span class="ms-dot"></span>Polish</span>
+              <span class="ms-line"></span>
+              <span class="ms-seg"><span class="ms-dot"></span>Design → Launch</span>
+            </div>
+            <div class="booknext">
+              <div class="p-avatar p-eden">E</div>
+              <div class="n-txt"><span class="lead">Next:</span>Eden is waiting to introduce your ghostwriter</div>
+              <span class="go">Open →</span>
+            </div>
+          </div>
+        </article>
+
+        <button class="newbook">
+          <span class="plus">+</span>
+          Begin a new book — upload a manuscript, or start from a blank page with a ghostwriter
+        </button>
+
+        <p class="foot-note">The Library — every book an object, every object carrying its own journey.</p>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- VIEW 2 — PROJECT DASHBOARD (developed Direction B)                  -->
+    <!-- =================================================================== -->
+    <section class="view" id="viewDash">
+      <div class="wrap">
+        <div class="room">
+
+          <div class="bookwrap">
+            <div class="book">
+              <div class="b-kicker">A Memoir</div>
+              <div class="b-title">Diary of a<br>Madman</div>
+              <div class="b-rule"></div>
+              <div class="b-author">Paul Lyons</div>
+            </div>
+            <div class="bookmeta">
+              <strong>23,018 words</strong> · 12 chapters<br>
+              Uploaded June 2026 · v2.3
+            </div>
+            <div class="shelf">
+              <h3>On your shelf</h3>
+              <div class="doc-row"><span class="spine-ic" style="background:var(--sage-deep);"></span><span class="nm">Developmental Assessment — Alex</span><span class="sz">PDF</span></div>
+              <div class="doc-row"><span class="spine-ic" style="background:var(--terracotta);"></span><span class="nm">Chapter 1–3 line notes — Sam</span><span class="sz">PDF</span></div>
+              <div class="doc-row"><span class="spine-ic" style="background:var(--charcoal);"></span><span class="nm">Manuscript v2.3 (current)</span><span class="sz">DOCX</span></div>
+            </div>
+          </div>
+
+          <div>
+            <!-- The greeting — Direction A's hero, folded in -->
+            <div class="card greet">
+              <div class="p-avatar p-sam">S</div>
+              <div style="flex:1;">
+                <div class="g-kicker">Author Studio · Line edit · with Sam</div>
+                <h1>Sam has been through Chapter 4.</h1>
+                <p class="msg">“The Suicide Safety Net chapter is the strongest thing in the manuscript —
+                  I’ve marked three places where slowing down would let it land even harder.
+                  <em>When you’re ready, we’ll walk them together.</em>”</p>
+                <div class="cta-row">
+                  <button class="btn primary">Continue with Sam →</button>
+                  <button class="btn ghost">Read Sam’s notes first</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card stepper">
+              <div class="step skip">
+                <div class="bullet">–</div>
+                <div class="body">
+                  <div class="name">Ghostwriter <span class="st" style="background:transparent;color:var(--faint);border:1px dashed var(--line);">Not needed</span></div>
+                  <div class="desc">You arrived with a finished draft, so this stage stays closed.</div>
+                </div>
+              </div>
+              <div class="step done">
+                <div class="bullet">✓</div>
+                <div class="body">
+                  <div class="name">First read — Alex <span class="st">Complete</span></div>
+                  <div class="desc">Alex read the full manuscript and filed a developmental assessment:
+                    structure, voice, and the five chapters that carry the book. <a href="#">Read the assessment →</a></div>
+                </div>
+              </div>
+              <div class="step live">
+                <div class="bullet">●</div>
+                <div class="body">
+                  <div class="name">Line edit — Sam <span class="st">In session</span></div>
+                  <div class="desc">Working through the manuscript chapter by chapter, together.
+                    96 editorial points resolved so far.</div>
+                  <div class="prog">
+                    <div class="meter"><i style="width:33%;"></i></div>
+                    <span class="pct">Chapter 4 of 12</span>
+                  </div>
+                  <div class="mini-cta"><button class="btn ghost">Continue Chapter 4 →</button></div>
+                </div>
+              </div>
+              <div class="step pend">
+                <div class="bullet">3</div>
+                <div class="body">
+                  <div class="name">Final polish — Jordan <span class="st">Waiting</span></div>
+                  <div class="desc">Jordan takes the line-edited draft through a final consistency and rhythm pass.</div>
+                  <div class="gatehint"><span class="g-ic">!</span>Unlocks after your sign-off on the edited draft</div>
+                </div>
+              </div>
+              <div class="step pend">
+                <div class="bullet">4</div>
+                <div class="body">
+                  <div class="name">Design, Publishing &amp; Marketing <span class="st">Ahead</span></div>
+                  <div class="desc">Cover concepts with Taylor, then platforms, then the launch plan with Riley.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="foot-note">The Manuscript Room — the book is the hero; the editor greets you; the journey stands beside them.</p>
+      </div>
+    </section>
+
+    </main>
+  </div>
+</div>
+
+<script>
+  const WHY = {
+    Lib: 'Your three books as objects on a shelf — each carries its journey state and its next step. Rail: Home + Projects only, per the standing decision.',
+    Dash: 'Direction B developed: the book object + shelf, with Direction A’s editor greeting folded in above the journey stepper. Chapter progress and the Jordan gate-hint borrowed from C.'
+  };
+  function show(k){
+    for (const v of ['Lib','Dash']){
+      document.getElementById('view'+v).classList.toggle('show', v===k);
+      document.getElementById('btn'+v).classList.toggle('on', v===k);
+    }
+    document.getElementById('why').textContent = WHY[k];
+    document.getElementById('hdr-ctx').style.display = k==='Dash' ? 'flex' : 'none';
+    document.getElementById('hdr-title').textContent = k==='Dash' ? 'Diary of a Madman' : '';
+    document.getElementById('tabstrip').style.display = k==='Dash' ? 'flex' : 'none';
+  }
+</script>
+</body>
+</html>
