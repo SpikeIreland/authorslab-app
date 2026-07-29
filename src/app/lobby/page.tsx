@@ -2,136 +2,27 @@
 
 export const dynamic = 'force-dynamic'
 
+/**
+ * The Library — AuthorsLab's project landing surface (formerly /lobby list).
+ *
+ * Per AL-UX-004 §3: serif greeting, book cards with typeset covers + mini
+ * journey spines + persona-avatared Next line, dashed Begin-a-new-book card,
+ * launched-books section styled in the state grammar.
+ *
+ * All derivation logic is preserved from the prior implementation and lives
+ * in _components/derivations.ts.
+ */
+
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { NewProjectModal } from './_components/NewProjectModal'
 import { AppShell } from '@/components/chrome/AppShell'
+import { BookCard } from './_components/BookCard'
+import { BeginNewBookCard } from './_components/BeginNewBookCard'
+import { greetingFor, type LobbyProject } from './_components/derivations'
 
-// ============================================================================
-// Types — must mirror /api/lobby/projects/route.ts
-// ============================================================================
-
-interface LobbyProject {
-  id: string
-  title: string
-  genre: string | null
-  word_count: number | null
-  current_phase_number: number | null
-  status: string | null
-  updated_at: string
-  cover_url: string | null
-}
-
-type StageKey = 'ghostwriter' | 'author_studio' | 'design' | 'publishing' | 'marketing'
-type StageState = 'skipped' | 'pending' | 'active' | 'complete'
-
-// ============================================================================
-// Stage state derivation
-// ============================================================================
-
-// Map a manuscript's current_phase_number + status to states for each of the
-// five Lobby pills. Existing manuscripts skipped Ghostwriter (they came in via
-// the upload onboarding); future projects from the new flow may show
-// Ghostwriter active.
-function deriveStageStates(p: LobbyProject): Record<StageKey, StageState> {
-  const phase = p.current_phase_number ?? 1
-  const status = p.status ?? ''
-
-  if (status === 'complete') {
-    return {
-      ghostwriter: 'skipped',
-      author_studio: 'complete',
-      design: 'complete',
-      publishing: 'complete',
-      marketing: 'complete',
-    }
-  }
-
-  // Write-path projects from the new-project fork — Ghostwriter is the
-  // active stage; everything downstream is pending (not skipped).
-  if (status === 'ghostwriting') {
-    return {
-      ghostwriter: 'active',
-      author_studio: 'pending',
-      design: 'pending',
-      publishing: 'pending',
-      marketing: 'pending',
-    }
-  }
-
-  return {
-    ghostwriter: 'skipped',
-    author_studio: phase >= 1 && phase <= 3 ? 'active' : phase > 3 ? 'complete' : 'pending',
-    design: phase === 4 ? 'active' : phase > 4 ? 'complete' : 'pending',
-    publishing: phase === 4 ? 'active' : phase > 4 ? 'complete' : 'pending',
-    marketing: phase === 5 ? 'active' : 'pending',
-  }
-}
-
-// Friendly editor name for the active Author Studio editor.
-function editorForPhase(phase: number | null): string | null {
-  if (phase === 1) return 'Alex'
-  if (phase === 2) return 'Sam'
-  if (phase === 3) return 'Jordan'
-  return null
-}
-
-// Warm "Next:" sentence based on phase.
-function nextActionFor(p: LobbyProject): string {
-  if (p.status === 'complete') return 'Live and available — review sales or run a campaign'
-  if (p.status === 'ghostwriting') return 'Eden is waiting to introduce your ghostwriter'
-  const phase = p.current_phase_number ?? 1
-  if (phase === 1) return 'Alex is reading your manuscript'
-  if (phase === 2) return 'Sam is reviewing your manuscript with you'
-  if (phase === 3) return 'Jordan is polishing the final pass'
-  if (phase === 4) return 'Set up cover, metadata and platforms'
-  if (phase === 5) return 'Plan your launch with Riley'
-  return 'Open the project to keep going'
-}
-
-// Where "Open →" should route. Lands the writer in the new project shell;
-// the shell's index page picks the right default tab based on phase.
-function openHrefFor(p: LobbyProject): string {
-  return `/projects/${p.id}`
-}
-
-// "Updated 2 days ago", "Updated today", etc.
-function relativeTime(iso: string): string {
-  const then = new Date(iso).getTime()
-  const now = Date.now()
-  const diffMs = now - then
-  const day = 24 * 60 * 60 * 1000
-  const hour = 60 * 60 * 1000
-  const minute = 60 * 1000
-
-  if (diffMs < hour) {
-    const m = Math.max(1, Math.floor(diffMs / minute))
-    return `Updated ${m} minute${m === 1 ? '' : 's'} ago`
-  }
-  if (diffMs < day) {
-    const h = Math.floor(diffMs / hour)
-    return `Updated ${h} hour${h === 1 ? '' : 's'} ago`
-  }
-  if (diffMs < 2 * day) return 'Updated yesterday'
-  if (diffMs < 7 * day) {
-    const d = Math.floor(diffMs / day)
-    return `Updated ${d} days ago`
-  }
-  if (diffMs < 30 * day) {
-    const w = Math.floor(diffMs / (7 * day))
-    return `Updated ${w} week${w === 1 ? '' : 's'} ago`
-  }
-  const mo = Math.floor(diffMs / (30 * day))
-  return `Updated ${mo} month${mo === 1 ? '' : 's'} ago`
-}
-
-// ============================================================================
-// Page
-// ============================================================================
-
-export default function LobbyPage() {
+export default function LibraryPage() {
   const router = useRouter()
   const supabase = useMemo(() => createClient(), [])
 
@@ -191,81 +82,88 @@ export default function LobbyPage() {
     return { inProgress, launched }
   }, [projects])
 
+  // One-line summary under the greeting — brief §3.1.
+  const summary = useMemo(() => {
+    if (loading) return 'Loading your library…'
+    if (projects.length === 0) return 'No books on the shelf yet — start one below.'
+    const parts: string[] = []
+    if (inProgress.length > 0) {
+      const n = inProgress.length
+      parts.push(`${n === 1 ? 'One book' : `${wordFor(n)} books`} in the making`)
+    }
+    if (launched.length > 0) {
+      const n = launched.length
+      parts.push(`${n === 1 ? 'one' : wordFor(n)} launched`)
+    }
+    return parts.join(' · ')
+  }, [loading, projects.length, inProgress.length, launched.length])
+
   if (!authChecked) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="text-sm text-slate-500">Loading…</div>
-      </div>
+      <AppShell>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-sm" style={{ color: 'var(--color-muted)' }}>Loading…</div>
+        </div>
+      </AppShell>
     )
   }
 
   return (
     <AppShell firstName={authorFirstName || undefined}>
       <main className="flex-1 overflow-y-auto h-[calc(100vh-56px)]">
-        <div className="max-w-3xl mx-auto px-6 py-8">
+        <div className="max-w-3xl mx-auto px-6 py-10">
 
-          <div className="flex items-baseline justify-between mb-5">
-            <h1 className="text-xl font-medium text-slate-900">Your projects</h1>
-            <p className="text-sm text-slate-500">
-              {projects.length === 0
-                ? 'Nothing yet'
-                : `${inProgress.length} in progress${launched.length > 0 ? ` · ${launched.length} launched` : ''}`}
+          {/* Greeting + summary */}
+          <div className="mb-8">
+            <h1
+              className="text-[32px] leading-tight mb-1.5"
+              style={{ fontFamily: 'var(--font-serif)', color: 'var(--color-ink)' }}
+            >
+              {greetingFor(authorFirstName)}
+            </h1>
+            <p className="text-[14px]" style={{ color: 'var(--color-muted)' }}>
+              {summary}
             </p>
           </div>
 
-          {/* Start a new project — opens the Write/Edit fork modal */}
-          <button
-            type="button"
-            onClick={() => setNewProjectModalOpen(true)}
-            className="block w-full text-center px-4 py-3 mb-4 border border-dashed border-slate-300 rounded-md text-sm text-slate-600 hover:bg-white hover:border-slate-400 transition-colors"
-          >
-            + Start a new project
-          </button>
-
           {loading && (
-            <p className="text-sm text-slate-500 py-8 text-center">Loading projects…</p>
+            <p className="text-sm py-8 text-center" style={{ color: 'var(--color-muted)' }}>
+              Loading projects…
+            </p>
           )}
 
           {error && (
-            <div className="px-4 py-3 mb-4 bg-rose-50 border border-rose-200 rounded-md text-sm text-rose-800">
+            <div
+              className="px-4 py-3 mb-4 rounded-md text-sm"
+              style={{ background: '#FEF2F2', border: '1px solid #FECACA', color: '#991B1B' }}
+            >
               {error}
             </div>
           )}
 
-          {!loading && !error && projects.length === 0 && (
-            <div className="bg-white border border-slate-200 rounded-lg p-8 text-center">
-              <p className="text-base text-slate-900 font-medium mb-2">
-                No projects yet
-              </p>
-              <p className="text-sm text-slate-600 mb-6">
-                Start your first project — upload a manuscript or draft from scratch with a Ghostwriter.
-              </p>
-              <button
-                type="button"
-                onClick={() => setNewProjectModalOpen(true)}
-                className="inline-block px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-sm font-medium"
-              >
-                Start a new project
-              </button>
-            </div>
-          )}
-
+          {/* Book cards */}
           {!loading && !error && inProgress.length > 0 && (
-            <div className="space-y-3">
+            <div className="space-y-4 mb-6">
               {inProgress.map(p => (
-                <ProjectCard key={p.id} project={p} />
+                <BookCard key={p.id} project={p} />
               ))}
             </div>
           )}
 
+          {/* Begin a new book — always shown, brief §3.3 */}
+          {!loading && !error && (
+            <div className={inProgress.length > 0 ? 'mt-6' : ''}>
+              <BeginNewBookCard onClick={() => setNewProjectModalOpen(true)} />
+            </div>
+          )}
+
+          {/* Launched section — brief §3.4 */}
           {!loading && !error && launched.length > 0 && (
             <>
-              <p className="mt-8 mb-3 text-[11px] uppercase tracking-wider font-medium text-slate-400">
-                Launched
-              </p>
-              <div className="space-y-3">
+              <p className="kicker mt-10 mb-3">Launched</p>
+              <div className="space-y-4">
                 {launched.map(p => (
-                  <ProjectCard key={p.id} project={p} launched />
+                  <BookCard key={p.id} project={p} launched />
                 ))}
               </div>
             </>
@@ -282,103 +180,9 @@ export default function LobbyPage() {
   )
 }
 
-// ============================================================================
-// Project card
-// ============================================================================
-
-function ProjectCard({ project, launched }: { project: LobbyProject; launched?: boolean }) {
-  const states = deriveStageStates(project)
-  const editor = editorForPhase(project.current_phase_number)
-  const next = nextActionFor(project)
-  const href = openHrefFor(project)
-  const updated = relativeTime(project.updated_at)
-
-  const wordCount = project.word_count
-    ? `${project.word_count.toLocaleString()} words`
-    : null
-
-  const meta = [project.genre, wordCount].filter(Boolean).join(' · ')
-
-  return (
-    <article className="bg-white border border-slate-200 rounded-lg p-4 flex gap-4">
-      {project.cover_url && (
-        <div className="w-12 flex-shrink-0">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={project.cover_url}
-            alt={`${project.title} cover`}
-            className="w-12 h-[72px] object-cover rounded-sm border border-slate-200"
-          />
-        </div>
-      )}
-
-      <div className="flex-1 min-w-0">
-        <div className="flex items-baseline justify-between gap-3 mb-1">
-          <h2 className="text-base font-medium text-slate-900 truncate">
-            {project.title}
-          </h2>
-          <span className={`text-xs whitespace-nowrap ${launched ? 'text-emerald-700 font-medium' : 'text-slate-500'}`}>
-            {launched ? 'Launched' : updated}
-          </span>
-        </div>
-
-        {meta && (
-          <p className="text-xs text-slate-500 mb-3">{meta}</p>
-        )}
-
-        <div className="flex flex-wrap gap-1.5 mb-3">
-          <StagePill label="Ghostwriter" state={states.ghostwriter} />
-          <StagePill
-            label={editor && states.author_studio === 'active' ? `Author Studio · ${editor}` : 'Author Studio'}
-            state={states.author_studio}
-          />
-          <StagePill label="Design" state={states.design} />
-          <StagePill label="Publishing" state={states.publishing} />
-          <StagePill label="Marketing" state={states.marketing} />
-        </div>
-
-        <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-100">
-          <p className="text-sm text-slate-700 flex-1 min-w-0 truncate">
-            <span className="text-slate-500 mr-1.5">{launched ? 'Live on:' : 'Next:'}</span>
-            {next}
-          </p>
-          <Link
-            href={href}
-            className="px-3 py-1.5 border border-slate-300 rounded-md text-xs font-medium text-slate-700 hover:bg-slate-50 whitespace-nowrap"
-          >
-            Open →
-          </Link>
-        </div>
-      </div>
-    </article>
-  )
-}
-
-function StagePill({ label, state }: { label: string; state: StageState }) {
-  if (state === 'complete') {
-    return (
-      <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 inline-flex items-center gap-1">
-        <span className="text-[10px]">✓</span>{label}
-      </span>
-    )
-  }
-  if (state === 'active') {
-    return (
-      <span className="text-[11px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium inline-flex items-center gap-1">
-        <span className="w-1.5 h-1.5 rounded-full bg-blue-700" />{label}
-      </span>
-    )
-  }
-  if (state === 'skipped') {
-    return (
-      <span className="text-[11px] px-2 py-0.5 rounded-full border border-dashed border-slate-300 text-slate-400 italic">
-        {label}
-      </span>
-    )
-  }
-  return (
-    <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
-      {label}
-    </span>
-  )
+// Numbers under 10 read better as words in a serif greeting sentence.
+function wordFor(n: number): string {
+  const words = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine']
+  if (n < words.length) return words[n]
+  return String(n)
 }
