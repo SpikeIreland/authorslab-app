@@ -93,7 +93,7 @@ export async function GET(
   const [phasesRes, chaptersRes, versionsRes, coverRes] = await Promise.all([
     supabase
       .from('editing_phases')
-      .select('phase_number, phase_name, phase_status, editor_name, chapters_analyzed, chapters_approved, report_pdf_url, report_generated_at, completed_at')
+      .select('phase_number, phase_name, phase_status, editor_name, chapters_analyzed, chapters_approved, report_pdf_url, completed_at')
       .eq('manuscript_id', id)
       .order('phase_number', { ascending: true }),
     supabase
