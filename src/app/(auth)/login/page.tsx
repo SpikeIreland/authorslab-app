@@ -56,13 +56,11 @@ function LoginContent() {
 
       // Step 5: Redirect appropriately
       if (manuscripts && manuscripts.length > 0) {
-        // User has manuscripts - go to studio
-        const latestManuscript = manuscripts[0]
-        console.log('✅ Redirecting to studio with manuscript:', latestManuscript.id)
-
-        router.push(
-          `/author-studio?userId=${authData.user.id}&authorProfileId=${profile.id}&manuscriptId=${latestManuscript.id}`
-        )
+        // User has manuscripts — land in The Library. From there they pick a
+        // book and step into its Overview / studio via the new chrome.
+        // (AL-UX-004 §2 landing surface. Was: /author-studio with query params.)
+        console.log('✅ Redirecting to /lobby')
+        router.push('/lobby')
       } else {
         // No manuscripts - send to onboarding to create one
         console.log('✅ No manuscripts found, redirecting to onboarding')
