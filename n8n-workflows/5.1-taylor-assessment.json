@@ -1,0 +1,987 @@
+{
+  "workflow": {
+    "id": "NSriLVliqMB3NVPE",
+    "name": "5.1 Taylor Assessment",
+    "active": true,
+    "isArchived": false,
+    "versionId": "bf771ba8-8bc2-4b86-af6c-25823b08673d",
+    "activeVersionId": "bf771ba8-8bc2-4b86-af6c-25823b08673d",
+    "triggerCount": 1,
+    "createdAt": "2025-11-05T22:56:00.643Z",
+    "updatedAt": "2026-07-22T08:43:36.541Z",
+    "settings": {
+      "executionOrder": "v1",
+      "availableInMCP": true
+    },
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Parse Assessment Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Assessment Data": {
+        "main": [
+          [
+            {
+              "node": "Get Manuscript Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Manuscript Data": {
+        "main": [
+          [
+            {
+              "node": "Save Assessment Answers",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save Assessment Answers": {
+        "main": [
+          [
+            {
+              "node": "Prepare Plan Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Plan Data": {
+        "main": [
+          [
+            {
+              "node": "Generate Publishing Plan",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Publishing Plan": {
+        "main": [
+          [
+            {
+              "node": "Prepare Save Query",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Save Query": {
+        "main": [
+          [
+            {
+              "node": "Save Publishing Plan",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Anthropic Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Generate Publishing Plan",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save Publishing Plan": {
+        "main": [
+          [
+            {
+              "node": "Format PDF Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Format PDF Data": {
+        "main": [
+          [
+            {
+              "node": "PDF Generation",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "PDF Generation": {
+        "main": [
+          [
+            {
+              "node": "Upload PDF to Supabase",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upload PDF to Supabase": {
+        "main": [
+          [
+            {
+              "node": "Save PDF URL",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save PDF URL": {
+        "main": [
+          [
+            {
+              "node": "Send Email",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send Email": {
+        "main": [
+          [
+            {
+              "node": "Format Taylor Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Format Taylor Response": {
+        "main": [
+          [
+            {
+              "node": "Save Taylor Welcome to Chat",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save Taylor Welcome to Chat": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "taylor-assessment",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -432,
+          -240
+        ],
+        "id": "9b2f771d-546b-4f45-958f-7049135b67ca",
+        "name": "Webhook",
+        "webhookId": "0202163c-bb59-4621-8da6-f801e2b37d3f"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Extract data from webhook\nconst body = $input.first().json.body;\n\nreturn {\n  manuscriptId: body.manuscriptId,\n  manuscriptTitle: body.manuscriptTitle,\n  authorName: body.authorName,\n  \n  // Assessment answers\n  publishing_goal: body.assessmentAnswers.publishing_goal,\n  experience: body.assessmentAnswers.experience,\n  platforms: JSON.stringify(body.assessmentAnswers.platforms || []),\n  timeline: body.assessmentAnswers.timeline,\n  formats: JSON.stringify(body.assessmentAnswers.formats || [])\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -208,
+          -240
+        ],
+        "id": "dcea5f98-79ab-4276-aad7-9c16a7a1682c",
+        "name": "Parse Assessment Data"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "-- Get manuscript and author details\nSELECT \n  m.id as manuscript_id,\n  m.title as manuscript_title,\n  m.genre,\n  m.current_word_count,\n  ap.first_name as author_first_name,\n  ap.email as author_email\nFROM manuscripts m\nJOIN author_profiles ap ON m.author_id = ap.id\nWHERE m.id = '{{ $json.manuscriptId }}'\nLIMIT 1;",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          16,
+          -240
+        ],
+        "id": "8859d6f5-81d4-4e88-aa5f-a95bf47aae22",
+        "name": "Get Manuscript Data"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "--- Create or update publishing_progress with assessment answers\nINSERT INTO publishing_progress (\n  manuscript_id,\n  publishing_goal,\n  experience,\n  platforms,\n  timeline,\n  formats,\n  assessment_completed,\n  assessment_completed_at,\n  created_at,\n  updated_at\n) VALUES (\n  '{{ $('Parse Assessment Data').first().json.manuscriptId }}',\n  '{{ $('Parse Assessment Data').first().json.publishing_goal }}',\n  '{{ $('Parse Assessment Data').first().json.experience }}',\n  '{{ $('Parse Assessment Data').first().json.platforms }}'::jsonb,\n  '{{ $('Parse Assessment Data').first().json.timeline }}',\n  '{{ $('Parse Assessment Data').first().json.formats }}'::jsonb,\n  true,\n  NOW(),\n  NOW(),\n  NOW()\n)\nON CONFLICT (manuscript_id) \nDO UPDATE SET\n  publishing_goal = EXCLUDED.publishing_goal,\n  experience = EXCLUDED.experience,\n  platforms = EXCLUDED.platforms,\n  timeline = EXCLUDED.timeline,\n  formats = EXCLUDED.formats,\n  assessment_completed = true,\n  assessment_completed_at = NOW(),\n  updated_at = NOW()\nRETURNING *;",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          240,
+          -240
+        ],
+        "id": "2d6d7f6b-57fd-4172-92a6-68e516475b7f",
+        "name": "Save Assessment Answers",
+        "alwaysOutputData": true
+      },
+      {
+        "parameters": {
+          "jsCode": "// Combine all data for plan generation\nconst parsedData = $('Parse Assessment Data').first().json;\nconst manuscriptData = $('Get Manuscript Data').first().json;\nconst savedData = $('Save Assessment Answers').first().json;\n\n// Parse platforms array from JSONB\nlet platformsList = 'Not specified';\nif (savedData.platforms) {\n  try {\n    const platforms = typeof savedData.platforms === 'string' \n      ? JSON.parse(savedData.platforms) \n      : savedData.platforms;\n    if (platforms && platforms.length > 0) {\n      platformsList = platforms.join(', ');\n    }\n  } catch(e) {\n    console.error('Error parsing platforms:', e);\n    platformsList = 'Not specified';\n  }\n}\n\n// Parse formats array from JSONB\nlet formatsList = 'Not specified';\nif (savedData.formats) {\n  try {\n    const formats = typeof savedData.formats === 'string'\n      ? JSON.parse(savedData.formats)\n      : savedData.formats;\n    if (formats && formats.length > 0) {\n      formatsList = formats.join(', ');\n    }\n  } catch(e) {\n    console.error('Error parsing formats:', e);\n    formatsList = 'Not specified';\n  }\n}\n\nreturn {\n  manuscriptId: parsedData.manuscriptId,\n  manuscriptTitle: manuscriptData.manuscript_title,\n  genre: manuscriptData.genre,\n  wordCount: manuscriptData.current_word_count,\n  authorName: manuscriptData.author_first_name,\n  authorEmail: manuscriptData.author_email,\n  \n  publishing_goal: savedData.publishing_goal || 'Not specified',\n  experience: savedData.experience || 'Not specified',\n  platforms: platformsList,\n  timeline: savedData.timeline || 'Not specified',\n  formats: formatsList\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          464,
+          -240
+        ],
+        "id": "339e44f9-baa4-41c5-ade2-bab8efe7189d",
+        "name": "Prepare Plan Data"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "mode": "list",
+            "value": "claude-sonnet-4-20250514"
+          },
+          "options": {
+            "maxTokensToSample": 4000,
+            "temperature": 0.7
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+        "typeVersion": 1.3,
+        "position": [
+          768,
+          -16
+        ],
+        "id": "b2e452c9-efdf-4ee6-a3a3-5842c75546cb",
+        "name": "Anthropic Chat Model"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=Generate a comprehensive, personalized publishing plan for this author:\n\n**MANUSCRIPT DETAILS:**\n- Title: {{ $json.manuscriptTitle }}\n- Genre: {{ $json.genre }}\n- Word Count: {{ $json.wordCount }} words\n- Author: {{ $json.authorName }}\n\n**AUTHOR'S GOALS & PREFERENCES:**\n- Publishing Goal: {{ $json.publishing_goal }}\n- Experience Level: {{ $json.experience }}\n- Platforms of Interest: {{ $json.platforms }}\n- Desired Timeline: {{ $json.timeline }}\n- Formats to Publish: {{ $json.formats }}\n\nCreate a detailed publishing plan in markdown format with these sections:\n\n## Welcome & Congratulations\n\nStart with a warm, personalized greeting addressing {{ $json.authorName }} by name. Acknowledge their specific achievement (completing a {{ $json.wordCount }}-word {{ $json.genre }} manuscript). Make them feel proud and excited.\n\n## 1. Cover Design Strategy (Week 1-2)\n\n**CRITICAL**: This is their FIRST actionable step. Provide:\n\n- **Genre-Appropriate Approach**: Explain what makes a great {{ $json.genre }} cover\n  - Key visual elements that signal the genre to readers\n  - Color palettes that work for {{ $json.genre }}\n  - Typography styles (clean/elegant vs. bold/dramatic)\n  \n- **AI Cover Design Plan**:\n  - Specific themes and visual elements you'll generate for them\n  - They'll get 4 cover concepts to choose from via chat\n  - How to request variations if needed\n  - Expected timeline: 24-48 hours for initial concepts\n  \n- **What Happens Next**:\n  - Chat with Taylor and say \"create my cover\" or \"design my cover\"\n  - Review concepts in the Cover Designer panel\n  - Select favorite or request variations\n  - Cover will be formatted for both ebook and print\n\n## 2. Recommended Publishing Platforms\n\nBased on their interest in: {{ $json.platforms }}\nAnd their goal: {{ $json.publishing_goal }}\n\nRecommend 2-4 specific platforms with:\n- **Why each platform fits their goals**\n- **Royalty structures** (e.g., \"Amazon KDP: 35-70%\", \"Draft2Digital: 60%\")\n- **Distribution reach** (which stores/retailers)\n- **Ease of use** (beginner-friendly rating)\n- **Setup requirements** (what they'll need ready)\n\nRank them: \"Start with...\" (primary) \u2192 \"Add later...\" (secondary)\n\n## 3. File Formatting Strategy (Week 2-3)\n\nBased on their format preferences: {{ $json.formats }}\n\nExplain what they'll need for each format:\n- **eBook (EPUB/MOBI)**: Requirements and best practices\n- **Print (PDF)**: Recommend trim size for {{ $json.genre }} (typically 6x9 or 5x8)\n- **Audiobook** (if selected): ACX requirements and narrator options\n\nProvide specific guidance:\n- Chapter heading styles for {{ $json.genre }}\n- Professional typography choices\n- File validation and quality checks\n- What AuthorsLab provides vs. what they may need to do\n\n## 4. Metadata Optimization (Week 3-4)\n\n**Critical elements for discoverability:**\n\n- **Book Description/Blurb**: \n  - Hook readers in first 2 sentences\n  - Genre-specific expectations for {{ $json.genre }}\n  - 150-300 words ideal length\n  \n- **Keywords**: \n  - Research 7 high-impact keywords\n  - Mix of broad genre terms + specific niche phrases\n  - Avoid over-competitive single words\n  \n- **Categories**: \n  - Choose 2-3 Amazon categories strategically\n  - Genre-appropriate category suggestions for {{ $json.genre }}\n  \n- **Pricing Strategy**: \n  - Recommended ebook price for {{ $json.wordCount }}-word {{ $json.genre }}\n  - Print pricing to maintain profitability\n  - Launch pricing vs. long-term pricing\n\n## 5. Platform Setup & Launch Timeline\n\nBased on their desired timeline: {{ $json.timeline }}\n\nProvide a realistic week-by-week plan:\n\n**Week 1-2: Cover Design**\n- Request AI cover concepts from Taylor\n- Review and select final cover\n- Approve cover for all formats\n\n**Week 2-3: File Preparation**\n- Format manuscript for selected platforms\n- Create front matter (title page, copyright, etc.)\n- Generate final files (EPUB, PDF, etc.)\n\n**Week 3-4: Metadata Creation**\n- Write compelling book description\n- Research and select keywords\n- Choose categories\n- Finalize pricing strategy\n\n**Week 4-5: Platform Setup**\n- Create accounts on selected platforms\n- Set up author profiles\n- Upload files and metadata\n- Preview on multiple devices\n\n**Week 5-6: Launch**\n- Set publication date\n- Coordinate across platforms\n- Monitor first 24-48 hours\n- Be ready for reader questions\n\n## 6. Budget Expectations\n\nProvide realistic cost estimates:\n\n**Included in AuthorsLab:**\n- AI cover design (4 concepts)\n- Manuscript editing (completed)\n- Publishing guidance and support\n\n**Platform Costs:**\n- Most platforms: $0 upfront (royalty-based)\n- ISBN (if needed): $0-125 depending on platform\n- Optional: Professional cover upgrade ($300-800)\n\n**Total Estimated Investment:**\n- Minimum: $0 (using platform ISBNs, AI cover)\n- Recommended: $100-300 (own ISBN, proof copies)\n- Premium: $500-1000 (professional cover, marketing)\n\n## 7. Your Immediate Next Steps\n\n**This Week:**\n1. \u2705 Assessment complete (you're here!)\n2. \ud83d\udcac Chat with Taylor: \"Create my cover\"\n3. \ud83d\udcdd Start drafting your book description\n4. \ud83d\udd0d Research keywords in your genre\n\n**Next 2 Weeks:**\n1. Review and select your cover design\n2. Finalize front matter (dedication, etc.)\n3. Create author bio\n4. Set up accounts on chosen platforms\n\n**Month 2:**\n1. Upload formatted files\n2. Complete all metadata\n3. Preview on multiple devices\n4. Set your launch date!\n\n## Conclusion\n\nEnd with encouragement and remind them you're here to help every step of the way. Make it personal and inspiring.\n\n---\n\n**IMPORTANT FORMATTING RULES:**\n- Use markdown headers (##, ###)\n- Keep paragraphs concise (2-4 sentences)\n- Use bullet points for lists\n- Include specific numbers and timelines\n- Reference their manuscript title throughout\n- Be encouraging but realistic\n- Make it actionable with specific next steps",
+          "messages": {
+            "messageValues": [
+              {
+                "message": "You are Taylor, a professional publishing specialist with 15+ years of experience helping authors successfully launch their books. You create personalized, actionable publishing plans that are encouraging, realistic, and tailored to each author's goals and resources.\n\nYour approach is:\n- **Supportive & Encouraging**: Celebrate their achievement and boost confidence\n- **Practical & Actionable**: Provide concrete steps, not generic advice\n- **Realistic**: Set honest expectations based on their preferences\n- **Genre-Aware**: Tailor recommendations to their specific genre\n- **Empowering**: Help them feel in control of their publishing journey\n- **Specific**: Use their name, manuscript title, and goals throughout\n\n**CRITICAL FOCUS AREAS:**\n\n1. **Cover Design First**: The very first actionable step must always be cover design. This creates immediate visual engagement and motivation.\n\n2. **Platform-Specific**: Recommend specific platforms based on their stated interests and explain WHY each platform fits their goals.\n\n3. **Format-Appropriate**: Tailor advice based on whether they want ebook, print, audiobook, or multiple formats.\n\n4. **Timeline-Realistic**: Match your week-by-week plan to their stated timeline preference.\n\n5. **Experience-Appropriate**: Adjust complexity based on whether they're first-time or experienced.\n\nYour plan should be:\n- Personal (use their name and manuscript title)\n- Specific (concrete numbers, dates, prices)\n- Actionable (clear next steps)\n- Encouraging (celebrate their achievement)\n- Realistic (honest about challenges and costs)\n\nFormat with clear markdown headers, bullet points, and white space for readability."
+              }
+            ]
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.chainLlm",
+        "typeVersion": 1.6,
+        "position": [
+          688,
+          -240
+        ],
+        "id": "4820c78a-9cac-45ce-bb94-7e28ad8010e3",
+        "name": "Generate Publishing Plan"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Get AI output - LangChain uses .text field\nconst aiOutput = $('Generate Publishing Plan').first().json;\nconst planText = aiOutput.text || aiOutput.output || aiOutput.response || '';\n\nconsole.log('\ud83d\udd0d AI Output keys:', Object.keys(aiOutput));\nconsole.log('\ud83d\udcdd Plan text found in field:', aiOutput.text ? '.text' : (aiOutput.output ? '.output' : (aiOutput.response ? '.response' : 'NONE')));\nconsole.log('\ud83d\udcdd Plan length:', planText.length);\n\nif (!planText) {\n  throw new Error('No plan text found in AI output. Available keys: ' + Object.keys(aiOutput).join(', '));\n}\n\nconst manuscriptId = $('Prepare Plan Data').first().json.manuscriptId;\n\n// Escape single quotes for SQL\nconst escapedPlan = planText.replace(/'/g, \"''\");\n\nreturn {\n  query: `UPDATE publishing_progress\nSET \n  publishing_plan = '${escapedPlan}',\n  current_step = 'cover-design',\n  updated_at = NOW()\nWHERE manuscript_id = '${manuscriptId}'\nRETURNING *;`,\n  planText: planText,\n  manuscriptId: manuscriptId\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1040,
+          -240
+        ],
+        "id": "2d2cecfd-8571-474a-be1b-b9b43c537487",
+        "name": "Prepare Save Query"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "={{ $json.query }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1264,
+          -240
+        ],
+        "id": "1442e37f-e086-48b9-94f3-2ab5103f7579",
+        "name": "Save Publishing Plan"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Get current date\nconst now = new Date();\nconst analysisDate = now.toLocaleDateString('en-US', { \n  year: 'numeric', \n  month: 'long', \n  day: 'numeric' \n});\n\nconst preparedData = $('Prepare Plan Data').first().json;\nconst aiOutput = $('Generate Publishing Plan').first().json;\n\n// LangChain uses .text field\nconst planMarkdown = aiOutput.text || aiOutput.output || aiOutput.response || '';\n\nconsole.log('\ud83d\udd0d AI Output keys:', Object.keys(aiOutput));\nconsole.log('\ud83d\udcdd Plan text length:', planMarkdown.length);\nconsole.log('\ud83d\udcdd First 100 chars:', planMarkdown.substring(0, 100));\n\nif (!planMarkdown) {\n  throw new Error('No plan text found in AI output. Available keys: ' + Object.keys(aiOutput).join(', '));\n}\n\n// Convert markdown to HTML (basic conversion)\nconst planHtml = planMarkdown\n  .replace(/^# (.*$)/gm, '<h1>$1</h1>')\n  .replace(/^## (.*$)/gm, '<h2>$1</h2>')\n  .replace(/^### (.*$)/gm, '<h3>$1</h3>')\n  .replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>')\n  .replace(/^\\* (.*$)/gm, '<li>$1</li>')\n  .replace(/^- (.*$)/gm, '<li>$1</li>')\n  .replace(/\\n\\n/g, '</p><p>')\n  .replace(/^(?!<[h|l|p])(.*$)/gm, '<p>$1</p>');\n\nreturn {\n  manuscriptId: preparedData.manuscriptId,\n  authorName: preparedData.authorName,\n  authorEmail: preparedData.authorEmail,\n  manuscriptTitle: preparedData.manuscriptTitle,\n  analysisDate: analysisDate,\n  totalWordCount: String(preparedData.wordCount),\n  publishingGoal: preparedData.publishing_goal || 'not specified',\n  experienceLevel: preparedData.experience || 'not specified',\n  timeline: preparedData.timeline || 'not specified',\n  budgetRange: '',\n  planHtml: planHtml\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1488,
+          -240
+        ],
+        "id": "70c16a51-74d9-4bd5-90e4-c79f73fc91d2",
+        "name": "Format PDF Data"
+      },
+      {
+        "parameters": {
+          "resource": "pdf",
+          "pdfTemplateId": "6e677b23e5f897bc",
+          "jsonParameters": true,
+          "download": true,
+          "propertiesJson": "={{ $json }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.apiTemplateIo",
+        "typeVersion": 1,
+        "position": [
+          1712,
+          -240
+        ],
+        "id": "6c306458-0a64-4c80-b3ff-c6185229882a",
+        "name": "PDF Generation"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://itlkncjiifbgvmvuejgm.supabase.co/storage/v1/object/manuscript-reports/{{ $('Format PDF Data').first().json.manuscriptId }}_taylor_publishing_plan.pdf",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer <REMOVED - recreate as Supabase Service Key credential in authorslab>"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/pdf"
+              },
+              {
+                "name": "x-upsert",
+                "value": "true"
+              }
+            ]
+          },
+          "sendBody": true,
+          "contentType": "binaryData",
+          "inputDataFieldName": "data",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1936,
+          -240
+        ],
+        "id": "2424d796-8914-4987-922a-9e004333c60e",
+        "name": "Upload PDF to Supabase"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "UPDATE publishing_progress\nSET \n  plan_pdf_url = 'https://itlkncjiifbgvmvuejgm.supabase.co/storage/v1/object/public/manuscript-reports/{{ $('Format PDF Data').first().json.manuscriptId }}_taylor_publishing_plan.pdf',\n  updated_at = NOW()\nWHERE manuscript_id = '{{ $('Format PDF Data').first().json.manuscriptId }}'\nRETURNING *;",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          2160,
+          -240
+        ],
+        "id": "e2dd280d-0541-4991-9003-048f8a6d07cc",
+        "name": "Save PDF URL"
+      },
+      {
+        "parameters": {
+          "fromEmail": "editors@authorslab.ai",
+          "toEmail": "={{ $('Format PDF Data').first().json.authorEmail }}",
+          "subject": "\ud83d\udcda Your Publishing Plan is Ready!",
+          "html": "=<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\">\n  <div style=\"background: linear-gradient(135deg, #14b8a6 0%, #2dd4bf 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;\">\n    <h1 style=\"margin: 0; font-size: 28px;\">\ud83d\udcda Your Publishing Plan is Ready!</h1>\n  </div>\n  \n  <div style=\"background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;\">\n    <p style=\"font-size: 16px; color: #333;\">Hi {{ $('Format PDF Data').first().json.authorName }},</p>\n    \n    <p style=\"font-size: 16px; color: #333; line-height: 1.6;\">\n      Congratulations on completing your assessment! I've created a comprehensive, personalized publishing plan for <strong>\"{{ $('Format PDF Data').first().json.manuscriptTitle }}\"</strong>.\n    </p>\n    \n    <p style=\"font-size: 16px; color: #333; line-height: 1.6;\">\n      Your plan includes:\n    </p>\n    \n    <ul style=\"font-size: 16px; color: #333; line-height: 1.8;\">\n      <li><strong>Platform recommendations</strong> tailored to your goals</li>\n      <li><strong>Week-by-week timeline</strong> from now to publication</li>\n      <li><strong>Realistic cost breakdown</strong> with money-saving tips</li>\n      <li><strong>Immediate action steps</strong> you can take this week</li>\n    </ul>\n    \n    <div style=\"text-align: center; margin: 30px 0;\">\n      <a href=\"https://itlkncjiifbgvmvuejgm.supabase.co/storage/v1/object/public/manuscript-reports/{{ $('Format PDF Data').first().json.manuscriptId }}_taylor_publishing_plan.pdf\" \n         style=\"background: #14b8a6; color: white; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block;\">\n        Download Your Publishing Plan (PDF)\n      </a>\n    </div>\n    \n    <p style=\"font-size: 16px; color: #333; line-height: 1.6;\">\n      Return to your <a href=\"https://authorslab.ai/publishing-hub?manuscriptId={{ $('Format PDF Data').first().json.manuscriptId }}\" style=\"color: #14b8a6; text-decoration: none; font-weight: bold;\">Publishing Hub</a> anytime to chat with me about next steps!\n    </p>\n    \n    <p style=\"font-size: 16px; color: #333; margin-top: 30px;\">\n      Let's make your book a reality,<br>\n      <strong>Taylor</strong><br>\n      <em>Your Publishing Specialist</em>\n    </p>\n  </div>\n  \n  <div style=\"text-align: center; padding: 20px; color: #666; font-size: 12px;\">\n    <p>AuthorsLab.ai - Your AI Writing Studio</p>\n  </div>\n</div>",
+          "options": {
+            "appendAttribution": false
+          }
+        },
+        "type": "n8n-nodes-base.emailSend",
+        "typeVersion": 2.1,
+        "position": [
+          2384,
+          -240
+        ],
+        "id": "99f645fe-a036-42d7-b8d3-6d37753767ff",
+        "name": "Send Email",
+        "webhookId": "90c86943-0cc0-4a0b-a0e6-45e2875424b5"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Get author info for personalized response\nconst preparedData = $('Prepare Plan Data').first().json;\nconst pdfUrl = $('Save PDF URL').first().json.plan_pdf_url;\n\nconst response = `\ud83c\udf89 Your publishing plan is ready!\n\nI've created a comprehensive strategy for \"${preparedData.manuscriptTitle}\" based on your goals. You can view the full plan by clicking the button above, and I've sent a copy to ${preparedData.authorEmail}.\n\nNow let's get started with the exciting part - creating your cover designs! Just say \"create my cover\" and I'll generate four professional concepts for you to choose from.\n\nWhat would you like to work on first?`;\n\nreturn {\n  response: response,\n  success: true,\n  planPdfUrl: pdfUrl\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2608,
+          -240
+        ],
+        "id": "2fa91a75-0d29-4e66-9d39-ad6b4f0a9693",
+        "name": "Format Taylor Response"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ $json }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          3056,
+          -240
+        ],
+        "id": "383089ea-4c27-4c67-83d1-bd1fe4ab792f",
+        "name": "Respond to Webhook"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "INSERT INTO editor_chat_history (\n    manuscript_id,\n    phase_number,\n    sender,\n    message,\n    created_at\n) VALUES (\n    $1::uuid,\n    4,\n    'Taylor',\n    $2::text,\n    NOW()\n)\nRETURNING *;",
+          "options": {
+            "queryReplacement": "={{ [\n  $('Parse Assessment Data').first().json.manuscriptId,\n  $('Format Taylor Response').first().json.response\n] }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          2832,
+          -240
+        ],
+        "id": "800e8352-27b3-4332-922c-46a7bb7b8745",
+        "name": "Save Taylor Welcome to Chat"
+      }
+    ],
+    "nodeGroups": [],
+    "activeVersion": {
+      "nodes": [
+        {
+          "parameters": {
+            "httpMethod": "POST",
+            "path": "taylor-assessment",
+            "responseMode": "responseNode",
+            "options": {}
+          },
+          "type": "n8n-nodes-base.webhook",
+          "typeVersion": 2.1,
+          "position": [
+            -432,
+            -240
+          ],
+          "id": "9b2f771d-546b-4f45-958f-7049135b67ca",
+          "name": "Webhook",
+          "webhookId": "0202163c-bb59-4621-8da6-f801e2b37d3f"
+        },
+        {
+          "parameters": {
+            "jsCode": "// Extract data from webhook\nconst body = $input.first().json.body;\n\nreturn {\n  manuscriptId: body.manuscriptId,\n  manuscriptTitle: body.manuscriptTitle,\n  authorName: body.authorName,\n  \n  // Assessment answers\n  publishing_goal: body.assessmentAnswers.publishing_goal,\n  experience: body.assessmentAnswers.experience,\n  platforms: JSON.stringify(body.assessmentAnswers.platforms || []),\n  timeline: body.assessmentAnswers.timeline,\n  formats: JSON.stringify(body.assessmentAnswers.formats || [])\n};"
+          },
+          "type": "n8n-nodes-base.code",
+          "typeVersion": 2,
+          "position": [
+            -208,
+            -240
+          ],
+          "id": "dcea5f98-79ab-4276-aad7-9c16a7a1682c",
+          "name": "Parse Assessment Data"
+        },
+        {
+          "parameters": {
+            "operation": "executeQuery",
+            "query": "-- Get manuscript and author details\nSELECT \n  m.id as manuscript_id,\n  m.title as manuscript_title,\n  m.genre,\n  m.current_word_count,\n  ap.first_name as author_first_name,\n  ap.email as author_email\nFROM manuscripts m\nJOIN author_profiles ap ON m.author_id = ap.id\nWHERE m.id = '{{ $json.manuscriptId }}'\nLIMIT 1;",
+            "options": {}
+          },
+          "type": "n8n-nodes-base.postgres",
+          "typeVersion": 2.6,
+          "position": [
+            16,
+            -240
+          ],
+          "id": "8859d6f5-81d4-4e88-aa5f-a95bf47aae22",
+          "name": "Get Manuscript Data"
+        },
+        {
+          "parameters": {
+            "operation": "executeQuery",
+            "query": "--- Create or update publishing_progress with assessment answers\nINSERT INTO publishing_progress (\n  manuscript_id,\n  publishing_goal,\n  experience,\n  platforms,\n  timeline,\n  formats,\n  assessment_completed,\n  assessment_completed_at,\n  created_at,\n  updated_at\n) VALUES (\n  '{{ $('Parse Assessment Data').first().json.manuscriptId }}',\n  '{{ $('Parse Assessment Data').first().json.publishing_goal }}',\n  '{{ $('Parse Assessment Data').first().json.experience }}',\n  '{{ $('Parse Assessment Data').first().json.platforms }}'::jsonb,\n  '{{ $('Parse Assessment Data').first().json.timeline }}',\n  '{{ $('Parse Assessment Data').first().json.formats }}'::jsonb,\n  true,\n  NOW(),\n  NOW(),\n  NOW()\n)\nON CONFLICT (manuscript_id) \nDO UPDATE SET\n  publishing_goal = EXCLUDED.publishing_goal,\n  experience = EXCLUDED.experience,\n  platforms = EXCLUDED.platforms,\n  timeline = EXCLUDED.timeline,\n  formats = EXCLUDED.formats,\n  assessment_completed = true,\n  assessment_completed_at = NOW(),\n  updated_at = NOW()\nRETURNING *;",
+            "options": {}
+          },
+          "type": "n8n-nodes-base.postgres",
+          "typeVersion": 2.6,
+          "position": [
+            240,
+            -240
+          ],
+          "id": "2d6d7f6b-57fd-4172-92a6-68e516475b7f",
+          "name": "Save Assessment Answers",
+          "alwaysOutputData": true
+        },
+        {
+          "parameters": {
+            "jsCode": "// Combine all data for plan generation\nconst parsedData = $('Parse Assessment Data').first().json;\nconst manuscriptData = $('Get Manuscript Data').first().json;\nconst savedData = $('Save Assessment Answers').first().json;\n\n// Parse platforms array from JSONB\nlet platformsList = 'Not specified';\nif (savedData.platforms) {\n  try {\n    const platforms = typeof savedData.platforms === 'string' \n      ? JSON.parse(savedData.platforms) \n      : savedData.platforms;\n    if (platforms && platforms.length > 0) {\n      platformsList = platforms.join(', ');\n    }\n  } catch(e) {\n    console.error('Error parsing platforms:', e);\n    platformsList = 'Not specified';\n  }\n}\n\n// Parse formats array from JSONB\nlet formatsList = 'Not specified';\nif (savedData.formats) {\n  try {\n    const formats = typeof savedData.formats === 'string'\n      ? JSON.parse(savedData.formats)\n      : savedData.formats;\n    if (formats && formats.length > 0) {\n      formatsList = formats.join(', ');\n    }\n  } catch(e) {\n    console.error('Error parsing formats:', e);\n    formatsList = 'Not specified';\n  }\n}\n\nreturn {\n  manuscriptId: parsedData.manuscriptId,\n  manuscriptTitle: manuscriptData.manuscript_title,\n  genre: manuscriptData.genre,\n  wordCount: manuscriptData.current_word_count,\n  authorName: manuscriptData.author_first_name,\n  authorEmail: manuscriptData.author_email,\n  \n  publishing_goal: savedData.publishing_goal || 'Not specified',\n  experience: savedData.experience || 'Not specified',\n  platforms: platformsList,\n  timeline: savedData.timeline || 'Not specified',\n  formats: formatsList\n};"
+          },
+          "type": "n8n-nodes-base.code",
+          "typeVersion": 2,
+          "position": [
+            464,
+            -240
+          ],
+          "id": "339e44f9-baa4-41c5-ade2-bab8efe7189d",
+          "name": "Prepare Plan Data"
+        },
+        {
+          "parameters": {
+            "model": {
+              "__rl": true,
+              "mode": "list",
+              "value": "claude-sonnet-4-20250514"
+            },
+            "options": {
+              "maxTokensToSample": 4000,
+              "temperature": 0.7
+            }
+          },
+          "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+          "typeVersion": 1.3,
+          "position": [
+            768,
+            -16
+          ],
+          "id": "b2e452c9-efdf-4ee6-a3a3-5842c75546cb",
+          "name": "Anthropic Chat Model"
+        },
+        {
+          "parameters": {
+            "promptType": "define",
+            "text": "=Generate a comprehensive, personalized publishing plan for this author:\n\n**MANUSCRIPT DETAILS:**\n- Title: {{ $json.manuscriptTitle }}\n- Genre: {{ $json.genre }}\n- Word Count: {{ $json.wordCount }} words\n- Author: {{ $json.authorName }}\n\n**AUTHOR'S GOALS & PREFERENCES:**\n- Publishing Goal: {{ $json.publishing_goal }}\n- Experience Level: {{ $json.experience }}\n- Platforms of Interest: {{ $json.platforms }}\n- Desired Timeline: {{ $json.timeline }}\n- Formats to Publish: {{ $json.formats }}\n\nCreate a detailed publishing plan in markdown format with these sections:\n\n## Welcome & Congratulations\n\nStart with a warm, personalized greeting addressing {{ $json.authorName }} by name. Acknowledge their specific achievement (completing a {{ $json.wordCount }}-word {{ $json.genre }} manuscript). Make them feel proud and excited.\n\n## 1. Cover Design Strategy (Week 1-2)\n\n**CRITICAL**: This is their FIRST actionable step. Provide:\n\n- **Genre-Appropriate Approach**: Explain what makes a great {{ $json.genre }} cover\n  - Key visual elements that signal the genre to readers\n  - Color palettes that work for {{ $json.genre }}\n  - Typography styles (clean/elegant vs. bold/dramatic)\n  \n- **AI Cover Design Plan**:\n  - Specific themes and visual elements you'll generate for them\n  - They'll get 4 cover concepts to choose from via chat\n  - How to request variations if needed\n  - Expected timeline: 24-48 hours for initial concepts\n  \n- **What Happens Next**:\n  - Chat with Taylor and say \"create my cover\" or \"design my cover\"\n  - Review concepts in the Cover Designer panel\n  - Select favorite or request variations\n  - Cover will be formatted for both ebook and print\n\n## 2. Recommended Publishing Platforms\n\nBased on their interest in: {{ $json.platforms }}\nAnd their goal: {{ $json.publishing_goal }}\n\nRecommend 2-4 specific platforms with:\n- **Why each platform fits their goals**\n- **Royalty structures** (e.g., \"Amazon KDP: 35-70%\", \"Draft2Digital: 60%\")\n- **Distribution reach** (which stores/retailers)\n- **Ease of use** (beginner-friendly rating)\n- **Setup requirements** (what they'll need ready)\n\nRank them: \"Start with...\" (primary) \u2192 \"Add later...\" (secondary)\n\n## 3. File Formatting Strategy (Week 2-3)\n\nBased on their format preferences: {{ $json.formats }}\n\nExplain what they'll need for each format:\n- **eBook (EPUB/MOBI)**: Requirements and best practices\n- **Print (PDF)**: Recommend trim size for {{ $json.genre }} (typically 6x9 or 5x8)\n- **Audiobook** (if selected): ACX requirements and narrator options\n\nProvide specific guidance:\n- Chapter heading styles for {{ $json.genre }}\n- Professional typography choices\n- File validation and quality checks\n- What AuthorsLab provides vs. what they may need to do\n\n## 4. Metadata Optimization (Week 3-4)\n\n**Critical elements for discoverability:**\n\n- **Book Description/Blurb**: \n  - Hook readers in first 2 sentences\n  - Genre-specific expectations for {{ $json.genre }}\n  - 150-300 words ideal length\n  \n- **Keywords**: \n  - Research 7 high-impact keywords\n  - Mix of broad genre terms + specific niche phrases\n  - Avoid over-competitive single words\n  \n- **Categories**: \n  - Choose 2-3 Amazon categories strategically\n  - Genre-appropriate category suggestions for {{ $json.genre }}\n  \n- **Pricing Strategy**: \n  - Recommended ebook price for {{ $json.wordCount }}-word {{ $json.genre }}\n  - Print pricing to maintain profitability\n  - Launch pricing vs. long-term pricing\n\n## 5. Platform Setup & Launch Timeline\n\nBased on their desired timeline: {{ $json.timeline }}\n\nProvide a realistic week-by-week plan:\n\n**Week 1-2: Cover Design**\n- Request AI cover concepts from Taylor\n- Review and select final cover\n- Approve cover for all formats\n\n**Week 2-3: File Preparation**\n- Format manuscript for selected platforms\n- Create front matter (title page, copyright, etc.)\n- Generate final files (EPUB, PDF, etc.)\n\n**Week 3-4: Metadata Creation**\n- Write compelling book description\n- Research and select keywords\n- Choose categories\n- Finalize pricing strategy\n\n**Week 4-5: Platform Setup**\n- Create accounts on selected platforms\n- Set up author profiles\n- Upload files and metadata\n- Preview on multiple devices\n\n**Week 5-6: Launch**\n- Set publication date\n- Coordinate across platforms\n- Monitor first 24-48 hours\n- Be ready for reader questions\n\n## 6. Budget Expectations\n\nProvide realistic cost estimates:\n\n**Included in AuthorsLab:**\n- AI cover design (4 concepts)\n- Manuscript editing (completed)\n- Publishing guidance and support\n\n**Platform Costs:**\n- Most platforms: $0 upfront (royalty-based)\n- ISBN (if needed): $0-125 depending on platform\n- Optional: Professional cover upgrade ($300-800)\n\n**Total Estimated Investment:**\n- Minimum: $0 (using platform ISBNs, AI cover)\n- Recommended: $100-300 (own ISBN, proof copies)\n- Premium: $500-1000 (professional cover, marketing)\n\n## 7. Your Immediate Next Steps\n\n**This Week:**\n1. \u2705 Assessment complete (you're here!)\n2. \ud83d\udcac Chat with Taylor: \"Create my cover\"\n3. \ud83d\udcdd Start drafting your book description\n4. \ud83d\udd0d Research keywords in your genre\n\n**Next 2 Weeks:**\n1. Review and select your cover design\n2. Finalize front matter (dedication, etc.)\n3. Create author bio\n4. Set up accounts on chosen platforms\n\n**Month 2:**\n1. Upload formatted files\n2. Complete all metadata\n3. Preview on multiple devices\n4. Set your launch date!\n\n## Conclusion\n\nEnd with encouragement and remind them you're here to help every step of the way. Make it personal and inspiring.\n\n---\n\n**IMPORTANT FORMATTING RULES:**\n- Use markdown headers (##, ###)\n- Keep paragraphs concise (2-4 sentences)\n- Use bullet points for lists\n- Include specific numbers and timelines\n- Reference their manuscript title throughout\n- Be encouraging but realistic\n- Make it actionable with specific next steps",
+            "messages": {
+              "messageValues": [
+                {
+                  "message": "You are Taylor, a professional publishing specialist with 15+ years of experience helping authors successfully launch their books. You create personalized, actionable publishing plans that are encouraging, realistic, and tailored to each author's goals and resources.\n\nYour approach is:\n- **Supportive & Encouraging**: Celebrate their achievement and boost confidence\n- **Practical & Actionable**: Provide concrete steps, not generic advice\n- **Realistic**: Set honest expectations based on their preferences\n- **Genre-Aware**: Tailor recommendations to their specific genre\n- **Empowering**: Help them feel in control of their publishing journey\n- **Specific**: Use their name, manuscript title, and goals throughout\n\n**CRITICAL FOCUS AREAS:**\n\n1. **Cover Design First**: The very first actionable step must always be cover design. This creates immediate visual engagement and motivation.\n\n2. **Platform-Specific**: Recommend specific platforms based on their stated interests and explain WHY each platform fits their goals.\n\n3. **Format-Appropriate**: Tailor advice based on whether they want ebook, print, audiobook, or multiple formats.\n\n4. **Timeline-Realistic**: Match your week-by-week plan to their stated timeline preference.\n\n5. **Experience-Appropriate**: Adjust complexity based on whether they're first-time or experienced.\n\nYour plan should be:\n- Personal (use their name and manuscript title)\n- Specific (concrete numbers, dates, prices)\n- Actionable (clear next steps)\n- Encouraging (celebrate their achievement)\n- Realistic (honest about challenges and costs)\n\nFormat with clear markdown headers, bullet points, and white space for readability."
+                }
+              ]
+            }
+          },
+          "type": "@n8n/n8n-nodes-langchain.chainLlm",
+          "typeVersion": 1.6,
+          "position": [
+            688,
+            -240
+          ],
+          "id": "4820c78a-9cac-45ce-bb94-7e28ad8010e3",
+          "name": "Generate Publishing Plan"
+        },
+        {
+          "parameters": {
+            "jsCode": "// Get AI output - LangChain uses .text field\nconst aiOutput = $('Generate Publishing Plan').first().json;\nconst planText = aiOutput.text || aiOutput.output || aiOutput.response || '';\n\nconsole.log('\ud83d\udd0d AI Output keys:', Object.keys(aiOutput));\nconsole.log('\ud83d\udcdd Plan text found in field:', aiOutput.text ? '.text' : (aiOutput.output ? '.output' : (aiOutput.response ? '.response' : 'NONE')));\nconsole.log('\ud83d\udcdd Plan length:', planText.length);\n\nif (!planText) {\n  throw new Error('No plan text found in AI output. Available keys: ' + Object.keys(aiOutput).join(', '));\n}\n\nconst manuscriptId = $('Prepare Plan Data').first().json.manuscriptId;\n\n// Escape single quotes for SQL\nconst escapedPlan = planText.replace(/'/g, \"''\");\n\nreturn {\n  query: `UPDATE publishing_progress\nSET \n  publishing_plan = '${escapedPlan}',\n  current_step = 'cover-design',\n  updated_at = NOW()\nWHERE manuscript_id = '${manuscriptId}'\nRETURNING *;`,\n  planText: planText,\n  manuscriptId: manuscriptId\n};"
+          },
+          "type": "n8n-nodes-base.code",
+          "typeVersion": 2,
+          "position": [
+            1040,
+            -240
+          ],
+          "id": "2d2cecfd-8571-474a-be1b-b9b43c537487",
+          "name": "Prepare Save Query"
+        },
+        {
+          "parameters": {
+            "operation": "executeQuery",
+            "query": "={{ $json.query }}",
+            "options": {}
+          },
+          "type": "n8n-nodes-base.postgres",
+          "typeVersion": 2.6,
+          "position": [
+            1264,
+            -240
+          ],
+          "id": "1442e37f-e086-48b9-94f3-2ab5103f7579",
+          "name": "Save Publishing Plan"
+        },
+        {
+          "parameters": {
+            "jsCode": "// Get current date\nconst now = new Date();\nconst analysisDate = now.toLocaleDateString('en-US', { \n  year: 'numeric', \n  month: 'long', \n  day: 'numeric' \n});\n\nconst preparedData = $('Prepare Plan Data').first().json;\nconst aiOutput = $('Generate Publishing Plan').first().json;\n\n// LangChain uses .text field\nconst planMarkdown = aiOutput.text || aiOutput.output || aiOutput.response || '';\n\nconsole.log('\ud83d\udd0d AI Output keys:', Object.keys(aiOutput));\nconsole.log('\ud83d\udcdd Plan text length:', planMarkdown.length);\nconsole.log('\ud83d\udcdd First 100 chars:', planMarkdown.substring(0, 100));\n\nif (!planMarkdown) {\n  throw new Error('No plan text found in AI output. Available keys: ' + Object.keys(aiOutput).join(', '));\n}\n\n// Convert markdown to HTML (basic conversion)\nconst planHtml = planMarkdown\n  .replace(/^# (.*$)/gm, '<h1>$1</h1>')\n  .replace(/^## (.*$)/gm, '<h2>$1</h2>')\n  .replace(/^### (.*$)/gm, '<h3>$1</h3>')\n  .replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>')\n  .replace(/^\\* (.*$)/gm, '<li>$1</li>')\n  .replace(/^- (.*$)/gm, '<li>$1</li>')\n  .replace(/\\n\\n/g, '</p><p>')\n  .replace(/^(?!<[h|l|p])(.*$)/gm, '<p>$1</p>');\n\nreturn {\n  manuscriptId: preparedData.manuscriptId,\n  authorName: preparedData.authorName,\n  authorEmail: preparedData.authorEmail,\n  manuscriptTitle: preparedData.manuscriptTitle,\n  analysisDate: analysisDate,\n  totalWordCount: String(preparedData.wordCount),\n  publishingGoal: preparedData.publishing_goal || 'not specified',\n  experienceLevel: preparedData.experience || 'not specified',\n  timeline: preparedData.timeline || 'not specified',\n  budgetRange: '',\n  planHtml: planHtml\n};"
+          },
+          "type": "n8n-nodes-base.code",
+          "typeVersion": 2,
+          "position": [
+            1488,
+            -240
+          ],
+          "id": "70c16a51-74d9-4bd5-90e4-c79f73fc91d2",
+          "name": "Format PDF Data"
+        },
+        {
+          "parameters": {
+            "resource": "pdf",
+            "pdfTemplateId": "6e677b23e5f897bc",
+            "jsonParameters": true,
+            "download": true,
+            "propertiesJson": "={{ $json }}",
+            "options": {}
+          },
+          "type": "n8n-nodes-base.apiTemplateIo",
+          "typeVersion": 1,
+          "position": [
+            1712,
+            -240
+          ],
+          "id": "6c306458-0a64-4c80-b3ff-c6185229882a",
+          "name": "PDF Generation"
+        },
+        {
+          "parameters": {
+            "method": "POST",
+            "url": "=https://itlkncjiifbgvmvuejgm.supabase.co/storage/v1/object/manuscript-reports/{{ $('Format PDF Data').first().json.manuscriptId }}_taylor_publishing_plan.pdf",
+            "sendHeaders": true,
+            "headerParameters": {
+              "parameters": [
+                {
+                  "name": "Authorization",
+                  "value": "Bearer <REMOVED - recreate as Supabase Service Key credential in authorslab>"
+                },
+                {
+                  "name": "Content-Type",
+                  "value": "application/pdf"
+                },
+                {
+                  "name": "x-upsert",
+                  "value": "true"
+                }
+              ]
+            },
+            "sendBody": true,
+            "contentType": "binaryData",
+            "inputDataFieldName": "data",
+            "options": {}
+          },
+          "type": "n8n-nodes-base.httpRequest",
+          "typeVersion": 4.2,
+          "position": [
+            1936,
+            -240
+          ],
+          "id": "2424d796-8914-4987-922a-9e004333c60e",
+          "name": "Upload PDF to Supabase"
+        },
+        {
+          "parameters": {
+            "operation": "executeQuery",
+            "query": "UPDATE publishing_progress\nSET \n  plan_pdf_url = 'https://itlkncjiifbgvmvuejgm.supabase.co/storage/v1/object/public/manuscript-reports/{{ $('Format PDF Data').first().json.manuscriptId }}_taylor_publishing_plan.pdf',\n  updated_at = NOW()\nWHERE manuscript_id = '{{ $('Format PDF Data').first().json.manuscriptId }}'\nRETURNING *;",
+            "options": {}
+          },
+          "type": "n8n-nodes-base.postgres",
+          "typeVersion": 2.6,
+          "position": [
+            2160,
+            -240
+          ],
+          "id": "e2dd280d-0541-4991-9003-048f8a6d07cc",
+          "name": "Save PDF URL"
+        },
+        {
+          "parameters": {
+            "fromEmail": "editors@authorslab.ai",
+            "toEmail": "={{ $('Format PDF Data').first().json.authorEmail }}",
+            "subject": "\ud83d\udcda Your Publishing Plan is Ready!",
+            "html": "=<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\">\n  <div style=\"background: linear-gradient(135deg, #14b8a6 0%, #2dd4bf 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;\">\n    <h1 style=\"margin: 0; font-size: 28px;\">\ud83d\udcda Your Publishing Plan is Ready!</h1>\n  </div>\n  \n  <div style=\"background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;\">\n    <p style=\"font-size: 16px; color: #333;\">Hi {{ $('Format PDF Data').first().json.authorName }},</p>\n    \n    <p style=\"font-size: 16px; color: #333; line-height: 1.6;\">\n      Congratulations on completing your assessment! I've created a comprehensive, personalized publishing plan for <strong>\"{{ $('Format PDF Data').first().json.manuscriptTitle }}\"</strong>.\n    </p>\n    \n    <p style=\"font-size: 16px; color: #333; line-height: 1.6;\">\n      Your plan includes:\n    </p>\n    \n    <ul style=\"font-size: 16px; color: #333; line-height: 1.8;\">\n      <li><strong>Platform recommendations</strong> tailored to your goals</li>\n      <li><strong>Week-by-week timeline</strong> from now to publication</li>\n      <li><strong>Realistic cost breakdown</strong> with money-saving tips</li>\n      <li><strong>Immediate action steps</strong> you can take this week</li>\n    </ul>\n    \n    <div style=\"text-align: center; margin: 30px 0;\">\n      <a href=\"https://itlkncjiifbgvmvuejgm.supabase.co/storage/v1/object/public/manuscript-reports/{{ $('Format PDF Data').first().json.manuscriptId }}_taylor_publishing_plan.pdf\" \n         style=\"background: #14b8a6; color: white; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block;\">\n        Download Your Publishing Plan (PDF)\n      </a>\n    </div>\n    \n    <p style=\"font-size: 16px; color: #333; line-height: 1.6;\">\n      Return to your <a href=\"https://authorslab.ai/publishing-hub?manuscriptId={{ $('Format PDF Data').first().json.manuscriptId }}\" style=\"color: #14b8a6; text-decoration: none; font-weight: bold;\">Publishing Hub</a> anytime to chat with me about next steps!\n    </p>\n    \n    <p style=\"font-size: 16px; color: #333; margin-top: 30px;\">\n      Let's make your book a reality,<br>\n      <strong>Taylor</strong><br>\n      <em>Your Publishing Specialist</em>\n    </p>\n  </div>\n  \n  <div style=\"text-align: center; padding: 20px; color: #666; font-size: 12px;\">\n    <p>AuthorsLab.ai - Your AI Writing Studio</p>\n  </div>\n</div>",
+            "options": {
+              "appendAttribution": false
+            }
+          },
+          "type": "n8n-nodes-base.emailSend",
+          "typeVersion": 2.1,
+          "position": [
+            2384,
+            -240
+          ],
+          "id": "99f645fe-a036-42d7-b8d3-6d37753767ff",
+          "name": "Send Email",
+          "webhookId": "90c86943-0cc0-4a0b-a0e6-45e2875424b5"
+        },
+        {
+          "parameters": {
+            "jsCode": "// Get author info for personalized response\nconst preparedData = $('Prepare Plan Data').first().json;\nconst pdfUrl = $('Save PDF URL').first().json.plan_pdf_url;\n\nconst response = `\ud83c\udf89 Your publishing plan is ready!\n\nI've created a comprehensive strategy for \"${preparedData.manuscriptTitle}\" based on your goals. You can view the full plan by clicking the button above, and I've sent a copy to ${preparedData.authorEmail}.\n\nNow let's get started with the exciting part - creating your cover designs! Just say \"create my cover\" and I'll generate four professional concepts for you to choose from.\n\nWhat would you like to work on first?`;\n\nreturn {\n  response: response,\n  success: true,\n  planPdfUrl: pdfUrl\n};"
+          },
+          "type": "n8n-nodes-base.code",
+          "typeVersion": 2,
+          "position": [
+            2608,
+            -240
+          ],
+          "id": "2fa91a75-0d29-4e66-9d39-ad6b4f0a9693",
+          "name": "Format Taylor Response"
+        },
+        {
+          "parameters": {
+            "respondWith": "json",
+            "responseBody": "={{ $json }}",
+            "options": {}
+          },
+          "type": "n8n-nodes-base.respondToWebhook",
+          "typeVersion": 1.1,
+          "position": [
+            3056,
+            -240
+          ],
+          "id": "383089ea-4c27-4c67-83d1-bd1fe4ab792f",
+          "name": "Respond to Webhook"
+        },
+        {
+          "parameters": {
+            "operation": "executeQuery",
+            "query": "INSERT INTO editor_chat_history (\n    manuscript_id,\n    phase_number,\n    sender,\n    message,\n    created_at\n) VALUES (\n    $1::uuid,\n    4,\n    'Taylor',\n    $2::text,\n    NOW()\n)\nRETURNING *;",
+            "options": {
+              "queryReplacement": "={{ [\n  $('Parse Assessment Data').first().json.manuscriptId,\n  $('Format Taylor Response').first().json.response\n] }}"
+            }
+          },
+          "type": "n8n-nodes-base.postgres",
+          "typeVersion": 2.6,
+          "position": [
+            2832,
+            -240
+          ],
+          "id": "800e8352-27b3-4332-922c-46a7bb7b8745",
+          "name": "Save Taylor Welcome to Chat"
+        }
+      ],
+      "connections": {
+        "Webhook": {
+          "main": [
+            [
+              {
+                "node": "Parse Assessment Data",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Parse Assessment Data": {
+          "main": [
+            [
+              {
+                "node": "Get Manuscript Data",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Get Manuscript Data": {
+          "main": [
+            [
+              {
+                "node": "Save Assessment Answers",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Save Assessment Answers": {
+          "main": [
+            [
+              {
+                "node": "Prepare Plan Data",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Prepare Plan Data": {
+          "main": [
+            [
+              {
+                "node": "Generate Publishing Plan",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Generate Publishing Plan": {
+          "main": [
+            [
+              {
+                "node": "Prepare Save Query",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Prepare Save Query": {
+          "main": [
+            [
+              {
+                "node": "Save Publishing Plan",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Anthropic Chat Model": {
+          "ai_languageModel": [
+            [
+              {
+                "node": "Generate Publishing Plan",
+                "type": "ai_languageModel",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Save Publishing Plan": {
+          "main": [
+            [
+              {
+                "node": "Format PDF Data",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Format PDF Data": {
+          "main": [
+            [
+              {
+                "node": "PDF Generation",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "PDF Generation": {
+          "main": [
+            [
+              {
+                "node": "Upload PDF to Supabase",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Upload PDF to Supabase": {
+          "main": [
+            [
+              {
+                "node": "Save PDF URL",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Save PDF URL": {
+          "main": [
+            [
+              {
+                "node": "Send Email",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Send Email": {
+          "main": [
+            [
+              {
+                "node": "Format Taylor Response",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Format Taylor Response": {
+          "main": [
+            [
+              {
+                "node": "Save Taylor Welcome to Chat",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Save Taylor Welcome to Chat": {
+          "main": [
+            [
+              {
+                "node": "Respond to Webhook",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        }
+      },
+      "nodeGroups": []
+    },
+    "tags": [],
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "parentFolderId": null,
+    "scopes": [
+      "execution:reveal",
+      "workflow:create",
+      "workflow:delete",
+      "workflow:disableRedaction",
+      "workflow:enableRedaction",
+      "workflow:execute",
+      "workflow:execute-chat",
+      "workflow:export",
+      "workflow:import",
+      "workflow:list",
+      "workflow:move",
+      "workflow:publish",
+      "workflow:read",
+      "workflow:share",
+      "workflow:unpublish",
+      "workflow:unshare",
+      "workflow:update"
+    ],
+    "canExecute": true
+  },
+  "triggerInfo": "This workflow has the following trigger(s):\n\n\nWebhook trigger(s):\n\n\n\t\t\t\t<trigger 1>\n\t\t\t\t\t - Node name: Webhook\n\t\t\t\t\t - Production URL: https://spikeislandstudios.app.n8n.cloud/webhook/0202163c-bb59-4621-8da6-f801e2b37d3f/taylor-assessment\n\t\t\t\t\t - Test URL: https://spikeislandstudios.app.n8n.cloud/webhook-test/0202163c-bb59-4621-8da6-f801e2b37d3f/taylor-assessment\n\t\t\t\t\t - HTTP Method: POST\n\t\t\t\t\t - Response Mode: Webhook is configured to respond using \"Respond to Webhook\" node.\n\t\t\t\t\t - No credentials required for this webhook.\n\t\t\t\t</trigger 1>"
+}

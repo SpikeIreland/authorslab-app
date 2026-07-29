@@ -1,0 +1,1253 @@
+{
+  "workflow": {
+    "id": "s56tD090y13Jh4Vt",
+    "name": "1.3 Author Onboarding",
+    "active": true,
+    "isArchived": false,
+    "versionId": "34b06312-e9ed-4070-81bd-1dfbb1edb793",
+    "activeVersionId": "34b06312-e9ed-4070-81bd-1dfbb1edb793",
+    "triggerCount": 1,
+    "createdAt": "2025-08-06T22:44:36.308Z",
+    "updatedAt": "2026-07-22T08:42:52.737Z",
+    "settings": {
+      "executionOrder": "v1",
+      "availableInMCP": true
+    },
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "CORS Handling",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extract Data": {
+        "main": [
+          [
+            {
+              "node": "Get Author Details",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Initial Manuscript": {
+        "main": [
+          [
+            {
+              "node": "Escape Text",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Welcome Notification": {
+        "main": [
+          [
+            {
+              "node": "Send email",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Author Profile": {
+        "main": [
+          [
+            {
+              "node": "Create Initial Manuscript",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Author Details": {
+        "main": [
+          [
+            {
+              "node": "Update Author Profile",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Publishing Placeholder": {
+        "main": [
+          [
+            {
+              "node": "Create Marketing Placeholder",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Marketing Placeholder": {
+        "main": [
+          [
+            {
+              "node": "Create Welcome Notification",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Manuscript Info": {
+        "main": [
+          [
+            {
+              "node": "Store Original to Database",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Response Code": {
+        "main": [
+          [
+            {
+              "node": "Success Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "CORS Handling": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Extract Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Escape Text": {
+        "main": [
+          [
+            {
+              "node": "Update Manuscript Info",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Store Original to Database": {
+        "main": [
+          [
+            {
+              "node": "Create Version Record",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Version Record": {
+        "main": [
+          [
+            {
+              "node": "Create Publishing Placeholder",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send email": {
+        "main": [
+          [
+            {
+              "node": "Generate Response Code",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "onboarding",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          0,
+          -400
+        ],
+        "id": "36e9a54a-ac74-49ae-ad5a-33edcc6cf5f9",
+        "name": "Webhook",
+        "webhookId": "ce9cb6e0-f4ad-4f60-876f-1b8cff436e21"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "f7aa9473-d706-434b-aadd-1600ce70709d",
+                "name": "authorEmail",
+                "value": "={{ $json.body.authorEmail }}",
+                "type": "string"
+              },
+              {
+                "id": "2f395e71-ada9-46c3-9bf2-ada2f44bfe94",
+                "name": "authorFirstName",
+                "value": "={{ $json.body.firstName }}",
+                "type": "string"
+              },
+              {
+                "id": "78e43ca9-17e3-4fdf-bd9f-4af91455a0e8",
+                "name": "Genre",
+                "value": "={{ $json.body.genre }}",
+                "type": "string"
+              },
+              {
+                "id": "f0930dd6-f048-48fa-8337-5ab418b54c3d",
+                "name": "manuscriptTitle",
+                "value": "={{ $json.body.manuscriptTitle }}",
+                "type": "string"
+              },
+              {
+                "id": "ec27ff77-04a6-4fb9-96db-9ecd92a8ecd8",
+                "name": "userId",
+                "value": "={{ $json.body.userId }}",
+                "type": "string"
+              },
+              {
+                "id": "11fc1e89-cf75-435c-8809-ac13030ca150",
+                "name": "timeline",
+                "value": "={{ $json.body.timeline }}",
+                "type": "string"
+              },
+              {
+                "id": "78714965-5332-438c-b26d-71c37edc2e9d",
+                "name": "manuscriptFile",
+                "value": "={{ $json.body.manuscriptFile }}",
+                "type": "string"
+              },
+              {
+                "id": "938177a0-ea2b-47f2-bbbf-db1ce38c37f6",
+                "name": "wordCount",
+                "value": "={{ $json.body.wordCount }}",
+                "type": "string"
+              },
+              {
+                "id": "976ce6c9-5e26-4368-b7af-f92446a9f7d4",
+                "name": "manuscriptId",
+                "value": "={{ $json.body.manuscriptId }}",
+                "type": "string"
+              },
+              {
+                "id": "9c432c5c-3cb6-457f-99d0-8253086107a4",
+                "name": "writingExperience",
+                "value": "={{ $json.body.writingExperience }}",
+                "type": "string"
+              },
+              {
+                "id": "67a746eb-5d6c-49f2-9727-b4c7c6b5b63b",
+                "name": "publishingGoal",
+                "value": "={{ $json.body.publishingGoal }}",
+                "type": "string"
+              },
+              {
+                "id": "dbed0b98-218e-4679-b769-412bb93a0d89",
+                "name": "focusArea",
+                "value": "={{ $json.body.focus }}",
+                "type": "string"
+              },
+              {
+                "id": "85229e8f-1a40-4d99-b493-7be03dd08639",
+                "name": "additionalInfo",
+                "value": "={{ $json.body.additionalInfo }}",
+                "type": "string"
+              },
+              {
+                "id": "db6b2909-49ff-448c-a4f4-f5e51f867543",
+                "name": "authorLastName",
+                "value": "={{ $json.body.lastName }}",
+                "type": "string"
+              },
+              {
+                "id": "1e89ca55-87e5-4f48-8750-a22351ee608d",
+                "name": "authorId",
+                "value": "={{ $json.body.author_id }}",
+                "type": "string"
+              },
+              {
+                "id": "12c5970a-263f-4e68-a059-58a3fa2fb3a4",
+                "name": "manuscriptText",
+                "value": "={{ $json.body.manuscriptText }}",
+                "type": "string"
+              },
+              {
+                "id": "c66f7b53-e993-4e20-a8ab-f1cfd35bfdbf",
+                "name": "chapterCount",
+                "value": "={{ $json.body.chapterCount }}",
+                "type": "string"
+              },
+              {
+                "id": "b2c43c01-9cfa-40f7-b270-76726af18d8b",
+                "name": "expectedChapters",
+                "value": "={{ $json.body.expectedChapters }}",
+                "type": "string"
+              },
+              {
+                "id": "e411fed7-78f0-4810-a79c-fd99b3d36f48",
+                "name": "hasEpilogue",
+                "value": "={{ $json.body.hasEpilogue }}",
+                "type": "string"
+              },
+              {
+                "id": "2acc1a78-8390-4046-bdb8-d048a4c30378",
+                "name": "hasPrologue",
+                "value": "={{ $json.body.hasPrologue }}",
+                "type": "string"
+              },
+              {
+                "id": "b009f266-6b02-4583-b8c6-016847d762c1",
+                "name": "timestamp",
+                "value": "={{ $json.body.timestamp }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          448,
+          -304
+        ],
+        "id": "72eeb555-6053-4dbe-958d-3923e3632654",
+        "name": "Extract Data"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "INSERT INTO manuscripts (\n  id, author_id, title, genre, full_text, original_upload_text,\n  current_word_count, total_chapters, has_prologue, has_epilogue,\n  status, current_phase_number, created_at, updated_at\n) VALUES (\n  $1, $2, $3, $4, $5, $5, $6, $7, $8, $9, 'uploaded', 1, NOW(), NOW()\n)\nON CONFLICT (id) DO UPDATE SET\n  author_id = $2, title = $3, genre = $4, full_text = $5,\n  original_upload_text = $5, current_word_count = $6,\n  total_chapters = $7, has_prologue = $8, has_epilogue = $9,\n  updated_at = NOW()\nRETURNING id, title, genre, current_word_count, status;",
+          "options": {
+            "queryReplacement": "={{ [\n  $('Webhook').first().json.body.manuscriptId,                    // $1 - id\n  $('Get Author Details').first().json.id,                        // $2 - author_id\n  $('Webhook').first().json.body.manuscriptTitle,                 // $3 - title\n  $('Webhook').first().json.body.genre,                           // $4 - genre\n  $('Webhook').first().json.body.manuscriptText,                  // $5 - full_text & original_upload_text\n  $('Webhook').first().json.body.wordCount,                       // $6 - current_word_count\n  $('Webhook').first().json.body.expectedChapters || 0,           // $7 - total_chapters\n  $('Webhook').first().json.body.hasPrologue || false,            // $8 - has_prologue\n  $('Webhook').first().json.body.hasEpilogue || false             // $9 - has_epilogue\n] }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1120,
+          -304
+        ],
+        "id": "ac18a7af-cbca-4c4a-96bd-f19122298692",
+        "name": "Create Initial Manuscript"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "INSERT INTO notifications (\n  id, manuscript_id, type, title, message,\n  is_read, delivery_method, priority, category,\n  created_at\n) VALUES (\n  uuid_generate_v4(),\n  '{{ $('Webhook').first().json.body.manuscriptId }}',\n  'welcome',\n  'Welcome to Your Author Portal! \ud83c\udf89',\n  'Your portal setup is complete. Upload your manuscript to begin the 4-phase editing process.',\n  false, 'portal', 'high', 'onboarding',\n  NOW()\n);",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          2688,
+          -304
+        ],
+        "id": "b0a8cb3c-948d-4d3f-9a50-31e5fdd4ef88",
+        "name": "Create Welcome Notification"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "UPDATE author_profiles SET \n  onboarding_complete = true,\n  updated_at = NOW()\nWHERE id = '{{ $(\"Get Author Details\").item.json.id }}'",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          896,
+          -304
+        ],
+        "id": "31329dab-c0c7-49cb-83ff-98e3cd146320",
+        "name": "Update Author Profile"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT * FROM author_profiles \nWHERE email = '{{ $(\"Extract Data\").item.json.authorEmail }}'",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          672,
+          -304
+        ],
+        "id": "a81cf55d-44e1-479e-a530-b5662e343c67",
+        "name": "Get Author Details",
+        "alwaysOutputData": true
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "INSERT INTO publishing_projects (\n  id, manuscript_id, author_id, publishing_status,\n  created_at, updated_at\n) VALUES (\n  uuid_generate_v4(),\n  '{{ $('Webhook').first().json.body.manuscriptId }}',\n  '{{ $(\"Get Author Details\").item.json.id }}',\n  'preparing',\n  NOW(), NOW()\n);",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          2240,
+          -304
+        ],
+        "id": "19404e8e-c127-4d54-b538-cba7294281ae",
+        "name": "Create Publishing Placeholder"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "INSERT INTO marketing_campaigns (\n  id, manuscript_id, author_id, \n  campaign_name, campaign_type, campaign_status,\n  created_at, updated_at\n) VALUES (\n  uuid_generate_v4(),\n  '{{ $('Webhook').first().json.body.manuscriptId }}',\n  '{{ $(\"Get Author Details\").item.json.id }}',\n  'Pre-Launch Marketing', 'book-launch', 'draft',\n  NOW(), NOW()\n);",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          2464,
+          -304
+        ],
+        "id": "0a9a89b0-bd4d-45b2-a6ae-b303c605a635",
+        "name": "Create Marketing Placeholder"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "UPDATE manuscripts SET \n  status = 'uploaded',\n  title = $1,\n  full_text = $2,\n  current_word_count = $3,\n  updated_at = NOW()\nWHERE id = $4;",
+          "options": {
+            "queryReplacement": "={{ [\n  $(\"Extract Data\").item.json.manuscriptTitle || \"Untitled Manuscript\",\n  $(\"Extract Data\").item.json.manuscriptText || \"\",\n  parseInt($(\"Extract Data\").item.json.wordCount) || 0,\n  $(\"Create Initial Manuscript\").item.json.id\n] }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1568,
+          -304
+        ],
+        "id": "c8d43093-fb05-4b9c-9e27-d707c84394d3",
+        "name": "Update Manuscript Info"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ $json }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.4,
+        "position": [
+          3360,
+          -304
+        ],
+        "id": "4dfe3bd6-5177-455e-9962-f9560b8b90be",
+        "name": "Success Response",
+        "alwaysOutputData": true
+      },
+      {
+        "parameters": {
+          "jsCode": "try {\n    // Get the data from previous nodes\n    const authorData = $('Get Author Details').first().json;\n    const manuscriptData = $('Create Initial Manuscript').first().json;\n\n    // Create the proper response structure\n    const responseData = {\n        success: true,\n        onboardingComplete: true,\n        userId: authorData.id,\n        manuscriptId: manuscriptData.id,\n        manuscriptCreated: true,\n        phasesInitialized: true,\n        redirectTo: `/author-login/author-dashboard/?userId=${authorData.id}`,\n        message: \"Portal setup complete! Your 4-phase editing system is ready.\"\n    };\n\n    return [responseData];\n} catch (error) {\n    // Return error response\n    return [{\n        success: false,\n        error: error.message,\n        message: \"There was an issue setting up your account. Please try again.\"\n    }];\n}"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3136,
+          -304
+        ],
+        "id": "79efd904-7846-4f3c-b04e-17af6c5ddbae",
+        "name": "Generate Response Code"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "31f8480b-9e59-46c3-9285-1a516c55dec5",
+                "leftValue": "={{ $json.httpMethod }}",
+                "rightValue": "={{ 'OPTIONS' }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals",
+                  "name": "filter.operator.equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          224,
+          -400
+        ],
+        "id": "b439e761-8c19-4469-9e6d-dce532c0ac8f",
+        "name": "CORS Handling"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "{\n  \"statusCode\": 200,\n  \"headers\": {\n    \"Access-Control-Allow-Origin\": \"https://www-spikeisland-ai.filesusr.com\",\n    \"Access-Control-Allow-Methods\": \"POST, OPTIONS\",\n    \"Access-Control-Allow-Headers\": \"Content-Type\",\n    \"Access-Control-Max-Age\": \"86400\"\n  },\n  \"body\": \"OK\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.4,
+        "position": [
+          448,
+          -496
+        ],
+        "id": "3a79dbf7-b415-42e7-9052-e2f0458d13ac",
+        "name": "Respond to Webhook"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Escape single quotes for SQL\nconst manuscriptText = $(\"Extract Data\").item.json.manuscriptText || '';\nconst manuscriptTitle = $(\"Extract Data\").item.json.manuscriptTitle || 'Untitled Manuscript';\n\n// Replace single quotes with two single quotes (SQL escape)\nconst escapedText = manuscriptText.replace(/'/g, \"''\");\nconst escapedTitle = manuscriptTitle.replace(/'/g, \"''\");\n\nreturn [{\n  json: {\n    manuscriptId: $(\"Create Initial Manuscript\").item.json.id,\n    escapedText: escapedText,\n    escapedTitle: escapedTitle,\n    wordCount: $(\"Extract Data\").item.json.wordCount || 0\n  }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1344,
+          -304
+        ],
+        "id": "12934d79-c5d3-4630-8401-8a7f4d4304f4",
+        "name": "Escape Text"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://itlkncjiifbgvmvuejgm.supabase.co/storage/v1/object/manuscripts/original/{{ $(\"Extract Data\").item.json.manuscriptId }}_original.txt",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer <REMOVED - recreate as Supabase Service Key credential in authorslab>"
+              }
+            ]
+          },
+          "sendBody": true,
+          "contentType": "raw",
+          "rawContentType": "text/plain",
+          "body": "={{ $(\"Extract Data\").item.json.manuscriptText }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1792,
+          -304
+        ],
+        "id": "1b1f1727-6eb5-41ad-8e3c-725ea51fc85d",
+        "name": "Store Original to Database"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "INSERT INTO manuscript_versions (\n  manuscript_id, \n  phase_number, \n  version_type,\n  content,\n  word_count,\n  created_by_editor,\n  notes\n) VALUES (\n  $1,    \n  1,     \n  'working_draft',  -- Changed from 'original' to 'working_draft'\n  $2,    \n  $3,    \n  'Author',\n  'Original manuscript upload during onboarding'\n) \nRETURNING id;",
+          "options": {
+            "queryReplacement": "={{ [\n  $(\"Extract Data\").item.json.manuscriptId,\n  $(\"Extract Data\").item.json.manuscriptText || \"\",\n  parseInt($(\"Extract Data\").item.json.wordCount) || 0\n] }}"
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          2016,
+          -304
+        ],
+        "id": "217f5e56-bf38-4ee1-bcf6-1010382b9065",
+        "name": "Create Version Record"
+      },
+      {
+        "parameters": {
+          "fromEmail": "editors@authorslab.ai",
+          "toEmail": "={{ $('Extract Data').item.json.authorEmail }}",
+          "subject": "Welcome to Your Author Portal - Account Ready!",
+          "html": "=<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6; color: #333;\">\n    <div style=\"background: linear-gradient(135deg, #1e3a8a, #1e40af); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;\">\n        <h1 style=\"color: white; margin: 0; font-size: 28px;\">\ud83c\udf89 Welcome to Spike Island AI!</h1>\n        <p style=\"color: #e5e7eb; margin: 10px 0 0 0; font-size: 18px;\">Your Author Portal is Ready</p>\n    </div>\n    \n    <div style=\"background: white; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);\">\n        <p style=\"font-size: 16px; margin-bottom: 25px;\">Dear {{ $('Extract Data').item.json.authorFirstName }},</p>\n        \n        <p style=\"font-size: 16px; margin-bottom: 25px;\">Your Author Portal setup is complete and ready for action!</p>\n        \n        <div style=\"background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 25px 0;\">\n            <h3 style=\"color: #1e3a8a; margin-top: 0;\">\u2705 Setup Complete:</h3>\n            <ul style=\"list-style: none; padding: 0;\">\n                <li style=\"margin: 8px 0;\">\u2705 Account Created</li>\n                <li style=\"margin: 8px 0;\">\u2705 Preferences Saved</li>\n                <li style=\"margin: 8px 0;\">\u2705 4-Phase Editing System Ready</li>\n                <li style=\"margin: 8px 0;\">\u2705 Dashboard Prepared</li>\n            </ul>\n        </div>\n        \n        <h3 style=\"color: #1e3a8a; margin-top: 30px;\">\ud83d\ude80 Next Steps:</h3>\n        <ol style=\"font-size: 16px; line-height: 1.8;\">\n            <li><strong>Log into your portal:</strong><br>\n                <a href=\"https://www.authorslab.ai/author-studio/\" \n                   style=\"color: #1e3a8a; text-decoration: none; font-weight: bold;\">\n                   https://www.authorslab.ai/author-studio/\n                </a>\n            </li>\n            <li><strong>Upload your manuscript</strong> to begin the professional editing process</li>\n            <li><strong>Start Phase 1:</strong> Developmental Editing</li>\n        </ol>\n        \n        <div style=\"background: #f9fafb; padding: 20px; border-radius: 8px; margin: 25px 0;\">\n            <h3 style=\"color: #1e3a8a; margin-top: 0;\">\ud83d\udcda Your 4-Phase Editing Journey:</h3>\n            <ul style=\"font-size: 15px; line-height: 1.6;\">\n                <li><strong>Phase 1:</strong> Developmental Editing</li>\n                <li><strong>Phase 2:</strong> Line Editing</li>\n                <li><strong>Phase 3:</strong> Copy Editing</li>\n                <li><strong>Phase 4:</strong> Publishing Preparation</li>\n            </ul>\n        </div>\n        \n        <div style=\"text-align: center; margin: 30px 0;\">\n            <a href=\"https://authorslab.ai/author-studio/\" \n               style=\"background: linear-gradient(135deg, #f1c40f, #f39c12); \n                      color: #2c3e50; \n                      padding: 15px 30px; \n                      text-decoration: none; \n                      border-radius: 8px; \n                      font-weight: bold; \n                      font-size: 16px; \n                      display: inline-block;\">\n                \ud83d\ude80 Access Your Portal Now\n            </a>\n        </div>\n        \n        <hr style=\"border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;\">\n        \n        <p style=\"font-size: 14px; color: #6b7280;\">\n            Questions? Reply to this email anytime.<br><br>\n            Best regards,<br>\n            <strong>The Spike Island AI Team</strong>\n        </p>\n        \n        <p style=\"font-size: 12px; color: #9ca3af; margin-top: 20px;\">\n            P.S. Your manuscript upload and editing journey starts here: \n            <a href=\"https://authorslab.ai/author-studio/\" style=\"color: #1e3a8a;\">\n                Author Dashboard\n            </a>\n        </p>\n    </div>\n</div>",
+          "options": {
+            "appendAttribution": false,
+            "attachments": "data"
+          }
+        },
+        "type": "n8n-nodes-base.emailSend",
+        "typeVersion": 2.1,
+        "position": [
+          2912,
+          -304
+        ],
+        "id": "d580ee98-ca54-401f-bf24-26daf21dc55e",
+        "name": "Send email",
+        "webhookId": "170c8f8f-a6bb-42d3-87cc-ece3bbd90c56"
+      }
+    ],
+    "nodeGroups": [],
+    "activeVersion": {
+      "nodes": [
+        {
+          "parameters": {
+            "httpMethod": "POST",
+            "path": "onboarding",
+            "responseMode": "responseNode",
+            "options": {}
+          },
+          "type": "n8n-nodes-base.webhook",
+          "typeVersion": 2,
+          "position": [
+            0,
+            -400
+          ],
+          "id": "36e9a54a-ac74-49ae-ad5a-33edcc6cf5f9",
+          "name": "Webhook",
+          "webhookId": "ce9cb6e0-f4ad-4f60-876f-1b8cff436e21"
+        },
+        {
+          "parameters": {
+            "assignments": {
+              "assignments": [
+                {
+                  "id": "f7aa9473-d706-434b-aadd-1600ce70709d",
+                  "name": "authorEmail",
+                  "value": "={{ $json.body.authorEmail }}",
+                  "type": "string"
+                },
+                {
+                  "id": "2f395e71-ada9-46c3-9bf2-ada2f44bfe94",
+                  "name": "authorFirstName",
+                  "value": "={{ $json.body.firstName }}",
+                  "type": "string"
+                },
+                {
+                  "id": "78e43ca9-17e3-4fdf-bd9f-4af91455a0e8",
+                  "name": "Genre",
+                  "value": "={{ $json.body.genre }}",
+                  "type": "string"
+                },
+                {
+                  "id": "f0930dd6-f048-48fa-8337-5ab418b54c3d",
+                  "name": "manuscriptTitle",
+                  "value": "={{ $json.body.manuscriptTitle }}",
+                  "type": "string"
+                },
+                {
+                  "id": "ec27ff77-04a6-4fb9-96db-9ecd92a8ecd8",
+                  "name": "userId",
+                  "value": "={{ $json.body.userId }}",
+                  "type": "string"
+                },
+                {
+                  "id": "11fc1e89-cf75-435c-8809-ac13030ca150",
+                  "name": "timeline",
+                  "value": "={{ $json.body.timeline }}",
+                  "type": "string"
+                },
+                {
+                  "id": "78714965-5332-438c-b26d-71c37edc2e9d",
+                  "name": "manuscriptFile",
+                  "value": "={{ $json.body.manuscriptFile }}",
+                  "type": "string"
+                },
+                {
+                  "id": "938177a0-ea2b-47f2-bbbf-db1ce38c37f6",
+                  "name": "wordCount",
+                  "value": "={{ $json.body.wordCount }}",
+                  "type": "string"
+                },
+                {
+                  "id": "976ce6c9-5e26-4368-b7af-f92446a9f7d4",
+                  "name": "manuscriptId",
+                  "value": "={{ $json.body.manuscriptId }}",
+                  "type": "string"
+                },
+                {
+                  "id": "9c432c5c-3cb6-457f-99d0-8253086107a4",
+                  "name": "writingExperience",
+                  "value": "={{ $json.body.writingExperience }}",
+                  "type": "string"
+                },
+                {
+                  "id": "67a746eb-5d6c-49f2-9727-b4c7c6b5b63b",
+                  "name": "publishingGoal",
+                  "value": "={{ $json.body.publishingGoal }}",
+                  "type": "string"
+                },
+                {
+                  "id": "dbed0b98-218e-4679-b769-412bb93a0d89",
+                  "name": "focusArea",
+                  "value": "={{ $json.body.focus }}",
+                  "type": "string"
+                },
+                {
+                  "id": "85229e8f-1a40-4d99-b493-7be03dd08639",
+                  "name": "additionalInfo",
+                  "value": "={{ $json.body.additionalInfo }}",
+                  "type": "string"
+                },
+                {
+                  "id": "db6b2909-49ff-448c-a4f4-f5e51f867543",
+                  "name": "authorLastName",
+                  "value": "={{ $json.body.lastName }}",
+                  "type": "string"
+                },
+                {
+                  "id": "1e89ca55-87e5-4f48-8750-a22351ee608d",
+                  "name": "authorId",
+                  "value": "={{ $json.body.author_id }}",
+                  "type": "string"
+                },
+                {
+                  "id": "12c5970a-263f-4e68-a059-58a3fa2fb3a4",
+                  "name": "manuscriptText",
+                  "value": "={{ $json.body.manuscriptText }}",
+                  "type": "string"
+                },
+                {
+                  "id": "c66f7b53-e993-4e20-a8ab-f1cfd35bfdbf",
+                  "name": "chapterCount",
+                  "value": "={{ $json.body.chapterCount }}",
+                  "type": "string"
+                },
+                {
+                  "id": "b2c43c01-9cfa-40f7-b270-76726af18d8b",
+                  "name": "expectedChapters",
+                  "value": "={{ $json.body.expectedChapters }}",
+                  "type": "string"
+                },
+                {
+                  "id": "e411fed7-78f0-4810-a79c-fd99b3d36f48",
+                  "name": "hasEpilogue",
+                  "value": "={{ $json.body.hasEpilogue }}",
+                  "type": "string"
+                },
+                {
+                  "id": "2acc1a78-8390-4046-bdb8-d048a4c30378",
+                  "name": "hasPrologue",
+                  "value": "={{ $json.body.hasPrologue }}",
+                  "type": "string"
+                },
+                {
+                  "id": "b009f266-6b02-4583-b8c6-016847d762c1",
+                  "name": "timestamp",
+                  "value": "={{ $json.body.timestamp }}",
+                  "type": "string"
+                }
+              ]
+            },
+            "options": {}
+          },
+          "type": "n8n-nodes-base.set",
+          "typeVersion": 3.4,
+          "position": [
+            448,
+            -304
+          ],
+          "id": "72eeb555-6053-4dbe-958d-3923e3632654",
+          "name": "Extract Data"
+        },
+        {
+          "parameters": {
+            "operation": "executeQuery",
+            "query": "INSERT INTO manuscripts (\n  id, author_id, title, genre, full_text, original_upload_text,\n  current_word_count, total_chapters, has_prologue, has_epilogue,\n  status, current_phase_number, created_at, updated_at\n) VALUES (\n  $1, $2, $3, $4, $5, $5, $6, $7, $8, $9, 'uploaded', 1, NOW(), NOW()\n)\nON CONFLICT (id) DO UPDATE SET\n  author_id = $2, title = $3, genre = $4, full_text = $5,\n  original_upload_text = $5, current_word_count = $6,\n  total_chapters = $7, has_prologue = $8, has_epilogue = $9,\n  updated_at = NOW()\nRETURNING id, title, genre, current_word_count, status;",
+            "options": {
+              "queryReplacement": "={{ [\n  $('Webhook').first().json.body.manuscriptId,                    // $1 - id\n  $('Get Author Details').first().json.id,                        // $2 - author_id\n  $('Webhook').first().json.body.manuscriptTitle,                 // $3 - title\n  $('Webhook').first().json.body.genre,                           // $4 - genre\n  $('Webhook').first().json.body.manuscriptText,                  // $5 - full_text & original_upload_text\n  $('Webhook').first().json.body.wordCount,                       // $6 - current_word_count\n  $('Webhook').first().json.body.expectedChapters || 0,           // $7 - total_chapters\n  $('Webhook').first().json.body.hasPrologue || false,            // $8 - has_prologue\n  $('Webhook').first().json.body.hasEpilogue || false             // $9 - has_epilogue\n] }}"
+            }
+          },
+          "type": "n8n-nodes-base.postgres",
+          "typeVersion": 2.6,
+          "position": [
+            1120,
+            -304
+          ],
+          "id": "ac18a7af-cbca-4c4a-96bd-f19122298692",
+          "name": "Create Initial Manuscript"
+        },
+        {
+          "parameters": {
+            "operation": "executeQuery",
+            "query": "INSERT INTO notifications (\n  id, manuscript_id, type, title, message,\n  is_read, delivery_method, priority, category,\n  created_at\n) VALUES (\n  uuid_generate_v4(),\n  '{{ $('Webhook').first().json.body.manuscriptId }}',\n  'welcome',\n  'Welcome to Your Author Portal! \ud83c\udf89',\n  'Your portal setup is complete. Upload your manuscript to begin the 4-phase editing process.',\n  false, 'portal', 'high', 'onboarding',\n  NOW()\n);",
+            "options": {}
+          },
+          "type": "n8n-nodes-base.postgres",
+          "typeVersion": 2.6,
+          "position": [
+            2688,
+            -304
+          ],
+          "id": "b0a8cb3c-948d-4d3f-9a50-31e5fdd4ef88",
+          "name": "Create Welcome Notification"
+        },
+        {
+          "parameters": {
+            "operation": "executeQuery",
+            "query": "UPDATE author_profiles SET \n  onboarding_complete = true,\n  updated_at = NOW()\nWHERE id = '{{ $(\"Get Author Details\").item.json.id }}'",
+            "options": {}
+          },
+          "type": "n8n-nodes-base.postgres",
+          "typeVersion": 2.6,
+          "position": [
+            896,
+            -304
+          ],
+          "id": "31329dab-c0c7-49cb-83ff-98e3cd146320",
+          "name": "Update Author Profile"
+        },
+        {
+          "parameters": {
+            "operation": "executeQuery",
+            "query": "SELECT * FROM author_profiles \nWHERE email = '{{ $(\"Extract Data\").item.json.authorEmail }}'",
+            "options": {}
+          },
+          "type": "n8n-nodes-base.postgres",
+          "typeVersion": 2.6,
+          "position": [
+            672,
+            -304
+          ],
+          "id": "a81cf55d-44e1-479e-a530-b5662e343c67",
+          "name": "Get Author Details",
+          "alwaysOutputData": true
+        },
+        {
+          "parameters": {
+            "operation": "executeQuery",
+            "query": "INSERT INTO publishing_projects (\n  id, manuscript_id, author_id, publishing_status,\n  created_at, updated_at\n) VALUES (\n  uuid_generate_v4(),\n  '{{ $('Webhook').first().json.body.manuscriptId }}',\n  '{{ $(\"Get Author Details\").item.json.id }}',\n  'preparing',\n  NOW(), NOW()\n);",
+            "options": {}
+          },
+          "type": "n8n-nodes-base.postgres",
+          "typeVersion": 2.6,
+          "position": [
+            2240,
+            -304
+          ],
+          "id": "19404e8e-c127-4d54-b538-cba7294281ae",
+          "name": "Create Publishing Placeholder"
+        },
+        {
+          "parameters": {
+            "operation": "executeQuery",
+            "query": "INSERT INTO marketing_campaigns (\n  id, manuscript_id, author_id, \n  campaign_name, campaign_type, campaign_status,\n  created_at, updated_at\n) VALUES (\n  uuid_generate_v4(),\n  '{{ $('Webhook').first().json.body.manuscriptId }}',\n  '{{ $(\"Get Author Details\").item.json.id }}',\n  'Pre-Launch Marketing', 'book-launch', 'draft',\n  NOW(), NOW()\n);",
+            "options": {}
+          },
+          "type": "n8n-nodes-base.postgres",
+          "typeVersion": 2.6,
+          "position": [
+            2464,
+            -304
+          ],
+          "id": "0a9a89b0-bd4d-45b2-a6ae-b303c605a635",
+          "name": "Create Marketing Placeholder"
+        },
+        {
+          "parameters": {
+            "operation": "executeQuery",
+            "query": "UPDATE manuscripts SET \n  status = 'uploaded',\n  title = $1,\n  full_text = $2,\n  current_word_count = $3,\n  updated_at = NOW()\nWHERE id = $4;",
+            "options": {
+              "queryReplacement": "={{ [\n  $(\"Extract Data\").item.json.manuscriptTitle || \"Untitled Manuscript\",\n  $(\"Extract Data\").item.json.manuscriptText || \"\",\n  parseInt($(\"Extract Data\").item.json.wordCount) || 0,\n  $(\"Create Initial Manuscript\").item.json.id\n] }}"
+            }
+          },
+          "type": "n8n-nodes-base.postgres",
+          "typeVersion": 2.6,
+          "position": [
+            1568,
+            -304
+          ],
+          "id": "c8d43093-fb05-4b9c-9e27-d707c84394d3",
+          "name": "Update Manuscript Info"
+        },
+        {
+          "parameters": {
+            "respondWith": "json",
+            "responseBody": "={{ $json }}",
+            "options": {}
+          },
+          "type": "n8n-nodes-base.respondToWebhook",
+          "typeVersion": 1.4,
+          "position": [
+            3360,
+            -304
+          ],
+          "id": "4dfe3bd6-5177-455e-9962-f9560b8b90be",
+          "name": "Success Response",
+          "alwaysOutputData": true
+        },
+        {
+          "parameters": {
+            "jsCode": "try {\n    // Get the data from previous nodes\n    const authorData = $('Get Author Details').first().json;\n    const manuscriptData = $('Create Initial Manuscript').first().json;\n\n    // Create the proper response structure\n    const responseData = {\n        success: true,\n        onboardingComplete: true,\n        userId: authorData.id,\n        manuscriptId: manuscriptData.id,\n        manuscriptCreated: true,\n        phasesInitialized: true,\n        redirectTo: `/author-login/author-dashboard/?userId=${authorData.id}`,\n        message: \"Portal setup complete! Your 4-phase editing system is ready.\"\n    };\n\n    return [responseData];\n} catch (error) {\n    // Return error response\n    return [{\n        success: false,\n        error: error.message,\n        message: \"There was an issue setting up your account. Please try again.\"\n    }];\n}"
+          },
+          "type": "n8n-nodes-base.code",
+          "typeVersion": 2,
+          "position": [
+            3136,
+            -304
+          ],
+          "id": "79efd904-7846-4f3c-b04e-17af6c5ddbae",
+          "name": "Generate Response Code"
+        },
+        {
+          "parameters": {
+            "conditions": {
+              "options": {
+                "caseSensitive": true,
+                "leftValue": "",
+                "typeValidation": "strict",
+                "version": 2
+              },
+              "conditions": [
+                {
+                  "id": "31f8480b-9e59-46c3-9285-1a516c55dec5",
+                  "leftValue": "={{ $json.httpMethod }}",
+                  "rightValue": "={{ 'OPTIONS' }}",
+                  "operator": {
+                    "type": "string",
+                    "operation": "equals",
+                    "name": "filter.operator.equals"
+                  }
+                }
+              ],
+              "combinator": "and"
+            },
+            "options": {}
+          },
+          "type": "n8n-nodes-base.if",
+          "typeVersion": 2.2,
+          "position": [
+            224,
+            -400
+          ],
+          "id": "b439e761-8c19-4469-9e6d-dce532c0ac8f",
+          "name": "CORS Handling"
+        },
+        {
+          "parameters": {
+            "respondWith": "json",
+            "responseBody": "{\n  \"statusCode\": 200,\n  \"headers\": {\n    \"Access-Control-Allow-Origin\": \"https://www-spikeisland-ai.filesusr.com\",\n    \"Access-Control-Allow-Methods\": \"POST, OPTIONS\",\n    \"Access-Control-Allow-Headers\": \"Content-Type\",\n    \"Access-Control-Max-Age\": \"86400\"\n  },\n  \"body\": \"OK\"\n}",
+            "options": {}
+          },
+          "type": "n8n-nodes-base.respondToWebhook",
+          "typeVersion": 1.4,
+          "position": [
+            448,
+            -496
+          ],
+          "id": "3a79dbf7-b415-42e7-9052-e2f0458d13ac",
+          "name": "Respond to Webhook"
+        },
+        {
+          "parameters": {
+            "jsCode": "// Escape single quotes for SQL\nconst manuscriptText = $(\"Extract Data\").item.json.manuscriptText || '';\nconst manuscriptTitle = $(\"Extract Data\").item.json.manuscriptTitle || 'Untitled Manuscript';\n\n// Replace single quotes with two single quotes (SQL escape)\nconst escapedText = manuscriptText.replace(/'/g, \"''\");\nconst escapedTitle = manuscriptTitle.replace(/'/g, \"''\");\n\nreturn [{\n  json: {\n    manuscriptId: $(\"Create Initial Manuscript\").item.json.id,\n    escapedText: escapedText,\n    escapedTitle: escapedTitle,\n    wordCount: $(\"Extract Data\").item.json.wordCount || 0\n  }\n}];"
+          },
+          "type": "n8n-nodes-base.code",
+          "typeVersion": 2,
+          "position": [
+            1344,
+            -304
+          ],
+          "id": "12934d79-c5d3-4630-8401-8a7f4d4304f4",
+          "name": "Escape Text"
+        },
+        {
+          "parameters": {
+            "method": "POST",
+            "url": "=https://itlkncjiifbgvmvuejgm.supabase.co/storage/v1/object/manuscripts/original/{{ $(\"Extract Data\").item.json.manuscriptId }}_original.txt",
+            "sendHeaders": true,
+            "headerParameters": {
+              "parameters": [
+                {
+                  "name": "Authorization",
+                  "value": "Bearer <REMOVED - recreate as Supabase Service Key credential in authorslab>"
+                }
+              ]
+            },
+            "sendBody": true,
+            "contentType": "raw",
+            "rawContentType": "text/plain",
+            "body": "={{ $(\"Extract Data\").item.json.manuscriptText }}",
+            "options": {}
+          },
+          "type": "n8n-nodes-base.httpRequest",
+          "typeVersion": 4.2,
+          "position": [
+            1792,
+            -304
+          ],
+          "id": "1b1f1727-6eb5-41ad-8e3c-725ea51fc85d",
+          "name": "Store Original to Database"
+        },
+        {
+          "parameters": {
+            "operation": "executeQuery",
+            "query": "INSERT INTO manuscript_versions (\n  manuscript_id, \n  phase_number, \n  version_type,\n  content,\n  word_count,\n  created_by_editor,\n  notes\n) VALUES (\n  $1,    \n  1,     \n  'working_draft',  -- Changed from 'original' to 'working_draft'\n  $2,    \n  $3,    \n  'Author',\n  'Original manuscript upload during onboarding'\n) \nRETURNING id;",
+            "options": {
+              "queryReplacement": "={{ [\n  $(\"Extract Data\").item.json.manuscriptId,\n  $(\"Extract Data\").item.json.manuscriptText || \"\",\n  parseInt($(\"Extract Data\").item.json.wordCount) || 0\n] }}"
+            }
+          },
+          "type": "n8n-nodes-base.postgres",
+          "typeVersion": 2.6,
+          "position": [
+            2016,
+            -304
+          ],
+          "id": "217f5e56-bf38-4ee1-bcf6-1010382b9065",
+          "name": "Create Version Record"
+        },
+        {
+          "parameters": {
+            "fromEmail": "editors@authorslab.ai",
+            "toEmail": "={{ $('Extract Data').item.json.authorEmail }}",
+            "subject": "Welcome to Your Author Portal - Account Ready!",
+            "html": "=<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6; color: #333;\">\n    <div style=\"background: linear-gradient(135deg, #1e3a8a, #1e40af); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;\">\n        <h1 style=\"color: white; margin: 0; font-size: 28px;\">\ud83c\udf89 Welcome to Spike Island AI!</h1>\n        <p style=\"color: #e5e7eb; margin: 10px 0 0 0; font-size: 18px;\">Your Author Portal is Ready</p>\n    </div>\n    \n    <div style=\"background: white; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);\">\n        <p style=\"font-size: 16px; margin-bottom: 25px;\">Dear {{ $('Extract Data').item.json.authorFirstName }},</p>\n        \n        <p style=\"font-size: 16px; margin-bottom: 25px;\">Your Author Portal setup is complete and ready for action!</p>\n        \n        <div style=\"background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 25px 0;\">\n            <h3 style=\"color: #1e3a8a; margin-top: 0;\">\u2705 Setup Complete:</h3>\n            <ul style=\"list-style: none; padding: 0;\">\n                <li style=\"margin: 8px 0;\">\u2705 Account Created</li>\n                <li style=\"margin: 8px 0;\">\u2705 Preferences Saved</li>\n                <li style=\"margin: 8px 0;\">\u2705 4-Phase Editing System Ready</li>\n                <li style=\"margin: 8px 0;\">\u2705 Dashboard Prepared</li>\n            </ul>\n        </div>\n        \n        <h3 style=\"color: #1e3a8a; margin-top: 30px;\">\ud83d\ude80 Next Steps:</h3>\n        <ol style=\"font-size: 16px; line-height: 1.8;\">\n            <li><strong>Log into your portal:</strong><br>\n                <a href=\"https://www.authorslab.ai/author-studio/\" \n                   style=\"color: #1e3a8a; text-decoration: none; font-weight: bold;\">\n                   https://www.authorslab.ai/author-studio/\n                </a>\n            </li>\n            <li><strong>Upload your manuscript</strong> to begin the professional editing process</li>\n            <li><strong>Start Phase 1:</strong> Developmental Editing</li>\n        </ol>\n        \n        <div style=\"background: #f9fafb; padding: 20px; border-radius: 8px; margin: 25px 0;\">\n            <h3 style=\"color: #1e3a8a; margin-top: 0;\">\ud83d\udcda Your 4-Phase Editing Journey:</h3>\n            <ul style=\"font-size: 15px; line-height: 1.6;\">\n                <li><strong>Phase 1:</strong> Developmental Editing</li>\n                <li><strong>Phase 2:</strong> Line Editing</li>\n                <li><strong>Phase 3:</strong> Copy Editing</li>\n                <li><strong>Phase 4:</strong> Publishing Preparation</li>\n            </ul>\n        </div>\n        \n        <div style=\"text-align: center; margin: 30px 0;\">\n            <a href=\"https://authorslab.ai/author-studio/\" \n               style=\"background: linear-gradient(135deg, #f1c40f, #f39c12); \n                      color: #2c3e50; \n                      padding: 15px 30px; \n                      text-decoration: none; \n                      border-radius: 8px; \n                      font-weight: bold; \n                      font-size: 16px; \n                      display: inline-block;\">\n                \ud83d\ude80 Access Your Portal Now\n            </a>\n        </div>\n        \n        <hr style=\"border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;\">\n        \n        <p style=\"font-size: 14px; color: #6b7280;\">\n            Questions? Reply to this email anytime.<br><br>\n            Best regards,<br>\n            <strong>The Spike Island AI Team</strong>\n        </p>\n        \n        <p style=\"font-size: 12px; color: #9ca3af; margin-top: 20px;\">\n            P.S. Your manuscript upload and editing journey starts here: \n            <a href=\"https://authorslab.ai/author-studio/\" style=\"color: #1e3a8a;\">\n                Author Dashboard\n            </a>\n        </p>\n    </div>\n</div>",
+            "options": {
+              "appendAttribution": false,
+              "attachments": "data"
+            }
+          },
+          "type": "n8n-nodes-base.emailSend",
+          "typeVersion": 2.1,
+          "position": [
+            2912,
+            -304
+          ],
+          "id": "d580ee98-ca54-401f-bf24-26daf21dc55e",
+          "name": "Send email",
+          "webhookId": "170c8f8f-a6bb-42d3-87cc-ece3bbd90c56"
+        }
+      ],
+      "connections": {
+        "Webhook": {
+          "main": [
+            [
+              {
+                "node": "CORS Handling",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Extract Data": {
+          "main": [
+            [
+              {
+                "node": "Get Author Details",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Create Initial Manuscript": {
+          "main": [
+            [
+              {
+                "node": "Escape Text",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Create Welcome Notification": {
+          "main": [
+            [
+              {
+                "node": "Send email",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Update Author Profile": {
+          "main": [
+            [
+              {
+                "node": "Create Initial Manuscript",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Get Author Details": {
+          "main": [
+            [
+              {
+                "node": "Update Author Profile",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Create Publishing Placeholder": {
+          "main": [
+            [
+              {
+                "node": "Create Marketing Placeholder",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Create Marketing Placeholder": {
+          "main": [
+            [
+              {
+                "node": "Create Welcome Notification",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Update Manuscript Info": {
+          "main": [
+            [
+              {
+                "node": "Store Original to Database",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Generate Response Code": {
+          "main": [
+            [
+              {
+                "node": "Success Response",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "CORS Handling": {
+          "main": [
+            [
+              {
+                "node": "Respond to Webhook",
+                "type": "main",
+                "index": 0
+              }
+            ],
+            [
+              {
+                "node": "Extract Data",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Escape Text": {
+          "main": [
+            [
+              {
+                "node": "Update Manuscript Info",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Store Original to Database": {
+          "main": [
+            [
+              {
+                "node": "Create Version Record",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Create Version Record": {
+          "main": [
+            [
+              {
+                "node": "Create Publishing Placeholder",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Send email": {
+          "main": [
+            [
+              {
+                "node": "Generate Response Code",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        }
+      },
+      "nodeGroups": []
+    },
+    "tags": [],
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "parentFolderId": null,
+    "scopes": [
+      "execution:reveal",
+      "workflow:create",
+      "workflow:delete",
+      "workflow:disableRedaction",
+      "workflow:enableRedaction",
+      "workflow:execute",
+      "workflow:execute-chat",
+      "workflow:export",
+      "workflow:import",
+      "workflow:list",
+      "workflow:move",
+      "workflow:publish",
+      "workflow:read",
+      "workflow:share",
+      "workflow:unpublish",
+      "workflow:unshare",
+      "workflow:update"
+    ],
+    "canExecute": true
+  },
+  "triggerInfo": "This workflow has the following trigger(s):\n\n\nWebhook trigger(s):\n\n\n\t\t\t\t<trigger 1>\n\t\t\t\t\t - Node name: Webhook\n\t\t\t\t\t - Production URL: https://spikeislandstudios.app.n8n.cloud/webhook/ce9cb6e0-f4ad-4f60-876f-1b8cff436e21/onboarding\n\t\t\t\t\t - Test URL: https://spikeislandstudios.app.n8n.cloud/webhook-test/ce9cb6e0-f4ad-4f60-876f-1b8cff436e21/onboarding\n\t\t\t\t\t - HTTP Method: POST\n\t\t\t\t\t - Response Mode: Webhook is configured to respond using \"Respond to Webhook\" node.\n\t\t\t\t\t - No credentials required for this webhook.\n\t\t\t\t</trigger 1>"
+}
