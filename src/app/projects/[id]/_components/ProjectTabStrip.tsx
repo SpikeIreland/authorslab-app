@@ -1,8 +1,22 @@
 'use client'
 
-// Horizontal tab strip across the top of every project page. A Client
-// Component because it needs usePathname() to know which tab is currently
-// open and apply the active styling.
+/**
+ * ProjectTabStrip — horizontal tab strip across the top of every project page.
+ *
+ * AL-UX-004 §5 (Phase 4): full state-grammar restyle in the Manuscript Room
+ * palette.
+ *
+ *   complete : sage-deep ✓, ink label
+ *   active   : filled sage dot + sage-bg halo, ink label semibold
+ *   pending  : hollow ring, muted label
+ *   skipped  : hollow dashed ring + "Not needed" chip on hover
+ *              (NO strikethrough, NO italic — those read as broken)
+ *
+ * Layout: Overview → | → journey tabs → | → tool tabs (Research + Script)
+ * Script keeps its "Soon" pill as a small-caps chip, not italics.
+ *
+ * Client Component because it needs usePathname() to know which tab is open.
+ */
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -19,11 +33,11 @@ const JOURNEY_TABS = [
 
 const TOOL_TABS = [
   { id: 'research', label: 'Research' },
-  { id: 'script', label: 'Script' },
+  { id: 'script', label: 'Script', soon: true },
 ] as const
 
-// Same derivation logic as the Lobby card so a project's pill states stay
-// consistent across both surfaces. Mirrors src/app/lobby/page.tsx.
+// Same derivation rule as Lobby / Overview stepper, so a project's state stays
+// consistent everywhere it's rendered.
 function deriveTabState(
   tabId: string,
   phase: number | null,
@@ -32,14 +46,10 @@ function deriveTabState(
   if (status === 'complete') {
     return tabId === 'ghostwriter' ? 'skipped' : 'complete'
   }
-
-  // Write-path projects from the new-project fork — Ghostwriter is the
-  // active stage; everything downstream is pending.
   if (status === 'ghostwriting') {
     if (tabId === 'ghostwriter') return 'active'
     return 'pending'
   }
-
   // Existing manuscripts (uploaded via legacy onboarding) skipped Ghostwriter.
   if (tabId === 'ghostwriter') return 'skipped'
 
@@ -70,83 +80,277 @@ export function ProjectTabStrip({
   status: string | null
 }) {
   const pathname = usePathname()
-
-  const isCurrent = (tabId: string) => pathname === `/projects/${projectId}/${tabId}`
-
-  function tabClasses(tabId: string, isToolTab: boolean): string {
-    const base = 'px-3 py-2.5 text-sm border-b-2 -mb-px whitespace-nowrap inline-flex items-center gap-1.5 transition-colors'
-
-    // Currently selected tab — bold, dark underline, regardless of state.
-    if (isCurrent(tabId)) {
-      return `${base} border-slate-900 text-slate-900 font-medium`
-    }
-
-    if (isToolTab) {
-      // Research = always available; Script = aspirational/italic.
-      if (tabId === 'script') {
-        return `${base} border-transparent text-slate-400 italic hover:text-slate-600`
-      }
-      return `${base} border-transparent text-slate-600 hover:text-slate-900`
-    }
-
-    const state = deriveTabState(tabId, phase, status)
-    if (state === 'complete') {
-      return `${base} border-transparent text-emerald-700 hover:text-emerald-800`
-    }
-    if (state === 'active') {
-      return `${base} border-transparent text-blue-700 hover:text-blue-800`
-    }
-    if (state === 'skipped') {
-      return `${base} border-transparent text-slate-400 italic line-through hover:text-slate-500`
-    }
-    return `${base} border-transparent text-slate-500 hover:text-slate-800`
-  }
-
   const overviewHref = `/projects/${projectId}`
+  const isCurrent = (tabId: string) => pathname === `/projects/${projectId}/${tabId}`
   const isOverviewCurrent = pathname === overviewHref
 
   return (
-    <div className="bg-slate-50 border-b border-slate-200">
+    <div
+      style={{
+        background: 'var(--color-paper-warm)',
+        borderBottom: '1px solid var(--color-line)',
+      }}
+    >
       <div className="px-4 flex items-center overflow-x-auto">
-        {/* Overview — AL-UX-004 §4/§5: first tab, always available. Full state-
-            grammar restyle of the strip is Phase 4; for Phase 3 we just want
-            the tab entry so users can return here from any journey tab. */}
-        <Link
-          href={overviewHref}
-          className={
-            isOverviewCurrent
-              ? 'px-3 py-2.5 text-sm border-b-2 -mb-px whitespace-nowrap inline-flex items-center gap-1.5 border-slate-900 text-slate-900 font-medium'
-              : 'px-3 py-2.5 text-sm border-b-2 -mb-px whitespace-nowrap inline-flex items-center gap-1.5 border-transparent text-slate-600 hover:text-slate-900 transition-colors'
-          }
-        >
-          Overview
-        </Link>
+        {/* Overview — always available, always the entry point back to the book */}
+        <OverviewTab href={overviewHref} isCurrent={isOverviewCurrent} />
 
-        <span className="w-px h-5 bg-slate-300 mx-2" aria-hidden />
+        <Divider />
 
         {JOURNEY_TABS.map(t => {
           const state = deriveTabState(t.id, phase, status)
           return (
-            <Link key={t.id} href={`/projects/${projectId}/${t.id}`} className={tabClasses(t.id, false)}>
-              {state === 'complete' && !isCurrent(t.id) && (
-                <span className="text-[11px]" aria-hidden>✓</span>
-              )}
-              {state === 'active' && !isCurrent(t.id) && (
-                <span className="w-1.5 h-1.5 rounded-full bg-current" aria-hidden />
-              )}
-              {t.label}
-            </Link>
+            <JourneyTab
+              key={t.id}
+              href={`/projects/${projectId}/${t.id}`}
+              label={t.label}
+              state={state}
+              isCurrent={isCurrent(t.id)}
+            />
           )
         })}
 
-        <span className="w-px h-5 bg-slate-300 mx-2" aria-hidden />
+        <Divider />
 
         {TOOL_TABS.map(t => (
-          <Link key={t.id} href={`/projects/${projectId}/${t.id}`} className={tabClasses(t.id, true)}>
-            {t.label}
-          </Link>
+          <ToolTab
+            key={t.id}
+            href={`/projects/${projectId}/${t.id}`}
+            label={t.label}
+            soon={'soon' in t ? t.soon : false}
+            isCurrent={isCurrent(t.id)}
+          />
         ))}
       </div>
     </div>
+  )
+}
+
+// ============================================================================
+// Tab building blocks
+// ============================================================================
+
+const TAB_BASE = 'relative px-3 py-3 text-[13.5px] whitespace-nowrap inline-flex items-center gap-2 transition-colors'
+
+/** Underline shown under the currently-selected tab. */
+function ActiveUnderline() {
+  return (
+    <span
+      aria-hidden="true"
+      className="absolute left-3 right-3 -bottom-px h-[2px]"
+      style={{ background: 'var(--color-ink)' }}
+    />
+  )
+}
+
+function Divider() {
+  return (
+    <span
+      aria-hidden="true"
+      className="mx-2"
+      style={{ width: 1, height: 20, background: 'var(--color-line)' }}
+    />
+  )
+}
+
+function OverviewTab({ href, isCurrent }: { href: string; isCurrent: boolean }) {
+  return (
+    <Link
+      href={href}
+      className={TAB_BASE}
+      style={{
+        color: isCurrent ? 'var(--color-ink)' : 'var(--color-muted)',
+        fontWeight: isCurrent ? 600 : 500,
+      }}
+      onMouseEnter={(e) => { if (!isCurrent) e.currentTarget.style.color = 'var(--color-ink)' }}
+      onMouseLeave={(e) => { if (!isCurrent) e.currentTarget.style.color = 'var(--color-muted)' }}
+    >
+      {/* Small book-spine glyph so Overview reads as "the book itself", not another journey step. */}
+      <span
+        aria-hidden="true"
+        className="inline-block rounded-[1px]"
+        style={{
+          width: 3,
+          height: 12,
+          background: isCurrent ? 'var(--color-ink)' : 'var(--color-faint)',
+        }}
+      />
+      Overview
+      {isCurrent && <ActiveUnderline />}
+    </Link>
+  )
+}
+
+function JourneyTab({
+  href,
+  label,
+  state,
+  isCurrent,
+}: {
+  href: string
+  label: string
+  state: StageState
+  isCurrent: boolean
+}) {
+  const { colour, weight, tooltip } = journeyStyle(state, isCurrent)
+
+  return (
+    <Link
+      href={href}
+      className={TAB_BASE}
+      title={tooltip}
+      style={{ color: colour, fontWeight: weight }}
+      onMouseEnter={(e) => {
+        if (!isCurrent && state !== 'skipped') e.currentTarget.style.color = 'var(--color-ink)'
+      }}
+      onMouseLeave={(e) => { e.currentTarget.style.color = colour }}
+    >
+      <StageMarker state={state} isCurrent={isCurrent} />
+      <span>{label}</span>
+      {state === 'skipped' && (
+        <span
+          className="text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wider"
+          style={{
+            background: 'transparent',
+            border: '1px dashed var(--color-faint)',
+            color: 'var(--color-faint)',
+            letterSpacing: '0.08em',
+          }}
+        >
+          Not needed
+        </span>
+      )}
+      {isCurrent && <ActiveUnderline />}
+    </Link>
+  )
+}
+
+function ToolTab({
+  href,
+  label,
+  soon,
+  isCurrent,
+}: {
+  href: string
+  label: string
+  soon: boolean
+  isCurrent: boolean
+}) {
+  const colour = isCurrent
+    ? 'var(--color-ink)'
+    : soon ? 'var(--color-faint)' : 'var(--color-muted)'
+
+  return (
+    <Link
+      href={href}
+      className={TAB_BASE}
+      style={{
+        color: colour,
+        fontWeight: isCurrent ? 600 : 400,
+      }}
+      onMouseEnter={(e) => { if (!isCurrent && !soon) e.currentTarget.style.color = 'var(--color-ink)' }}
+      onMouseLeave={(e) => { e.currentTarget.style.color = colour }}
+    >
+      <span>{label}</span>
+      {soon && (
+        <span
+          className="text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wider"
+          style={{
+            background: 'var(--color-amber-bg)',
+            color: 'var(--color-muted)',
+            letterSpacing: '0.1em',
+            fontWeight: 500,
+          }}
+        >
+          Soon
+        </span>
+      )}
+      {isCurrent && <ActiveUnderline />}
+    </Link>
+  )
+}
+
+// ============================================================================
+// State grammar
+// ============================================================================
+
+function journeyStyle(state: StageState, isCurrent: boolean): {
+  colour: string
+  weight: number
+  tooltip?: string
+} {
+  if (isCurrent) return { colour: 'var(--color-ink)', weight: 600 }
+  if (state === 'complete') return { colour: 'var(--color-sage-deep)', weight: 500 }
+  if (state === 'active') return { colour: 'var(--color-ink)', weight: 600 }
+  if (state === 'skipped') return { colour: 'var(--color-faint)', weight: 400, tooltip: 'Not part of this journey' }
+  return { colour: 'var(--color-muted)', weight: 400 }
+}
+
+/** Dot/check/ring shown before the label per the state grammar. */
+function StageMarker({ state, isCurrent }: { state: StageState; isCurrent: boolean }) {
+  // Current tab: no leading marker — the underline carries the affordance,
+  // and the label weight is already bumped.
+  if (isCurrent) return null
+
+  if (state === 'complete') {
+    return (
+      <span
+        aria-hidden="true"
+        className="inline-flex items-center justify-center rounded-full text-[9px] font-bold"
+        style={{
+          width: 14,
+          height: 14,
+          background: 'var(--color-sage-bg)',
+          color: 'var(--color-sage-deep)',
+        }}
+      >
+        ✓
+      </span>
+    )
+  }
+  if (state === 'active') {
+    return (
+      <span
+        aria-hidden="true"
+        className="inline-flex items-center justify-center"
+        style={{
+          padding: 2,
+          borderRadius: 999,
+          background: 'var(--color-sage-bg)',
+        }}
+      >
+        <span
+          className="inline-block rounded-full"
+          style={{ width: 8, height: 8, background: 'var(--color-sage)' }}
+        />
+      </span>
+    )
+  }
+  if (state === 'skipped') {
+    return (
+      <span
+        aria-hidden="true"
+        className="inline-block rounded-full"
+        style={{
+          width: 8,
+          height: 8,
+          border: '1px dashed var(--color-faint)',
+          background: 'transparent',
+        }}
+      />
+    )
+  }
+  // pending
+  return (
+    <span
+      aria-hidden="true"
+      className="inline-block rounded-full"
+      style={{
+        width: 8,
+        height: 8,
+        border: '1px solid var(--color-line)',
+        background: 'transparent',
+      }}
+    />
   )
 }
