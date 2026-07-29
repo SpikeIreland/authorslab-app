@@ -58,3 +58,7 @@ next-env.d.ts
 
 # macOS text-clipping artifacts (accidental drag-drops)
 *.textClipping
+
+# credentials & bridge artifacts — never commit
+n8n-authorslab-key
+_to_delete/
