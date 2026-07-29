@@ -36,11 +36,11 @@ export function VersionsDropdown({ manuscriptId, currentPhaseNumber }: VersionsD
         <div className="relative">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-line rounded-lg hover:bg-paper-warm transition-colors"
             >
-                <DocumentTextIcon className="w-5 h-5 text-gray-600" />
-                <span className="text-sm font-medium text-gray-700">Versions</span>
-                <ChevronDownIcon className={`w-4 h-4 text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                <DocumentTextIcon className="w-5 h-5 text-muted" />
+                <span className="text-sm font-medium text-ink">Versions</span>
+                <ChevronDownIcon className={`w-4 h-4 text-muted transition-transform ${isOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {isOpen && (
@@ -52,18 +52,18 @@ export function VersionsDropdown({ manuscriptId, currentPhaseNumber }: VersionsD
                     />
 
                     {/* Dropdown */}
-                    <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
-                        <div className="p-3 border-b border-gray-200">
-                            <h3 className="text-sm font-semibold text-gray-900">📖 Manuscript Versions</h3>
+                    <div className="absolute right-0 mt-2 w-80 bg-white border border-line rounded-lg shadow-xl z-50">
+                        <div className="p-3 border-b border-line">
+                            <h3 className="text-sm font-semibold text-ink">📖 Manuscript Versions</h3>
                         </div>
 
                         <div className="max-h-96 overflow-y-auto">
                             {loading ? (
-                                <div className="p-4 text-center text-sm text-gray-500">
+                                <div className="p-4 text-center text-sm text-muted">
                                     Loading versions...
                                 </div>
                             ) : phases.length === 0 ? (
-                                <div className="p-4 text-center text-sm text-gray-500">
+                                <div className="p-4 text-center text-sm text-muted">
                                     No versions available yet
                                 </div>
                             ) : (
@@ -72,17 +72,17 @@ export function VersionsDropdown({ manuscriptId, currentPhaseNumber }: VersionsD
                                     const isCurrent = phase.phaseNumber === currentPhaseNumber
 
                                     return (
-                                        <div key={phase.phaseNumber} className="border-b border-gray-100 last:border-0">
-                                            <div className="p-3 bg-gray-50">
+                                        <div key={phase.phaseNumber} className="border-b border-line-soft last:border-0">
+                                            <div className="p-3 bg-ivory">
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-xs font-semibold text-gray-700">
+                                                    <span className="text-xs font-semibold text-ink">
                                                         Phase {phase.phaseNumber} - {phase.editor}
                                                     </span>
                                                     <span className={`px-2 py-0.5 text-xs font-medium rounded ${isComplete
-                                                        ? 'bg-green-100 text-green-700'
+                                                        ? 'bg-status-ok/10 text-status-ok'
                                                         : isCurrent
-                                                            ? 'bg-purple-100 text-purple-700'
-                                                            : 'bg-gray-100 text-gray-600'
+                                                            ? 'bg-amber-bg text-status-warn'
+                                                            : 'bg-paper-warm text-muted'
                                                         }`}>
                                                         {isComplete ? '✓ Complete' : isCurrent ? '⚡ Current' : 'Pending'}
                                                     </span>
@@ -98,15 +98,15 @@ export function VersionsDropdown({ manuscriptId, currentPhaseNumber }: VersionsD
                                                                 window.open(version.file_url || '', '_blank')
                                                                 setIsOpen(false)
                                                             }}
-                                                            className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-left hover:bg-gray-100 transition-colors"
+                                                            className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-left hover:bg-paper-warm transition-colors"
                                                         >
-                                                            <DocumentIcon className="w-5 h-5 text-red-600 flex-shrink-0" />
+                                                            <DocumentIcon className="w-5 h-5 text-status-high flex-shrink-0" />
 
                                                             <div className="flex-1 min-w-0">
-                                                                <div className="text-sm font-medium text-gray-900">
+                                                                <div className="text-sm font-medium text-ink">
                                                                     {`${phase.editor}'s Final Version`}
                                                                 </div>
-                                                                <div className="text-xs text-gray-500">
+                                                                <div className="text-xs text-muted">
                                                                     PDF · {new Date(version.created_at).toLocaleDateString('en-US', {
                                                                         month: 'short',
                                                                         day: 'numeric',
@@ -116,7 +116,7 @@ export function VersionsDropdown({ manuscriptId, currentPhaseNumber }: VersionsD
                                                                 </div>
                                                             </div>
 
-                                                            <ChevronDownIcon className="w-4 h-4 text-gray-400 -rotate-90 flex-shrink-0" />
+                                                            <ChevronDownIcon className="w-4 h-4 text-faint -rotate-90 flex-shrink-0" />
                                                         </button>
                                                     )
                                                 })}

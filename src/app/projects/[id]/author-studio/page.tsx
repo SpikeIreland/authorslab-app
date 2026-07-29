@@ -78,16 +78,16 @@ export default function AuthorStudioTabPage() {
   )
 
   if (loading) {
-    return <p className="p-8 text-sm text-slate-500">Loading…</p>
+    return <p className="p-8 text-sm text-muted">Loading…</p>
   }
 
   if (error || !state) {
     return (
       <div className="p-8 max-w-md">
-        <p className="text-sm text-rose-700">{error ?? 'Failed to load.'}</p>
+        <p className="text-sm text-status-high">{error ?? 'Failed to load.'}</p>
         <Link
           href={`/author-studio?manuscriptId=${projectId}`}
-          className="inline-block mt-4 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-sm font-medium"
+          className="inline-block mt-4 px-4 py-2 bg-sage-deep hover:bg-sage-deep/90 text-white rounded-md text-sm font-medium"
         >
           Open Author Studio →
         </Link>
@@ -108,7 +108,7 @@ export default function AuthorStudioTabPage() {
 
         {/* Editor sub-bar */}
         <section className="mb-5">
-          <p className="text-[10px] uppercase tracking-wider font-medium text-slate-400 mb-2">
+          <p className="text-[10px] uppercase tracking-wider font-medium text-faint mb-2">
             Working with
           </p>
           <div className="flex flex-wrap gap-2">
@@ -122,12 +122,12 @@ export default function AuthorStudioTabPage() {
         <section className="mb-8 flex flex-wrap items-center gap-3">
           <Link
             href={studioHref}
-            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-sm font-medium"
+            className="px-4 py-2 bg-sage-deep hover:bg-sage-deep/90 text-white rounded-md text-sm font-medium"
           >
             {ctaLabel}
           </Link>
           {state.open_issues_count > 0 && (
-            <span className="text-xs text-slate-500">
+            <span className="text-xs text-muted">
               {state.open_issues_count} open {state.open_issues_count === 1 ? 'issue' : 'issues'} across your chapters
             </span>
           )}
@@ -140,33 +140,33 @@ export default function AuthorStudioTabPage() {
               label="Developmental"
               done={state.approved_for_dev}
               total={state.total_chapters}
-              color="#639922"
+              color="#4A8340"
             />
             <ProgressCard
               label="Line"
               done={state.approved_for_line}
               total={state.total_chapters}
-              color="#7F77DD"
+              color="#D08A4F"
             />
             <ProgressCard
               label="Copy"
               done={state.approved_for_copy}
               total={state.total_chapters}
-              color="#378ADD"
+              color="#0B7A5C"
             />
           </section>
         )}
 
         {/* Chapter status table */}
         {state.chapters.length === 0 ? (
-          <section className="bg-slate-50 border border-slate-200 rounded-md p-6 text-center">
-            <p className="text-sm text-slate-700 font-medium mb-1">No chapters yet</p>
-            <p className="text-xs text-slate-500 mb-4">
+          <section className="bg-ivory border border-line rounded-md p-6 text-center">
+            <p className="text-sm text-ink font-medium mb-1">No chapters yet</p>
+            <p className="text-xs text-muted mb-4">
               Open Author Studio to upload or build out your manuscript&rsquo;s chapters.
             </p>
             <Link
               href={studioHref}
-              className="inline-block px-3 py-1.5 border border-slate-300 rounded-md text-xs font-medium text-slate-700 hover:bg-slate-50"
+              className="inline-block px-3 py-1.5 border border-line rounded-md text-xs font-medium text-ink hover:bg-paper-warm"
             >
               Open Author Studio →
             </Link>
@@ -174,50 +174,50 @@ export default function AuthorStudioTabPage() {
         ) : (
           <section>
             <div className="flex items-baseline justify-between mb-3">
-              <h2 className="text-sm font-medium text-slate-900">Chapters</h2>
-              <p className="text-[11px] text-slate-500">
+              <h2 className="text-sm font-medium text-ink">Chapters</h2>
+              <p className="text-[11px] text-muted">
                 D · L · C indicate approvals from Alex, Sam, and Jordan
               </p>
             </div>
-            <div className="border border-slate-200 rounded-md overflow-hidden">
+            <div className="border border-line rounded-md overflow-hidden">
               <table className="w-full text-sm">
-                <thead className="bg-slate-50 border-b border-slate-200">
+                <thead className="bg-ivory border-b border-line">
                   <tr>
-                    <th className="text-left px-3 py-2 font-medium text-[11px] uppercase tracking-wider text-slate-500 w-12">#</th>
-                    <th className="text-left px-3 py-2 font-medium text-[11px] uppercase tracking-wider text-slate-500">Title</th>
-                    <th className="text-right px-3 py-2 font-medium text-[11px] uppercase tracking-wider text-slate-500 w-24">Words</th>
-                    <th className="text-center px-3 py-2 font-medium text-[11px] uppercase tracking-wider text-slate-500 w-32">D · L · C</th>
-                    <th className="text-right px-3 py-2 font-medium text-[11px] uppercase tracking-wider text-slate-500 w-20"></th>
+                    <th className="text-left px-3 py-2 font-medium text-[11px] uppercase tracking-wider text-muted w-12">#</th>
+                    <th className="text-left px-3 py-2 font-medium text-[11px] uppercase tracking-wider text-muted">Title</th>
+                    <th className="text-right px-3 py-2 font-medium text-[11px] uppercase tracking-wider text-muted w-24">Words</th>
+                    <th className="text-center px-3 py-2 font-medium text-[11px] uppercase tracking-wider text-muted w-32">D · L · C</th>
+                    <th className="text-right px-3 py-2 font-medium text-[11px] uppercase tracking-wider text-muted w-20"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {state.chapters.map(ch => (
-                    <tr key={ch.id} className="border-t border-slate-100 hover:bg-slate-50">
-                      <td className="px-3 py-2 text-slate-500 text-xs">
+                    <tr key={ch.id} className="border-t border-line-soft hover:bg-paper-warm">
+                      <td className="px-3 py-2 text-muted text-xs">
                         {ch.chapter_number === 0 ? 'P' : ch.chapter_number}
                       </td>
-                      <td className="px-3 py-2 text-slate-900">
+                      <td className="px-3 py-2 text-ink">
                         <div className="flex items-center gap-2">
                           <span>{ch.title}</span>
                           {ch.has_unresolved_issues && (
-                            <span className="inline-block w-1.5 h-1.5 bg-amber-500 rounded-full" title="Unresolved issues" />
+                            <span className="inline-block w-1.5 h-1.5 bg-status-warn rounded-full" title="Unresolved issues" />
                           )}
                         </div>
                       </td>
-                      <td className="px-3 py-2 text-right text-slate-500 text-xs">
+                      <td className="px-3 py-2 text-right text-muted text-xs">
                         {ch.word_count ? ch.word_count.toLocaleString() : '—'}
                       </td>
                       <td className="px-3 py-2">
                         <div className="flex items-center justify-center gap-1">
-                          <ApprovalDot done={ch.dev_approved} color="#639922" letter="D" />
-                          <ApprovalDot done={ch.line_approved} color="#7F77DD" letter="L" />
-                          <ApprovalDot done={ch.copy_approved} color="#378ADD" letter="C" />
+                          <ApprovalDot done={ch.dev_approved} color="#4A8340" letter="D" />
+                          <ApprovalDot done={ch.line_approved} color="#D08A4F" letter="L" />
+                          <ApprovalDot done={ch.copy_approved} color="#0B7A5C" letter="C" />
                         </div>
                       </td>
                       <td className="px-3 py-2 text-right">
                         <Link
                           href={`${studioHref}&chapterId=${ch.id}`}
-                          className="text-xs text-slate-600 hover:text-slate-900"
+                          className="text-xs text-muted hover:text-ink"
                         >
                           Open →
                         </Link>
@@ -231,7 +231,7 @@ export default function AuthorStudioTabPage() {
         )}
 
         {/* Footnote */}
-        <p className="mt-6 text-xs text-slate-500 leading-relaxed max-w-md">
+        <p className="mt-6 text-xs text-muted leading-relaxed max-w-md">
           The full editing experience — chapter editor, issue panel, real-time chat with {activeEditor?.name ?? 'your editor'} — opens in your existing Author Studio. We&rsquo;re integrating it into the project shell in a future pass; for now this is the bridge.
         </p>
 
@@ -254,29 +254,29 @@ function EditorPill({ editor }: { editor: Editor }) {
 
   if (editor.status === 'complete') {
     return (
-      <div className="inline-flex items-center gap-2 pl-1 pr-3 py-0.5 rounded-full bg-emerald-50 border border-emerald-200">
+      <div className="inline-flex items-center gap-2 pl-1 pr-3 py-0.5 rounded-full bg-sage-bg border border-sage-deep/40">
         {avatar}
-        <span className="text-xs text-slate-700 font-medium">{editor.name}</span>
-        <span className="text-[11px] text-emerald-700">{editor.role} ✓</span>
+        <span className="text-xs text-ink font-medium">{editor.name}</span>
+        <span className="text-[11px] text-sage-deep">{editor.role} ✓</span>
       </div>
     )
   }
 
   if (editor.status === 'active') {
     return (
-      <div className="inline-flex items-center gap-2 pl-1 pr-3 py-0.5 rounded-full bg-blue-50 border border-blue-200">
+      <div className="inline-flex items-center gap-2 pl-1 pr-3 py-0.5 rounded-full bg-sage-bg border border-sage">
         {avatar}
-        <span className="text-xs text-slate-900 font-medium">{editor.name}</span>
-        <span className="text-[11px] text-blue-700">{editor.role}</span>
+        <span className="text-xs text-ink font-medium">{editor.name}</span>
+        <span className="text-[11px] text-sage-deep">{editor.role}</span>
       </div>
     )
   }
 
   return (
-    <div className="inline-flex items-center gap-2 pl-1 pr-3 py-0.5 rounded-full bg-slate-50 border border-slate-200 opacity-70">
+    <div className="inline-flex items-center gap-2 pl-1 pr-3 py-0.5 rounded-full bg-ivory border border-line opacity-70">
       {avatar}
-      <span className="text-xs text-slate-700">{editor.name}</span>
-      <span className="text-[11px] text-slate-500">{editor.role}</span>
+      <span className="text-xs text-ink">{editor.name}</span>
+      <span className="text-[11px] text-muted">{editor.role}</span>
     </div>
   )
 }
@@ -288,12 +288,12 @@ function EditorPill({ editor }: { editor: Editor }) {
 function ProgressCard({ label, done, total, color }: { label: string; done: number; total: number; color: string }) {
   const pct = total > 0 ? Math.round((done / total) * 100) : 0
   return (
-    <div className="bg-white border border-slate-200 rounded-md p-3">
-      <p className="text-[10px] uppercase tracking-wider font-medium text-slate-500 mb-1">{label}</p>
-      <p className="text-base font-medium text-slate-900 mb-2">
-        {done} <span className="text-slate-400 font-normal text-sm">of {total}</span>
+    <div className="bg-white border border-line rounded-md p-3">
+      <p className="text-[10px] uppercase tracking-wider font-medium text-muted mb-1">{label}</p>
+      <p className="text-base font-medium text-ink mb-2">
+        {done} <span className="text-faint font-normal text-sm">of {total}</span>
       </p>
-      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+      <div className="h-1.5 bg-paper-warm rounded-full overflow-hidden">
         <div
           className="h-full transition-all"
           style={{ width: `${pct}%`, background: color }}
@@ -322,7 +322,7 @@ function ApprovalDot({ done, color, letter }: { done: boolean; color: string; le
   }
   return (
     <span
-      className="inline-flex items-center justify-center w-5 h-5 rounded-full border border-slate-200 text-slate-400 text-[10px] font-medium"
+      className="inline-flex items-center justify-center w-5 h-5 rounded-full border border-line text-faint text-[10px] font-medium"
       title={`${letter} not yet approved`}
     >
       {letter}

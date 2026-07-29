@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AL-UX-007 · Author Studio reskin — component sample</title>
+<style>
+  :root{
+    --ivory:#FAF8F4; --paper:#FFFFFF; --paper-warm:#FDFBF7;
+    --charcoal:#2C2C2A; --ink:#2C2C2C; --muted:#8A857C; --faint:#B5AFA4;
+    --line:#E8E2D8; --line-soft:#F0EBE2;
+    --sage:#8FAF8A; --sage-deep:#5C7A6B; --sage-bg:#EFF4EE;
+    --terracotta:#D4956A; --amber-bg:#FDF6EE;
+    /* Validated persona quintet (AL-UX-007) — identity, not state */
+    --alex:#4A8340;   --alex-l:#EEF4EA;   --alex-t:#3A6832;
+    --sam:#D08A4F;    --sam-l:#FBF1E6;    --sam-t:#A56531;
+    --jordan:#0B7A5C; --jordan-l:#E7F2EE; --jordan-t:#0A614A;
+    --taylor:#BC9440; --taylor-l:#F8F2E2; --taylor-t:#8F6F2C;
+    --riley:#84500E;  --riley-l:#F5EBDE;  --riley-t:#6B400B;
+    /* Status trio — reserved */
+    --ok:#5C7A6B; --warn:#C07A3E; --high:#B85C48;
+    --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:#EDE9E1;font-family:var(--sans);color:var(--ink);padding-bottom:60px;}
+  .note{position:sticky;top:0;z-index:60;background:var(--charcoal);color:#B5AFA4;font-size:12px;padding:8px 20px;text-align:center;}
+  .note b{color:#EDE9E1;}
+  .wrap{max-width:1060px;margin:26px auto;padding:0 24px;}
+  h2{font-family:var(--serif);font-weight:500;font-size:19px;margin:34px 0 6px;}
+  .sub{font-size:12.5px;color:var(--muted);margin-bottom:14px;}
+  .panel{background:var(--ivory);border:1px solid var(--line);border-radius:12px;padding:20px;}
+  .row{display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+
+  /* Persona avatars (header row) */
+  .pav{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:700;font-size:14px;}
+  .pav.locked{background:var(--line-soft);color:var(--faint);}
+  .ring{box-shadow:0 0 0 3px var(--sage-bg), 0 0 0 4.5px var(--sage);}
+  .plbl{font-size:11px;color:var(--muted);text-align:center;margin-top:6px;}
+  .pcol{text-align:center;}
+
+  /* Chat */
+  .chat{max-width:420px;background:var(--paper);border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+  .chat .hd{background:var(--sam);color:#fff;padding:13px 16px;}
+  .chat .hd .nm{font-weight:700;font-size:15px;}
+  .chat .hd .rl{font-size:11.5px;opacity:.85;}
+  .chat .body{padding:14px;display:flex;flex-direction:column;gap:10px;background:var(--ivory);}
+  .msg{display:flex;gap:8px;align-items:flex-start;}
+  .msg .av{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;
+    justify-content:center;color:#fff;font-size:11px;font-weight:700;}
+  .bubble{border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.5;max-width:85%;}
+  .msg.ed .av{background:var(--sam);}
+  .msg.ed .bubble{background:var(--sam-l);border:1px solid #EBD7C2;color:var(--ink);}
+  .msg.me{flex-direction:row-reverse;}
+  .msg.me .av{background:var(--charcoal);}
+  .msg.me .bubble{background:var(--paper-warm);border:1px solid var(--line);}
+  .sysmsg{align-self:center;font-size:12px;color:var(--muted);background:var(--amber-bg);
+    border:1px dashed var(--terracotta);border-radius:8px;padding:7px 12px;}
+
+  /* Issue card */
+  .issue{max-width:420px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
+  .chips{display:flex;gap:6px;margin-bottom:9px;align-items:center;}
+  .chip{font-size:11px;font-weight:600;padding:3px 9px;border-radius:99px;display:inline-flex;gap:6px;align-items:center;}
+  .chip .ci{width:14px;height:14px;border-radius:50%;color:#fff;font-size:8.5px;font-weight:800;
+    display:flex;align-items:center;justify-content:center;}
+  .chip.sam{background:var(--sam-l);color:var(--sam-t);}
+  .chip.sam .ci{background:var(--sam);}
+  .sev{font-size:11.5px;font-weight:600;display:inline-flex;gap:5px;align-items:center;}
+  .sev .dot{width:8px;height:8px;border-radius:50%;}
+  .sev.med{color:var(--warn);} .sev.med .dot{background:var(--warn);}
+  .issue p{font-size:13px;line-height:1.55;color:var(--ink);}
+  .sugg{margin-top:9px;background:var(--sage-bg);border-left:2px solid var(--sage-deep);
+    padding:8px 11px;font-size:12.5px;color:var(--ink);border-radius:0 7px 7px 0;}
+  .iact{display:flex;gap:8px;margin-top:11px;}
+  .ibtn{font-size:12px;font-weight:600;padding:6px 12px;border-radius:7px;cursor:pointer;border:1px solid var(--line);background:var(--paper);color:var(--ink);}
+  .ibtn.go{background:var(--sage-deep);border-color:var(--sage-deep);color:#fff;}
+
+  /* Chapter rows */
+  .chapters{max-width:300px;display:flex;flex-direction:column;gap:7px;}
+  .ch{display:flex;gap:10px;align-items:center;background:var(--paper);border:1px solid var(--line);
+    border-radius:9px;padding:9px 12px;font-size:13px;}
+  .ch.sel{background:var(--sam-l);border:2px solid var(--sam);padding:8px 11px;}
+  .ch .st{width:20px;text-align:center;flex-shrink:0;}
+  .ch .t{flex:1;min-width:0;}
+  .ch .t .n{font-weight:600;}
+  .ch .t .s{font-size:11.5px;color:var(--muted);}
+  .spin{width:14px;height:14px;border-radius:50%;border:2px solid var(--line);
+    border-top-color:var(--sam);animation:sp 1s linear infinite;display:inline-block;}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  /* Badges + buttons */
+  .badge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;}
+  .badge.earned-d{background:var(--alex);color:#fff;}
+  .badge.earned-l{background:var(--sam);color:#fff;}
+  .badge.un{background:var(--line-soft);color:var(--faint);}
+  .btn{font-size:13px;font-weight:600;padding:9px 16px;border-radius:8px;cursor:pointer;border:1px solid transparent;}
+  .btn.save{background:var(--sage-deep);color:#fff;}
+  .btn.warnb{background:var(--amber-bg);color:#8F5A2E;border-color:var(--terracotta);}
+  .btn.meet{background:var(--jordan);color:#fff;}
+  .legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;}
+  .sw{display:flex;gap:7px;align-items:center;font-size:12px;color:var(--muted);}
+  .sw i{width:16px;height:16px;border-radius:5px;display:inline-block;}
+  mark{background:#F6E7C9;box-shadow:0 0 0 2px #D4956A55;border-radius:2px;padding:1px 0;}
+  .serif-sample{font-family:var(--serif);font-size:16px;line-height:1.7;max-width:420px;background:var(--paper);
+    border:1px solid var(--line);border-radius:10px;padding:16px 18px;}
+</style>
+</head>
+<body>
+<div class="note"><b>AL-UX-007 sample</b> — Author Studio components reskinned in place. Same layout and behaviour as production; only the visual layer changes. Persona quintet validated for colour-vision deficiency.</div>
+<div class="wrap">
+
+  <h2>Editor phase row — validated persona quintet</h2>
+  <p class="sub">Identity colours are now distinct from state colours: the sage ring means "active", whoever wears it. Locked stays warm-neutral. Letters always present — never colour alone.</p>
+  <div class="panel row" style="gap:22px;">
+    <div class="pcol"><div class="pav ring" style="background:var(--alex);">A</div><div class="plbl">Alex · done</div></div>
+    <div class="pcol"><div class="pav ring" style="background:var(--sam);">S</div><div class="plbl">Sam · active</div></div>
+    <div class="pcol"><div class="pav" style="background:var(--jordan);">J</div><div class="plbl">Jordan</div></div>
+    <div class="pcol"><div class="pav locked">T</div><div class="plbl">Taylor · locked</div></div>
+    <div class="pcol"><div class="pav locked">R</div><div class="plbl">Riley · locked</div></div>
+    <div style="flex:1;"></div>
+    <div class="legend">
+      <span class="sw"><i style="background:var(--alex);"></i>Alex #4A8340</span>
+      <span class="sw"><i style="background:var(--sam);"></i>Sam #D08A4F</span>
+      <span class="sw"><i style="background:var(--jordan);"></i>Jordan #0B7A5C</span>
+      <span class="sw"><i style="background:var(--taylor);"></i>Taylor #BC9440</span>
+      <span class="sw"><i style="background:var(--riley);"></i>Riley #84500E</span>
+    </div>
+  </div>
+
+  <h2>Chat panel — Sam active</h2>
+  <p class="sub">Solid persona header stays; bubbles move to warm tints. Author identity becomes charcoal (was blue). System messages keep the dashed amber treatment, warmed.</p>
+  <div class="panel row" style="align-items:flex-start;">
+    <div class="chat">
+      <div class="hd"><div class="nm">Sam</div><div class="rl">Line editing · Chapter 12 of 36</div></div>
+      <div class="body">
+        <div class="msg ed"><span class="av">S</span>
+          <div class="bubble">Chapter 12 is where the pacing turns. I've marked three passages where a shorter sentence would let the moment breathe.</div></div>
+        <div class="msg me"><span class="av">C</span>
+          <div class="bubble">Show me the first one.</div></div>
+        <div class="sysmsg">Sam highlighted a passage in Chapter 12</div>
+      </div>
+    </div>
+
+    <div class="serif-sample">
+      …the signal cut out before dawn. <mark>He waited, counting the silences between each burst of static, as if patience alone could summon a voice</mark>. The shadow of the aerial lay across the snow like a second horizon…
+      <div style="font-family:var(--sans);font-size:11px;color:var(--faint);margin-top:10px;">Manuscript surface — serif kept; highlight re-tinted from yellow to warm amber</div>
+    </div>
+  </div>
+
+  <h2>Issue card</h2>
+  <p class="sub">Category chips gain the owning editor's initial (colour is no longer the only carrier). Severity emoji (🟢🟡🔴) becomes a themed dot + label from the reserved status trio.</p>
+  <div class="panel row" style="align-items:flex-start;">
+    <div class="issue">
+      <div class="chips">
+        <span class="chip sam"><span class="ci">S</span>sentence flow</span>
+        <span class="sev med"><span class="dot"></span>Medium priority</span>
+      </div>
+      <p>The paragraph beginning "He waited, counting the silences…" runs four clauses deep before the verb lands. Consider splitting after "static".</p>
+      <div class="sugg"><strong>Suggestion:</strong> "He waited, counting the silences between each burst of static. Patience alone might summon a voice."</div>
+      <div class="iact">
+        <button class="ibtn go">Apply</button>
+        <button class="ibtn">Discuss</button>
+        <button class="ibtn">Dismiss</button>
+      </div>
+    </div>
+
+    <div class="chapters">
+      <div class="ch"><span class="st" style="color:var(--sage-deep);font-weight:700;">✓</span><div class="t"><div class="n">Chapter 10 · The Crossing</div><div class="s">Approved</div></div></div>
+      <div class="ch"><span class="st"><span class="spin"></span></span><div class="t"><div class="n">Chapter 11 · Static</div><div class="s">Sam is reading…</div></div></div>
+      <div class="ch sel"><span class="st" style="color:var(--sam);">●</span><div class="t"><div class="n">Chapter 12 · The Signal</div><div class="s">14 notes ready</div></div></div>
+      <div class="ch"><span class="st" style="color:var(--warn);">●</span><div class="t"><div class="n">Chapter 13 · Aerials</div><div class="s">Unsaved changes</div></div></div>
+      <div class="ch"><span class="st" style="color:var(--faint);">○</span><div class="t"><div class="n">Chapter 14</div><div class="s">Not started</div></div></div>
+    </div>
+  </div>
+
+  <h2>Badges &amp; buttons</h2>
+  <p class="sub">D/L/C phase badges keep their letters in the new persona colours; primary actions go sage-deep; the destructive-warning treatment moves from yellow to warm amber; "Meet Jordan" CTAs wear the next editor's colour — gradients retired.</p>
+  <div class="panel row">
+    <span class="badge earned-d">D</span>
+    <span class="badge earned-l">L</span>
+    <span class="badge un">C</span>
+    <span style="width:14px;"></span>
+    <button class="btn save">Save chapter</button>
+    <button class="btn warnb">Change manuscript</button>
+    <button class="btn meet">Meet Jordan →</button>
+  </div>
+
+</div>
+</body>
+</html>

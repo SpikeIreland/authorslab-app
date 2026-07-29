@@ -96,18 +96,18 @@ export function FeedbackModal({ isOpen, onClose, manuscriptId }: FeedbackModalPr
                     // Success State
                     <div className="text-center py-8">
                         <div className="text-6xl mb-4">🎉</div>
-                        <h3 className="text-2xl font-bold text-gray-900 mb-2">Thank You!</h3>
-                        <p className="text-gray-600">Your feedback helps us improve AuthorsLab.ai</p>
+                        <h3 className="text-2xl font-bold text-ink mb-2">Thank You!</h3>
+                        <p className="text-muted">Your feedback helps us improve AuthorsLab.ai</p>
                     </div>
                 ) : (
                     // Feedback Form
                     <>
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-2xl font-bold text-gray-900">Beta Feedback</h2>
+                            <h2 className="text-2xl font-bold text-ink">Beta Feedback</h2>
                             <button
                                 onClick={handleClose}
                                 disabled={isSubmitting}
-                                className="text-gray-500 hover:text-gray-700 text-2xl"
+                                className="text-muted hover:text-ink text-2xl"
                             >
                                 ×
                             </button>
@@ -116,7 +116,7 @@ export function FeedbackModal({ isOpen, onClose, manuscriptId }: FeedbackModalPr
                         <form onSubmit={handleSubmit}>
                             {/* Optional Rating */}
                             <div className="mb-6">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-ink mb-2">
                                     How would you rate your experience? (optional)
                                 </label>
                                 <div className="flex gap-2">
@@ -139,7 +139,7 @@ export function FeedbackModal({ isOpen, onClose, manuscriptId }: FeedbackModalPr
 
                             {/* Feedback Text */}
                             <div className="mb-6">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-ink mb-2">
                                     Your Feedback *
                                 </label>
                                 <textarea
@@ -148,7 +148,7 @@ export function FeedbackModal({ isOpen, onClose, manuscriptId }: FeedbackModalPr
                                     placeholder="Tell us what you think! Bug reports, feature requests, or general thoughts..."
                                     rows={6}
                                     disabled={isSubmitting}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                    className="w-full px-4 py-3 border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-riley disabled:bg-paper-warm disabled:cursor-not-allowed"
                                     required
                                 />
                             </div>
@@ -159,14 +159,14 @@ export function FeedbackModal({ isOpen, onClose, manuscriptId }: FeedbackModalPr
                                     type="button"
                                     onClick={handleClose}
                                     disabled={isSubmitting}
-                                    className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="flex-1 px-6 py-3 border border-line text-ink rounded-lg hover:bg-paper-warm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={isSubmitting || !feedbackText.trim()}
-                                    className="flex-1 px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="flex-1 px-6 py-3 bg-riley text-white rounded-lg hover:bg-riley-text font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
                                 </button>

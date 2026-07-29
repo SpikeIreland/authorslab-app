@@ -150,7 +150,7 @@ export function NotificationBell({ variant = 'dark' }: Props) {
   // in a shared layout).
   if (!userId) return null
 
-  const bellColour = variant === 'light' ? '#ffffff' : '#0f172a'
+  const bellColour = variant === 'light' ? '#ffffff' : '#2C2C2A'
   const badgeShown = unreadCount > 0
 
   return (
@@ -168,7 +168,7 @@ export function NotificationBell({ variant = 'dark' }: Props) {
         </svg>
         {badgeShown && (
           <span
-            className="absolute top-0.5 right-0.5 min-w-[16px] h-[16px] px-1 rounded-full bg-red-600 text-white text-[10px] font-medium flex items-center justify-center leading-none"
+            className="absolute top-0.5 right-0.5 min-w-[16px] h-[16px] px-1 rounded-full bg-status-high text-white text-[10px] font-medium flex items-center justify-center leading-none"
             aria-hidden
           >
             {unreadCount > 99 ? '99+' : unreadCount}
@@ -178,18 +178,18 @@ export function NotificationBell({ variant = 'dark' }: Props) {
 
       {open && (
         <div
-          className="absolute right-0 top-full mt-2 w-80 bg-white border border-slate-200 rounded-lg shadow-xl z-50 flex flex-col"
+          className="absolute right-0 top-full mt-2 w-80 bg-white border border-line rounded-lg shadow-xl z-50 flex flex-col"
           role="dialog"
           aria-label="Notifications"
           style={{ maxHeight: 'min(420px, calc(100vh - 80px))' }}
         >
-          <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-            <p className="text-sm font-medium text-slate-900">Notifications</p>
+          <div className="px-4 py-3 border-b border-line-soft flex items-center justify-between">
+            <p className="text-sm font-medium text-ink">Notifications</p>
             {unreadCount > 0 && (
               <button
                 type="button"
                 onClick={handleMarkAllRead}
-                className="text-xs text-slate-500 hover:text-slate-900"
+                className="text-xs text-muted hover:text-ink"
               >
                 Mark all read
               </button>
@@ -198,40 +198,40 @@ export function NotificationBell({ variant = 'dark' }: Props) {
 
           <div className="flex-1 overflow-y-auto">
             {loading ? (
-              <p className="px-4 py-6 text-xs text-slate-500">Loading…</p>
+              <p className="px-4 py-6 text-xs text-muted">Loading…</p>
             ) : recent.length === 0 ? (
-              <p className="px-4 py-6 text-xs text-slate-500">
+              <p className="px-4 py-6 text-xs text-muted">
                 You&rsquo;re all caught up.
               </p>
             ) : (
-              <ul className="divide-y divide-slate-100">
+              <ul className="divide-y divide-line-soft">
                 {recent.map(n => (
                   <li key={n.id}>
                     <button
                       type="button"
                       onClick={() => handleNotificationClick(n)}
-                      className={`w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors ${n.is_read ? '' : 'bg-blue-50/50'}`}
+                      className={`w-full text-left px-4 py-3 hover:bg-paper-warm transition-colors ${n.is_read ? '' : 'bg-sage-bg/50'}`}
                     >
                       <div className="flex items-start gap-2">
                         {!n.is_read && (
                           <span
-                            className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 ${n.priority === 'high' ? 'bg-red-500' : 'bg-blue-500'}`}
+                            className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 ${n.priority === 'high' ? 'bg-status-high' : 'bg-sage-deep'}`}
                             aria-label={n.priority === 'high' ? 'High priority unread' : 'Unread'}
                           />
                         )}
                         <div className="flex-1 min-w-0">
-                          <p className={`text-sm ${n.is_read ? 'text-slate-700' : 'text-slate-900 font-medium'} truncate`}>
+                          <p className={`text-sm ${n.is_read ? 'text-ink' : 'text-ink font-medium'} truncate`}>
                             {n.title}
                           </p>
-                          <p className="text-xs text-slate-500 leading-relaxed line-clamp-2 mt-0.5">
+                          <p className="text-xs text-muted leading-relaxed line-clamp-2 mt-0.5">
                             {n.message}
                           </p>
                           <div className="flex items-center justify-between mt-1.5">
-                            <span className="text-[11px] text-slate-400">
+                            <span className="text-[11px] text-faint">
                               {formatTimeAgo(n.created_at)}
                             </span>
                             {n.action_label && n.action_url && (
-                              <span className="text-[11px] text-blue-600 font-medium">
+                              <span className="text-[11px] text-sage-deep font-medium">
                                 {n.action_label} →
                               </span>
                             )}

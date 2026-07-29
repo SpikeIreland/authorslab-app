@@ -54,12 +54,13 @@ import {
 
 import { EDITOR_CONFIG, ISSUE_CATEGORIES_BY_PHASE } from '@/types/database'
 
+// AL-UX-007: highlight re-tinted from Tailwind amber to Manuscript Room warm amber
 const highlightStyles = `
   .issue-highlight {
-    background-color: #fef3c7 !important;
+    background-color: #F6E7C9 !important;
     border-radius: 2px !important;
     padding: 2px 0 !important;
-    box-shadow: 0 0 0 2px #fbbf24 !important;
+    box-shadow: 0 0 0 2px #D4956A !important;
   }
 `;
 
@@ -139,10 +140,10 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
         acrossElements: true,
         each: (element) => {
           const el = element as HTMLElement;
-          el.style.backgroundColor = '#fef3c7';
+          el.style.backgroundColor = '#F6E7C9';
           el.style.borderRadius = '2px';
           el.style.padding = '2px 0';
-          el.style.boxShadow = '0 0 0 2px #fbbf24';
+          el.style.boxShadow = '0 0 0 2px #D4956A';
         },
         done: (counter: number) => {
           if (counter > 0) {
@@ -163,57 +164,60 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
   return true;
 }
 
+// AL-UX-007: DB keys unchanged; values now point at the CVD-validated persona
+// quintet tokens defined in globals.css @theme. Identity ≠ state — the sage
+// state grammar is never used for persona identity, and vice versa.
 function getEditorColorClasses(color: string) {
   const colorMap = {
-    green: {
-      bg: 'bg-green-600',
-      bgHover: 'hover:bg-green-700',
-      bgLight: 'bg-green-50',
-      text: 'text-green-600',
-      border: 'border-green-500',
-      borderLight: 'border-green-300',
-      borderColor: 'border-green-200',
-      ring: 'focus:ring-green-500',
+    green: {  // Alex
+      bg: 'bg-alex',
+      bgHover: 'hover:bg-alex-text',
+      bgLight: 'bg-alex-light',
+      text: 'text-alex-text',
+      border: 'border-alex',
+      borderLight: 'border-alex/40',
+      borderColor: 'border-alex/25',
+      ring: 'focus:ring-alex',
     },
-    purple: {
-      bg: 'bg-purple-600',
-      bgHover: 'hover:bg-purple-700',
-      bgLight: 'bg-purple-50',
-      text: 'text-purple-600',
-      border: 'border-purple-500',
-      borderLight: 'border-purple-300',
-      borderColor: 'border-purple-200',
-      ring: 'focus:ring-purple-500',
+    purple: {  // Sam
+      bg: 'bg-sam',
+      bgHover: 'hover:bg-sam-text',
+      bgLight: 'bg-sam-light',
+      text: 'text-sam-text',
+      border: 'border-sam',
+      borderLight: 'border-sam/40',
+      borderColor: 'border-sam/25',
+      ring: 'focus:ring-sam',
     },
-    blue: {
-      bg: 'bg-blue-600',
-      bgHover: 'hover:bg-blue-700',
-      bgLight: 'bg-blue-50',
-      text: 'text-blue-600',
-      border: 'border-blue-500',
-      borderLight: 'border-blue-300',
-      borderColor: 'border-blue-200',
-      ring: 'focus:ring-blue-500',
+    blue: {  // Jordan
+      bg: 'bg-jordan',
+      bgHover: 'hover:bg-jordan-text',
+      bgLight: 'bg-jordan-light',
+      text: 'text-jordan-text',
+      border: 'border-jordan',
+      borderLight: 'border-jordan/40',
+      borderColor: 'border-jordan/25',
+      ring: 'focus:ring-jordan',
     },
-    teal: {
-      bg: 'bg-teal-600',
-      bgHover: 'hover:bg-teal-700',
-      bgLight: 'bg-teal-50',
-      text: 'text-teal-600',
-      border: 'border-teal-500',
-      borderLight: 'border-teal-300',
-      borderColor: 'border-teal-200',
-      ring: 'focus:ring-teal-500',
+    teal: {  // Taylor
+      bg: 'bg-taylor',
+      bgHover: 'hover:bg-taylor-text',
+      bgLight: 'bg-taylor-light',
+      text: 'text-taylor-text',
+      border: 'border-taylor',
+      borderLight: 'border-taylor/40',
+      borderColor: 'border-taylor/25',
+      ring: 'focus:ring-taylor',
     },
-    orange: {
-      bg: 'bg-orange-600',
-      bgHover: 'hover:bg-orange-700',
-      bgLight: 'bg-orange-50',
-      text: 'text-orange-600',
-      border: 'border-orange-500',
-      borderLight: 'border-orange-300',
-      borderColor: 'border-orange-200',
-      ring: 'focus:ring-orange-500',
+    orange: {  // Riley
+      bg: 'bg-riley',
+      bgHover: 'hover:bg-riley-text',
+      bgLight: 'bg-riley-light',
+      text: 'text-riley-text',
+      border: 'border-riley',
+      borderLight: 'border-riley/40',
+      borderColor: 'border-riley/25',
+      ring: 'focus:ring-riley',
     },
   }
   return colorMap[color as keyof typeof colorMap] || colorMap.green
@@ -223,38 +227,40 @@ function getEditorColorClasses(color: string) {
 function getCategoryColor(category: string): string {
   const colors: Record<string, string> = {
     // Phase 1 (Alex)
-    'character': 'bg-green-100 text-green-700',
-    'plot': 'bg-green-100 text-green-700',
-    'pacing': 'bg-green-100 text-green-700',
-    'structure': 'bg-green-100 text-green-700',
-    'theme': 'bg-green-100 text-green-700',
+    'character': 'bg-alex-light text-alex-text',
+    'plot': 'bg-alex-light text-alex-text',
+    'pacing': 'bg-alex-light text-alex-text',
+    'structure': 'bg-alex-light text-alex-text',
+    'theme': 'bg-alex-light text-alex-text',
     // Phase 2 (Sam)
-    'word_choice': 'bg-purple-100 text-purple-700',
-    'sentence_flow': 'bg-purple-100 text-purple-700',
-    'dialogue': 'bg-purple-100 text-purple-700',
-    'voice': 'bg-purple-100 text-purple-700',
-    'clarity': 'bg-purple-100 text-purple-700',
+    'word_choice': 'bg-sam-light text-sam-text',
+    'sentence_flow': 'bg-sam-light text-sam-text',
+    'dialogue': 'bg-sam-light text-sam-text',
+    'voice': 'bg-sam-light text-sam-text',
+    'clarity': 'bg-sam-light text-sam-text',
     // Phase 3 (Jordan)
-    'grammar': 'bg-blue-100 text-blue-700',
-    'punctuation': 'bg-blue-100 text-blue-700',
-    'consistency': 'bg-blue-100 text-blue-700',
-    'formatting': 'bg-blue-100 text-blue-700',
+    'grammar': 'bg-jordan-light text-jordan-text',
+    'punctuation': 'bg-jordan-light text-jordan-text',
+    'consistency': 'bg-jordan-light text-jordan-text',
+    'formatting': 'bg-jordan-light text-jordan-text',
   }
-  return colors[category] || 'bg-gray-100 text-gray-700'
+  return colors[category] || 'bg-line-soft text-muted'
 }
 
 // Severity display helpers
+// AL-UX-007: emoji circles replaced by a plain dot — the surrounding span
+// already carries getSeverityColor, so the dot inherits the status colour.
 function getSeverityIcon(severity: string): string {
   const icons: Record<string, string> = {
-    'low': '🟢',
-    'medium': '🟡',
-    'high': '🔴',
+    'low': '●',
+    'medium': '●',
+    'high': '●',
     // Backward compatibility for old values
-    'minor': '🟢',
-    'moderate': '🟡',
-    'major': '🔴',
+    'minor': '●',
+    'moderate': '●',
+    'major': '●',
   }
-  return icons[severity] || '⚪'
+  return icons[severity] || '○'
 }
 
 function getSeverityLabel(severity: string): string {
@@ -272,15 +278,15 @@ function getSeverityLabel(severity: string): string {
 
 function getSeverityColor(severity: string): string {
   const colors: Record<string, string> = {
-    'low': 'text-green-600',
-    'medium': 'text-orange-600',
-    'high': 'text-red-600',
+    'low': 'text-status-ok',
+    'medium': 'text-status-warn',
+    'high': 'text-status-high',
     // Backward compatibility
-    'minor': 'text-green-600',
-    'moderate': 'text-orange-600',
-    'major': 'text-red-600',
+    'minor': 'text-status-ok',
+    'moderate': 'text-status-warn',
+    'major': 'text-status-high',
   }
-  return colors[severity] || 'text-gray-600'
+  return colors[severity] || 'text-muted'
 }
 
 const WEBHOOKS = {
@@ -366,7 +372,7 @@ function SortableChapterItem({
           ? 'opacity-50 cursor-not-allowed'
           : index === currentChapterIndex
             ? `${getEditorColorClasses(editorColor).bgLight} border-2 ${getEditorColorClasses(editorColor).border}`
-            : `bg-white border border-gray-200 hover:${getEditorColorClasses(editorColor).borderLight}`
+            : `bg-white border border-line hover:border-line`
           }`}
       >
         {!isChapterSidebarCollapsed ? (
@@ -374,10 +380,10 @@ function SortableChapterItem({
             {/* Drag Handle */}
             <div
               {...listeners}
-              className="cursor-grab active:cursor-grabbing p-1 hover:bg-gray-100 rounded touch-none"
+              className="cursor-grab active:cursor-grabbing p-1 hover:bg-paper-warm rounded touch-none"
               title="Drag to reorder"
             >
-              <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-faint" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M8 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm8-16a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4z" />
               </svg>
             </div>
@@ -392,16 +398,16 @@ function SortableChapterItem({
               ) : editStatus === 'ready' ? (
                 <span className={getEditorColorClasses(editorColor).text + ' text-lg'}>●</span>
               ) : unsavedChapters.has(chapter.chapter_number) ? (
-                <span className="text-blue-600 text-lg">●</span>
+                <span className="text-status-warn text-lg">●</span>
               ) : (
-                <span className="text-gray-300 text-lg">●</span>
+                <span className="text-faint text-lg">●</span>
               )}
             </div>
             <div
               className="flex-1 min-w-0 cursor-pointer"
               onClick={() => !isLocked && !isInsertMode && loadChapter(index)}
             >
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-muted">
                 {chapter.chapter_number === 0 ? 'Prologue' : chapter.chapter_number === 999 ? 'Epilogue' : `Chapter ${chapter.chapter_number}`}
               </div>
               <div className="flex items-center gap-1">
@@ -416,7 +422,7 @@ function SortableChapterItem({
                       className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white rounded transition"
                       title="Chapter options"
                     >
-                      <svg className="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-muted" fill="currentColor" viewBox="0 0 24 24">
                         <circle cx="12" cy="5" r="2" />
                         <circle cx="12" cy="12" r="2" />
                         <circle cx="12" cy="19" r="2" />
@@ -425,16 +431,16 @@ function SortableChapterItem({
 
                     {/* Dropdown Menu */}
                     {openChapterMenuId === chapter.id && (
-                      <div className="absolute right-0 top-full mt-1 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                      <div className="absolute right-0 top-full mt-1 w-36 bg-white rounded-lg shadow-lg border border-line py-1 z-50">
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
                             setOpenChapterMenuId(null)
                             handleEditChapterTitle(chapter)
                           }}
-                          className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                          className="w-full px-3 py-2 text-left text-sm text-ink hover:bg-paper-warm flex items-center gap-2"
                         >
-                          <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                           </svg>
                           Rename
@@ -445,7 +451,7 @@ function SortableChapterItem({
                             setOpenChapterMenuId(null)
                             handleDeleteChapter(chapter)
                           }}
-                          className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                          className="w-full px-3 py-2 text-left text-sm text-status-high hover:bg-status-high/10 flex items-center gap-2"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -473,7 +479,7 @@ function SortableChapterItem({
       {isInsertMode && !isChapterSidebarCollapsed && chapter.chapter_number !== 999 && (
         <button
           onClick={() => insertChapterAt(chapter.chapter_number + 1)}
-          className="w-full px-3 py-2 mb-2 bg-blue-50 text-blue-600 border-2 border-dashed border-blue-300 rounded-lg text-xs font-medium hover:bg-blue-100 hover:border-blue-400 transition-colors"
+          className="w-full px-3 py-2 mb-2 bg-sage-bg text-sage-deep border-2 border-dashed border-sage rounded-lg text-xs font-medium hover:bg-sage-bg hover:border-sage transition-colors"
         >
           + Insert Chapter Here
         </button>
@@ -2547,11 +2553,11 @@ function StudioContent() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-ivory flex items-center justify-center">
         <div className="bg-white rounded-2xl p-12 text-center max-w-md shadow-2xl">
-          <div className="w-16 h-16 border-4 border-gray-200 border-t-green-600 rounded-full animate-spin mx-auto mb-6"></div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-3">Setting Up Your Studio</h3>
-          <p className="text-gray-600">{loadingMessage}</p>
+          <div className="w-16 h-16 border-4 border-line border-t-alex rounded-full animate-spin mx-auto mb-6"></div>
+          <h3 className="text-2xl font-bold text-ink mb-3">Setting Up Your Studio</h3>
+          <p className="text-muted">{loadingMessage}</p>
         </div>
       </div>
     )
@@ -2560,14 +2566,14 @@ function StudioContent() {
   // Error state
   if (!manuscript || !activePhase) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-ivory flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl p-12 text-center max-w-md shadow-2xl">
           <div className="text-6xl mb-4">❌</div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-3">Error Loading Studio</h3>
-          <p className="text-gray-600 mb-6">Unable to load your manuscript. Please try again.</p>
+          <h3 className="text-2xl font-bold text-ink mb-3">Error Loading Studio</h3>
+          <p className="text-muted mb-6">Unable to load your manuscript. Please try again.</p>
           <button
             onClick={() => router.push('/onboarding')}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
+            className="px-6 py-3 bg-sage-deep text-white rounded-lg hover:bg-sage-deep/90 font-semibold"
           >
             Return to Onboarding
           </button>
@@ -2582,13 +2588,13 @@ function StudioContent() {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: highlightStyles }} />
-      <div className="h-screen flex flex-col bg-gray-50">
+      <div className="h-screen flex flex-col bg-ivory">
         {/* Header */}
-        <header className="bg-white border-b border-gray-200 p-4 shadow-sm">
+        <header className="bg-white border-b border-line p-4 shadow-sm">
           {/* TOP ROW: Logo, Beta Feedback, and User Menu */}
-          <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
-            <Link href="/" className="text-lg font-bold bg-gradient-to-r from-blue-900 to-blue-700 bg-clip-text text-transparent hover:opacity-80 transition-opacity">
-              📚 AuthorsLab.ai
+          <div className="flex items-center justify-between mb-4 pb-3 border-b border-line-soft">
+            <Link href="/" className="text-lg font-bold font-serif text-ink hover:opacity-80 transition-opacity">
+              AuthorsLab
             </Link>
 
 
@@ -2596,9 +2602,9 @@ function StudioContent() {
               {/* Beta Feedback Button */}
               <button
                 onClick={() => setShowFeedbackModal(true)}
-                className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-semibold"
+                className="px-4 py-2 bg-riley text-white rounded-lg hover:bg-riley-text transition-colors text-sm font-semibold"
               >
-                🔒 Beta Feedback
+                Beta Feedback
               </button>
 
               {/* DP-AS-04: notifications bell (UCO in-app surface) */}
@@ -2609,14 +2615,14 @@ function StudioContent() {
                   <img
                     src={authorProfile.profile_image_url}
                     alt={authorName}
-                    className="w-8 h-8 rounded-full object-cover border-2 border-gray-300"
+                    className="w-8 h-8 rounded-full object-cover border-2 border-line"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold">
+                  <div className="w-8 h-8 rounded-full bg-charcoal flex items-center justify-center text-white text-xs font-bold">
                     {authorProfile?.first_name?.[0]}{authorProfile?.last_name?.[0]}
                   </div>
                 )}
-                <span className="text-sm text-gray-600 font-medium">
+                <span className="text-sm text-muted font-medium">
                   {authorName}
                 </span>
               </div>
@@ -2627,7 +2633,7 @@ function StudioContent() {
                   await supabase.auth.signOut()
                   router.push('/login')
                 }}
-                className="text-sm px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition-colors"
+                className="text-sm px-4 py-2 text-ink hover:bg-paper-warm rounded-lg font-medium transition-colors"
               >
                 Sign Out
               </button>
@@ -2642,7 +2648,7 @@ function StudioContent() {
                 <BookOpen className="w-6 h-6" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">{manuscript.title}</h1>
+                <h1 className="text-xl font-bold text-ink">{manuscript.title}</h1>
                 <p className={`text-sm ${getEditorColorClasses(editorColor).text} font-medium`}>
                   Phase {currentPhase}: {EDITOR_CONFIG[currentPhase as PhaseNumber].phaseName} with {editorName}
                 </p>
@@ -2669,10 +2675,10 @@ function StudioContent() {
                       }}
                       disabled={!isAvailable}
                       className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${isActive
-                        ? 'bg-green-600 text-white ring-2 ring-green-300 hover:bg-green-700 cursor-pointer'
+                        ? 'bg-alex text-white ring-2 ring-alex/40 hover:bg-alex-text cursor-pointer'
                         : isAvailable
-                          ? 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'
-                          : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          ? 'bg-alex text-white hover:bg-alex-text cursor-pointer'
+                          : 'bg-line-soft text-faint cursor-not-allowed'
                         }`}
                       title={isAvailable ? 'Work with Alex' : 'Alex (Locked)'}
                     >
@@ -2696,10 +2702,10 @@ function StudioContent() {
                       }}
                       disabled={!isAvailable}
                       className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${isActive
-                        ? 'bg-purple-600 text-white ring-2 ring-purple-300 hover:bg-purple-700 cursor-pointer'
+                        ? 'bg-sam text-white ring-2 ring-sam/40 hover:bg-sam-text cursor-pointer'
                         : isAvailable
-                          ? 'bg-purple-600 text-white hover:bg-purple-700 cursor-pointer'
-                          : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          ? 'bg-sam text-white hover:bg-sam-text cursor-pointer'
+                          : 'bg-line-soft text-faint cursor-not-allowed'
                         }`}
                       title={isAvailable ? 'Work with Sam' : 'Sam (Locked)'}
                     >
@@ -2723,10 +2729,10 @@ function StudioContent() {
                       }}
                       disabled={!isAvailable}
                       className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${isActive
-                        ? 'bg-blue-600 text-white ring-2 ring-blue-300 hover:bg-blue-700 cursor-pointer'
+                        ? 'bg-jordan text-white ring-2 ring-jordan/40 hover:bg-jordan-text cursor-pointer'
                         : isAvailable
-                          ? 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer'
-                          : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          ? 'bg-jordan text-white hover:bg-jordan-text cursor-pointer'
+                          : 'bg-line-soft text-faint cursor-not-allowed'
                         }`}
                       title={isAvailable ? 'Work with Jordan' : 'Jordan (Locked)'}
                     >
@@ -2750,10 +2756,10 @@ function StudioContent() {
                       }}
                       disabled={!isAvailable}
                       className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${isActive
-                        ? 'bg-teal-600 text-white ring-2 ring-teal-300 hover:bg-teal-700 cursor-pointer'
+                        ? 'bg-taylor text-white ring-2 ring-taylor/40 hover:bg-taylor-text cursor-pointer'
                         : isAvailable
-                          ? 'bg-teal-600 text-white hover:bg-teal-700 cursor-pointer'
-                          : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          ? 'bg-taylor text-white hover:bg-taylor-text cursor-pointer'
+                          : 'bg-line-soft text-faint cursor-not-allowed'
                         }`}
                       title={isAvailable ? 'Go to Publishing Hub' : 'Publishing (Locked)'}
                     >
@@ -2777,31 +2783,31 @@ function StudioContent() {
                       }}
                       disabled={!isAvailable}
                       className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${isActive
-                        ? 'bg-orange-600 text-white ring-2 ring-orange-300 hover:bg-orange-700 cursor-pointer'
+                        ? 'bg-riley text-white ring-2 ring-riley/40 hover:bg-riley-text cursor-pointer'
                         : isAvailable
-                          ? 'bg-orange-600 text-white hover:bg-orange-700 cursor-pointer'
-                          : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          ? 'bg-riley text-white hover:bg-riley-text cursor-pointer'
+                          : 'bg-line-soft text-faint cursor-not-allowed'
                         }`}
                       title={isAvailable ? 'Go to Marketing Hub' : 'Marketing (Locked)'}
                     >
-                      Q
+                      R
                     </button>
                   )
                 })()}
               </div>
 
               {/* Fresh Analysis Button */}
-              <div className="border-l border-gray-200 pl-6">
+              <div className="border-l border-line pl-6">
                 <button
                   onClick={handleFreshAnalysis}
                   disabled={freshAnalysisInProgress || !analysisComplete}
                   className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all ${freshAnalysisInProgress
-                      ? 'bg-amber-100 text-amber-700 cursor-wait'
+                      ? 'bg-amber-bg text-status-warn cursor-wait'
                       : !analysisComplete
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        ? 'bg-paper-warm text-faint cursor-not-allowed'
                         : structureChangesPending
-                          ? 'bg-amber-500 text-white hover:bg-amber-600 shadow-md animate-pulse'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          ? 'bg-terracotta text-white hover:bg-terracotta/90 shadow-md animate-pulse'
+                          : 'bg-paper-warm text-ink hover:bg-line-soft'
                     }`}
                   title={
                     freshAnalysisInProgress
@@ -2815,7 +2821,7 @@ function StudioContent() {
                 >
                   {freshAnalysisInProgress ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-amber-600 border-t-transparent rounded-full animate-spin"></div>
+                      <div className="w-4 h-4 border-2 border-terracotta border-t-transparent rounded-full animate-spin"></div>
                       <span>Analyzing...</span>
                     </>
                   ) : (
@@ -2831,7 +2837,7 @@ function StudioContent() {
               </div>
 
               {/* PDF Report Buttons - Always Visible */}
-              <div className="flex items-center gap-2 border-l border-gray-200 pl-6">
+              <div className="flex items-center gap-2 border-l border-line pl-6">
                 {/* Alex's Report Button */}
                 {(() => {
                   const alexPhase = editorPhases.find(p => p.phase_number === 1)
@@ -2844,9 +2850,9 @@ function StudioContent() {
                     return (
                       <button
                         disabled
-                        className="px-3 py-1.5 bg-gray-200 text-gray-400 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
+                        className="px-3 py-1.5 bg-line-soft text-faint text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
                       >
-                        <span>📄</span>
+
                         <span>Alex Report</span>
                       </button>
                     )
@@ -2854,9 +2860,9 @@ function StudioContent() {
                     return (
                       <button
                         disabled
-                        className="px-3 py-1.5 bg-green-100 text-green-600 text-xs rounded-lg cursor-wait flex items-center gap-1.5"
+                        className="px-3 py-1.5 bg-alex-light text-alex-text text-xs rounded-lg cursor-wait flex items-center gap-1.5"
                       >
-                        <div className="w-3 h-3 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                        <div className="w-3 h-3 border-2 border-alex border-t-transparent rounded-full animate-spin"></div>
                         <span>Generating...</span>
                       </button>
                     )
@@ -2868,9 +2874,9 @@ function StudioContent() {
                             window.open(alexPhase.report_pdf_url, '_blank')
                           }
                         }}
-                        className="px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1.5 shadow-sm"
+                        className="px-3 py-1.5 bg-alex text-white text-xs rounded-lg hover:bg-alex-text transition-colors flex items-center gap-1.5 shadow-sm"
                       >
-                        <span>📄</span>
+
                         <span>Alex Report</span>
                       </button>
                     )
@@ -2878,9 +2884,9 @@ function StudioContent() {
                     return (
                       <button
                         disabled
-                        className="px-3 py-1.5 bg-gray-200 text-gray-400 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
+                        className="px-3 py-1.5 bg-line-soft text-faint text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
                       >
-                        <span>📄</span>
+
                         <span>Alex Report</span>
                       </button>
                     )
@@ -2909,9 +2915,9 @@ function StudioContent() {
                     return (
                       <button
                         disabled
-                        className="px-3 py-1.5 bg-gray-200 text-gray-400 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
+                        className="px-3 py-1.5 bg-line-soft text-faint text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
                       >
-                        <span>📄</span>
+
                         <span>Sam Report</span>
                       </button>
                     )
@@ -2919,9 +2925,9 @@ function StudioContent() {
                     return (
                       <button
                         disabled
-                        className="px-3 py-1.5 bg-purple-100 text-purple-600 text-xs rounded-lg cursor-wait flex items-center gap-1.5"
+                        className="px-3 py-1.5 bg-sam-light text-sam-text text-xs rounded-lg cursor-wait flex items-center gap-1.5"
                       >
-                        <div className="w-3 h-3 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+                        <div className="w-3 h-3 border-2 border-sam border-t-transparent rounded-full animate-spin"></div>
                         <span>Generating...</span>
                       </button>
                     )
@@ -2933,9 +2939,9 @@ function StudioContent() {
                             window.open(samPhase.report_pdf_url, '_blank')
                           }
                         }}
-                        className="px-3 py-1.5 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-1.5 shadow-sm"
+                        className="px-3 py-1.5 bg-sam text-white text-xs rounded-lg hover:bg-sam-text transition-colors flex items-center gap-1.5 shadow-sm"
                       >
-                        <span>📄</span>
+
                         <span>Sam Report</span>
                       </button>
                     )
@@ -2943,7 +2949,7 @@ function StudioContent() {
                     return (
                       <button
                         disabled
-                        className="px-3 py-1.5 bg-gray-200 text-gray-500 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
+                        className="px-3 py-1.5 bg-line-soft text-muted text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
                       >
                         <span>⚠️</span>
                         <span>No Report</span>
@@ -2974,9 +2980,9 @@ function StudioContent() {
                     return (
                       <button
                         disabled
-                        className="px-3 py-1.5 bg-gray-200 text-gray-400 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
+                        className="px-3 py-1.5 bg-line-soft text-faint text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
                       >
-                        <span>📄</span>
+
                         <span>Jordan Report</span>
                       </button>
                     )
@@ -2984,9 +2990,9 @@ function StudioContent() {
                     return (
                       <button
                         disabled
-                        className="px-3 py-1.5 bg-blue-100 text-blue-600 text-xs rounded-lg cursor-wait flex items-center gap-1.5"
+                        className="px-3 py-1.5 bg-jordan-light text-jordan-text text-xs rounded-lg cursor-wait flex items-center gap-1.5"
                       >
-                        <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                        <div className="w-3 h-3 border-2 border-jordan border-t-transparent rounded-full animate-spin"></div>
                         <span>Generating...</span>
                       </button>
                     )
@@ -2998,9 +3004,9 @@ function StudioContent() {
                             window.open(jordanPhase.report_pdf_url, '_blank')
                           }
                         }}
-                        className="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1.5 shadow-sm"
+                        className="px-3 py-1.5 bg-jordan text-white text-xs rounded-lg hover:bg-jordan-text transition-colors flex items-center gap-1.5 shadow-sm"
                       >
-                        <span>📄</span>
+
                         <span>Jordan Report</span>
                       </button>
                     )
@@ -3008,7 +3014,7 @@ function StudioContent() {
                     return (
                       <button
                         disabled
-                        className="px-3 py-1.5 bg-gray-200 text-gray-500 text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
+                        className="px-3 py-1.5 bg-line-soft text-muted text-xs rounded-lg cursor-not-allowed flex items-center gap-1.5"
                       >
                         <span>⚠️</span>
                         <span>No Report</span>
@@ -3019,7 +3025,7 @@ function StudioContent() {
               </div>
 
               {/* Versions Dropdown */}
-              <div className="border-l border-gray-200 pl-6">
+              <div className="border-l border-line pl-6">
                 <VersionsDropdown
                   manuscriptId={manuscript.id}
                   currentPhaseNumber={currentPhase}
@@ -3032,15 +3038,15 @@ function StudioContent() {
         {/* Main Layout */}
         <div className="flex-1 flex overflow-hidden">
           {/* LEFT: Chapter Navigation */}
-          <div className={`${isChapterSidebarCollapsed ? 'w-16' : 'w-64'} bg-white border-r border-gray-200 flex flex-col transition-all`}>
-            <div className="p-4 border-b border-gray-200">
+          <div className={`${isChapterSidebarCollapsed ? 'w-16' : 'w-64'} bg-white border-r border-line flex flex-col transition-all`}>
+            <div className="p-4 border-b border-line">
               <div className="flex items-center justify-between mb-2">
                 {!isChapterSidebarCollapsed && (
-                  <h2 className="font-bold text-gray-900">Chapters ({chapters.length})</h2>
+                  <h2 className="font-bold text-ink">Chapters ({chapters.length})</h2>
                 )}
                 <button
                   onClick={() => setIsChapterSidebarCollapsed(!isChapterSidebarCollapsed)}
-                  className="p-2 hover:bg-gray-100 rounded"
+                  className="p-2 hover:bg-paper-warm rounded"
                 >
                   {isChapterSidebarCollapsed ? '→' : '←'}
                 </button>
@@ -3060,9 +3066,9 @@ function StudioContent() {
                       router.push(`/re-upload?manuscriptId=${manuscript.id}`)
                     }
                   }}
-                  className="w-full px-3 py-2 bg-yellow-100 text-yellow-800 border border-yellow-300 rounded-lg hover:bg-yellow-200 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                  className="w-full px-3 py-2 bg-amber-bg text-status-warn border border-terracotta rounded-lg hover:bg-terracotta/20 transition-colors text-sm font-medium flex items-center justify-center gap-2"
                 >
-                  📄 Change Manuscript
+                  Change Manuscript
                 </button>
               ) : (
                 <button
@@ -3077,7 +3083,7 @@ function StudioContent() {
                       router.push(`/re-upload?manuscriptId=${manuscript.id}`)
                     }
                   }}
-                  className="w-full p-2 bg-yellow-100 text-yellow-800 border border-yellow-300 rounded-lg hover:bg-yellow-200 transition-colors"
+                  className="w-full p-2 bg-amber-bg text-status-warn border border-terracotta rounded-lg hover:bg-terracotta/20 transition-colors"
                   title="Change Manuscript"
                 >
                   📄
@@ -3089,24 +3095,24 @@ function StudioContent() {
                 <div className="flex gap-2 mt-2">
                   {/* D - Developmental */}
                   <div className={`px-2 py-1 rounded text-xs font-bold ${currentChapter.phase_1_approved_at
-                    ? 'bg-green-600 text-white'
-                    : 'bg-gray-200 text-gray-400'
+                    ? 'bg-alex text-white'
+                    : 'bg-line-soft text-faint'
                     }`}>
                     D
                   </div>
 
                   {/* L - Line Editing */}
                   <div className={`px-2 py-1 rounded text-xs font-bold ${currentChapter.phase_2_approved_at
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-gray-200 text-gray-400'
+                    ? 'bg-sam text-white'
+                    : 'bg-line-soft text-faint'
                     }`}>
                     L
                   </div>
 
                   {/* C - Copy Editing */}
                   <div className={`px-2 py-1 rounded text-xs font-bold ${currentChapter.phase_3_approved_at
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-400'
+                    ? 'bg-jordan text-white'
+                    : 'bg-line-soft text-faint'
                     }`}>
                     C
                   </div>
@@ -3121,8 +3127,8 @@ function StudioContent() {
                 <button
                   onClick={() => setIsInsertMode(!isInsertMode)}
                   className={`w-full px-3 py-2 mb-3 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors ${isInsertMode
-                    ? 'bg-red-100 text-red-700 border border-red-300 hover:bg-red-200'
-                    : 'bg-green-100 text-green-700 border border-green-300 hover:bg-green-200'
+                    ? 'bg-status-high/10 text-status-high border border-status-high/40 hover:bg-status-high/20'
+                    : 'bg-sage-bg text-sage-deep border border-sage hover:bg-sage/20'
                     }`}
                 >
                   {isInsertMode ? '✕ Cancel Insert' : '+ Insert Chapter'}
@@ -3136,7 +3142,7 @@ function StudioContent() {
                     const firstRegularChapter = chapters.find(ch => ch.chapter_number > 0 && ch.chapter_number < 999)
                     insertChapterAt(firstRegularChapter?.chapter_number || 1)
                   }}
-                  className="w-full px-3 py-2 mb-2 bg-blue-50 text-blue-600 border-2 border-dashed border-blue-300 rounded-lg text-xs font-medium hover:bg-blue-100 hover:border-blue-400 transition-colors"
+                  className="w-full px-3 py-2 mb-2 bg-sage-bg text-sage-deep border-2 border-dashed border-sage rounded-lg text-xs font-medium hover:bg-sage-bg hover:border-sage transition-colors"
                 >
                   + Insert Chapter Here
                 </button>
@@ -3185,7 +3191,7 @@ function StudioContent() {
 
           {/* CENTER: Editor */}
           <div className="flex-1 flex flex-col bg-white">
-            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+            <div className="p-4 border-b border-line flex items-center justify-between">
               <h3 className="text-lg font-bold">{currentChapter?.title || 'Loading...'}</h3>
               <div className="flex gap-2">
                 {/* Start Editing Button - Shows when not started */}
@@ -3235,8 +3241,8 @@ function StudioContent() {
                   onClick={() => saveChanges(false)}
                   disabled={!hasUnsavedChanges}
                   className={`px-4 py-2 rounded-lg ${hasUnsavedChanges
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    ? 'bg-sage-deep text-white hover:bg-sage-deep/90'
+                    : 'bg-line text-muted cursor-not-allowed'
                     }`}
                 >
                   Save
@@ -3259,9 +3265,9 @@ function StudioContent() {
                       // Phase 1 complete - Meet Sam (Line Editor)
                       <button
                         onClick={handleMeetNextEditor}
-                        className="px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse"
+                        className="px-6 py-3 bg-sam hover:bg-sam-text text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse"
                       >
-                        👋 Meet Sam
+                        Meet Sam
                       </button>
                     )}
 
@@ -3269,9 +3275,9 @@ function StudioContent() {
                       // Phase 2 complete - Meet Jordan (Copy Editor)
                       <button
                         onClick={handleMeetNextEditor}
-                        className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse"
+                        className="px-6 py-3 bg-jordan hover:bg-jordan-text text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse"
                       >
-                        👋 Meet Jordan
+                        Meet Jordan
                       </button>
                     )}
 
@@ -3335,9 +3341,9 @@ function StudioContent() {
                           // Navigate to completion page
                           router.push(`/phase-complete?manuscriptId=${manuscript?.id}`)
                         }}
-                        className="px-6 py-3 bg-gradient-to-r from-green-600 via-purple-600 to-blue-600 text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse hover:shadow-xl"
+                        className="px-6 py-3 bg-gradient-to-r from-alex via-sam to-jordan text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse hover:shadow-xl"
                       >
-                        🎉 View Completion Summary
+                        View Completion Summary
                       </button>
                     )}
 
@@ -3345,9 +3351,9 @@ function StudioContent() {
                       // Phase 4 complete - Go to Marketing Hub with Quinn
                       <button
                         onClick={() => router.push(`/marketing-hub?manuscriptId=${manuscript?.id}`)}
-                        className="px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse"
+                        className="px-6 py-3 bg-riley hover:bg-riley-text text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse"
                       >
-                        🚀 Start Marketing with Quinn
+                        Start Marketing with Riley
                       </button>
                     )}
 
@@ -3355,9 +3361,9 @@ function StudioContent() {
                       // Phase 5 complete - All done! View completion summary
                       <button
                         onClick={() => router.push(`/phase-complete?manuscriptId=${manuscript?.id}`)}
-                        className="px-6 py-3 bg-gradient-to-r from-green-600 via-purple-600 to-blue-600 text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse hover:shadow-xl"
+                        className="px-6 py-3 bg-gradient-to-r from-alex via-sam to-jordan text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse hover:shadow-xl"
                       >
-                        🎉 View Completion Summary
+                        View Completion Summary
                       </button>
                     )}
                   </>
@@ -3366,16 +3372,16 @@ function StudioContent() {
             </div>
 
             {/* Toolbar Strip - Word Count and Status */}
-            <div className="px-4 py-2 bg-gray-50 border-b border-gray-200 flex items-center justify-between text-sm">
+            <div className="px-4 py-2 bg-ivory border-b border-line flex items-center justify-between text-sm">
               <div className="flex items-center gap-4">
-                <span className="text-gray-600">
-                  Words: <span className="font-semibold text-gray-900">{wordCount.toLocaleString()}</span>
+                <span className="text-muted">
+                  Words: <span className="font-semibold text-ink">{wordCount.toLocaleString()}</span>
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 {hasUnsavedChanges && (
-                  <span className="flex items-center gap-1 text-blue-600 font-medium">
-                    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  <span className="flex items-center gap-1 text-status-warn font-medium">
+                    <div className="w-2 h-2 bg-status-warn rounded-full"></div>
                     {isSaving ? 'Saving...' : 'Unsaved changes'}
                   </span>
                 )}
@@ -3408,14 +3414,14 @@ function StudioContent() {
                   const text = e.clipboardData.getData('text/plain');
                   document.execCommand('insertText', false, text);
                 }}
-                className={`w-full h-full min-h-[500px] p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 ${getEditorColorClasses(editorColor).ring} font-serif text-lg leading-relaxed overflow-auto whitespace-pre-wrap ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`w-full h-full min-h-[500px] p-4 border border-line rounded-lg focus:outline-none focus:ring-2 ${getEditorColorClasses(editorColor).ring} font-serif text-lg leading-relaxed overflow-auto whitespace-pre-wrap ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
                 style={{ minHeight: '500px' }}
               />
             </div>
           </div>
 
           {/* RIGHT: Chat Panel */}
-          <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
+          <div className="w-96 bg-white border-l border-line flex flex-col">
             {/* Editor Header */}
             <div className={`p-4 ${getEditorColorClasses(editorColor).bg} text-white`}>
               <h2 className="text-xl font-bold">{editorName}</h2>
@@ -3429,14 +3435,14 @@ function StudioContent() {
               {isChatLoading && (
                 <div className="flex items-center justify-center py-12">
                   <div className="text-center">
-                    <div className={`w-12 h-12 border-4 border-gray-200 rounded-full animate-spin mx-auto mb-4 ${editorColor === 'green' ? 'border-t-green-600' :
-                      editorColor === 'purple' ? 'border-t-purple-600' :
-                        editorColor === 'blue' ? 'border-t-blue-600' :
-                          editorColor === 'teal' ? 'border-t-teal-600' :
-                            'border-t-orange-600'
+                    <div className={`w-12 h-12 border-4 border-line rounded-full animate-spin mx-auto mb-4 ${editorColor === 'green' ? 'border-t-alex' :
+                      editorColor === 'purple' ? 'border-t-sam' :
+                        editorColor === 'blue' ? 'border-t-jordan' :
+                          editorColor === 'teal' ? 'border-t-taylor' :
+                            'border-t-riley'
                       }`}></div>
-                    <p className="text-gray-600 font-medium">Loading chat history...</p>
-                    <p className="text-gray-500 text-sm mt-1">Retrieving your conversation with {editorName}</p>
+                    <p className="text-muted font-medium">Loading chat history...</p>
+                    <p className="text-muted text-sm mt-1">Retrieving your conversation with {editorName}</p>
                   </div>
                 </div>
               )}
@@ -3456,7 +3462,7 @@ function StudioContent() {
                   {msg.sender === 'Author' ? (
                     <>
                       <div className="flex-1 flex justify-end">
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 max-w-[85%]">
+                        <div className="bg-paper-warm border border-line rounded-lg p-3 max-w-[85%]">
                           <div className="text-sm whitespace-pre-wrap">{msg.message}</div>
                         </div>
                       </div>
@@ -3464,17 +3470,17 @@ function StudioContent() {
                         <img
                           src={authorProfile.profile_image_url}
                           alt="You"
-                          className="w-8 h-8 rounded-full object-cover border-2 border-blue-500 flex-shrink-0"
+                          className="w-8 h-8 rounded-full object-cover border-2 border-line flex-shrink-0"
                         />
                       ) : (
-                        <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-charcoal flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                           {authorProfile?.first_name?.[0]}{authorProfile?.last_name?.[0]}
                         </div>
                       )}
                     </>
                   ) : msg.sender === 'system' ? (
                     /* System messages - center */
-                    <div className="bg-amber-50 border border-amber-300 border-dashed rounded-lg p-3">
+                    <div className="bg-amber-bg border border-terracotta border-dashed rounded-lg p-3">
                       <div className="text-sm whitespace-pre-wrap">{msg.message}</div>
                     </div>
                   ) : (
@@ -3499,17 +3505,17 @@ function StudioContent() {
                 <div className={`${getEditorColorClasses(editorColor).bgLight} ${getEditorColorClasses(editorColor).borderColor} border rounded-lg p-4 mr-8`}>
                   <div className="flex items-center gap-3 mb-3">
                     <div className="relative">
-                      <div className="w-10 h-10 border-4 border-gray-200 border-t-gray-600 rounded-full animate-spin"></div>
+                      <div className="w-10 h-10 border-4 border-line border-t-muted rounded-full animate-spin"></div>
                       <div className="absolute inset-0 flex items-center justify-center text-lg">
                         📖
                       </div>
                     </div>
                     <div>
                       <div className="font-semibold text-sm">{editorName}</div>
-                      <div className="text-xs text-gray-600">Reading your manuscript...</div>
+                      <div className="text-xs text-muted">Reading your manuscript...</div>
                     </div>
                   </div>
-                  <div className="text-sm text-gray-700">{thinkingMessage}</div>
+                  <div className="text-sm text-ink">{thinkingMessage}</div>
                 </div>
               )}
 
@@ -3527,17 +3533,17 @@ function StudioContent() {
             {/* Chat Input OR Read My Manuscript Button */}
             {!analysisComplete && !fullAnalysisInProgress ? (
               /* Show "Read My Manuscript" button at bottom - always visible */
-              <div className="p-4 border-t border-gray-200 bg-gradient-to-br from-green-50 to-green-100">
+              <div className="p-4 border-t border-line bg-sage-bg">
                 <div className="text-center mb-3">
                   <div className="flex items-center justify-center gap-2 mb-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-lg">
+                    <div className="w-8 h-8 bg-sage-deep rounded-full flex items-center justify-center text-lg">
                       📖
                     </div>
-                    <h3 className="font-bold text-gray-900">
+                    <h3 className="font-bold text-ink">
                       Ready to Start?
                     </h3>
                   </div>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted">
                     {editorName} needs to read your manuscript before we can begin editing.
                   </p>
                 </div>
@@ -3546,16 +3552,16 @@ function StudioContent() {
                   onClick={triggerFullAnalysis}
                   className={`w-full ${getEditorColorClasses(editorColor).bg} text-white px-6 py-4 rounded-xl font-bold text-base ${getEditorColorClasses(editorColor).bgHover} transition-all shadow-lg hover:shadow-xl hover:scale-105 transform`}
                 >
-                  📖 Read My Manuscript
+                  Read My Manuscript
                 </button>
 
-                <p className="text-xs text-gray-500 mt-3 text-center">
+                <p className="text-xs text-muted mt-3 text-center">
                   Takes about 5 minutes • You&apos;ll get a comprehensive report by email
                 </p>
               </div>
             ) : (
               /* Normal chat input when analysis is complete or in progress */
-              <form onSubmit={handleChatSubmit} className="p-4 border-t border-gray-200">
+              <form onSubmit={handleChatSubmit} className="p-4 border-t border-line">
                 <div className="flex gap-2">
                   <input
                     ref={chatInputRef}
@@ -3564,7 +3570,7 @@ function StudioContent() {
                     onChange={(e) => setUserInput(e.target.value)}
                     placeholder={`Ask ${editorName}...`}
                     disabled={fullAnalysisInProgress}
-                    className={`flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 ${getEditorColorClasses(editorColor).ring} disabled:bg-gray-100 disabled:cursor-not-allowed`}
+                    className={`flex-1 px-3 py-2 border border-line rounded-lg focus:outline-none focus:ring-2 ${getEditorColorClasses(editorColor).ring} disabled:bg-paper-warm disabled:cursor-not-allowed`}
                   />
                   <button
                     type="submit"
@@ -3582,11 +3588,11 @@ function StudioContent() {
         {/* Issues Panel Overlay */}
         {
           showIssuesPanel && (
-            <div className="absolute right-96 top-20 bottom-0 w-96 bg-white shadow-2xl border-l border-gray-200 flex flex-col">
-              <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+            <div className="absolute right-96 top-20 bottom-0 w-96 bg-white shadow-2xl border-l border-line flex flex-col">
+              <div className="p-4 border-b border-line flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <h3 className="font-bold">Editor Notes</h3>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-muted">
                     ({filteredIssues.length})
                   </span>
                 </div>
@@ -3605,14 +3611,14 @@ function StudioContent() {
                           }
                         });
                       }}
-                      className="text-xs text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                      className="text-xs text-sage-deep hover:text-sage-deep px-2 py-1 rounded hover:bg-sage-bg transition-colors"
                     >
                       Clear highlights
                     </button>
                   )}
                   <button
                     onClick={() => setShowIssuesPanel(false)}
-                    className="text-gray-500 hover:text-gray-700"
+                    className="text-muted hover:text-ink"
                   >
                     ✕
                   </button>
@@ -3620,12 +3626,12 @@ function StudioContent() {
               </div>
 
               {/* Filters */}
-              <div className="p-3 border-b border-gray-200 flex gap-2 overflow-x-auto">
+              <div className="p-3 border-b border-line flex gap-2 overflow-x-auto">
                 <button
                   onClick={() => setIssueFilter('all')}
                   className={`px-3 py-1 rounded-lg text-sm ${issueFilter === 'all'
                     ? `${getEditorColorClasses(editorColor).bg} text-white`
-                    : 'bg-gray-200 text-gray-700'
+                    : 'bg-line-soft text-ink'
                     }`}
                 >
                   All ({chapterIssues.length})
@@ -3637,7 +3643,7 @@ function StudioContent() {
                     onClick={() => setIssueFilter(category)}
                     className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap ${issueFilter === category
                       ? `${getEditorColorClasses(editorColor).bg} text-white`
-                      : 'bg-gray-200 text-gray-700'
+                      : 'bg-line-soft text-ink'
                       }`}
                   >
                     {category.replace('_', ' ')} ({chapterIssues.filter(i => i.element_type === category).length})
@@ -3649,7 +3655,7 @@ function StudioContent() {
                 {filteredIssues.map((issue) => (
                   <div
                     key={issue.id}
-                    className={`p-4 border-b border-gray-200 ${issue.status === 'in_progress' ? 'bg-yellow-50' : ''}`}
+                    className={`p-4 border-b border-line ${issue.status === 'in_progress' ? 'bg-amber-bg' : ''}`}
                   >
                     {/* Conditional: Only show highlighting for Sam (Phase 2) and Jordan (Phase 3) */}
                     {(currentPhase === 2 || currentPhase === 3) && issue.quoted_text ? (
@@ -3686,11 +3692,11 @@ function StudioContent() {
                             }
                           }
                         }}
-                        className="cursor-pointer hover:bg-blue-50 -m-2 p-2 rounded-lg transition-colors"
+                        className="cursor-pointer hover:bg-sage-bg -m-2 p-2 rounded-lg transition-colors"
                       >
                         <div className="flex items-center gap-2 mb-2">
                           {/* Add chapter badge */}
-                          <span className="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
+                          <span className="px-2 py-0.5 rounded text-xs font-medium bg-paper-warm text-ink">
                             Ch. {issue.chapter_number}
                           </span>
                           <span className={`px-2 py-0.5 rounded text-xs font-medium ${getCategoryColor(issue.element_type)}`}>
@@ -3699,15 +3705,15 @@ function StudioContent() {
                           <span className={`text-xs font-semibold ${getSeverityColor(issue.severity)}`}>
                             {getSeverityIcon(issue.severity)} {getSeverityLabel(issue.severity)}
                           </span>
-                          <span className="text-xs text-blue-600 font-medium ml-auto">
-                            👆 Click to highlight
+                          <span className="text-xs text-sage-deep font-medium ml-auto">
+                            Click to highlight
                           </span>
                         </div>
 
                         {/* Show quoted text */}
-                        <div className="mb-2 p-2 bg-gray-50 rounded border-l-2 border-blue-400">
-                          <div className="text-xs text-gray-600 mb-1 font-medium">Original text:</div>
-                          <div className="text-sm italic text-gray-700">
+                        <div className="mb-2 p-2 bg-ivory rounded border-l-2 border-sage-deep">
+                          <div className="text-xs text-muted mb-1 font-medium">Original text:</div>
+                          <div className="text-sm italic text-ink">
                             &quot;{issue.quoted_text}&quot;
                           </div>
                         </div>
@@ -3726,9 +3732,9 @@ function StudioContent() {
 
                         {/* Show quoted text if available (for Sam) but not clickable */}
                         {issue.quoted_text && (
-                          <div className="mb-2 p-2 bg-gray-50 rounded border-l-2 border-gray-400">
-                            <div className="text-xs text-gray-600 mb-1 font-medium">Reference:</div>
-                            <div className="text-sm italic text-gray-700">
+                          <div className="mb-2 p-2 bg-ivory rounded border-l-2 border-faint">
+                            <div className="text-xs text-muted mb-1 font-medium">Reference:</div>
+                            <div className="text-sm italic text-ink">
                               &quot;{issue.quoted_text}&quot;
                             </div>
                           </div>
@@ -3737,13 +3743,13 @@ function StudioContent() {
                     )}
 
                     {/* Issue description - always shown */}
-                    <div className="text-sm text-gray-700 mb-3">
+                    <div className="text-sm text-ink mb-3">
                       <strong>Issue:</strong> {issue.issue_description}
                     </div>
 
                     {/* Editor suggestion - always shown */}
                     {issue.editor_suggestion && (
-                      <div className="text-sm text-gray-700 mb-3 p-2 bg-green-50 rounded border-l-2 border-green-400">
+                      <div className="text-sm text-ink mb-3 p-2 bg-sage-bg rounded border-l-2 border-sage-deep">
                         <strong>Suggestion:</strong> {issue.editor_suggestion}
                       </div>
                     )}
@@ -3754,11 +3760,11 @@ function StudioContent() {
                         onClick={() => handleDiscussIssue(issue)}
                         className={`flex-1 px-3 py-1.5 ${getEditorColorClasses(editorColor).bg} text-white rounded text-xs font-medium ${getEditorColorClasses(editorColor).bgHover}`}
                       >
-                        💬 Discuss
+                        Discuss
                       </button>
                       <button
                         onClick={() => handleDismissIssue(issue)}
-                        className="flex-1 px-3 py-1.5 bg-gray-300 text-gray-700 rounded text-xs font-medium hover:bg-gray-400"
+                        className="flex-1 px-3 py-1.5 bg-line text-ink rounded text-xs font-medium hover:bg-faint"
                       >
                         ✕ Dismiss
                       </button>
@@ -3767,7 +3773,7 @@ function StudioContent() {
                 ))}
 
                 {filteredIssues.length === 0 && (
-                  <div className="text-center text-gray-500 py-8">
+                  <div className="text-center text-muted py-8">
                     No notes in this category
                   </div>
                 )}

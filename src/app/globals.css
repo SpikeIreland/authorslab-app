@@ -3,6 +3,8 @@
 /* ============================================================================
    AL-UX-004 design tokens — Manuscript Room palette + typography
    Source: docs/sis/design/2026-07-28-AL-UX-004-build-brief-manuscript-room.md §1
+   AL-UX-007 additions — persona quintet + status trio
+   Source: docs/sis/design/2026-07-29-AL-UX-007-author-studio-reskin-brief.md §1,§3
    ============================================================================ */
 
 @theme {
@@ -21,6 +23,29 @@
   --color-sage-bg: #EFF4EE;
   --color-terracotta: #D4956A;
   --color-amber-bg: #FDF6EE;
+
+  /* AL-UX-007 · Persona quintet — identity, not state. CVD-validated.
+     Fill carries white text; -light is the 50-role surface; -text sits on -light. */
+  --color-alex: #4A8340;
+  --color-alex-light: #EEF4EA;
+  --color-alex-text: #3A6832;
+  --color-sam: #D08A4F;
+  --color-sam-light: #FBF1E6;
+  --color-sam-text: #A56531;
+  --color-jordan: #0B7A5C;
+  --color-jordan-light: #E7F2EE;
+  --color-jordan-text: #0A614A;
+  --color-taylor: #BC9440;
+  --color-taylor-light: #F8F2E2;
+  --color-taylor-text: #8F6F2C;
+  --color-riley: #84500E;
+  --color-riley-light: #F5EBDE;
+  --color-riley-text: #6B400B;
+
+  /* AL-UX-007 · Status trio — reserved for state, never persona identity. */
+  --color-status-ok: #5C7A6B;
+  --color-status-warn: #C07A3E;
+  --color-status-high: #B85C48;
 
   /* Typography */
   --font-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
@@ -53,6 +78,6 @@
   top: 0;
   bottom: 0;
   width: 40px;
-  background: linear-gradient(to right, transparent, rgb(249, 250, 251));
+  background: linear-gradient(to right, transparent, rgb(250, 248, 244));
   pointer-events: none;
 }
