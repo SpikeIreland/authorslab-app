@@ -102,9 +102,28 @@ export function ProjectTabStrip({
     return `${base} border-transparent text-slate-500 hover:text-slate-800`
   }
 
+  const overviewHref = `/projects/${projectId}`
+  const isOverviewCurrent = pathname === overviewHref
+
   return (
     <div className="bg-slate-50 border-b border-slate-200">
       <div className="px-4 flex items-center overflow-x-auto">
+        {/* Overview — AL-UX-004 §4/§5: first tab, always available. Full state-
+            grammar restyle of the strip is Phase 4; for Phase 3 we just want
+            the tab entry so users can return here from any journey tab. */}
+        <Link
+          href={overviewHref}
+          className={
+            isOverviewCurrent
+              ? 'px-3 py-2.5 text-sm border-b-2 -mb-px whitespace-nowrap inline-flex items-center gap-1.5 border-slate-900 text-slate-900 font-medium'
+              : 'px-3 py-2.5 text-sm border-b-2 -mb-px whitespace-nowrap inline-flex items-center gap-1.5 border-transparent text-slate-600 hover:text-slate-900 transition-colors'
+          }
+        >
+          Overview
+        </Link>
+
+        <span className="w-px h-5 bg-slate-300 mx-2" aria-hidden />
+
         {JOURNEY_TABS.map(t => {
           const state = deriveTabState(t.id, phase, status)
           return (
