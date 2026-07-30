@@ -11,246 +11,211 @@ export default function FAQPage() {
 
   const faqs = [
     {
-      category: "Getting Started",
+      category: "Getting started",
       questions: [
         {
-          q: "How do I get started with AuthorsLab.ai?",
-          a: "Getting started is easy! You can begin with our free manuscript analysis to see what's possible, or jump straight into the complete 3-Phase Editing Package. Simply sign up, upload your manuscript, and our AI editors will begin working on your book immediately."
+          q: "How do I get started with AuthorsLab?",
+          a: "Most authors start with the free manuscript assessment: Alex reads your full manuscript and delivers a written assessment as a PDF — no card required. From there you can join a membership or take a single-project pass and begin the full editorial journey. If you're starting from a blank page, Eden helps you find your footing and can match you with a ghostwriting approach that suits your book."
         },
         {
-          q: "What file formats do you accept?",
-          a: "We accept most common document formats including .docx (Microsoft Word), .pdf, .txt, and .rtf. Your manuscript should be in a single file for best results."
+          q: "What file format do you accept?",
+          a: "Upload your manuscript as a PDF, up to 10MB. A single file works best — your whole manuscript in one document."
         },
         {
-          q: "How long does it take to get started after signing up?",
-          a: "Immediately! Once you upload your manuscript, our AI editors begin analyzing it right away. The free analysis typically completes in about 5 minutes and is delivered to your email."
+          q: "How long does the free assessment take?",
+          a: "About 15 minutes. Alex reads the full manuscript and the written assessment arrives in your email as a PDF."
         },
         {
           q: "Do I need any special software?",
-          a: "No special software needed! Everything works right in your browser. You just need an internet connection and a modern web browser (Chrome, Firefox, Safari, or Edge)."
+          a: "No. Everything runs in your browser — you just need an internet connection and a modern browser such as Chrome, Firefox, Safari, or Edge."
+        },
+        {
+          q: "What if I haven't written my book yet?",
+          a: "That's what Eden is for. Eden is the starting point of the journey for authors who don't yet have a manuscript — helping you shape the idea and matching you with the right ghostwriting support so the blank page stops being a wall."
         }
       ]
     },
     {
-      category: "The Editing Process",
+      category: "The editorial journey",
       questions: [
         {
-          q: "What are the 5 editing phases?",
-          a: "Phase 1 (Developmental with Alex) focuses on story structure and character development. Phase 2 (Line Editing with Sam) refines your prose at the sentence level. Phase 3 (Copy Editing with Jordan) ensures technical accuracy and grammar. Phase 4 (Publishing with Taylor) formats your book for publication - launching Q4 2025. Phase 5 (Marketing with Quinn) helps you promote your book - launching Q4 2025. The first three phases are available now."
+          q: "Who are the editors, and what does each one do?",
+          a: "Each book travels a journey with named editors. Eden helps you start (including ghostwriter matching if you're beginning from a blank page). Alex gives your book its First read — a full-manuscript developmental assessment. Sam does the Line edit, working through your prose chapter by chapter. Jordan handles the Polish — a final consistency and rhythm pass. Taylor takes care of Design & Publishing — cover, interior files, and platform preparation. Riley builds your Marketing launch plan. Every stage is live now."
         },
         {
-          q: "Which phases are available now?",
-          a: "Phases 1-3 (Alex, Sam, and Jordan) are fully available now. This covers complete developmental editing, line editing, and copy editing. Phase 4 (Publishing with Taylor) and Phase 5 (Marketing with Quinn) are launching in Q4 2025."
+          q: "Do I have to go through the stages in order?",
+          a: "The journey is designed to flow in order because each stage builds on the last — structure before sentences, sentences before polish. But you're not locked in: if your book has already had developmental editing elsewhere, you can begin further along, and you can return to any previous editor whenever you like."
         },
         {
-          q: "Can I skip phases or do them out of order?",
-          a: "We recommend completing all phases in order for the best results. Each phase builds on the previous one. However, if you've already had developmental editing done elsewhere, contact us to discuss starting at Phase 2."
+          q: "How long does the whole process take?",
+          a: "You set the pace. There are no deadlines or time limits — some authors move through the journey in a few weeks, others take months. Your project waits for you in your library."
         },
         {
-          q: "How long does the editing process take?",
-          a: "You work at your own pace! Most authors complete all three available phases (developmental, line, and copy editing) in 2-4 weeks, but there are no deadlines or time limits. Take as long as you need to perfect your manuscript."
+          q: "What if I disagree with an editor's suggestions?",
+          a: "You're always in control. Every note is a suggestion — you can accept it, adapt it, or reject it. The editors are there to strengthen your vision for the book, not to replace it."
         },
         {
-          q: "What if I disagree with the AI's suggestions?",
-          a: "You're always in control! All suggestions are just that - suggestions. You can accept, modify, or reject any feedback. The AI editors are here to help you strengthen YOUR vision for your book."
-        },
-        {
-          q: "Can I communicate with the AI editors?",
-          a: "Yes! You can ask questions, request clarification, or discuss specific aspects of your manuscript with Alex, Sam, and Jordan throughout the editing process. It's a real-time collaborative workspace."
+          q: "Can I talk to the editors?",
+          a: "Yes, as much as you like. Conversation with your editors is unlimited — ask questions, push back, request examples. Editorial passes only meter the deep reads: a full read of your manuscript by one editor, such as an assessment, a line pass, or a polish pass."
         }
       ]
     },
     {
-      category: "Pricing & Packages",
+      category: "Pricing & membership",
       questions: [
         {
-          q: "What's included in the free manuscript analysis?",
-          a: "Our free analysis includes a comprehensive AI-powered report from Alex covering story structure, character development, pacing, plot consistency, and key improvement areas. It's delivered as a PDF to your email in about 5 minutes. It's a detailed overview that shows you what's working and what needs attention."
+          q: "What's included in the free manuscript assessment?",
+          a: "Alex reads your full manuscript and delivers a written assessment as a PDF covering structure, character, pacing, and the areas that most need attention. It's free, requires no card, and covers one manuscript. It's the best way to see how AuthorsLab works before you commit to anything."
         },
         {
-          q: "How much does the complete editing package cost?",
-          a: "The 3-Phase Editing Package (Phases 1-3: Alex, Sam, and Jordan) is $299 as a one-time payment. This includes developmental editing, line editing, and copy editing. When Phase 4 (Publishing) and Phase 5 (Marketing) launch in Q4 2025, they'll be available as add-ons with pricing to be announced."
+          q: "How much does membership cost?",
+          a: "There are three tiers. Starter is £7/month billed annually (or £10 billed monthly) and includes one full-manuscript editorial pass per month with one active project. Author is £13/month billed annually (or £19 billed monthly) with four passes per month and unlimited projects. Pro is £27/month billed annually (or £39 billed monthly) with ten passes per month. Conversation with your editors is unlimited on every tier."
         },
         {
-          q: "Is the $299 package a one-time payment or subscription?",
-          a: "It's a one-time payment! You pay $299 once and receive complete editing through all three available phases. No hidden fees, no recurring charges. Work at your own pace with no time limits."
+          q: "What counts as an editorial pass?",
+          a: "A pass is a full deep read of your manuscript by one editor — Alex's assessment, one of Sam's line passes, or Jordan's polish pass. Everyday conversation with the editors doesn't use passes; only deep reads are metered."
         },
         {
-          q: "What's the difference between the Free Analysis and the $299 package?",
-          a: "The free analysis provides a diagnostic report from Alex. The $299 package includes the full 3-phase editing journey with Alex, Sam, and Jordan, featuring real-time workspace collaboration, chapter-by-chapter interactive editing, downloadable manuscript versions at each phase, and the ability to discuss and refine with each editor."
+          q: "I only have one book. Do I need a membership?",
+          a: "No — the single-project pass is £119 one-time and covers the complete journey for one book, from first read through publishing preparation and launch planning. If you decide to join a membership within 90 days, the full £119 credits toward it."
         },
         {
-          q: "Can I upgrade from the free analysis to the full package?",
-          a: "Absolutely! After receiving your free analysis, you can upgrade to the complete 3-Phase Editing Package at any time. We'll continue right where the analysis left off."
+          q: "What happened to the old one-time editing package?",
+          a: "The old dollar-priced package has been retired and replaced by the £119 single-project pass, which covers the complete journey for one book. If you purchased the old package, nothing changes for you — you keep your full entitlements."
         },
         {
-          q: "When will Phase 4 (Publishing) and Phase 5 (Marketing) be available?",
-          a: "Both Phase 4 with Taylor (Publishing Preparation) and Phase 5 with Quinn (Marketing Strategy) are launching in Q4 2025. If you purchase the 3-Phase Package now, you'll be first to know when they launch and receive special early access pricing."
-        },
-        {
-          q: "Do you offer refunds?",
-          a: "We offer a satisfaction guarantee for the first phase. If you're not happy with the developmental editing in Phase 1, contact us within 7 days for a full refund. After Phase 1 is approved and you move to Phase 2, all sales are final."
+          q: "Can I cancel or change my tier?",
+          a: "Yes, at any time. Cancellations and tier changes take effect at the end of your current billing period, and your library and shelf documents remain yours — you can download them whenever you like."
         },
         {
           q: "What payment methods do you accept?",
-          a: "We accept all major credit cards (Visa, Mastercard, American Express, Discover) through our secure Stripe payment processor."
+          a: "All major credit and debit cards (Visa, Mastercard, American Express, Discover), processed securely through Stripe."
         }
       ]
     },
     {
-      category: "Publishing & Phase 4",
+      category: "Publishing your book",
       questions: [
         {
-          q: "Does AuthorsLab.ai publish my book for me?",
-          a: "No - and that's actually better for you! Taylor prepares everything you need to publish it YOURSELF, so you keep 100% ownership, control, and all royalties. Unlike traditional publishing services that take your rights and charge thousands, we give you professional-grade files and step-by-step guidance while you maintain complete control. Your book, your rights, your success."
+          q: "Does AuthorsLab publish my book for me?",
+          a: "No — and that's deliberate. Taylor prepares everything you need, and you click publish on the platform of your choice. That way you keep 100% ownership, full control, and all your royalties. AuthorsLab is not the publisher; you are."
         },
         {
-          q: "What exactly does Taylor prepare for me in Phase 4?",
-          a: "Taylor generates professionally formatted EPUB files for ebooks, print-ready PDFs in multiple trim sizes, AI-generated cover designs (both ebook and print with spine), optimized book descriptions and metadata, keyword research, category recommendations, and provides comprehensive file validation. You'll receive everything needed to upload to any major publishing platform."
+          q: "What does Taylor prepare?",
+          a: "Taylor handles Design & Publishing: cover design for ebook and print, professionally formatted interior files (EPUB for ebooks, print-ready PDFs), book description and metadata, keyword and category recommendations, and platform preparation so your files pass validation on the store you choose."
         },
         {
-          q: "What publishing platforms can I use?",
-          a: "Taylor prepares files compatible with all major platforms including Amazon KDP (Kindle Direct Publishing), IngramSpark, Draft2Digital, Apple Books, Google Play Books, Kobo, Barnes & Noble Press, and Lulu. You can publish to as many or as few platforms as you choose."
+          q: "Which publishing platforms can I use?",
+          a: "Taylor prepares files compatible with all major platforms, including Amazon KDP, IngramSpark, Draft2Digital, Apple Books, Google Play, Kobo, Barnes & Noble, and Lulu. You can publish to as many or as few as you choose."
         },
         {
           q: "Do I keep ownership of my book?",
-          a: "Yes! 100% ownership stays with you. You retain all rights, set your own prices, control distribution territories, and can update or unpublish your book anytime. There are no contracts giving away ownership - your intellectual property remains entirely yours."
+          a: "Yes — 100%. You retain all rights, set your own prices, control your distribution, and can update or unpublish your book at any time. There are no contracts assigning rights to anyone; your intellectual property stays entirely yours."
         },
         {
-          q: "What royalties will I earn when I publish?",
-          a: "You keep all royalties after platform fees. On Amazon KDP, for example, you earn 70% on ebooks priced $2.99-$9.99, and 60% on print books after printing costs. For a $2.99 ebook, you'd earn about $2.04 per sale. For a $14.99 print book, typically $5-7 per sale. These royalties go directly to you - we don't take a cut."
+          q: "What royalties will I earn?",
+          a: "You keep everything after platform fees — AuthorsLab takes no cut. On Amazon KDP, for example, ebooks priced between $2.99 and $9.99 earn about 70% per sale, and print books earn around 60% after printing costs. A $2.99 ebook earns roughly $2 per sale; a $14.99 print book typically $5–7."
         },
         {
           q: "How much does it cost to publish on these platforms?",
-          a: "Creating accounts on Amazon KDP, Draft2Digital, and most other platforms is completely free. There are no upfront costs to publish. Platforms take their fee (typically 30-40%) from each sale, but you pay nothing to upload and list your book."
-        },
-        {
-          q: "Will Taylor actually upload my book to Amazon for me?",
-          a: "No, you'll upload it yourself following Taylor's step-by-step video tutorials. This is important because: (1) it keeps you in control of your account and book, (2) platforms don't allow third-party uploading for security reasons, and (3) it's actually easier than you think! Taylor makes the process simple with detailed guides for each platform."
+          a: "Creating accounts on Amazon KDP, Draft2Digital, and most other platforms is free, and there are no upfront costs to list your book. Platforms take their share from each sale, but you pay nothing to upload."
         },
         {
           q: "Do I need an ISBN?",
-          a: "For ebooks: No, Amazon and most platforms provide free ISBNs. For print books: Amazon provides a free ISBN, or you can purchase your own for about $125 if you want your publishing imprint listed. Taylor will guide you through the best option for your goals."
+          a: "For ebooks, no — Amazon and most platforms provide one free. For print, Amazon provides a free ISBN, or you can buy your own for about $125 if you want your own imprint listed. Taylor will walk you through the right option for your goals."
         },
         {
-          q: "How long does the publishing process take once my manuscript is edited?",
-          a: "Taylor typically has your files ready (EPUB, PDFs, covers) within 3-5 days. Once you upload to platforms, books usually go live within 24-72 hours for ebooks and 5-10 days for print. The actual uploading takes about 30-60 minutes per platform once you have the files."
+          q: "What if I need help uploading to a platform?",
+          a: "Taylor provides step-by-step guidance for each major platform, showing you exactly what to enter and where. If you get stuck, email support@authorslab.ai and we'll help you troubleshoot. The process is designed to be beginner-friendly."
         },
         {
-          q: "What if I need help uploading to the platforms?",
-          a: "Taylor provides comprehensive video tutorials for each major platform, showing you exactly where to click and what to enter. If you get stuck, our support team is available via email to help troubleshoot. The process is designed to be beginner-friendly - thousands of first-time authors successfully self-publish every day."
-        },
-        {
-          q: "Can I publish to multiple platforms or just Amazon?",
-          a: "You can publish to as many platforms as you want! Many authors use Amazon KDP for Kindle and print, then use Draft2Digital to distribute to Apple Books, Kobo, Barnes & Noble, and others. Taylor prepares files that work on all platforms, and guides you through multi-platform publishing strategy."
-        },
-        {
-          q: "What if I want to traditionally publish instead of self-publish?",
-          a: "The editing quality from Phases 1-3 (Alex, Sam, Jordan) is professional-grade and suitable for traditional publishing submissions. Phase 4 is specifically for self-publishing preparation. If you're pursuing traditional publishing, you'll submit your edited manuscript to agents and publishers rather than using Phase 4."
+          q: "What if I want to publish traditionally instead of self-publishing?",
+          a: "The editorial journey with Alex, Sam, and Jordan produces a submission-ready manuscript. If you're pursuing agents and traditional publishers, you can simply stop before Taylor's Design & Publishing stage and submit your polished manuscript instead."
         }
       ]
     },
     {
-      category: "Technical Questions",
+      category: "Marketing & launch",
       questions: [
         {
-          q: "Is my manuscript secure and confidential?",
-          a: "Yes! Your manuscript is encrypted and stored securely. We never share, sell, or use your content for any purpose other than providing editing services to you. Your intellectual property remains 100% yours."
+          q: "What does Riley do?",
+          a: "Riley is your marketing editor and builds your launch plan: identifying your target readers, shaping your positioning and book description for discovery, and planning the launch itself so your book meets its readers rather than disappearing quietly. Riley is live now, like every other stage of the journey."
         },
         {
-          q: "What if I have a very long manuscript (over 100,000 words)?",
-          a: "We can handle manuscripts of virtually any length. The AI editors work efficiently regardless of length - you'll still get comprehensive feedback on every chapter."
-        },
-        {
-          q: "Can I work on my manuscript while it's being edited?",
-          a: "Yes! You have full access to your manuscript at all times. However, we recommend completing each phase before making major changes, so the AI editors can provide the most accurate guidance for the next phase."
-        },
-        {
-          q: "What happens to my manuscript after the editing is complete?",
-          a: "You receive your fully edited manuscript as a downloadable PDF at the completion of each phase (3 versions total). Your files remain in your account for reference. You own all rights to your work and can download anytime."
-        },
-        {
-          q: "Can I download my manuscript at any time?",
-          a: "Yes! You can download your manuscript at any stage of the process. After completing each phase, you'll receive a polished PDF version of your manuscript showing all the improvements made."
-        },
-        {
-          q: "Can I return to previous editors after moving to the next phase?",
-          a: "Yes! After completing all three phases, you can return to any editor (Alex, Sam, or Jordan) to continue refining your manuscript. All your chat history and progress is saved."
-        }
-      ]
-    },
-    {
-      category: "Marketing & Beyond",
-      questions: [
-        {
-          q: "What will Phase 5 (Marketing with Quinn) include?",
-          a: "When Phase 5 launches in Q4 2025, Quinn will help you build your author platform, identify your target readers, create social media content calendars, develop email campaign strategies, and plan a strategic book launch campaign. This comprehensive marketing support is designed to help you connect with your ideal readers."
-        },
-        {
-          q: "Can I use AuthorsLab.ai for multiple books?",
-          a: "Yes! Each manuscript is a separate project with its own $299 fee for the 3-Phase Editing Package. Many authors use our service for their entire series or multiple books."
-        },
-        {
-          q: "What if I want to start editing now but wait for publishing and marketing phases?",
-          a: "Perfect! Start with the 3-Phase Editing Package ($299) now to work with Alex, Sam, and Jordan. When Phase 4 (Publishing) and Phase 5 (Marketing) launch in Q4 2025, you'll be notified and can add them to your completed manuscript."
+          q: "Can I use AuthorsLab for multiple books?",
+          a: "Yes — that's the point of the library. Your library holds all your projects, and each book travels its own journey. On the Starter tier you work on one active project at a time; the Author and Pro tiers include unlimited projects."
         },
         {
           q: "Do you help with book cover design?",
-          a: "Yes! When Phase 4 launches, Taylor will generate multiple AI-powered cover design options for both ebook and print formats. You'll be able to choose your favorite and customize it. For authors wanting human designer refinement, that will be available as an upgrade option."
+          a: "Yes. In the Design & Publishing stage, Taylor generates cover options for both ebook and print, and you choose and refine the direction you like."
         },
         {
           q: "Can I make changes to my book after it's published?",
-          a: "Absolutely! One of the best parts of self-publishing is that you can update your book anytime. Upload a new version to your publishing platform, and the updated version will replace the old one within 24-72 hours. This is your book - you control everything."
+          a: "Absolutely. Because you self-publish, you can upload a new version to your platform at any time, and the updated edition typically goes live within a few days. It's your book — you control everything."
         }
       ]
     },
     {
-      category: "Support & Help",
+      category: "Your manuscript & your data",
+      questions: [
+        {
+          q: "Is my manuscript secure and confidential?",
+          a: "Yes. Your manuscript is encrypted and stored securely. We never share, sell, or use your content for anything other than providing editorial services to you. Your intellectual property remains 100% yours."
+        },
+        {
+          q: "What if my manuscript is very long?",
+          a: "Length is rarely a problem — your editors read the whole book regardless. Just keep the uploaded PDF under the 10MB limit; if your file is larger, exporting it at a standard page size without embedded images usually brings it well under."
+        },
+        {
+          q: "Can I keep working on my manuscript during editing?",
+          a: "Yes, you have full access to your project at all times. We'd suggest finishing each editorial pass before making major changes, so the next editor is working from the version you actually intend."
+        },
+        {
+          q: "Can I download my work at any time?",
+          a: "Yes. Your library and shelf documents are yours — you can download your manuscript and every document your editors produce at any stage, and they remain available in your account."
+        },
+        {
+          q: "Can I return to a previous editor later in the journey?",
+          a: "Yes. Moving forward never closes a door behind you — you can go back to Alex, Sam, or any other editor to keep refining, and all your conversation history and progress is saved."
+        }
+      ]
+    },
+    {
+      category: "Support & help",
       questions: [
         {
           q: "What if I get stuck or have questions during the process?",
-          a: "You can ask questions directly to your AI editors (Alex, Sam, and Jordan) through the platform's chat feature. For technical or account questions, we provide email support with typically 24-hour response times."
+          a: "Ask your editors first — conversation with them is unlimited, and they can clarify any note or suggestion in context. For account or technical questions, email support@authorslab.ai; we typically respond within 24 hours."
         },
         {
           q: "Do you offer phone support?",
-          a: "Currently, we provide support via email and through the in-platform chat with your AI editors. This allows us to keep costs low while providing detailed, thoughtful responses to your questions."
+          a: "Not currently. Support is by email and through in-platform conversation with your editors. This keeps our costs — and your membership price — low, while letting us give detailed, thoughtful answers."
         },
         {
-          q: "What if I need help understanding the AI feedback?",
-          a: "That's what the chat feature is for! If any feedback is unclear, you can ask for clarification directly from Alex, Sam, or Jordan, and they'll provide additional context and examples in real-time."
+          q: "What if I don't understand a piece of editorial feedback?",
+          a: "Ask the editor who gave it. Alex, Sam, and Jordan can explain any note, give examples from your own manuscript, and rework the suggestion until it makes sense — that conversation is unlimited and never uses a pass."
         },
         {
-          q: "Can I request a human editor to review the AI's work?",
-          a: "Currently, all editing is performed by our AI editorial team (Alex, Sam, and Jordan). They're trained on thousands of published works and provide professional-grade feedback. For manuscripts requiring human editorial oversight, please contact us about custom solutions."
-        },
-        {
-          q: "How do I contact support if I have technical issues?",
-          a: "You can reach us at support@authorslab.ai for any technical questions, account issues, or general inquiries. We typically respond within 24 hours."
+          q: "How do I contact support?",
+          a: "Email support@authorslab.ai for technical questions, account issues, or anything else. We typically reply within 24 hours."
         }
       ]
     }
   ]
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-ivory">
       <MarketingNav active="/faq" />
 
-      {/* Hero Section */}
-      <section className="py-20 bg-gradient-to-br from-blue-50 to-purple-50">
+      {/* Hero */}
+      <section className="py-20 border-b border-line-soft">
         <div className="container mx-auto px-4 text-center">
-          <div className="inline-block mb-6">
-            <span className="px-4 py-2 bg-blue-100 text-blue-900 rounded-full text-sm font-bold">
-              ❓ Frequently Asked Questions
-            </span>
-          </div>
-          <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-6">
-            We&apos;re Here to
-            <span className="block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Answer Your Questions
-            </span>
+          <p className="kicker mb-4">Frequently asked questions</p>
+          <h1 className="font-serif text-5xl md:text-6xl text-ink mb-6">
+            Answers, before you ask
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Everything you need to know about AuthorsLab.ai, our AI editors, and the editing process.
+          <p className="text-xl text-muted max-w-3xl mx-auto">
+            Everything you need to know about AuthorsLab, your editors, and the journey your book takes.
           </p>
         </div>
       </section>
@@ -261,8 +226,8 @@ export default function FAQPage() {
           <div className="max-w-4xl mx-auto">
             {faqs.map((category, categoryIndex) => (
               <div key={categoryIndex} className="mb-12">
-                <h2 className="text-3xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                  <span className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-white font-bold">
+                <h2 className="font-serif text-3xl text-ink mb-6 flex items-center gap-3">
+                  <span className="w-9 h-9 rounded-full bg-sage-deep text-white font-serif text-lg flex items-center justify-center flex-shrink-0">
                     {categoryIndex + 1}
                   </span>
                   {category.category}
@@ -278,23 +243,30 @@ export default function FAQPage() {
                     return (
                       <div
                         key={faqIndex}
-                        className="bg-white rounded-xl border-2 border-gray-200 overflow-hidden transition-all hover:border-blue-300"
+                        className="bg-paper rounded-xl border border-line overflow-hidden transition-colors hover:border-sage"
                       >
                         <button
                           onClick={() => setOpenIndex(isOpen ? null : globalIndex)}
-                          className="w-full px-6 py-5 text-left flex items-center justify-between gap-4 hover:bg-gray-50 transition-colors"
+                          className="w-full px-6 py-5 text-left flex items-center justify-between gap-4 hover:bg-paper-warm transition-colors"
                         >
-                          <span className="font-semibold text-gray-900 text-lg pr-4">
+                          <span className="font-semibold text-ink text-lg pr-4">
                             {faq.q}
                           </span>
-                          <span className={`text-2xl text-blue-600 transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`}>
-                            ↓
-                          </span>
+                          <svg
+                            className={`w-5 h-5 text-sage-deep transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`}
+                            viewBox="0 0 20 20"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            aria-hidden="true"
+                          >
+                            <path d="M5 7.5l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
                         </button>
 
                         {isOpen && (
                           <div className="px-6 pb-5 pt-2">
-                            <p className="text-gray-700 leading-relaxed">
+                            <p className="text-muted leading-relaxed">
                               {faq.a}
                             </p>
                           </div>
@@ -309,38 +281,38 @@ export default function FAQPage() {
         </div>
       </section>
 
-      {/* Still Have Questions Section */}
-      <section className="py-20 bg-gray-50">
+      {/* Still Have Questions */}
+      <section className="py-20 bg-paper-warm border-y border-line-soft">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-4xl font-bold text-gray-900 mb-6">
-              Still Have Questions?
+            <h2 className="font-serif text-4xl text-ink mb-6">
+              Still have questions?
             </h2>
-            <p className="text-xl text-gray-600 mb-8">
-              Cannot find what you are looking for? We are here to help!
+            <p className="text-xl text-muted mb-8">
+              If you can&apos;t find what you&apos;re looking for, we&apos;re happy to help.
             </p>
 
             <div className="grid md:grid-cols-2 gap-6">
-              <div className="bg-white rounded-xl p-8 shadow-md border border-gray-200">
-                <div className="text-4xl mb-4">📧</div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Email Support</h3>
-                <p className="text-gray-600 mb-4">
-                  Get detailed answers to your questions via email.
+              <div className="bg-paper rounded-xl p-8 border border-line text-left">
+                <p className="kicker mb-3">Email support</p>
+                <h3 className="text-xl font-semibold text-ink mb-2">Write to us</h3>
+                <p className="text-muted mb-4">
+                  Get detailed answers to your questions by email — we typically reply within 24 hours.
                 </p>
-                <div className="text-blue-600 hover:underline font-semibold">
-                  <a href="mailto:support@authorslab.ai" className="text-sage-deep hover:underline">support@authorslab.ai</a>
-                </div>
+                <a href="mailto:support@authorslab.ai" className="text-sage-deep font-semibold hover:underline">
+                  support@authorslab.ai
+                </a>
               </div>
 
-              <div className="bg-white rounded-xl p-8 shadow-md border border-gray-200">
-                <div className="text-4xl mb-4">💬</div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Try It Free</h3>
-                <p className="text-gray-600 mb-4">
-                  See our AI editors in action with a free manuscript analysis.
+              <div className="bg-paper rounded-xl p-8 border border-line text-left">
+                <p className="kicker mb-3">Try it free</p>
+                <h3 className="text-xl font-semibold text-ink mb-2">Free manuscript assessment</h3>
+                <p className="text-muted mb-4">
+                  Alex reads your full manuscript and sends a written assessment — no card required.
                 </p>
                 <Link href="/free-analysis">
-                  <Button className="w-full">
-                    Get Free Analysis
+                  <Button className="w-full bg-sage-deep text-white hover:bg-sage">
+                    Get your free assessment
                   </Button>
                 </Link>
               </div>
@@ -349,24 +321,24 @@ export default function FAQPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-blue-900 to-purple-900 text-white">
+      {/* CTA */}
+      <section className="py-20 bg-charcoal text-ivory">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold mb-6">
-            Ready to Get Started?
+          <h2 className="font-serif text-4xl mb-6">
+            Ready to begin?
           </h2>
-          <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
-            Join authors who are transforming their manuscripts with professional AI editing.
+          <p className="text-xl mb-8 text-ivory/80 max-w-2xl mx-auto">
+            Start with a free assessment, or give one book the complete journey.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <Link href="/free-analysis">
-              <Button variant="outline" className="text-lg px-8 py-6 bg-white/10 border-white/30 text-white hover:bg-white/20">
-                Start with Free Analysis
+              <Button className="text-lg px-8 py-6 bg-sage text-charcoal hover:bg-sage-light font-semibold">
+                Start with a free assessment
               </Button>
             </Link>
-            <Link href="/signup">
-              <Button className="text-lg px-8 py-6 bg-gradient-to-r from-green-400 to-blue-400 text-gray-900 hover:from-green-500 hover:to-blue-500 font-bold">
-                Begin 3-Phase Journey - $299
+            <Link href="/pricing">
+              <Button variant="outline" className="text-lg px-8 py-6 bg-transparent border-ivory/30 text-ivory hover:bg-ivory/10">
+                See membership pricing
               </Button>
             </Link>
           </div>

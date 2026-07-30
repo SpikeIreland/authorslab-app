@@ -287,8 +287,8 @@ export default function LandingPage() {
               <span className="absolute -top-2.5 left-6 bg-sage-deep text-white text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full">
                 Membership
               </span>
-              <h3 className="font-serif text-xl text-ink">AuthorsLab Studio</h3>
-              <p className="text-xs text-faint mt-1 mb-4">Full details soon</p>
+              <h3 className="font-serif text-xl text-ink">AuthorsLab membership</h3>
+              <p className="text-xs text-faint mt-1 mb-4">From £7/mo billed annually · <Link href="/pricing" className="text-sage-deep font-semibold">see plans</Link></p>
               <ul className="flex flex-col gap-2.5 mb-5 text-[13.5px] text-muted">
                 {[
                   'Your full editorial team, every stage',
