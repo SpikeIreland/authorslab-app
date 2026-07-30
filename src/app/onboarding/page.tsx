@@ -589,9 +589,11 @@ function OnboardingContent() {
             }
 
             // Redirect after verification
-            console.log('✅ Redirecting to author studio...')
+            console.log('✅ Redirecting to project Overview...')
             setTimeout(() => {
-                router.push(`/author-studio?userId=${userId}&authorProfileId=${authorProfileId}&manuscriptId=${savedManuscriptId}`)
+                // New Manuscript Room landing surface — Overview inside the project
+                // shell (AL-UX-004 §4). Was: legacy /author-studio with query params.
+                router.push(`/projects/${savedManuscriptId}`)
             }, 2000)
 
         } catch (error) {

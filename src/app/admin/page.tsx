@@ -176,11 +176,11 @@ export default function AdminDashboard() {
                 setAdminEmail(profile.email)
             } else {
                 console.log('❌ User is NOT admin, redirecting')
-                router.push('/author-studio')
+                router.push('/lobby')
             }
         } catch (error) {
             console.error('Admin access check failed:', error)
-            router.push('/author-studio')
+            router.push('/lobby')
         } finally {
             setLoading(false)
         }
@@ -560,8 +560,8 @@ export default function AdminDashboard() {
                         </div>
                         <div className="flex items-center gap-4">
                             <span className="text-sm text-gray-600">{adminEmail}</span>
-                            <Link href="/author-studio">
-                                <Button variant="outline">Author Studio</Button>
+                            <Link href="/lobby">
+                                <Button variant="outline">The Library</Button>
                             </Link>
                         </div>
                     </div>

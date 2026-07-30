@@ -32,7 +32,7 @@ function TransitionContent() {
 
   const loadManuscript = useCallback(async () => {
     if (!manuscriptId) {
-      router.push('/author-studio')
+      router.push('/lobby')
       return
     }
 
@@ -45,7 +45,7 @@ function TransitionContent() {
 
     if (error || !data) {
       console.error('Error loading manuscript:', error)
-      router.push('/author-studio')
+      router.push('/lobby')
       return
     }
 
@@ -194,8 +194,9 @@ function TransitionContent() {
 
       console.log(`✅ Transitioned from Phase ${fromPhase} to Phase ${toPhase}`)
 
-      // Redirect to Author Studio
-      router.push(`/author-studio?manuscriptId=${manuscriptId}`)
+      // Redirect into the project shell — Overview picks up the current phase
+      // and directs the author to the right editor via its greeting CTA.
+      router.push(`/projects/${manuscriptId}`)
 
     } catch (error) {
       console.error('Error transitioning phases:', error)

@@ -143,22 +143,29 @@ export default function FreeAnalysisPage() {
     formData.set('wordCount', wordCount)
 
     try {
-      await fetch(WEBHOOK_URL, {
+      const response = await fetch(WEBHOOK_URL, {
         method: 'POST',
         body: formData
       })
-      
+
+      // Guard against non-2xx responses — previous code showed success on any
+      // outcome, giving false confirmation when the webhook failed.
+      if (!response.ok) {
+        throw new Error(`Submission failed (${response.status})`)
+      }
+
       setTimeout(() => {
         setIsSubmitting(false)
         setIsSuccess(true)
         window.scrollTo({ top: 0, behavior: 'smooth' })
       }, 2000)
-    } catch (error) {
-      setTimeout(() => {
-        setIsSubmitting(false)
-        setIsSuccess(true)
-        window.scrollTo({ top: 0, behavior: 'smooth' })
-      }, 2000)
+    } catch (err) {
+      console.error('Free-analysis submission failed:', err)
+      setIsSubmitting(false)
+      setError(
+        'We couldn\'t receive your manuscript right now. Please try again in a minute, or email support@authorslab.ai if the problem persists.'
+      )
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 

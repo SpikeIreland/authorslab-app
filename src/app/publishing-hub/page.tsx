@@ -137,7 +137,7 @@ function PublishingHubContent() {
   useEffect(() => {
     async function checkAccess() {
       if (!manuscriptId) {
-        router.push('/author-studio')
+        router.push('/lobby')
         return
       }
 
@@ -432,7 +432,7 @@ function PublishingHubContent() {
             {/* Phase Navigation */}
             <nav className="flex items-center gap-6">
               <Link
-                href={`/author-studio?manuscriptId=${manuscriptId}&phase=3`}
+                href={`/projects/${manuscriptId}/author-studio`}
                 className="text-gray-700 hover:text-blue-900 font-medium transition-colors"
               >
                 Author Studio

@@ -38,7 +38,7 @@ function ReUploadContent() {
         async function loadManuscript() {
             const manuscriptId = searchParams.get('manuscriptId')
             if (!manuscriptId) {
-                router.push('/author-studio')
+                router.push('/lobby')
                 return
             }
 
@@ -75,7 +75,7 @@ function ReUploadContent() {
 
             if (!manuscriptData) {
                 alert('Manuscript not found')
-                router.push('/author-studio')
+                router.push('/lobby')
                 return
             }
 
@@ -278,9 +278,11 @@ function ReUploadContent() {
             }
 
             // Step 3: Redirect back to author studio (hard reload)
-            console.log('✅ Step 3: Redirecting to author studio...')
+            console.log('✅ Step 3: Redirecting to project Overview...')
             setTimeout(() => {
-                window.location.href = `/author-studio?manuscriptId=${manuscript.id}`
+                // Project shell — Overview picks up the re-uploaded manuscript
+                // and directs the author into the studio via its CTA.
+                window.location.href = `/projects/${manuscript.id}`
             }, 2000)
 
         } catch (error) {
