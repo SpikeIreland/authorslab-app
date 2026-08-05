@@ -7,7 +7,70 @@ import { N8N_WEBHOOKS } from '@/lib/n8n-config'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { MarketingFooter } from '@/components/marketing/MarketingFooter'
 
+// -----------------------------------------------------------------------------
+// TEMPORARY GATE — free-analysis retrofit in progress (MKT-005 / MKT-006).
+// While false, the page shows an "opening this week" state instead of the form,
+// so ad traffic from Marketing's trial ad doesn't hit a form that would error.
+// Flip to `true` once the n8n workflow retrofit + content swaps + brand mailbox
+// + APITemplate.io template swap all land, and the smoke test passes.
+// See: docs/sis/platform-dev/2026-07-30-R1-mvp-launch-checklist.md §6
+// -----------------------------------------------------------------------------
+const FREE_ANALYSIS_ACTIVE = false
+
 export default function FreeAnalysisPage() {
+  if (!FREE_ANALYSIS_ACTIVE) {
+    return <FreeAnalysisComingSoon />
+  }
+  return <FreeAnalysisForm />
+}
+
+function FreeAnalysisComingSoon() {
+  return (
+    <div className="min-h-screen" style={{ background: 'var(--color-ivory)' }}>
+      <MarketingNav />
+
+      <div className="container mx-auto px-6 py-24">
+        <div className="max-w-2xl mx-auto text-center">
+          <p className="text-[11px] uppercase tracking-[0.14em] mb-4" style={{ color: 'var(--color-muted)' }}>
+            Free manuscript assessment
+          </p>
+          <h1
+            className="text-4xl md:text-5xl leading-tight mb-6"
+            style={{ fontFamily: 'var(--font-serif)', color: 'var(--color-ink)' }}
+          >
+            Opening this week
+          </h1>
+          <p className="text-lg leading-relaxed mb-10" style={{ color: 'var(--color-ink)' }}>
+            Alex is finishing his final read-throughs before we open the free assessment.
+            We&apos;ll have it live very shortly. If you&apos;d rather not wait, you can
+            start work on a manuscript right now with a Single-Project Pass or a monthly
+            membership — the full editorial journey with Alex, Sam and Jordan.
+          </p>
+          <div className="flex items-center justify-center gap-4 flex-wrap">
+            <Link
+              href="/pricing"
+              className="inline-flex items-center px-6 py-3 rounded-md text-[14px] font-medium transition-colors"
+              style={{ background: 'var(--color-sage-deep)', color: 'var(--color-paper)' }}
+            >
+              See pricing
+            </Link>
+            <Link
+              href="/"
+              className="text-[14px] font-medium transition-colors"
+              style={{ color: 'var(--color-sage-deep)' }}
+            >
+              Back to home →
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <MarketingFooter />
+    </div>
+  )
+}
+
+function FreeAnalysisForm() {
   const [file, setFile] = useState<File | null>(null)
   const [wordCount, setWordCount] = useState<string>('')
   const [wordCountFormatted, setWordCountFormatted] = useState<string>('')
