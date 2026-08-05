@@ -97,17 +97,28 @@ All items above are **BLOCKING** for launch.
 | How-it-works page for editing-only | Marketing + UI/UX | Reflects 3-step editing journey, not 5-step full journey | Yes |
 | MarketingFooter has links to all 5 legal pages once they exist | UI/UX or Platform Dev | Links present, all resolve | Yes |
 
-## 6 · Free-analysis workflow decision
+## 6 · Free-analysis workflow — activation now a coordinated retrofit (updated 2026-08-05)
 
-`Free Manuscript Analysis` on n8n (`Olsiw2AeYhsGIgv5`) is a lead-gen path but currently inactive per notes. Decision needed for MVP:
+**Decision made** (Pricing Chat + Marketing, ratified by Paul): activate for MVP as the primary top-of-funnel.
 
-- **(a) Activate for MVP** — meaningful lead capture from day one; costs OpenAI credits per free analysis
-- **(b) Leave inactive** — `/free-analysis` page shows "temporarily unavailable, join waitlist" or similar
-- **(c) Retire entirely** — remove the page, redirect
+**Scope of work discovered on inspection** (Marketing chat inspected `4GIq7o4cyvk3zCWm` — findings in `docs/sis/marketing/2026-08-05-AL-MKT-005-free-analysis-workflow-findings.md`; full Platform Dev response in `docs/sis/platform-dev/2026-08-05-marketing-005-response.md`):
 
-Recommended: **(a)** if MVP goal is fast learning about acquisition; **(b)** if we want to focus paid-tier funnel first.
+The workflow is legacy (2026-04-23, pre-pivot, pre-Craft-Call). Activating as-is would ship $399-Author-Package upsells and old-brand emails to our first leads. Retrofit required.
 
-Decision owner: **PAUL + Marketing**. Blocking? No — page can ship with any of the three options.
+| Item | Owner | Done state | Blocking? |
+|---|---|---|---|
+| Scope decision (Option A whole-manuscript vs Option B first-3-chapters) | PAUL + Pricing Chat | Documented | Yes |
+| Craft Call Cell retrofit — 4 direct `lmChatAnthropic` nodes → Execute Workflow to Cell (station_id `alex.free-analysis`) | Platform Dev | LMO ledger rows populate on new runs | Yes |
+| DOCX support — page validator + workflow-side extract | Platform Dev | Page accepts DOCX; workflow processes it | Yes (strongly requested by Marketing) |
+| Final Synthesis positioning content — calm voice, £-correct, Pass/Starter conversion + £13 bridge | Marketing (draft) → Platform Dev (apply) | Prompt content updated in workflow | Yes |
+| Delivery email content — Manuscript Room brand voice | Marketing (draft) → Platform Dev (apply) | Email template updated | Yes |
+| Webhook response copy | Marketing (draft) → Platform Dev (apply) | Response text updated | Yes |
+| APITemplate.io PDF template — Manuscript Room render | PAUL (create in APITemplate.io using Marketing's brief) → Platform Dev (wire new template ID) | New template ID referenced in workflow | Yes |
+| Gmail node → brand sender (`hello@authorslab.ai`) | Demo & Content Ops (mailbox) → Platform Dev (wire) | Emails send from brand address | Yes |
+| Smoke test end-to-end (real submission → real email + PDF + LMO row) | Platform Dev + PAUL | Verified | Yes |
+| Activation (`active=true`, publish) | Platform Dev | Live on production | Yes |
+
+Timeline estimate: 10-14 days from 2026-08-05, dependent on Marketing drafts + brand-mailbox + APITemplate template landing.
 
 ## 7 · Support / operations
 
