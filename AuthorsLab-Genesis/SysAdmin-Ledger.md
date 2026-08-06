@@ -1,5 +1,22 @@
 # SIS – System Admin — Project Ledger
 
+## 2026-08-06 — Entry 25: Enquiry path CLOSED-LOOP VERIFIED — form live end-to-end
+
+Env vars in (RESEND_API_KEY + CONTACT_TO_EMAIL=paul@spikeisland.tv — the
+Resend account address, required while sending from the default
+onboarding@resend.dev sender), redeploy READY. Test enquiry POSTed to
+production /api/enquiry; **Paul confirmed receipt in the spikeisland.tv
+inbox.** No silent receipt anywhere on the path. Checklist item 1: CLOSED.
+
+Instrument note: Chrome-bridge JS execution blocked by macOS default
+("Allow JavaScript from Apple Events" off) — tab control works, page JS
+doesn't. Recorded as a known lever for future browser-side tests.
+
+**Remaining:** inbound forwarding for hello@spikeisland.co at Crazy Domains ·
+Paul's mobile walk (in progress — design review incoming) · upgrade path:
+verify spikeisland.co in Resend → CONTACT_FROM_EMAIL=hello@spikeisland.co,
+unlocks any destination + own-domain sender.
+
 ## 2026-08-06 — Entry 24: spikeisland.co LIVE — DNS verified, domain commissioned
 
 Paul configured Crazy Domains (A @ → 76.76.21.21 showed Active; CNAME www →
