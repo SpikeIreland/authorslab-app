@@ -1,9 +1,8 @@
 // ============================================================================
 // AL-UX-006 · Shared marketing footer
 // The public site previously had no footer at all. Charcoal band with the
-// essential links. Privacy/Terms/Contact routes are placeholders until the
-// legal pages exist (truth-table §5.2) — they link to the contact email for
-// now so nothing 404s.
+// essential links. Legal links now point at the live /privacy, /terms,
+// /cookies, /subprocessors, /dpa routes (previously mailto placeholders).
 // ============================================================================
 
 import Link from 'next/link'
@@ -18,8 +17,11 @@ export function MarketingFooter() {
           <Link href="/pricing" className="hover:text-ivory">Pricing</Link>
           <Link href="/faq" className="hover:text-ivory">FAQ</Link>
           <a href="mailto:support@authorslab.ai" className="hover:text-ivory">Contact</a>
-          <a href="mailto:support@authorslab.ai?subject=Privacy" className="hover:text-ivory">Privacy</a>
-          <a href="mailto:support@authorslab.ai?subject=Terms" className="hover:text-ivory">Terms</a>
+          <Link href="/privacy" className="hover:text-ivory">Privacy</Link>
+          <Link href="/terms" className="hover:text-ivory">Terms</Link>
+          <Link href="/cookies" className="hover:text-ivory">Cookies</Link>
+          <Link href="/subprocessors" className="hover:text-ivory">Subprocessors</Link>
+          <Link href="/dpa" className="hover:text-ivory">DPA</Link>
         </span>
       </div>
     </footer>

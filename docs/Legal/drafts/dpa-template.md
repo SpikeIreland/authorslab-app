@@ -1,6 +1,6 @@
 # Data Processing Addendum
 
-Last updated: {{EFFECTIVE_DATE}}
+Last updated: 05 August 2026
 
 ---
 
@@ -12,11 +12,11 @@ Last updated: {{EFFECTIVE_DATE}}
 
 This Data Processing Addendum ("DPA") is entered into between:
 
-**AuthorsLab Ltd**, a company registered in England and Wales (company number [- ]), with registered address at [- ] ("AuthorsLab" / "Processor")
+**[Legal entity — confirming with co-founder]**, a company registered in England and Wales (company number [Pending]), with registered address at [Pending] ("AuthorsLab" / "Processor")
 
 and
 
-**[CUSTOMER ENTITY NAME]**, a company registered in [jurisdiction] (company number [- ]), with registered address at [- ] ("Customer" / "Controller")
+**[Legal entity — confirming with co-founder]**, a company registered in England and Wales (company number [Pending]), with registered address at [Pending] ("Customer" / "Controller")
 
 (each a "Party", together the "Parties").
 
@@ -102,7 +102,7 @@ in each case as amended or replaced from time to time.
 
 **5.1** The Customer provides general authorisation to AuthorsLab to engage Sub-processors. AuthorsLab's current Sub-processors are listed at [authorslab.ai/legal/subprocessors](/legal/subprocessors) ("Sub-processor List").
 
-**5.2** AuthorsLab shall give the Customer at least 30 days' prior written notice before adding or replacing a Sub-processor, by updating the Sub-processor List and notifying the Customer at the email address on their account [Paul: consider a dedicated notification mechanism for enterprise customers].
+**5.2** AuthorsLab shall give the Customer at least 30 days' prior written notice before adding or replacing a Sub-processor, by updating the Sub-processor List and notifying the Customer at the email address on their account.
 
 **5.3** The Customer may object to a new Sub-processor within 14 days of receiving such notice, providing written reasons for the objection. If the Parties are unable to resolve the objection within a further 14 days, the Customer may terminate the Main Agreement on written notice, and AuthorsLab shall refund any pre-paid fees for the unexpired portion of the subscription term.
 
@@ -275,7 +275,7 @@ The Parties do not anticipate that special category Personal Data (as defined in
 | Clause 7 (docking clause) | Not applicable |
 | Clause 9 (sub-processors) | Option 2 (general written authorisation) with 30-day notice period |
 | Clause 11 (redress) | Optional language not included |
-| Clause 17 (governing law of SCCs) | Laws of Ireland [Paul: update if another EEA member state is preferred] |
+| Clause 17 (governing law of SCCs) | Laws of Ireland |
 | Clause 18 (jurisdiction) | Courts of Ireland |
 | Annex I.A (list of parties) | As set out in the body of this DPA |
 | Annex I.B (description of transfer) | As described in Schedule 1 of this DPA |
@@ -288,7 +288,7 @@ The Parties do not anticipate that special category Personal Data (as defined in
 
 This DPA is agreed and entered into by the duly authorised representatives of each Party.
 
-**For and on behalf of AuthorsLab Ltd**
+**For and on behalf of [Legal entity — confirming with co-founder]**
 
 Signature: ___________________________
 
@@ -298,7 +298,7 @@ Title: ___________________________
 
 Date: ___________________________
 
-**For and on behalf of [Customer Entity]**
+**For and on behalf of [Legal entity — confirming with co-founder]**
 
 Signature: ___________________________
 

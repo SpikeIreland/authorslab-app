@@ -1,6 +1,6 @@
 # Cookie Policy
 
-Last updated: {{EFFECTIVE_DATE}}
+Last updated: 05 August 2026
 
 ---
 
@@ -39,7 +39,7 @@ These cookies help us understand how the platform is being used - which features
 | --- | --- | --- | --- |
 | `va-*` (Vercel Analytics) | Vercel | Aggregate page view and performance data | Session / 90 days |
 
-[Paul: Vercel Analytics is privacy-friendly by design (no fingerprinting, no cross-site tracking). If you switch analytics vendors, update this table.]
+Vercel Analytics is privacy-friendly by design: it does not fingerprint visitors or track them across sites.
 
 ### 2.3 Functional cookies
 
@@ -48,8 +48,6 @@ These cookies support features that improve your experience but aren't strictly 
 | Cookie / technology | Provider | Purpose | Duration |
 | --- | --- | --- | --- |
 | `theme-preference` | AuthorsLab (first-party) | Remembers your display preference (light/dark mode) | 1 year |
-
-[Paul: update this table as platform features develop. Include any onboarding/tour cookies.]
 
 ### 2.4 Third-party cookies
 

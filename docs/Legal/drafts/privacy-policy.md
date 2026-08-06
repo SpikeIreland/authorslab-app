@@ -1,6 +1,6 @@
 # Privacy Policy
 
-Last updated: {{EFFECTIVE_DATE}}
+Last updated: 05 August 2026
 
 ---
 
@@ -12,11 +12,11 @@ Please read it. We've tried to make it worth your time.
 
 ## 1. Who we are
 
-AuthorsLab is operated by AuthorsLab Ltd [Paul: confirm registered name], a company registered in England and Wales (company number [- ]). Our registered address is [- ].
+AuthorsLab is operated by [Legal entity — confirming with co-founder], a company registered in England and Wales (company number [Pending]). Our registered address is [Pending].
 
 When this policy refers to "AuthorsLab", "we", "us", or "our", it means AuthorsLab Ltd.
 
-We are registered with the UK Information Commissioner's Office (ICO) under registration number [- ].
+We are not currently registered with the UK Information Commissioner's Office (ICO); registration will be confirmed as part of our public launch.
 
 You can reach us about anything in this policy at privacy@authorslab.ai.
 
@@ -84,7 +84,7 @@ If you subscribe to a paid tier, payment is handled by Stripe. We receive a reco
 
 We collect aggregate data about how the platform is used - which features are accessed, how long sessions last, which pages are visited. This data is analysed in aggregate and is not used to build individual behavioural profiles for advertising purposes.
 
-Our current analytics provider is Vercel Analytics [Paul: confirm or update]. This may change; we'll update this policy when it does.
+Our current analytics provider is Vercel Analytics. This may change; we'll update this policy when it does.
 
 ### 3.7 Technical data
 
@@ -124,7 +124,7 @@ We share data with a defined list of third-party service providers (subprocessor
 
 The key ones to know about:
 
-- **Supabase** - stores your account data, manuscript files, and AI-generated content. Data is held in EU West (Ireland) [Paul: confirm region].
+- **Supabase** - stores your account data, manuscript files, and AI-generated content. Data is held in eu-west-2 (London).
 - **Anthropic** - receives manuscript excerpts and conversation context to generate editorial responses via the Claude API. Anthropic does not use your content to train its models under our commercial API agreement.
 - **OpenAI** - receives cover description prompts to generate cover images via DALL-E. OpenAI does not use your content to train its models under our commercial API agreement.
 - **n8n Cloud** - orchestrates the AI editing pipelines that coordinate requests between the platform and Anthropic/OpenAI.
@@ -159,7 +159,7 @@ If AuthorsLab is acquired, merged, or undergoes a change of ownership, your data
 
 ## 6. International data transfers
 
-AuthorsLab is based in the United Kingdom. Our primary data storage is in the EU (Ireland via Supabase). When data is transferred between the UK and the EU, it moves under the UK Government's adequacy decision for the EEA.
+AuthorsLab is based in the United Kingdom. Our primary data storage is in the United Kingdom (London, via Supabase). When data is transferred between the UK and the EEA, it moves under the UK Government's adequacy decision for the EEA.
 
 Some subprocessors - including Anthropic, OpenAI, and Stripe - are based in the United States. Transfers to them take place under appropriate safeguards, including the UK International Data Transfer Agreement (IDTA) and/or the EU Standard Contractual Clauses (SCCs), as applicable. You can request copies of the relevant transfer mechanisms by writing to us at privacy@authorslab.ai.
 
@@ -215,7 +215,7 @@ We do not charge for these requests unless they are manifestly unfounded or exce
 
 ## 10. Deleting your conversation history
 
-You don't need to delete your whole account to remove AI conversation history. You can request deletion of chat transcripts with individual personas, or all conversation history, by emailing privacy@authorslab.ai or using the data management tools in your account settings [Paul: confirm if self-serve deletion is available at launch].
+You don't need to delete your whole account to remove AI conversation history. To request deletion of chat transcripts with individual personas, or of all conversation history, email us at privacy@authorslab.ai — we action requests within 30 days. Self-serve deletion tools inside your account settings are not available at launch; we will update this policy when they are.
 
 ---
 
@@ -249,6 +249,6 @@ If you remain unsatisfied, you have the right to complain to the UK Information 
 
 ## 15. Contact us
 
-AuthorsLab Ltd [Paul: confirm registered name]
-[Registered address]
+[Legal entity — confirming with co-founder]
+[Pending]
 privacy@authorslab.ai

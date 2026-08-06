@@ -1,6 +1,6 @@
 # Terms of Service
 
-Last updated: {{EFFECTIVE_DATE}}
+Last updated: 05 August 2026
 
 ---
 
@@ -13,7 +13,7 @@ By creating an account, you're agreeing to these terms. If you're using AuthorsL
 ## 1. About us and these terms
 
 **1.1**
-AuthorsLab is operated by AuthorsLab Ltd [Paul: confirm], a company registered in England and Wales (company number [- ]), registered address [- ] ("AuthorsLab", "we", "us").
+AuthorsLab is operated by [Legal entity — confirming with co-founder], a company registered in England and Wales (company number [Pending]), registered address [Pending] ("AuthorsLab", "we", "us").
 
 **1.2**
 These Terms of Service ("Terms") govern your access to and use of the AuthorsLab platform, available at `authorslab.ai` and associated subdomains (the "Platform"), and any services provided through it (the "Services").
@@ -301,6 +301,6 @@ These Terms do not create any rights under the Contracts (Rights of Third Partie
 
 ### 15.7 Contact
 
-AuthorsLab Ltd
-[Registered address]
+[Legal entity — confirming with co-founder]
+[Pending]
 legal@authorslab.ai
