@@ -1,5 +1,132 @@
 # SIS – System Admin — Project Ledger
 
+## 2026-08-06 — Entry 24: spikeisland.co LIVE — DNS verified, domain commissioned
+
+Paul configured Crazy Domains (A @ → 76.76.21.21 showed Active; CNAME www →
+cname.vercel-dns.com showed Pending in his screenshot) and added the domain in
+Vercel. **Verified from here, not attested:** both hostnames resolve
+(spikeisland.co → 76.76.21.21; www → cname.vercel-dns.com chain) and both
+serve the site over HTTPS with valid certs — headline, nav, all three venture
+cards render on the real domain. The Pending CNAME had propagated by check
+time. DNS item on the Phase 1 checklist: **CLOSED**.
+
+**Remaining before door-open (unchanged, now the whole list):**
+1. Env vars in Vercel project settings: RESEND_API_KEY + CONTACT_TO_EMAIL
+   (+ optional CONTACT_FROM_EMAIL) → redeploy → one live form send test.
+2. Inbound mail for hello@spikeisland.co — Resend only SENDS; the registrar
+   (Crazy Domains) needs email forwarding so inbound mail to hello@ lands
+   somewhere Paul reads.
+3. Paul's mobile walk of the live site (responsive check is his eye).
+
+## 2026-08-06 — Entry 23: SIS website LIVE on Vercel — commissioned against checklist
+
+Path taken: Paul's GitHub repo `SpikeIreland/spike-island-studios` (renamed
+from spare spikeisland-agency; source pushed via guided terminal session —
+two small stumbles diagnosed remotely: stale cwd, then drag-without-cd) →
+Vercel import into Paul Lyons' projects team. **Root cause of the 403/
+invisibility found and fixed: the Vercel connector's OAuth grant was
+project-SCOPED; Paul changed it to All Projects on the Vercel side — the
+long-term lever for all future projects.** Project now visible to connector:
+prj_8jvse1m2ID7cX1CXwl5Ytdc6muOO.
+
+**Domain correction:** real domain = spikeisland.co (Crazy Domains, bought,
+unconfigured) — brief's spikeislandstudios.com superseded. Two code refs
+patched via Paul's paste-and-push (sed block); auto-redeploy confirmed the
+loop works.
+
+**Commissioning walk (Phase 1 checklist, verified live):** production READY ·
+home renders with headline/CTAs/3 venture cards+badges ✓ · contact shows
+hello@spikeisland.co (patch deployed) + full form ✓ · venture sub-page
+renders all sections + enquiry form ✓. **Remaining before door-open:**
+env vars (RESEND_API_KEY, CONTACT_TO_EMAIL) → then live form send test ·
+DNS at Crazy Domains (A @ → 76.76.21.21, CNAME www → cname.vercel-dns.com)
++ add domains in Vercel · inbound mail for hello@ (registrar forwarding) ·
+Paul's own browser walk on mobile (responsive check is his eye, not mine).
+
+## 2026-08-06 — Entry 22: SIS website Phase 1 BUILT (deploy held at Paul's request)
+
+Website brief received (PDF, prepared by Clarence Business chat): investor-
+focused holding-co site, quiet-confidence direction, 7 routes, Vercel/Next.js.
+**New facts absorbed → charter corrections queued:** Carl = co-founder
+(published author/scriptwriter); third venture Spike Island Productions
+(spikeisland.tv, in dev); CL = three-way partnership w/ John Hayward; AL = Ltd
+Co under SIS. Strategic ruling: this site is the INVESTOR DOOR; the
+thesis/method platform is a separate later property — method appears only as
+one quiet paragraph in About/How-We-Work.
+
+**Built + verified:** full Next.js site per brief (15 files): home, about
+(founder bios drafted, pull quote), portfolio + 3 venture sub-pages
+(half-page prose, facts strips, per-venture enquiry forms), contact,
+/api/enquiry via Resend (env-driven: RESEND_API_KEY, CONTACT_TO_EMAIL,
+CONTACT_FROM_EMAIL; fails honestly when unconfigured — no silent receipt).
+Dark palette + muted gold, fade-ins only, reduced-motion respected, responsive.
+`next build` clean; all pages screenshot-verified. Decisions: hello@ over
+enquiries@ (flagged domain mismatch: use hello@spikeislandstudios.com, not
+spikeisland.co, unless deliberate).
+
+**Deploy:** direct-to-Vercel PAUSED — Paul declined the MCP deploy call.
+Source delivered as zip + preview sheet. Options open: (a) I deploy preview
+on his word; (b) Paul's usual flow — GitHub repo + Vercel connect (env vars
+listed above; brief's Phase 1 checklist = commissioning sheet either way).
+
+## 2026-07-28 — Entry 21: SIS-the-business workstream opened — Charter V0 drafted
+
+Paul turns to SIS as a business (model / brand+marketing / horizons; wants
+website + marketing plan). Articulated: SIS = venture studio (4 finished
+goods on different clocks: venture equity, external engagements, platform,
+knowledge/books); marketing = the evidence trail (receipts not promises,
+build-in-public wired to the book); doctrine: ventures have exit clocks, SIS
+is the institution. **Critical structural flag: method IP must be assigned to
+SIS and licensed to ventures BEFORE any exit (D-SIS-1, needs a lawyer).**
+Agreed sequence: model → narrative → website → marketing plan (website-first
+named as the trap). Shipped `SIS-Business-Charter-V0.md` (exchange root) as
+the Rev A drawing for founder correction, with open questions Q1–Q4 (London
+imprint = SIS engagement or AL partnership? · dedicated SIS folder? ·
+incorporation/share structure? · brand + book imprint decision).
+
+## 2026-07-28 — Entry 20: AL pricing workstream founded — research + brief shipped
+
+Paul's ask: investment prep for AL (CL pattern: pricing chat → model → deck →
+exec summary), subscription pivot from one-time $299, £19/mo instinct.
+Routing ruled: AL Pricing Chat in AL's environment, founded on a verified
+brief from SIS.
+
+**Deep research run** (107 agents, 25 sources, 111 claims → 25 panel-verified,
+0 refuted): £19 = mid-market (between Sudowrite tiers; ~3% of median working
+author income; market bimodal — 44% of indies ≤$100/mo book income). Model
+shape: hybrid base+credits (Sudowrite/PublishDrive live practice + Bessemer
+playbook). Imprint SKU comparables: Consonance £75/seat 8-min ≈ £600/mo;
+Hederis $119–199/title. Site review gap closed by direct fetch (free
+analysis + $299 one-time, $2k–$10k anchor). Cursor grandfathering cautionary
+tale noted for the 11 beta authors.
+
+**Shipped to docs/sis/pricing/:** `AL-Pricing-Research-Report-V1.md`
+(AL-SIS-PRR-001, confidence-graded, caveats carried) +
+`AL-Pricing-Chat-Founding-Brief.md` (verified estate facts: $299 site model,
+schema-ready tiers + manuscripts_allowed, D7 SKU boundary, lmo_ledger as
+metered-COGS instrument for the financial model — the investor differentiator;
+first-tasks sequence; protocol routing via AL – System Admin).
+Stress-test frame: £9–12 / £19–24 / £39–49 writer tiers + £250–750 imprint
+SKU + one-time pass retained as funnel. SYNTHESIS-grade, to be validated on
+own audience (Van Westendorp).
+
+## 2026-07-27 — Entry 19: DP-CC-01 (Craft Call Cell) schema applied; rulings issued
+
+Platform chat's Craft Call Cell spec (AL-PDC-DPCC01-S) — ratifies the HTTP
+handover, specs the Cell as canonical AI-call primitive. My side executed:
+estate checked (no prior ledger table) → `dp_cc_01_lmo_ledger` applied:
+**lmo_ledger** (their shape + `model_requested` amendment for declared-vs-
+actual) + **lmo_model_pricing** (Q2 ruled: DB table, SysAdmin-owned,
+structure only — Paul seeds prices from Anthropic's page; Cell computes cost
+only when a row matches, else NULL) + RLS (no authenticated writes) +
+**inv_14_truncation_rate** allocated/registered (board = 14 sensors;
+green-vacuous, will be proven by their E3 test). **inv_15 deferred with
+reason** (false-ambers during opportunistic migration; re-propose scoped or
+post-migration). Q3 ruled: v1 retry w/o jitter approved; ledger data decides
+later. Q1 (HTTP credential) = Paul: try HTTP node's Predefined Credential
+Type with existing anthropicApi credential first; fallback httpHeaderAuth.
+Response filed to platform-dev/. Cell build unblocks on Q1.
+
 ## 2026-07-24 — Entry 18: Chat taxonomy named · HTTP-nodes handover to AL
 
 **Ecosystem naming (Paul's ruling):** this chat = **SIS – System Admin** (the
