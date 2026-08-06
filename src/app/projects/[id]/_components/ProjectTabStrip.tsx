@@ -20,6 +20,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { RELEASED } from '@/lib/feature-flags'
 
 type StageState = 'pending' | 'active' | 'complete' | 'skipped'
 
@@ -98,6 +99,12 @@ export function ProjectTabStrip({
         <Divider />
 
         {JOURNEY_TABS.map(t => {
+          // Feature-gate: journey stations held back for staged R2-R5 releases
+          // render as a non-clickable "Soon" chip (same treatment as Script)
+          // instead of the state-grammar dot. `author-studio` is always live.
+          if (t.id !== 'author-studio' && !RELEASED[t.id]) {
+            return <SoonJourneyTab key={t.id} label={t.label} />
+          }
           const state = deriveTabState(t.id, phase, status)
           return (
             <JourneyTab
@@ -222,6 +229,37 @@ function JourneyTab({
       )}
       {isCurrent && <ActiveUnderline />}
     </Link>
+  )
+}
+
+/**
+ * SoonJourneyTab — station is built/specced but held back for a staged
+ * release. Reuses the Script tab's "Soon" chip so the tease reads the same
+ * everywhere. Renders as a non-clickable span (no href, no navigation).
+ */
+function SoonJourneyTab({ label }: { label: string }) {
+  return (
+    <span
+      className={TAB_BASE}
+      style={{
+        color: 'var(--color-faint)',
+        fontWeight: 400,
+        cursor: 'default',
+      }}
+    >
+      <span>{label}</span>
+      <span
+        className="text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wider"
+        style={{
+          background: 'var(--color-amber-bg)',
+          color: 'var(--color-muted)',
+          letterSpacing: '0.1em',
+          fontWeight: 500,
+        }}
+      >
+        Soon
+      </span>
+    </span>
   )
 }
 

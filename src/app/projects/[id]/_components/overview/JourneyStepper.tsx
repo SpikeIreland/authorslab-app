@@ -39,12 +39,16 @@ export function JourneyStepper({ payload }: JourneyStepperProps) {
 }
 
 function Step({ step, isLast }: { step: StepperStep; isLast: boolean }) {
-  const isLive = step.status === 'active'
-  const isNextUp = step.gateHint !== undefined
-  const isSkipped = step.status === 'skipped'
-  const isComplete = step.status === 'complete'
+  const isComingSoon = step.comingSoon === true
+  // A coming-soon step overrides the state grammar: no live progress, no gate
+  // hint, no CTA, no "complete" affordance — just the tease chip.
+  const isLive = !isComingSoon && step.status === 'active'
+  const isNextUp = !isComingSoon && step.gateHint !== undefined
+  const isSkipped = !isComingSoon && step.status === 'skipped'
+  const isComplete = !isComingSoon && step.status === 'complete'
 
-  const labelColour = isSkipped ? 'var(--color-faint)'
+  const labelColour = isComingSoon ? 'var(--color-faint)'
+    : isSkipped ? 'var(--color-faint)'
     : (isLive || isComplete) ? 'var(--color-ink)'
     : 'var(--color-muted)'
 
@@ -61,10 +65,23 @@ function Step({ step, isLast }: { step: StepperStep; isLast: boolean }) {
           >
             {step.label}
           </p>
-          {step.editor && !isSkipped && (
+          {step.editor && !isSkipped && !isComingSoon && (
             <p className="text-[12px]" style={{ color: 'var(--color-muted)' }}>
               {isLive ? `with ${step.editor}` : `· ${step.editor}`}
             </p>
+          )}
+          {isComingSoon && (
+            <span
+              className="text-[10.5px] px-1.5 py-0.5 rounded uppercase tracking-wider"
+              style={{
+                background: 'var(--color-amber-bg)',
+                color: 'var(--color-muted)',
+                letterSpacing: '0.08em',
+                fontWeight: 500,
+              }}
+            >
+              Coming soon
+            </span>
           )}
           {isSkipped && (
             <span
@@ -83,7 +100,7 @@ function Step({ step, isLast }: { step: StepperStep; isLast: boolean }) {
 
         <p
           className="text-[12.5px] mt-1"
-          style={{ color: isSkipped ? 'var(--color-faint)' : 'var(--color-muted)' }}
+          style={{ color: (isSkipped || isComingSoon) ? 'var(--color-faint)' : 'var(--color-muted)' }}
         >
           {step.copy}
         </p>
@@ -148,7 +165,28 @@ function Step({ step, isLast }: { step: StepperStep; isLast: boolean }) {
 
 function StageDot({ step }: { step: StepperStep }) {
   const state = step.status
-  const halo = state === 'active'
+  const halo = state === 'active' && !step.comingSoon
+
+  // Coming-soon phases: faint numbered ring (matches pending shape but reads
+  // muted) so the eye moves past them to the editing stations that are live.
+  if (step.comingSoon) {
+    return (
+      <span className="absolute left-0 top-0.5 inline-flex items-center justify-center">
+        <span
+          className="inline-flex items-center justify-center rounded-full text-[10px]"
+          style={{
+            width: 16,
+            height: 16,
+            border: '1px dashed var(--color-faint)',
+            background: 'transparent',
+            color: 'var(--color-faint)',
+          }}
+        >
+          {step.phase_number}
+        </span>
+      </span>
+    )
+  }
 
   return (
     <span

@@ -5,27 +5,28 @@
  */
 
 import type { OverviewPayload, OverviewPhase } from '@/app/api/projects/[id]/overview/route'
+import { RELEASED } from '@/lib/feature-flags'
 
-export type Persona = 'Eden' | 'Alex' | 'Sam' | 'Jordan' | 'Taylor' | 'Riley' | 'Ivy' | 'Reid'
+export type Persona = 'Riley' | 'Alex' | 'Sam' | 'Jordan' | 'Taylor' | 'Kai' | 'Ivy' | 'Reid'
 
 /**
  * Which persona owns the greeting card for this project state?
- *   - ghostwriting → Eden
+ *   - ghostwriting → Riley (was Eden; renamed 2026-07-30)
  *   - phase 1-3 → editor for that phase
  *   - phase 4 → Taylor (publishing)
- *   - phase 5 → Riley (marketing)
- *   - complete → Riley (post-launch lives with Marketing)
+ *   - phase 5 → Kai (marketing; was Riley, renamed 2026-07-30)
+ *   - complete → Kai (post-launch lives with Marketing)
  */
 export function greetingPersona(payload: OverviewPayload): Persona {
   const { status, current_phase_number } = payload.manuscript
-  if (status === 'ghostwriting') return 'Eden'
-  if (status === 'complete') return 'Riley'
+  if (status === 'ghostwriting') return 'Riley'
+  if (status === 'complete') return 'Kai'
   const phase = current_phase_number ?? 1
   if (phase === 1) return 'Alex'
   if (phase === 2) return 'Sam'
   if (phase === 3) return 'Jordan'
   if (phase === 4) return 'Taylor'
-  return 'Riley'
+  return 'Kai'
 }
 
 /** Phase label used in the kicker ("Author Studio · Line edit"). */
@@ -53,13 +54,13 @@ export function greetingMessage(payload: OverviewPayload): { headline: string; b
   if (status === 'ghostwriting') {
     return {
       headline: 'Ready when you are.',
-      body: `Eden's holding your project. Book a session and she'll introduce your ghostwriter.`,
+      body: `Riley's holding your project. Book a session and she'll introduce your ghostwriter.`,
     }
   }
   if (status === 'complete') {
     return {
       headline: 'Live and out in the world.',
-      body: `Riley can walk you through recent activity, or help you plan a promo push.`,
+      body: `Kai can walk you through recent activity, or help you plan a promo push.`,
     }
   }
 
@@ -96,8 +97,8 @@ export function greetingMessage(payload: OverviewPayload): { headline: string; b
   }
   if (phase === 5) {
     return {
-      headline: `Riley's ready to plan ${title}'s launch.`,
-      body: `Positioning, audience, campaign plan. Open Marketing to start with Riley.`,
+      headline: `Kai's ready to plan ${title}'s launch.`,
+      body: `Positioning, audience, campaign plan. Open Marketing to start with Kai.`,
     }
   }
   return {
@@ -115,7 +116,7 @@ export function primaryCta(payload: OverviewPayload): { href: string; label: str
   const { status, current_phase_number } = payload.manuscript
 
   if (status === 'ghostwriting') {
-    return { href: `/projects/${projectId}/ghostwriter`, label: 'Continue with Eden →' }
+    return { href: `/projects/${projectId}/ghostwriter`, label: 'Continue with Riley →' }
   }
   if (status === 'complete') {
     return { href: `/projects/${projectId}/marketing`, label: 'Open Marketing →' }
@@ -129,7 +130,7 @@ export function primaryCta(payload: OverviewPayload): { href: string; label: str
     return { href: `/projects/${projectId}/publishing`, label: 'Continue with Taylor →' }
   }
   if (phase === 5) {
-    return { href: `/projects/${projectId}/marketing`, label: 'Continue with Riley →' }
+    return { href: `/projects/${projectId}/marketing`, label: 'Continue with Kai →' }
   }
   return { href: `/projects/${projectId}/author-studio`, label: 'Open project →' }
 }
@@ -172,6 +173,12 @@ export interface StepperStep {
   href: string
   /** Mini-CTA label. */
   ctaLabel: string
+  /**
+   * True when this phase's station is held back for a future staged release
+   * (per feature-flags.ts). Renderer swaps state grammar for a "Coming soon"
+   * tease and suppresses the CTA/progress/gate copy.
+   */
+  comingSoon?: boolean
 }
 
 const STEP_LABELS: Record<number, { label: string; copy: string; hrefSuffix: string; cta: string }> = {
@@ -201,7 +208,7 @@ const STEP_LABELS: Record<number, { label: string; copy: string; hrefSuffix: str
   },
   5: {
     label: 'Marketing',
-    copy: 'Positioning, audience, launch plan.',
+    copy: 'Positioning, audience, launch plan — with Kai.',
     hrefSuffix: 'marketing',
     cta: 'Open Marketing →',
   },
@@ -233,6 +240,15 @@ export function stepperSteps(payload: OverviewPayload): StepperStep[] {
         : 0
     }
 
+    // Phase 4 (Publishing) covers both the Design and Publishing stations in
+    // the tab strip, so it's held back until BOTH have released. Phase 5
+    // (Marketing) tracks the Marketing flag directly. Phases 1-3 are the
+    // editing studio — always available in R1.
+    const comingSoon =
+      p.phase_number === 4 ? (!RELEASED.publishing || !RELEASED.design)
+      : p.phase_number === 5 ? !RELEASED.marketing
+      : false
+
     return {
       phase_number: p.phase_number,
       label: meta.label,
@@ -244,6 +260,7 @@ export function stepperSteps(payload: OverviewPayload): StepperStep[] {
       gateHint: isNextUp ? gateHintFor(p.phase_number, payload.phases[p.phase_number - 2]?.editor_name ?? null) : undefined,
       href: `/projects/${projectId}/${meta.hrefSuffix}`,
       ctaLabel: meta.cta,
+      comingSoon,
     }
   })
 }

@@ -10,6 +10,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { RELEASED } from '@/lib/feature-flags'
 
 interface Props {
   open: boolean
@@ -43,7 +44,14 @@ export function NewProjectModal({ open, onClose }: Props) {
         throw new Error(errBody.error || `Failed to create project (${res.status})`)
       }
       const json = await res.json() as { id: string }
-      router.push(`/projects/${json.id}/ghostwriter`)
+      // Ghostwriter is a staged future release; when it flips live this
+      // routes back to the Ghostwriter tab. In the meantime the upload-only
+      // modal never invokes chooseWrite, so this branch is inert.
+      router.push(
+        RELEASED.ghostwriter
+          ? `/projects/${json.id}/ghostwriter`
+          : `/projects/${json.id}`,
+      )
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong.')
       setCreating(false)
@@ -69,7 +77,11 @@ export function NewProjectModal({ open, onClose }: Props) {
         <h2 id="new-project-title" className="text-lg font-medium text-slate-900 mb-1">
           Start a new project
         </h2>
-        <p className="text-sm text-slate-600 mb-5">What are you here to do?</p>
+        <p className="text-sm text-slate-600 mb-5">
+          {RELEASED.ghostwriter
+            ? 'What are you here to do?'
+            : 'Upload your manuscript to get started.'}
+        </p>
 
         {error && (
           <div className="mb-4 px-3 py-2 bg-rose-50 border border-rose-200 rounded text-sm text-rose-800">
@@ -77,39 +89,61 @@ export function NewProjectModal({ open, onClose }: Props) {
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
-          <button
-            type="button"
-            onClick={chooseWrite}
-            disabled={creating}
-            className="text-left p-4 border border-slate-200 rounded-md hover:border-slate-400 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-wait transition-colors"
-          >
-            <p className="text-sm font-medium text-slate-900 mb-1.5">
-              {creating ? 'Creating project…' : 'Write a book'}
-            </p>
-            <p className="text-xs text-slate-600 mb-3 leading-relaxed">
-              I have an idea or rough material — help me build it out.
-            </p>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              A Ghostwriter (Ivy or Reid) takes you from here.
-            </p>
-          </button>
+        {RELEASED.ghostwriter ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+            <button
+              type="button"
+              onClick={chooseWrite}
+              disabled={creating}
+              className="text-left p-4 border border-slate-200 rounded-md hover:border-slate-400 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-wait transition-colors"
+            >
+              <p className="text-sm font-medium text-slate-900 mb-1.5">
+                {creating ? 'Creating project…' : 'Write a book'}
+              </p>
+              <p className="text-xs text-slate-600 mb-3 leading-relaxed">
+                I have an idea or rough material — help me build it out.
+              </p>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                A Ghostwriter (Ivy or Reid) takes you from here.
+              </p>
+            </button>
 
-          <button
-            type="button"
-            onClick={chooseEdit}
-            disabled={creating}
-            className="text-left p-4 border border-slate-200 rounded-md hover:border-slate-400 hover:bg-slate-50 disabled:opacity-50 transition-colors"
-          >
-            <p className="text-sm font-medium text-slate-900 mb-1.5">Edit a manuscript</p>
-            <p className="text-xs text-slate-600 mb-3 leading-relaxed">
-              I have a draft and I&rsquo;m ready to polish it.
-            </p>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Alex begins reading and gives developmental notes.
-            </p>
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={chooseEdit}
+              disabled={creating}
+              className="text-left p-4 border border-slate-200 rounded-md hover:border-slate-400 hover:bg-slate-50 disabled:opacity-50 transition-colors"
+            >
+              <p className="text-sm font-medium text-slate-900 mb-1.5">Edit a manuscript</p>
+              <p className="text-xs text-slate-600 mb-3 leading-relaxed">
+                I have a draft and I&rsquo;m ready to polish it.
+              </p>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Alex begins reading and gives developmental notes.
+              </p>
+            </button>
+          </div>
+        ) : (
+          // MVP: Ghostwriter station is held for a staged release, so the
+          // fork collapses to upload-only. When RELEASED.ghostwriter flips
+          // true, the two-path grid above restores automatically.
+          <div className="mb-5">
+            <button
+              type="button"
+              onClick={chooseEdit}
+              disabled={creating}
+              className="w-full text-left p-4 border border-slate-200 rounded-md hover:border-slate-400 hover:bg-slate-50 disabled:opacity-50 transition-colors"
+            >
+              <p className="text-sm font-medium text-slate-900 mb-1.5">Upload your manuscript</p>
+              <p className="text-xs text-slate-600 mb-3 leading-relaxed">
+                Drop your draft in and Alex will begin the developmental read.
+              </p>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Supported: .docx, .txt, and other common manuscript formats.
+              </p>
+            </button>
+          </div>
+        )}
 
         <div className="flex justify-end">
           <button
