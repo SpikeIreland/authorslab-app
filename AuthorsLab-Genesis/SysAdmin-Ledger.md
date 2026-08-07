@@ -1,5 +1,29 @@
 # SIS – System Admin — Project Ledger
 
+## 2026-08-07 — Entry 26: REPOSITIONED — AI vetting partner for investment firms
+
+New brief (SIS/spike-island-studios-website-brief.pdf, Clarence Business,
+2026-08-07) pivots the site: SIS = AI vetting/advisory INTERMEDIARY for
+investment firms; portfolio = proof of capability, not the merchandise.
+Paul's rulings: serif headlines (Playfair, self-hosted via @fontsource — 
+Google Fonts unreachable from build sandbox, npm route better anyway);
+retire old headline fully; skip spikeislandstudios.com redirect (not owned).
+Deliberate deviations from brief: Resend kept over Formspree (already
+closed-loop verified); existing palette kept (already matches direction).
+
+**Shipped + verified live:** new home (headline/subhead/copy/CTAs), NEW
+/work-with-us (investment-firm form w/ Role field; AI-companies pathway
+placeholder), About reframed (philosophy pull-quote, studio-model section),
+Portfolio "Built and backed." + sector tags, 48h line on Contact, per-page
+meta, Vercel Analytics wired (dashboard toggle = Paul). Build clean;
+4 pages screenshot-checked pre-push; live fetch confirms H1 + /work-with-us.
+
+**New lever:** direct write into Paul's local clone (Downloads/sis-site) via
+folder grant + bridge, committed as Paul from device VM (identity via -c
+flags; git lock files can't be unlinked — move to _to_delete/, now
+gitignored). Zip-courier path retired: I edit + commit, Paul only pushes.
+Test enquiry through new form: pending Paul's next check.
+
 ## 2026-08-06 — Entry 25: Enquiry path CLOSED-LOOP VERIFIED — form live end-to-end
 
 Env vars in (RESEND_API_KEY + CONTACT_TO_EMAIL=paul@spikeisland.tv — the
