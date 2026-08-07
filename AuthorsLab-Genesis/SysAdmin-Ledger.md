@@ -1,5 +1,26 @@
 # SIS – System Admin — Project Ledger
 
+## 2026-08-07 — Entry 27: Two chats founded — SIS-Design and SIS-Investor-Research
+
+Chat ecosystem grows to five SIS-side stations. Ruling: website deploy
+loop STAYS in this chat (clone write + build sandbox + verification are
+proven levers here); the new chats produce briefs/assets and research,
+never deployments. Founding briefs written to Desktop/SIS/ (courier: Paul):
+
+- **SIS – Design**: owns visual identity (wordmark, favicon/OG, imagery,
+  motion language). Assigned tension: investor door is quiet by ruling;
+  expressive animation likely belongs to spikeisland.tv. Outbox:
+  Desktop/SIS/design/. Queue: wordmark, OG cards (pre-LinkedIn), brand
+  sheet for all SIS chats.
+- **SIS – Investor Research**: deep research on target investment houses
+  as *clients for the vetting service* first. Geography: UK home, AU
+  second base, US in scope (prefer London-office US firms; pure-US valid
+  — service travels). Wanted: tiered 40–60 firm list, Tier-1 dossiers,
+  category scan (family offices, CVCs in legal/publishing/media, studio
+  backers), sequencing rec. No outreach, no pricing from that chat.
+  Outbox: Desktop/SIS/investor-research/. Feeds Clarence Business intro
+  letter + LinkedIn campaign.
+
 ## 2026-08-07 — Entry 26: REPOSITIONED — AI vetting partner for investment firms
 
 New brief (SIS/spike-island-studios-website-brief.pdf, Clarence Business,
