@@ -1,7 +1,8 @@
 // ============================================================================
 // AL-UX-006 · How it works — The Manuscript Room language
 // Restyle + truth-fix pass: shared nav/footer, ivory/paper palette, persona
-// tokens, no gradients, no emoji, no price anchors, all five stages live.
+// tokens, no gradients, no emoji, no price anchors. Status truth per
+// AL-MKT-007: editing studio live; Wright/Design/Publishing/Marketing coming soon.
 // ============================================================================
 
 import type { Metadata } from 'next'
@@ -12,7 +13,7 @@ import { MarketingFooter } from '@/components/marketing/MarketingFooter'
 export const metadata: Metadata = {
   title: 'How it works — AuthorsLab',
   description:
-    'Five stages, a named editor at each one: a first read with Alex, a line edit with Sam, a final polish with Jordan, design and publishing with Taylor, and your launch with Riley.',
+    'Five stages, a named editor at each one: a first read with Alex, a line edit with Sam, a final polish with Jordan — live today — then design with Taylor, publishing with Morgan, and your launch with Riley, coming soon.',
 }
 
 export default function HowItWorksPage() {
@@ -29,8 +30,9 @@ export default function HowItWorksPage() {
             <span className="block italic text-sage-deep">published book</span>
           </h1>
           <p className="text-lg text-muted max-w-3xl mx-auto mb-8 leading-relaxed">
-            Our five-stage process transforms your manuscript into a professionally edited,
-            published, and marketed book — with a named editor at every stage, working at your pace.
+            A five-stage journey from manuscript to published book, with a named editor at every
+            stage, working at your pace. The editing studio is open today; design, publishing
+            and marketing stages arrive as staged releases.
           </p>
         </div>
       </section>
@@ -256,7 +258,7 @@ export default function HowItWorksPage() {
                 <div>
                   <h2 className="font-serif font-medium text-3xl text-ink">Design &amp; Publishing</h2>
                   <p className="text-taylor-text font-medium text-sm mt-1">
-                    Format &amp; launch support · with Taylor
+                    Cover, files &amp; platforms · with Taylor &amp; Morgan · coming soon
                   </p>
                 </div>
               </div>
@@ -403,8 +405,10 @@ export default function HowItWorksPage() {
 
                 <div className="mt-6 p-4 bg-paper rounded-lg border border-line">
                   <p className="text-sm text-muted">
-                    <strong className="text-ink">Publishing specialist:</strong> Taylor ·{' '}
-                    <strong className="text-ink">Estimated timeline:</strong> Files ready in 3&ndash;5 days
+                    <strong className="text-ink">Design:</strong> Taylor ·{' '}
+                    <strong className="text-ink">Publishing:</strong> Morgan ·{' '}
+                    <strong className="text-ink">Coming soon</strong> — releases as your book nears
+                    the end of its editing journey
                   </p>
                 </div>
               </div>
@@ -419,7 +423,7 @@ export default function HowItWorksPage() {
                 <div>
                   <h2 className="font-serif font-medium text-3xl text-ink">Marketing</h2>
                   <p className="text-riley-text font-medium text-sm mt-1">
-                    Platform building &amp; promotion · with Riley
+                    Platform building &amp; promotion · with Riley · coming soon
                   </p>
                 </div>
               </div>
@@ -473,7 +477,8 @@ export default function HowItWorksPage() {
                 <div className="mt-6 p-4 bg-paper rounded-lg border border-line">
                   <p className="text-sm text-muted">
                     <strong className="text-ink">Marketing specialist:</strong> Riley ·{' '}
-                    <strong className="text-ink">Work at your own pace</strong>
+                    <strong className="text-ink">Coming soon</strong> — releases as your book
+                    approaches launch
                   </p>
                 </div>
               </div>
@@ -489,7 +494,8 @@ export default function HowItWorksPage() {
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="font-serif font-medium text-3xl text-ink mb-6">Your complete journey</h2>
             <p className="text-lg text-muted mb-12">
-              All five stages included in one membership. From first draft to published, marketed book.
+              One membership covers the editing studio today — and each new stage joins your
+              membership as it releases, without your price changing.
             </p>
 
             <div className="bg-paper rounded-2xl p-8 md:p-12 border border-line">
@@ -514,7 +520,7 @@ export default function HowItWorksPage() {
                 <div className="text-center">
                   <div className="w-12 h-12 rounded-full bg-taylor flex items-center justify-center text-white font-serif text-lg mx-auto mb-2">T</div>
                   <p className="text-xs text-muted">Design &amp; Publishing</p>
-                  <p className="text-xs font-semibold text-taylor-text">Taylor</p>
+                  <p className="text-xs font-semibold text-taylor-text">Taylor &amp; Morgan</p>
                 </div>
                 <div className="text-center">
                   <div className="w-12 h-12 rounded-full bg-riley flex items-center justify-center text-white font-serif text-lg mx-auto mb-2">R</div>
@@ -524,7 +530,7 @@ export default function HowItWorksPage() {
               </div>
 
               <p className="font-serif text-2xl text-ink mb-2">
-                One membership · every stage · your rights, always
+                One membership · your editors · your rights, always
               </p>
               <p className="text-muted mb-8">Work at your own pace · Full details soon</p>
 

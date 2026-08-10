@@ -3,8 +3,8 @@
 // PD-1: Starter £10 / Author £19 / Pro £39 monthly; annual effective £7/£13/£27
 // PD-2: annual price is the headline everywhere — never a bare monthly price
 // PD-3: allowances 1 / 4 / 10 deep passes per month (provisional numbers)
-// PD-4: one-time pass £119, credits toward first month if upgraded in 90 days;
-//        free analysis unchanged; human-services anchor retained
+// PD-4 SUPERSEDED 2026-08-10 (AL-MKT-008): the £119 one-time pass is REMOVED.
+//        Membership only. Human-services anchor softened per AL-MKT-007 §4.
 // SEQUENCING (PD-5): do not deploy before the Founding Author announcement.
 // ============================================================================
 
@@ -16,7 +16,7 @@ import { MarketingFooter } from '@/components/marketing/MarketingFooter'
 export const metadata: Metadata = {
   title: 'Pricing — AuthorsLab',
   description:
-    'One membership covers every book you write: your full editorial team, from first read to launch. From £7/mo billed annually. Or start with a single-project pass.',
+    'One membership covers every book you write. The editing studio today — first read, line edit, polish — with new stages joining as they release. From £7/mo billed annually.',
 }
 
 const TIERS = [
@@ -28,7 +28,7 @@ const TIERS = [
     passes: '1 full-manuscript editorial pass each month',
     featured: false,
     features: [
-      'Your full editorial team — every stage, first read to launch',
+      'The editing studio: Alex, Sam and Jordan',
       'One active project in your library',
       'Every assessment and edit filed on your shelf',
     ],
@@ -43,8 +43,7 @@ const TIERS = [
     features: [
       'Everything in Starter',
       'Unlimited projects in your library',
-      'Cover design, publishing prep and launch planning',
-      'Priority turnaround on editorial passes',
+      'New stages join as they release — your price never changes',
     ],
   },
   {
@@ -75,7 +74,8 @@ export default function PricingPage() {
         </h1>
         <p className="text-muted text-[16px] leading-relaxed max-w-xl mx-auto">
           Begin with a free manuscript assessment. Then choose the pace that fits — every tier
-          includes your full editorial team, from Alex&rsquo;s first read to Riley&rsquo;s launch plan.
+          includes the editing studio: Alex&rsquo;s first read, Sam&rsquo;s line edit and
+          Jordan&rsquo;s polish, with new stages joining your membership as they release.
         </p>
       </section>
 
@@ -151,21 +151,16 @@ export default function PricingPage() {
           </div>
 
           <div className="bg-paper border border-line rounded-2xl p-7">
-            <p className="kicker mb-2">One book, one journey</p>
-            <h3 className="font-serif text-xl text-ink">
-              Single-project pass — <span className="whitespace-nowrap">£119 one-time</span>
-            </h3>
+            <p className="kicker mb-2">The road ahead</p>
+            <h3 className="font-serif text-xl text-ink">New stages, coming soon</h3>
             <p className="text-[14px] text-muted leading-relaxed mt-2 mb-5">
-              The complete journey for one manuscript — every editor, every stage, no
-              subscription. And if you join a membership within 90 days, the full £119 credits
-              toward your first months.
+              Design with Taylor, Publishing with Morgan, Marketing with Riley — and Wright,
+              for books that begin from a blank page. Each releases in its own time and joins
+              your membership when it does, without your price changing.
             </p>
-            <Link
-              href="/signup"
-              className="inline-block border border-line hover:border-faint hover:bg-paper-warm text-ink font-semibold px-4 py-2.5 rounded-lg text-sm"
-            >
-              Start one book →
-            </Link>
+            <span className="inline-block text-[11px] font-bold uppercase tracking-widest text-sage-deep bg-sage-bg px-2.5 py-1 rounded-full">
+              Coming soon
+            </span>
           </div>
         </div>
       </section>
@@ -175,11 +170,10 @@ export default function PricingPage() {
         <div className="max-w-3xl mx-auto px-6 py-14 text-center">
           <h2 className="font-serif text-2xl text-ink mb-3">What this replaces</h2>
           <p className="text-muted text-[15px] leading-relaxed">
-            Assembling the same team from human professionals — developmental editor, line
-            editor, copy editor, cover designer, formatter, marketing consultant — typically
-            costs <b className="text-ink">$2,000 to $10,000+ per book</b> and takes months of
-            scheduling. AuthorsLab puts that team on call, for every book in your library, at a
-            fraction of the cost of a single human edit.
+            Assembling the same editorial team from human professionals — a developmental
+            editor, a line editor, a copy editor — typically costs thousands of pounds per
+            book and takes months of scheduling. AuthorsLab puts your editors on call, for
+            every book in your library, at a fraction of the cost of a single human edit.
           </p>
         </div>
       </section>
@@ -202,8 +196,8 @@ export default function PricingPage() {
               a: 'Always. Every right, every royalty, on every tier — including the free assessment.',
             },
             {
-              q: 'What happened to the $299 package?',
-              a: 'It became the £119 single-project pass — same complete journey for one book. Existing package holders keep everything they bought.',
+              q: 'What happened to the one-time packages?',
+              a: 'They’ve been retired in favour of simple memberships. Beta users can complete the manuscript they’re working on in the editing studio; ongoing use beyond that is by membership.',
             },
           ].map(item => (
             <div key={item.q} className="bg-paper border border-line rounded-xl px-6 py-5">

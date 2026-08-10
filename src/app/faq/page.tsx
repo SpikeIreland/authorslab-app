@@ -15,7 +15,7 @@ export default function FAQPage() {
       questions: [
         {
           q: "How do I get started with AuthorsLab?",
-          a: "Most authors start with the free manuscript assessment: Alex reads your full manuscript and delivers a written assessment as a PDF — no card required. From there you can join a membership or take a single-project pass and begin the full editorial journey. If you're starting from a blank page, Eden helps you find your footing and can match you with a ghostwriting approach that suits your book."
+          a: "Most authors start with the free manuscript assessment: Alex reads your full manuscript and delivers a written assessment as a PDF — no card required. From there you can join a membership and begin the editorial journey. If you're starting from a blank page, Wright — our drafting stage, coming soon — is where Eliot will meet you first and pair you with a drafting partner that suits your book."
         },
         {
           q: "What file format do you accept?",
@@ -23,7 +23,7 @@ export default function FAQPage() {
         },
         {
           q: "How long does the free assessment take?",
-          a: "About 15 minutes. Alex reads the full manuscript and the written assessment arrives in your email as a PDF."
+          a: "Alex reads the full manuscript and the written assessment arrives in your email as a PDF shortly after you submit."
         },
         {
           q: "Do I need any special software?",
@@ -31,7 +31,7 @@ export default function FAQPage() {
         },
         {
           q: "What if I haven't written my book yet?",
-          a: "That's what Eden is for. Eden is the starting point of the journey for authors who don't yet have a manuscript — helping you shape the idea and matching you with the right ghostwriting support so the blank page stops being a wall."
+          a: "That's what Wright is for — the drafting stage where Eliot meets you first, helps you shape the idea, and pairs you with a drafting partner so the blank page stops being a wall. Wright is coming soon; today, the editing studio is built for finished or nearly finished manuscripts."
         }
       ]
     },
@@ -40,7 +40,7 @@ export default function FAQPage() {
       questions: [
         {
           q: "Who are the editors, and what does each one do?",
-          a: "Each book travels a journey with named editors. Eden helps you start (including Wright, for books that begin from a blank page). Alex gives your book its First read — a full-manuscript developmental assessment. Sam does the Line edit, working through your prose chapter by chapter. Jordan handles the Polish — a final consistency and rhythm pass. Taylor takes care of Design & Publishing — cover, interior files, and platform preparation. Riley builds your Marketing launch plan. The editing journey — Alex, Sam and Jordan — is live now; Wright, Design & Publishing, and Marketing are coming soon."
+          a: "Each book travels a journey with named editors. Eliot meets you first (including in Wright, for books that begin from a blank page). Alex gives your book its First read — a full-manuscript developmental assessment. Sam does the Line edit, working through your prose chapter by chapter. Jordan handles the Polish — a final consistency and rhythm pass. Taylor leads Design — cover and interior files. Morgan leads Publishing — metadata and platform preparation. Riley builds your Marketing launch plan. The editing journey — Alex, Sam and Jordan — is live now; Wright, Design, Publishing and Marketing are coming soon."
         },
         {
           q: "Do I have to go through the stages in order?",
@@ -77,11 +77,11 @@ export default function FAQPage() {
         },
         {
           q: "I only have one book. Do I need a membership?",
-          a: "No — the single-project pass is £119 one-time and covers the complete journey for one book, from first read through publishing preparation and launch planning. If you decide to join a membership within 90 days, the full £119 credits toward it."
+          a: "Membership is how AuthorsLab works, and for one book the Starter tier is designed exactly for that: £7/month billed annually, one active project, one full editorial pass per month, unlimited conversation with your editors. When your book is done you can cancel — everything you've downloaded stays yours."
         },
         {
           q: "What happened to the old one-time editing package?",
-          a: "The old dollar-priced package has been retired and replaced by the £119 single-project pass, which covers the complete journey for one book. If you purchased the old package, nothing changes for you — you keep your full entitlements."
+          a: "The old one-time packages have been retired in favour of simple memberships. If you used AuthorsLab during the beta, you can complete the manuscript you're working on in the editing studio; ongoing use beyond that is by membership, like every other author."
         },
         {
           q: "Can I cancel or change my tier?",
@@ -98,15 +98,15 @@ export default function FAQPage() {
       questions: [
         {
           q: "Does AuthorsLab publish my book for me?",
-          a: "No — and that's deliberate. Taylor prepares everything you need, and you click publish on the platform of your choice. That way you keep 100% ownership, full control, and all your royalties. AuthorsLab is not the publisher; you are."
+          a: "No — and that's deliberate. When the Publishing stage releases, Morgan prepares everything you need, and you click publish on the platform of your choice. That way you keep 100% ownership, full control, and all your royalties. AuthorsLab is not the publisher; you are."
         },
         {
-          q: "What does Taylor prepare?",
-          a: "Taylor handles Design & Publishing: cover design for ebook and print, professionally formatted interior files (EPUB for ebooks, print-ready PDFs), book description and metadata, keyword and category recommendations, and platform preparation so your files pass validation on the store you choose."
+          q: "What will Taylor and Morgan prepare?",
+          a: "Design and Publishing are the next stages on the roadmap. Taylor leads Design: cover design for ebook and print, and professionally formatted interior files (EPUB for ebooks, print-ready PDFs). Morgan leads Publishing: book description and metadata, keyword and category recommendations, and platform preparation so your files pass validation on the store you choose."
         },
         {
           q: "Which publishing platforms can I use?",
-          a: "Taylor prepares files compatible with all major platforms, including Amazon KDP, IngramSpark, Draft2Digital, Apple Books, Google Play, Kobo, Barnes & Noble, and Lulu. You can publish to as many or as few as you choose."
+          a: "When the Publishing stage releases, Morgan prepares files compatible with all major platforms, including Amazon KDP, IngramSpark, Draft2Digital, Apple Books, Google Play, Kobo, Barnes & Noble, and Lulu. You can publish to as many or as few as you choose."
         },
         {
           q: "Do I keep ownership of my book?",
@@ -122,15 +122,15 @@ export default function FAQPage() {
         },
         {
           q: "Do I need an ISBN?",
-          a: "For ebooks, no — Amazon and most platforms provide one free. For print, Amazon provides a free ISBN, or you can buy your own for about $125 if you want your own imprint listed. Taylor will walk you through the right option for your goals."
+          a: "For ebooks, no — Amazon and most platforms provide one free. For print, Amazon provides a free ISBN, or you can buy your own for about $125 if you want your own imprint listed. Morgan will walk you through the right option when the Publishing stage releases."
         },
         {
           q: "What if I need help uploading to a platform?",
-          a: "Taylor provides step-by-step guidance for each major platform, showing you exactly what to enter and where. If you get stuck, email support@authorslab.ai and we'll help you troubleshoot. The process is designed to be beginner-friendly."
+          a: "The Publishing stage is being designed to be beginner-friendly: Morgan gives step-by-step guidance for each major platform, showing you exactly what to enter and where. And if you ever get stuck, email support@authorslab.ai and we'll help you troubleshoot."
         },
         {
           q: "What if I want to publish traditionally instead of self-publishing?",
-          a: "The editorial journey with Alex, Sam, and Jordan produces a submission-ready manuscript. If you're pursuing agents and traditional publishers, you can simply stop before Taylor's Design & Publishing stage and submit your polished manuscript instead."
+          a: "The editorial journey with Alex, Sam, and Jordan produces a submission-ready manuscript. If you're pursuing agents and traditional publishers, you can simply stop after Jordan's polish and submit your polished manuscript instead."
         }
       ]
     },
@@ -147,7 +147,7 @@ export default function FAQPage() {
         },
         {
           q: "Do you help with book cover design?",
-          a: "Yes. In the Design & Publishing stage, Taylor generates cover options for both ebook and print, and you choose and refine the direction you like."
+          a: "Yes — when the Design stage releases, Taylor generates cover options for both ebook and print, and you choose and refine the direction you like."
         },
         {
           q: "Can I make changes to my book after it's published?",
@@ -185,7 +185,7 @@ export default function FAQPage() {
       questions: [
         {
           q: "What if I get stuck or have questions during the process?",
-          a: "Ask your editors first — conversation with them is unlimited, and they can clarify any note or suggestion in context. For account or technical questions, email support@authorslab.ai; we typically respond within 24 hours."
+          a: "Ask your editors first — conversation with them is unlimited, and they can clarify any note or suggestion in context. For account or technical questions, email support@authorslab.ai."
         },
         {
           q: "Do you offer phone support?",
@@ -197,7 +197,7 @@ export default function FAQPage() {
         },
         {
           q: "How do I contact support?",
-          a: "Email support@authorslab.ai for technical questions, account issues, or anything else. We typically reply within 24 hours."
+          a: "Email support@authorslab.ai for technical questions, account issues, or anything else."
         }
       ]
     }
@@ -297,7 +297,7 @@ export default function FAQPage() {
                 <p className="kicker mb-3">Email support</p>
                 <h3 className="text-xl font-semibold text-ink mb-2">Write to us</h3>
                 <p className="text-muted mb-4">
-                  Get detailed answers to your questions by email — we typically reply within 24 hours.
+                  Get detailed answers to your questions by email.
                 </p>
                 <a href="mailto:support@authorslab.ai" className="text-sage-deep font-semibold hover:underline">
                   support@authorslab.ai

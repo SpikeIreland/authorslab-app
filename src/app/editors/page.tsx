@@ -296,13 +296,13 @@ export default function EditorsPage() {
       <section className="py-20 bg-paper-warm border-y border-line-soft">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <p className="kicker text-faint mb-10">Phase 4 · Design &amp; Publishing</p>
+            <p className="kicker text-faint mb-10">Phase 4 · Design &amp; Publishing · Coming soon</p>
             <div className="grid md:grid-cols-2 gap-12 items-center">
               {/* Info Side */}
               <div>
                 <h2 className="font-serif font-medium text-3xl text-ink mb-4">Meet Taylor</h2>
                 <p className="text-lg text-muted mb-6">
-                  Your publishing strategist and launch coordinator
+                  Your design lead — Morgan joins as publishing lead when the stage releases
                 </p>
 
                 <div className="space-y-6">
@@ -358,7 +358,7 @@ export default function EditorsPage() {
                   </div>
                   <h3 className="font-serif text-3xl text-ink text-center mb-2">Taylor</h3>
                   <p className="text-center text-taylor-text font-semibold mb-6">
-                    Publishing Specialist
+                    Design Lead
                   </p>
                   <div className="bg-paper border border-line rounded-xl p-4 text-center">
                     <p className="text-sm font-semibold text-ink mb-2">Specializes in</p>
@@ -380,7 +380,7 @@ export default function EditorsPage() {
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <p className="kicker text-faint mb-10">Phase 5 · Marketing</p>
+            <p className="kicker text-faint mb-10">Phase 5 · Marketing · Coming soon</p>
             <div className="grid md:grid-cols-2 gap-12 items-center">
               {/* Avatar Side */}
               <div className="order-2 md:order-1">
@@ -544,8 +544,9 @@ export default function EditorsPage() {
             Ready to work with your editorial team?
           </h2>
           <p className="text-lg text-faint mb-8 max-w-2xl mx-auto">
-            All five editors are ready to help transform your manuscript. Start with a free
-            assessment or begin your journey today.
+            Alex, Sam and Jordan are ready to work on your manuscript today — Taylor, Morgan
+            and Riley join as new stages release. Start with a free assessment or begin your
+            journey now.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <Link

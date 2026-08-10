@@ -13,7 +13,7 @@ import { MarketingFooter } from '@/components/marketing/MarketingFooter'
 export const metadata: Metadata = {
   title: 'AuthorsLab — every book deserves an editorial team',
   description:
-    'AuthorsLab gives your manuscript what publishing houses give theirs: a first read, a line edit, a final polish, a cover, a launch — with named editors who work at your pace.',
+    'AuthorsLab gives your manuscript what publishing houses give theirs: a first read, a line edit, a final polish — named AI editors who work at your pace, with design and launch stages on the way.',
 }
 
 // ---------------------------------------------------------------------------
@@ -50,7 +50,7 @@ function HeroBook({
 const JOURNEY = [
   {
     initial: 'E',
-    name: 'Eden',
+    name: 'Eliot',
     disc: 'bg-sage',
     role: "Meets you first, and pairs you with Wright if you're starting from a blank page",
     phase: 'Begin',
@@ -77,8 +77,8 @@ const JOURNEY = [
     phase: 'Polish',
   },
   {
-    initial: 'T·R',
-    name: 'Taylor & Riley',
+    initial: 'T·M·R',
+    name: 'Taylor, Morgan & Riley',
     disc: 'bg-taylor',
     role: 'Cover and interior design, then platforms, metadata and your launch plan',
     phase: 'Design → Launch',
@@ -99,8 +99,8 @@ export default function LandingPage() {
           </h1>
           <p className="text-[17px] leading-relaxed text-muted max-w-lg mb-7">
             AuthorsLab gives your manuscript what publishing houses give theirs — a first read,
-            a line edit, a final polish, a cover, a launch — with editors who work at your pace
-            and leave every decision, and every right, with you.
+            a line edit, a final polish, and in time a cover and a launch — with editors who
+            work at your pace and leave every decision, and every right, with you.
           </p>
           <div className="flex flex-wrap items-center gap-3 mb-6">
             <Link
@@ -156,7 +156,8 @@ export default function LandingPage() {
           <h2 className="font-serif text-3xl mt-3 mb-3">Five stages. A named editor at each one.</h2>
           <p className="text-faint text-[15px] leading-relaxed max-w-2xl">
             Not a tool that marks up your file — a team that reads your book, talks it through
-            with you, and carries it from draft to launch.
+            with you, and carries it from draft to launch. The editing studio — Alex, Sam and
+            Jordan — is open today; the stages either side arrive as staged releases.
           </p>
           <div className="flex flex-col md:flex-row mt-11 gap-8 md:gap-0">
             {JOURNEY.map((p, i) => (
@@ -256,8 +257,9 @@ export default function LandingPage() {
               One membership. Every book you&rsquo;ll ever write.
             </h2>
             <p className="text-muted text-[15px] leading-relaxed">
-              Begin with a free manuscript assessment. Then one membership covers your whole
-              library — every editor, every stage, as many projects as you&rsquo;re working on.
+              Begin with a free manuscript assessment. Then one membership covers the editing
+              studio for your library today — and new stages join your membership as they
+              release, without your price changing.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 gap-5 max-w-3xl mx-auto">
@@ -291,9 +293,9 @@ export default function LandingPage() {
               <p className="text-xs text-faint mt-1 mb-4">From £7/mo billed annually · <Link href="/pricing" className="text-sage-deep font-semibold">see plans</Link></p>
               <ul className="flex flex-col gap-2.5 mb-5 text-[13.5px] text-muted">
                 {[
-                  'Your full editorial team, every stage',
-                  'Unlimited projects in your library',
-                  'Cover design, publishing prep, launch plan',
+                  'The editing studio: Alex, Sam and Jordan',
+                  'Unlimited projects on Author and Pro plans',
+                  'New stages join as they release — your price never changes',
                   'Every deliverable filed on your shelf',
                 ].map(t => (
                   <li key={t} className="flex gap-2">
