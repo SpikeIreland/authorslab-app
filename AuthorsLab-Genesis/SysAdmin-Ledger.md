@@ -1,5 +1,24 @@
 # SIS – System Admin — Project Ledger
 
+## 2026-08-07 — Entry 29: Messaging Card V1 — the lay-person "why"
+
+Prompted by John's field experience (the sandwich anecdote; Harvey/Legora
+"70% accurate" market commentary): a one-page messaging card for
+investor/partner meetings, filed at SIS/SIS-Messaging-Card-V1.md.
+Contents: core paragraph (their customers get the machine's first
+attempt; ours get the finished, inspected product), the sandwich story
+with a corrected ending (judgement drawn into the bench + checked before
+it leaves the kitchen), the 70%-is-a-factory-without-QC counter, a
+one-breath version, claim/non-claim boundary (we claim the SYSTEM, never
+model superiority — demonstrable via Clarence production records), and
+guardrails — foremost: never say competitors fail because they're
+"deterministic"; models are probabilistic, that's where hallucinations
+come from; the weakness is shipping raw probabilistic output. Accuracy
+story = yield after inspection, not model accuracy.
+
+Feeds: Design brand sheet, OG-card copy re-render, CB intro letter,
+founder LinkedIn updates.
+
 ## 2026-08-07 — Entry 28: Function-Centres working paper V0 — neural extension explored
 
 Paul opened the methodology's next horizon: neural-inspired
