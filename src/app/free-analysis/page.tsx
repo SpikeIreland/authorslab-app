@@ -84,19 +84,40 @@ function FreeAnalysisForm() {
   const WEBHOOK_URL = N8N_WEBHOOKS.freeManuscriptAnalysis
   const WORD_COUNT_URL = N8N_WEBHOOKS.manuscriptWordCount
 
+  const DOCX_MIME =
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+
   const validateFile = (file: File) => {
-    const maxSize = 10 * 1024 * 1024 // 10MB
+    // MKT-005: DOCX accepted alongside PDF. Marketing implied larger uploads
+    // are fine now that the workflow analyses the whole manuscript, so the cap
+    // bumps to 20MB. DOCX is client-converted to plain text via mammoth before
+    // upload (see convertDocxToText below).
+    const maxSize = 20 * 1024 * 1024 // 20MB
     const fileName = file.name.toLowerCase()
-    
-    if (!fileName.endsWith('.pdf') && file.type !== 'application/pdf') {
-      return { valid: false, error: 'Only PDF files are accepted.' }
+
+    const isPdf = fileName.endsWith('.pdf') || file.type === 'application/pdf'
+    const isDocx = fileName.endsWith('.docx') || file.type === DOCX_MIME
+
+    if (!isPdf && !isDocx) {
+      return { valid: false, error: 'Only PDF or DOCX files are accepted.' }
     }
-    
+
     if (file.size > maxSize) {
-      return { valid: false, error: 'File size must be less than 10MB.' }
+      return { valid: false, error: 'File size must be less than 20MB.' }
     }
-    
+
     return { valid: true }
+  }
+
+  // Convert a .docx File into a plain-text File the workflow's text-extract
+  // branch can read. Uses the browser build of mammoth so no server round-trip.
+  const convertDocxToText = async (docxFile: File): Promise<File> => {
+    const mammoth = await import('mammoth/mammoth.browser')
+    const arrayBuffer = await docxFile.arrayBuffer()
+    const result = await mammoth.extractRawText({ arrayBuffer })
+    const baseName = docxFile.name.replace(/\.docx$/i, '')
+    const textBlob = new Blob([result.value], { type: 'text/plain' })
+    return new File([textBlob], `${baseName}.txt`, { type: 'text/plain' })
   }
 
   const getAccurateWordCount = async (file: File) => {
@@ -185,7 +206,7 @@ function FreeAnalysisForm() {
     e.preventDefault()
     
     if (!file) {
-      setError('Please select a PDF file to upload.')
+      setError('Please select a PDF or DOCX file to upload.')
       return
     }
 
@@ -198,9 +219,33 @@ function FreeAnalysisForm() {
     setIsSubmitting(true)
     setError('')
 
+    // If DOCX, convert to plain text client-side so the workflow's text-extract
+    // branch can consume it (n8n's extractFromFile has no docx op in this
+    // version). PDFs pass through unchanged.
+    const fileNameLower = file.name.toLowerCase()
+    const isDocx =
+      fileNameLower.endsWith('.docx') || file.type === DOCX_MIME
+    let uploadFile: File = file
+    let uploadFileType: 'pdf' | 'txt' = 'pdf'
+
+    if (isDocx) {
+      try {
+        uploadFile = await convertDocxToText(file)
+        uploadFileType = 'txt'
+      } catch (convErr) {
+        console.error('DOCX conversion failed:', convErr)
+        setIsSubmitting(false)
+        setError(
+          'We couldn\'t read your .docx file. Please try re-saving it, or export it as PDF and try again.'
+        )
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        return
+      }
+    }
+
     const formData = new FormData(e.currentTarget)
-    formData.set('manuscript0', file)
-    formData.set('fileType', 'pdf')
+    formData.set('manuscript0', uploadFile)
+    formData.set('fileType', uploadFileType)
     formData.set('originalFileName', file.name)
     formData.set('fileSizeBytes', file.size.toString())
     formData.set('submissionDate', new Date().toISOString())
@@ -507,7 +552,7 @@ function FreeAnalysisForm() {
                     type="file"
                     id="manuscript"
                     name="manuscript0"
-                    accept=".pdf"
+                    accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                     onChange={handleFileChange}
                     className="hidden"
                   />
@@ -538,8 +583,8 @@ function FreeAnalysisForm() {
                 </div>
 
                 <div className="mt-4 p-4 bg-gray-50 rounded-lg text-sm text-gray-700">
-                  <strong>Required format:</strong> PDF files only (.pdf)<br />
-                  <strong>Maximum size:</strong> 10MB<br />
+                  <strong>Accepted formats:</strong> PDF (.pdf) or Word (.docx)<br />
+                  <strong>Maximum size:</strong> 20MB<br />
                   <strong>Full manuscript analysis:</strong> We analyze your complete manuscript, regardless of length<br />
                   <strong>Convert to PDF:</strong> Most word processors have a &quot;Save as PDF&quot; or &quot;Export as PDF&quot; option<br />
                   <strong>Best quality:</strong> Ensure your PDF contains selectable text (not scanned images)<br />
