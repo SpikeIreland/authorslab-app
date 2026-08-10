@@ -1,5 +1,21 @@
 # SIS – System Admin — Project Ledger
 
+## 2026-08-07 — Entry 31: Clarence-branded edition of the messaging PDF
+
+John is Clarence-facing, so the shareable PDF was TRANSLATED, not
+re-skinned: sourced Clarence-Brand-Narrative-V1.docx (master narrative,
+July 2026) and applied its ratified language — the plant, the line,
+scanned cargo, lamps, control room, "watched" — plus its banned-words
+list (no "AI-powered", "disrupt", etc.). Page-1 pull became the
+narrative's own line: "We don't claim the machine is flawless. We claim
+it is watched." 70% section gained the red-lamps trust line. Claims
+panel carries the compliance guard-rail verbatim in spirit: the plant
+does legal WORK; advice stays with lawyers. Visual: CLARENCE letterspaced
+wordmark + green lamp dot, "Built to agree", neutral light palette,
+lamp-green accents, footer clarencelegal.ai. 2pp A4, raster-verified
+(first render overflowed p1 → tightened, re-verified). Filed:
+Clarence/Clarence-How-We-Think-About-AI.pdf. SIS edition unchanged.
+
 ## 2026-08-07 — Entry 30: Messaging V1.1 + branded shareable PDF
 
 Two-track split ratified in practice: **internal card** (V1.1, adds "A
