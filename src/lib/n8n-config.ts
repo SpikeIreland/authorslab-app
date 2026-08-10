@@ -122,10 +122,14 @@ export const N8N_WEBHOOKS = {
     // Add here when wiring up.
 
     // ─────────────────────────────────────────────
-    // Phase 7 — Ghost Writer (Eden / Ivy / Reid)
+    // Phase 7 — Ghost Writer (Riley / Ivy / Reid)
+    // Riley is the ghostwriter-companion / onboarding matcher
+    // (renamed from Eden on 2026-07-30 per Platform Dev memo
+    // AL-PDC-GW-UPDATE-001). Webhook path renamed in n8n
+    // separately by Paul — this constant tracks the new path.
     // ─────────────────────────────────────────────
-    /** 07.01 Eden Match — used by ghostwriter/page.tsx */
-    edenMatch: webhook('eden-match'),
+    /** 07.01 Riley Match — used by ghostwriter/page.tsx */
+    rileyMatch: webhook('riley-match'),
 
     /** 07.02 Ivy Chat — used by ghostwriter/studio/page.tsx */
     ivyChat: webhook('ivy-chat'),

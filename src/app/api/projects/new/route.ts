@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 
 // POST /api/projects/new
 // Creates a fresh Write-path project with Ghostwriter as the active stage.
-// Title and other metadata get filled in as Eden's onboarding completes.
+// Title and other metadata get filled in as Riley's onboarding completes.
 //
 // status='ghostwriting' is a new value that signals "Ghostwriter stage is
 // active, no phase yet." Existing manuscripts use values like 'uploaded',

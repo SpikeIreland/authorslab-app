@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><style>
+  :root{
+    --ivory:#FAF8F4; --paper:#FFFFFF; --charcoal:#2C2C2A;
+    --sage:#8FAF8A; --sage-deep:#5C7A6B; --terracotta:#D4956A;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:1080px;height:1080px;overflow:hidden;}
+  body{background:var(--ivory);font-family:'TeX Gyre Pagella',Georgia,serif;color:var(--charcoal);position:relative;}
+  .wordmark{position:absolute;top:64px;left:72px;display:flex;align-items:center;gap:16px;}
+  .wordmark .disc{width:40px;height:40px;border-radius:50%;background:var(--sage-deep);display:flex;align-items:center;justify-content:center;color:var(--ivory);font-size:22px;font-weight:bold;}
+  .wordmark span{font-size:30px;letter-spacing:.01em;}
+  .books{position:absolute;top:150px;left:0;right:0;display:flex;justify-content:center;align-items:flex-end;gap:-10px;height:330px;}
+  .book{width:200px;height:280px;border-radius:6px 14px 14px 6px;position:relative;box-shadow:0 18px 40px rgba(44,44,42,.18);}
+  .book::before{content:'';position:absolute;left:14px;top:0;bottom:0;width:3px;background:rgba(44,44,42,.18);}
+  .book .title{position:absolute;top:44px;left:36px;right:24px;font-size:24px;line-height:1.3;color:rgba(250,248,244,.95);font-style:italic;}
+  .book .rule{position:absolute;left:36px;right:24px;bottom:44px;height:2px;background:rgba(250,248,244,.5);}
+  .b1{background:var(--sage-deep);transform:rotate(-5deg) translateY(12px);z-index:1;}
+  .b2{background:var(--charcoal);height:310px;width:210px;z-index:3;}
+  .b2 .title{color:var(--ivory);}
+  .b3{background:var(--terracotta);transform:rotate(5deg) translateY(12px);z-index:2;}
+  .headline{position:absolute;top:540px;left:100px;right:100px;text-align:center;font-size:76px;line-height:1.15;letter-spacing:-.01em;}
+  .headline em{font-style:italic;color:var(--sage-deep);}
+  .team{position:absolute;top:750px;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:22px;}
+  .pd{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--ivory);font-size:30px;}
+  .roles{font-family:'DejaVu Sans',sans-serif;font-size:24px;color:#6b6b67;letter-spacing:.04em;}
+  .cta{position:absolute;top:890px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:22px;}
+  .pill{background:var(--sage-deep);color:var(--ivory);font-family:'DejaVu Sans',sans-serif;font-size:29px;padding:22px 52px;border-radius:999px;}
+  .url{font-family:'DejaVu Sans',sans-serif;font-size:24px;color:#6b6b67;letter-spacing:.06em;}
+</style></head>
+<body>
+  <div class="wordmark"><div class="disc">A</div><span>AuthorsLab</span></div>
+  <div class="books">
+    <div class="book b1"><div class="title">The manuscript you wrote</div><div class="rule"></div></div>
+    <div class="book b2"><div class="title">The book it becomes</div><div class="rule"></div></div>
+    <div class="book b3"><div class="title">The story you meant</div><div class="rule"></div></div>
+  </div>
+  <div class="headline">Every book deserves an <em>editorial&nbsp;team.</em></div>
+  <div class="team">
+    <div class="pd" style="background:var(--sage)">A</div>
+    <div class="pd" style="background:var(--terracotta)">S</div>
+    <div class="pd" style="background:var(--sage-deep)">J</div>
+    <div class="roles">First read&ensp;·&ensp;Line edit&ensp;·&ensp;Polish</div>
+  </div>
+  <div class="cta">
+    <div class="pill">Free manuscript assessment</div>
+    <div class="url">authorslab.ai</div>
+  </div>
+</body></html>

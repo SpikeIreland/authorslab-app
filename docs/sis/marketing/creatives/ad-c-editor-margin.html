@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><style>
+  :root{
+    --ivory:#FAF8F4; --paper:#FFFFFF; --charcoal:#2C2C2A;
+    --sage:#8FAF8A; --sage-deep:#5C7A6B; --terracotta:#D4956A;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:1080px;height:1080px;overflow:hidden;}
+  body{background:var(--ivory);font-family:'TeX Gyre Pagella',Georgia,serif;color:var(--charcoal);position:relative;}
+  .wordmark{position:absolute;top:64px;left:72px;display:flex;align-items:center;gap:16px;}
+  .wordmark .disc{width:40px;height:40px;border-radius:50%;background:var(--sage-deep);display:flex;align-items:center;justify-content:center;color:var(--ivory);font-size:22px;font-weight:bold;}
+  .wordmark span{font-size:30px;}
+  .headline{position:absolute;top:170px;left:90px;right:90px;text-align:center;font-size:70px;line-height:1.18;letter-spacing:-.01em;}
+  .headline em{font-style:italic;color:var(--sage-deep);}
+  .page{position:absolute;top:430px;left:150px;width:640px;background:var(--paper);border-radius:8px;box-shadow:0 24px 60px rgba(44,44,42,.14);padding:64px 70px 58px;transform:rotate(-1.2deg);}
+  .line{height:13px;border-radius:7px;background:#E7E3DB;margin-bottom:26px;}
+  .w95{width:95%}.w88{width:88%}.w92{width:92%}.w60{width:60%}
+  .marked{position:relative;background:#E7E3DB;}
+  .marked::after{content:'';position:absolute;left:8%;right:22%;bottom:-8px;height:3px;border-radius:2px;background:var(--sage);}
+  .note{position:absolute;top:472px;right:96px;width:330px;transform:rotate(1.5deg);}
+  .note .card{background:var(--ivory);border:2px solid var(--terracotta);border-radius:12px;padding:30px 32px;font-size:29px;line-height:1.4;font-style:italic;color:var(--charcoal);box-shadow:0 14px 34px rgba(44,44,42,.12);}
+  .note .who{display:flex;align-items:center;gap:14px;margin-top:18px;justify-content:flex-end;}
+  .note .pd{width:46px;height:46px;border-radius:50%;background:var(--sage);color:var(--ivory);display:flex;align-items:center;justify-content:center;font-size:24px;font-style:normal;}
+  .note .nm{font-family:'DejaVu Sans',sans-serif;font-size:22px;color:#6b6b67;}
+  .cta{position:absolute;bottom:76px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:20px;}
+  .pill{background:var(--sage-deep);color:var(--ivory);font-family:'DejaVu Sans',sans-serif;font-size:29px;padding:22px 52px;border-radius:999px;}
+  .url{font-family:'DejaVu Sans',sans-serif;font-size:24px;color:#6b6b67;letter-spacing:.06em;}
+</style></head>
+<body>
+  <div class="wordmark"><div class="disc">A</div><span>AuthorsLab</span></div>
+  <div class="headline">What would an editor say about <em>your</em> novel?</div>
+  <div class="page">
+    <div class="line w95"></div>
+    <div class="line w88"></div>
+    <div class="line marked w92"></div>
+    <div class="line w95"></div>
+    <div class="line w88"></div>
+    <div class="line w92"></div>
+    <div class="line w60"></div>
+  </div>
+  <div class="note">
+    <div class="card">&ldquo;This is where your story truly begins &mdash; consider opening here.&rdquo;</div>
+    <div class="who"><div class="pd">A</div><div class="nm">Alex &middot; First read</div></div>
+  </div>
+  <div class="cta">
+    <div class="pill">Find out &mdash; free</div>
+    <div class="url">authorslab.ai</div>
+  </div>
+</body></html>

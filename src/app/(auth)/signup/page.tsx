@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { createAuthorProfile, getAuthorProfile } from '@/lib/supabase/queries'
+import { readUtmCookie } from '@/lib/utm'
+import { trackEvent } from '@/lib/analytics'
 
 export default function SignupPage() {
   const router = useRouter()
@@ -40,6 +42,21 @@ export default function SignupPage() {
     try {
       console.log('🚀 Starting signup process...')
 
+      // MKT-004 Ask 3: fire signup_started before the auth call.
+      trackEvent('signup_started')
+
+      // MKT-004 Ask 3: pull first-touch UTM data from cookie so it can ride
+      // along on the auth user metadata (and later be persisted to the
+      // author_profiles row).
+      const utm = readUtmCookie()
+      const utmMetadata: Record<string, string> = {}
+      if (utm?.utm_source) utmMetadata.utm_source = utm.utm_source
+      if (utm?.utm_medium) utmMetadata.utm_medium = utm.utm_medium
+      if (utm?.utm_campaign) utmMetadata.utm_campaign = utm.utm_campaign
+      if (utm?.utm_content) utmMetadata.utm_content = utm.utm_content
+      if (utm?.utm_term) utmMetadata.utm_term = utm.utm_term
+      if (utm?.first_touch_at) utmMetadata.utm_first_touch_at = utm.first_touch_at
+
       // Step 1: Sign up with Supabase Auth
       const { data: authData, error: signupError } = await supabase.auth.signUp({
         email: email,
@@ -47,7 +64,8 @@ export default function SignupPage() {
         options: {
           data: {
             firstName: firstName,
-            lastName: lastName
+            lastName: lastName,
+            ...utmMetadata
           },
           emailRedirectTo: `${window.location.origin}/api/auth/callback`
         }
@@ -95,6 +113,29 @@ export default function SignupPage() {
       if (!profileId) {
         console.warn('⚠️ Profile not found after all retries, continuing anyway')
       }
+
+      // MKT-004 Ask 3: persist UTM to author_profiles for direct SQL query.
+      // Best-effort — organic (no-UTM) visitors and missing profiles skip.
+      if (profileId && Object.keys(utmMetadata).length > 0) {
+        try {
+          await supabase
+            .from('author_profiles')
+            .update({
+              utm_source: utm?.utm_source ?? null,
+              utm_medium: utm?.utm_medium ?? null,
+              utm_campaign: utm?.utm_campaign ?? null,
+              utm_content: utm?.utm_content ?? null,
+              utm_term: utm?.utm_term ?? null,
+              utm_first_touch_at: utm?.first_touch_at ?? null,
+            })
+            .eq('id', profileId)
+        } catch (utmErr) {
+          console.warn('Could not persist UTM to author_profiles:', utmErr)
+        }
+      }
+
+      // MKT-004 Ask 3: fire signup_completed once profile is resolved.
+      trackEvent('signup_completed')
 
       // Step 3: Check if user is beta tester
       let isBetaTester = false

@@ -107,7 +107,8 @@ The workflow is legacy (2026-04-23, pre-pivot, pre-Craft-Call). Activating as-is
 
 | Item | Owner | Done state | Blocking? |
 |---|---|---|---|
-| Scope decision (Option A whole-manuscript vs Option B first-3-chapters) | PAUL + Pricing Chat | Documented | Yes |
+| Scope decision (Option A whole-manuscript vs Option B first-3-chapters) | ✅ **DECIDED 2026-08-05 by Paul: Option A (whole manuscript)** | — | — |
+| £119 Pass definition (one editor pass vs full three-editor journey) | ✅ **DECIDED 2026-08-05 by Paul: one full journey (Alex + Sam + Jordan)** — Pricing Chat to update `passes_per_month` metadata on the Pass product from 1 → 3 (or equivalent) so entitlement display counts correctly | — | — |
 | Craft Call Cell retrofit — 4 direct `lmChatAnthropic` nodes → Execute Workflow to Cell (station_id `alex.free-analysis`) | Platform Dev | LMO ledger rows populate on new runs | Yes |
 | DOCX support — page validator + workflow-side extract | Platform Dev | Page accepts DOCX; workflow processes it | Yes (strongly requested by Marketing) |
 | Final Synthesis positioning content — calm voice, £-correct, Pass/Starter conversion + £13 bridge | Marketing (draft) → Platform Dev (apply) | Prompt content updated in workflow | Yes |

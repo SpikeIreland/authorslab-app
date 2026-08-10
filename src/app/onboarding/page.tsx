@@ -8,6 +8,7 @@ import { createManuscript, updateAuthorProfile } from '@/lib/supabase/queries'
 import type { AuthorProfile } from '@/lib/supabase/queries'
 import { createClient } from '@/lib/supabase/client'
 import { N8N_WEBHOOKS } from '@/lib/n8n-config'
+import { trackEvent } from '@/lib/analytics'
 
 function OnboardingContent() {
     const router = useRouter()
@@ -500,6 +501,22 @@ function OnboardingContent() {
 
             // Get manuscript ID from response if provided
             const savedManuscriptId = result.manuscriptId || result.manuscript_id || finalManuscriptId
+
+            // MKT-004 Ask 3: fire manuscript_uploaded_first ONLY if this is the
+            // author's very first manuscript. Query count before firing.
+            try {
+                const { createClient: getClient } = await import('@/lib/supabase/client')
+                const supabase = getClient()
+                const { count } = await supabase
+                    .from('manuscripts')
+                    .select('id', { count: 'exact', head: true })
+                    .eq('author_id', authorProfileId)
+                if ((count ?? 0) <= 1) {
+                    trackEvent('manuscript_uploaded_first', { manuscriptId: savedManuscriptId })
+                }
+            } catch (err) {
+                console.warn('Could not check first-manuscript status:', err)
+            }
 
             // Store in session/local storage
             sessionStorage.setItem('onboardingComplete', 'true')

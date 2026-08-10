@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AL-UX-008 · Design tab & cover composer — mockup</title>
+<style>
+  :root{
+    --ivory:#FAF8F4; --paper:#FFFFFF; --paper-warm:#FDFBF7; --desk:#EDE9E1;
+    --charcoal:#2C2C2A; --ink:#2C2C2C; --muted:#8A857C; --faint:#B5AFA4;
+    --line:#E8E2D8; --line-soft:#F0EBE2;
+    --sage:#8FAF8A; --sage-deep:#5C7A6B; --sage-bg:#EFF4EE;
+    --terracotta:#D4956A; --amber-bg:#FDF6EE;
+    --taylor:#BC9440; --taylor-l:#F8F2E2; --taylor-t:#8F6F2C;
+    --warn:#C07A3E;
+    --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:#E3DED4;font-family:var(--sans);color:var(--ink);}
+  .toolbar{position:sticky;top:0;z-index:60;background:var(--charcoal);color:#EDE9E1;
+    padding:10px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .toolbar .tag{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#B5AFA4;}
+  .toolbar button{font-size:13px;padding:7px 14px;border-radius:6px;border:1px solid #4A4A46;
+    background:transparent;color:#D8D3C8;cursor:pointer;font-family:var(--sans);}
+  .toolbar button.on{background:var(--sage);border-color:var(--sage);color:#20251F;font-weight:600;}
+  .toolbar .why{font-size:12.5px;color:#B5AFA4;flex:1;min-width:240px;}
+
+  .frame{max-width:1360px;margin:20px auto 50px;box-shadow:0 8px 40px rgba(44,44,42,.18);
+    border-radius:10px;overflow:hidden;background:var(--ivory);min-width:1200px;}
+
+  /* chrome */
+  .brandbar{background:var(--charcoal);color:#F5F2EC;display:flex;align-items:center;
+    justify-content:space-between;padding:0 20px;height:52px;position:relative;}
+  .brandbar .wl{display:flex;align-items:center;gap:14px;}
+  .mark{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--sage),var(--sage-deep));
+    display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:16px;color:#fff;}
+  .wordmark{font-family:var(--serif);font-size:16px;}
+  .wordmark i{color:#B5AFA4;font-size:13px;margin-left:5px;}
+  .bdiv{width:1px;height:20px;background:#4A4A46;}
+  .backlink{font-size:12.5px;color:#B5AFA4;}
+  .ctitle{position:absolute;left:50%;transform:translateX(-50%);font-family:var(--serif);
+    font-size:14.5px;font-style:italic;}
+  .rcluster{display:flex;align-items:center;gap:10px;}
+  .presence-slot{width:32px;height:32px;border:1px dashed #4A4A46;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;font-size:8px;color:#6B6B66;text-align:center;line-height:1.1;}
+  .avatar{display:flex;align-items:center;gap:7px;}
+  .avatar .c{width:29px;height:29px;border-radius:50%;background:linear-gradient(135deg,#6B6B66,#4A4A46);
+    display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;}
+  .tabstrip{background:var(--ivory);border-bottom:1px solid var(--line);display:flex;align-items:center;
+    padding:0 20px;font-size:13px;}
+  .tab{padding:11px 13px;color:var(--muted);border-bottom:2px solid transparent;display:flex;gap:6px;align-items:center;}
+  .tab.done{color:var(--sage-deep);}
+  .tab.cur{color:var(--ink);border-color:var(--sage-deep);font-weight:600;}
+
+  .layout{display:flex;min-height:660px;}
+  /* sections rail */
+  .secrail{width:172px;background:var(--paper);border-right:1px solid var(--line);padding:16px 10px;flex-shrink:0;}
+  .secrail .k{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);padding:0 8px 10px;}
+  .sec{display:flex;align-items:center;gap:8px;font-size:13px;padding:8px 10px;border-radius:8px;color:var(--muted);}
+  .sec.on{background:var(--sage-bg);color:var(--ink);font-weight:600;}
+  .sec.on .dot{width:7px;height:7px;border-radius:50%;background:var(--sage);}
+  .sec .soon{margin-left:auto;font-size:8.5px;letter-spacing:.09em;text-transform:uppercase;
+    background:var(--line-soft);color:var(--muted);padding:2px 6px;border-radius:99px;}
+
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .view{display:none;flex:1;}
+  .view.show{display:flex;flex-direction:column;}
+
+  /* Taylor chat */
+  .chat{width:300px;border-left:1px solid var(--line);background:var(--paper);display:flex;
+    flex-direction:column;flex-shrink:0;}
+  .chat .hd{background:var(--taylor);color:#fff;padding:13px 15px;}
+  .chat .hd .n{font-weight:700;font-size:14.5px;display:flex;gap:8px;align-items:center;}
+  .chat .hd .n .d{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.25);
+    display:flex;align-items:center;justify-content:center;font-family:var(--serif);}
+  .chat .hd .r{font-size:11px;opacity:.85;margin-top:2px;}
+  .chat .body{flex:1;padding:12px;display:flex;flex-direction:column;gap:9px;background:var(--ivory);overflow:hidden;}
+  .cm{display:flex;gap:7px;align-items:flex-start;font-size:12px;line-height:1.5;}
+  .cm .a{width:24px;height:24px;border-radius:50%;flex-shrink:0;color:#fff;font-size:10px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;}
+  .cm.t .a{background:var(--taylor);}
+  .cm .b{background:var(--taylor-l);border:1px solid #EBDFC2;border-radius:9px;padding:8px 10px;color:var(--ink);}
+  .cm.me{flex-direction:row-reverse;}
+  .cm.me .a{background:var(--charcoal);}
+  .cm.me .b{background:var(--paper-warm);border-color:var(--line);}
+  .chat .in{border-top:1px solid var(--line);padding:10px;display:flex;gap:7px;}
+  .chat .in input{flex:1;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12px;
+    background:var(--paper);color:var(--ink);}
+  .chat .in button{background:var(--sage-deep);color:#fff;border:none;border-radius:8px;padding:8px 12px;
+    font-size:12px;font-weight:600;}
+
+  .pad{padding:22px 26px;overflow-y:auto;flex:1;}
+  h2{font-family:var(--serif);font-weight:500;}
+  .kick{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+
+  /* VIEW 1 — intake */
+  .paths{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0;}
+  .pcard{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:20px;}
+  .pcard.up{border-style:dashed;}
+  .pcard .tdisc{width:38px;height:38px;border-radius:50%;background:var(--taylor);color:#fff;
+    font-family:var(--serif);font-size:16px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+  .pcard h3{font-size:16px;font-family:var(--serif);margin-bottom:5px;}
+  .pcard p{font-size:12.5px;color:var(--muted);line-height:1.55;margin-bottom:13px;}
+  .btn{font-size:12.5px;font-weight:600;padding:9px 15px;border-radius:8px;cursor:pointer;border:1px solid transparent;}
+  .btn.p{background:var(--sage-deep);color:#fff;}
+  .btn.g{background:transparent;border-color:var(--line);color:var(--ink);}
+  .rights{font-size:11px;color:var(--faint);margin-top:9px;display:flex;gap:6px;align-items:center;}
+  .rights .cb{width:12px;height:12px;border:1.5px solid var(--faint);border-radius:3px;}
+  .briefstrip{background:var(--paper-warm);border:1px solid var(--line);border-radius:11px;
+    padding:12px 16px;font-size:12.5px;color:var(--muted);display:flex;gap:8px;}
+  .briefstrip b{color:var(--ink);}
+
+  /* working state */
+  .working{margin-top:20px;background:var(--paper);border:1px solid var(--line);border-radius:14px;
+    padding:22px;display:flex;gap:14px;align-items:center;}
+  .working .halo{position:relative;width:46px;height:46px;flex-shrink:0;}
+  .working .halo .disc{position:absolute;inset:0;border-radius:50%;background:var(--taylor);color:#fff;
+    font-family:var(--serif);font-size:19px;display:flex;align-items:center;justify-content:center;z-index:1;}
+  .working .halo:before{content:'';position:absolute;inset:-6px;border-radius:50%;background:var(--sage-bg);
+    animation:pulse 2s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{transform:scale(.92);opacity:.5}50%{transform:scale(1.06);opacity:1}}
+  @media (prefers-reduced-motion: reduce){.working .halo:before{animation:none;opacity:.8}}
+  .working .wt .l1{font-size:14px;font-weight:600;}
+  .working .wt .l1 .dots:after{content:'…';}
+  .working .wt .l2{font-size:12px;color:var(--muted);margin-top:2px;}
+
+  .concepts{display:grid;grid-template-columns:repeat(3,150px);gap:14px;margin-top:18px;}
+  .concept{background:var(--paper);border:1px solid var(--line);border-radius:11px;padding:9px;}
+  .cthumb{width:100%;aspect-ratio:5/8;border-radius:6px;margin-bottom:8px;}
+  .art1{background:linear-gradient(165deg,#22333E 0%,#3E5C66 45%,#C98F5B 78%,#E8C9A0 100%);}
+  .art2{background:radial-gradient(circle at 30% 25%,#E7DCC8 0%,#B4A284 40%,#5C6B58 75%,#2E3A30 100%);}
+  .art3{background:linear-gradient(200deg,#EFE6D8 0%,#D9B98F 30%,#8A5C3B 65%,#33231A 100%);}
+  .concept .cl{font-size:11px;color:var(--muted);display:flex;justify-content:space-between;align-items:center;}
+  .concept .cl a{color:var(--sage-deep);font-weight:600;font-size:11px;text-decoration:none;}
+  .tnote{margin-top:12px;font-size:12px;color:var(--muted);font-style:italic;}
+
+  /* VIEW 2 — composer */
+  .composer-top{display:flex;align-items:center;gap:14px;padding:12px 20px;border-bottom:1px solid var(--line);
+    background:var(--ivory);}
+  .composer-top .back{font-size:12.5px;color:var(--muted);}
+  .composer-top .dn{font-family:var(--serif);font-size:15px;}
+  .composer-top .save{font-size:11px;color:var(--faint);margin-left:4px;}
+  .composer-top .sp{flex:1;}
+  .cwrap{flex:1;display:flex;min-height:0;}
+  .layers{width:168px;border-right:1px solid var(--line);background:var(--paper);padding:12px 8px;flex-shrink:0;}
+  .layers .k{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);padding:0 8px 8px;}
+  .lrow{display:flex;align-items:center;gap:7px;font-size:12px;padding:7px 8px;border-radius:7px;color:var(--ink);}
+  .lrow.sel{background:var(--sage-bg);font-weight:600;}
+  .lrow .eye{color:var(--faint);font-size:11px;}
+  .lrow .g{width:16px;height:16px;border-radius:4px;background:var(--line-soft);color:var(--muted);
+    font-size:9px;display:flex;align-items:center;justify-content:center;font-weight:700;}
+  .lrow .seeded{width:6px;height:6px;border-radius:50%;background:var(--taylor);margin-left:auto;}
+  .deskarea{flex:1;background:var(--desk);display:flex;align-items:center;justify-content:center;position:relative;}
+  .canvas{width:290px;aspect-ratio:5/8;position:relative;
+    box-shadow:14px 18px 40px rgba(44,44,42,.30);border-radius:3px;overflow:visible;}
+  .canvas .artlayer{position:absolute;inset:0;border-radius:3px;overflow:hidden;}
+  .canvas .scrim{position:absolute;left:0;right:0;top:0;height:52%;
+    background:linear-gradient(180deg,rgba(20,26,30,.55),transparent);border-radius:3px 3px 0 0;}
+  .safe{position:absolute;inset:18px;border:1px dashed rgba(250,248,244,.5);border-radius:2px;pointer-events:none;}
+  .snapv{position:absolute;top:0;bottom:0;left:50%;width:1px;background:var(--terracotta);}
+  .tl-title{position:absolute;top:44px;left:24px;right:24px;text-align:center;color:#F5F2EC;
+    font-family:var(--serif);font-size:26px;line-height:1.15;}
+  .tl-sub{position:absolute;top:118px;left:30px;right:30px;text-align:center;color:#E8C9A0;
+    font-size:9px;letter-spacing:.22em;text-transform:uppercase;}
+  .tl-author{position:absolute;bottom:26px;left:24px;right:24px;text-align:center;color:#F5F2EC;
+    font-size:11px;letter-spacing:.16em;text-transform:uppercase;}
+  .selbox{position:absolute;top:38px;left:16px;right:16px;height:76px;border:1.5px solid var(--sage);}
+  .selbox .h{position:absolute;width:8px;height:8px;background:#fff;border:1.5px solid var(--sage);}
+  .h.tl{top:-5px;left:-5px;} .h.tr{top:-5px;right:-5px;} .h.bl{bottom:-5px;left:-5px;} .h.br{bottom:-5px;right:-5px;}
+  .selbox .rot{position:absolute;top:-22px;left:50%;transform:translateX(-50%);width:8px;height:8px;
+    border-radius:50%;background:#fff;border:1.5px solid var(--sage);}
+  .selbox .rot:after{content:'';position:absolute;top:8px;left:3px;width:1.5px;height:9px;background:var(--sage);}
+  .nudge{position:absolute;bottom:-40px;left:50%;transform:translateX(-50%);white-space:nowrap;
+    background:var(--amber-bg);border:1px solid var(--terracotta);border-radius:8px;font-size:10.5px;
+    color:#8F5A2E;padding:5px 10px;}
+  .nudge b{font-weight:700;}
+  .props{width:248px;border-left:1px solid var(--line);background:var(--paper);padding:14px;flex-shrink:0;overflow-y:auto;}
+  .props .k{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin-bottom:9px;}
+  .pgroup{margin-bottom:15px;}
+  .pairing-card{border:1.5px solid var(--sage);border-radius:10px;padding:10px 12px;background:var(--paper-warm);
+    position:relative;}
+  .pairing-card .nm{font-size:11px;font-weight:700;display:flex;align-items:center;gap:6px;}
+  .pairing-card .nm .d{width:6px;height:6px;border-radius:50%;background:var(--sage);}
+  .pairing-card .spec{font-family:var(--serif);font-size:17px;margin-top:3px;}
+  .pairing-card .sub{font-size:10px;color:var(--muted);}
+  .pairing-card .chg{position:absolute;top:9px;right:10px;font-size:10.5px;color:var(--sage-deep);font-weight:600;}
+  .row2{display:flex;gap:8px;}
+  .field{flex:1;}
+  .field label{font-size:10px;color:var(--muted);display:block;margin-bottom:3px;}
+  .field .box{border:1px solid var(--line);border-radius:7px;padding:6px 9px;font-size:12px;background:var(--paper);}
+  .swatches{display:flex;gap:6px;align-items:center;}
+  .sw{width:20px;height:20px;border-radius:6px;border:1px solid rgba(44,44,42,.15);}
+  .sw.on{outline:2px solid var(--sage);outline-offset:1.5px;}
+  .more{font-size:10.5px;color:var(--sage-deep);font-weight:600;}
+
+  /* VIEW 3 — versions */
+  .vgrid{display:grid;grid-template-columns:repeat(4,160px);gap:16px;margin-top:16px;}
+  .vcard{background:var(--paper);border:1px solid var(--line);border-radius:11px;padding:9px;position:relative;}
+  .vcard.sel{border:2px solid var(--sage-deep);box-shadow:0 0 0 3px var(--sage-bg);padding:8px;}
+  .vcard .chip{position:absolute;top:-9px;left:10px;background:var(--sage-deep);color:#fff;font-size:9.5px;
+    font-weight:700;padding:2px 8px;border-radius:99px;}
+  .vthumb{width:100%;aspect-ratio:5/8;border-radius:6px;position:relative;overflow:hidden;margin-bottom:7px;}
+  .vthumb .t{position:absolute;top:14%;left:0;right:0;text-align:center;color:#F5F2EC;font-family:var(--serif);
+    font-size:11px;}
+  .vthumb .a{position:absolute;bottom:8%;left:0;right:0;text-align:center;color:#F5F2EC;font-size:5.5px;
+    letter-spacing:.14em;text-transform:uppercase;}
+  .vmeta .l{font-size:11.5px;font-weight:600;font-family:var(--serif);}
+  .vmeta .d{font-size:10px;color:var(--faint);}
+  .vmeta .by{font-size:10px;color:var(--muted);}
+  .vfoot{margin-top:7px;border-top:1px dashed var(--line-soft);padding-top:5px;font-size:8.5px;color:var(--faint);
+    text-align:center;}
+  .showmore{margin-top:16px;font-size:12px;color:var(--muted);text-align:center;}
+  .confirm{margin-top:20px;background:var(--taylor-l);border:1px solid #EBDFC2;border-radius:10px;
+    padding:11px 15px;font-size:12.5px;display:flex;gap:9px;align-items:center;}
+  .confirm .a{width:24px;height:24px;border-radius:50%;background:var(--taylor);color:#fff;font-size:10px;
+    font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .confirm a{color:var(--sage-deep);font-weight:600;text-decoration:none;}
+  .foot-note{padding:14px;font-size:11.5px;color:var(--faint);text-align:center;font-style:italic;}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <span class="tag">AL-UX-008 · Design tab & cover composer</span>
+  <div style="display:flex;gap:6px;">
+    <button id="b1" class="on" onclick="show(1)">1 · Intake & concepts</button>
+    <button id="b2" onclick="show(2)">2 · The composer</button>
+    <button id="b3" onclick="show(3)">3 · Versions & selection</button>
+  </div>
+  <div class="why" id="why">Two pathways in, Taylor's design brief visible, and the "persona is working" standard — pulsing sage halo, voiced staged label, no fake progress bar.</div>
+</div>
+
+<div class="frame">
+  <header class="brandbar">
+    <div class="wl">
+      <span class="mark">A</span>
+      <span class="wordmark">AuthorsLab<i>Author</i></span>
+      <span class="bdiv"></span>
+      <span class="backlink">‹ Projects</span>
+    </div>
+    <div class="ctitle">The Veil and the Flame</div>
+    <div class="rcluster">
+      <span class="presence-slot" title="Reserved: publisher presence">pres.<br>slot</span>
+      <div class="avatar"><span class="c">P</span></div>
+    </div>
+  </header>
+  <nav class="tabstrip">
+    <span class="tab">Overview</span>
+    <span class="tab" style="color:var(--faint);">Ghostwriter</span>
+    <span class="tab done">✓ Author Studio</span>
+    <span class="tab cur">Design</span>
+    <span class="tab">Publishing</span>
+    <span class="tab">Marketing</span>
+  </nav>
+
+  <div class="layout">
+    <aside class="secrail">
+      <div class="k">Design</div>
+      <div class="sec on"><span class="dot"></span>Cover</div>
+      <div class="sec">Front matter<span class="soon">Soon</span></div>
+      <div class="sec">Back matter<span class="soon">Soon</span></div>
+      <div class="sec">Interior format<span class="soon">Soon</span></div>
+    </aside>
+
+    <div class="main">
+
+      <!-- ================= VIEW 1 — INTAKE ================= -->
+      <section class="view show" id="v1">
+        <div class="pad">
+          <div class="kick">Cover</div>
+          <h2 style="font-size:22px;margin:6px 0 4px;">Let&rsquo;s give this book a face.</h2>
+          <div class="briefstrip"><span>📐</span><span><b>Taylor&rsquo;s design brief:</b> literary fantasy · dusk palette, single strong motif · headroom for a classical title block · audience expects atmosphere over action.</span></div>
+          <div class="paths">
+            <div class="pcard">
+              <div class="tdisc">T</div>
+              <h3>Ask Taylor for concepts</h3>
+              <p>&ldquo;I&rsquo;ll paint three directions from the design brief — no lettering baked in, so your title always stays crisp and editable.&rdquo;</p>
+              <button class="btn p">Generate three concepts →</button>
+            </div>
+            <div class="pcard up">
+              <div class="tdisc" style="background:var(--line-soft);color:var(--muted);">↑</div>
+              <h3>Bring your own</h3>
+              <p>Upload artwork you&rsquo;ve made or commissioned — JPEG, PNG or WebP up to 20&thinsp;MB. Taylor sets your typography over it either way.</p>
+              <button class="btn g">Upload artwork</button>
+              <div class="rights"><span class="cb"></span>I have the right to use this image</div>
+            </div>
+          </div>
+
+          <div class="working">
+            <div class="halo"><div class="disc">T</div></div>
+            <div class="wt">
+              <div class="l1">Painting three concepts<span class="dots"></span></div>
+              <div class="l2">Reading your design brief took a moment — the artwork can take a minute more. Worth it.</div>
+            </div>
+          </div>
+
+          <div class="concepts">
+            <div class="concept"><div class="cthumb art1"></div><div class="cl"><span>Concept 1</span><a href="#">Open in composer →</a></div></div>
+            <div class="concept"><div class="cthumb art2"></div><div class="cl"><span>Concept 2</span><a href="#">Open in composer →</a></div></div>
+            <div class="concept"><div class="cthumb art3"></div><div class="cl"><span>Concept 3</span><a href="#">Open in composer →</a></div></div>
+          </div>
+          <p class="tnote">Taylor: &ldquo;Three directions — one cold and vast, one rooted, one warm. None of them precious; all of them yours to push around.&rdquo;</p>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 2 — COMPOSER ================= -->
+      <section class="view" id="v2">
+        <div class="composer-top">
+          <span class="back">‹ Concepts</span>
+          <span class="dn">Draft — Concept 1</span>
+          <span class="save">Saved just now</span>
+          <span class="sp"></span>
+          <button class="btn g">Save as version</button>
+          <button class="btn p">Use this cover</button>
+        </div>
+        <div class="cwrap">
+          <aside class="layers">
+            <div class="k">Layers</div>
+            <div class="lrow"><span class="eye">👁</span><span class="g">A</span>Artwork</div>
+            <div class="lrow"><span class="eye">👁</span><span class="g">S</span>Scrim</div>
+            <div class="lrow sel"><span class="eye">👁</span><span class="g">T</span>Title<span class="seeded" title="Set by Taylor"></span></div>
+            <div class="lrow"><span class="eye">👁</span><span class="g">T</span>Subtitle<span class="seeded"></span></div>
+            <div class="lrow"><span class="eye">👁</span><span class="g">T</span>Author<span class="seeded"></span></div>
+          </aside>
+          <div class="deskarea">
+            <div class="canvas">
+              <div class="artlayer art1"></div>
+              <div class="scrim"></div>
+              <div class="safe"></div>
+              <div class="snapv"></div>
+              <div class="tl-title">The Veil and<br>the Flame</div>
+              <div class="tl-sub">A novel of the flame series</div>
+              <div class="tl-author">Carl Lyons</div>
+              <div class="selbox">
+                <span class="h tl"></span><span class="h tr"></span><span class="h bl"></span><span class="h br"></span>
+                <span class="rot"></span>
+              </div>
+              <div class="nudge"><b>Author name is hard to read</b> against the art — try a scrim · <b>Apply</b></div>
+            </div>
+          </div>
+          <aside class="props">
+            <div class="k">Title — text layer</div>
+            <div class="pgroup">
+              <div class="pairing-card">
+                <div class="nm"><span class="d"></span>Classical</div>
+                <div class="spec">The Veil and the Flame</div>
+                <div class="sub">Iowan display · humanist support</div>
+                <span class="chg">Change</span>
+              </div>
+            </div>
+            <div class="pgroup row2">
+              <div class="field"><label>Size</label><div class="box">64</div></div>
+              <div class="field"><label>Spacing</label><div class="box">0.01em</div></div>
+              <div class="field"><label>Align</label><div class="box">Centre</div></div>
+            </div>
+            <div class="pgroup">
+              <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:5px;">Colour — from the artwork</label>
+              <div class="swatches">
+                <span class="sw on" style="background:#F5F2EC;"></span>
+                <span class="sw" style="background:#E8C9A0;"></span>
+                <span class="sw" style="background:#C98F5B;"></span>
+                <span class="sw" style="background:#3E5C66;"></span>
+                <span class="sw" style="background:#22333E;"></span>
+                <span class="sw" style="background:#141A1E;"></span>
+                <span class="more">More…</span>
+              </div>
+            </div>
+            <div class="pgroup row2">
+              <div class="field"><label>Weight</label><div class="box">Regular</div></div>
+              <div class="field"><label>Line height</label><div class="box">1.15</div></div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 3 — VERSIONS ================= -->
+      <section class="view" id="v3">
+        <div class="pad">
+          <div class="kick">Cover · Versions</div>
+          <h2 style="font-size:22px;margin:6px 0 2px;">Every direction you&rsquo;ve kept.</h2>
+          <div class="vgrid">
+            <div class="vcard sel">
+              <span class="chip">✓ Your cover</span>
+              <div class="vthumb art1"><div class="t">The Veil and<br>the Flame</div><div class="a">Carl Lyons</div></div>
+              <div class="vmeta"><div class="l">Classical, cold</div><div class="d">Today · <span class="by">saved by you</span></div></div>
+              <div class="vfoot">reserved · comments land here</div>
+            </div>
+            <div class="vcard">
+              <div class="vthumb art2"><div class="t" style="font-size:12px;top:10%;">THE VEIL AND<br>THE FLAME</div><div class="a">Carl Lyons</div></div>
+              <div class="vmeta"><div class="l">Rooted, upper</div><div class="d">Today · <span class="by">saved by you</span></div></div>
+              <div class="vfoot">reserved · comments land here</div>
+            </div>
+            <div class="vcard">
+              <div class="vthumb art3"><div class="t" style="top:60%;">The Veil and<br>the Flame</div><div class="a" style="bottom:4%;">Carl Lyons</div></div>
+              <div class="vmeta"><div class="l">Warm, low title</div><div class="d">Yesterday · <span class="by">saved by you</span></div></div>
+              <div class="vfoot">reserved · comments land here</div>
+            </div>
+            <div class="vcard">
+              <div class="vthumb art1" style="filter:saturate(.6);"><div class="t" style="font-size:10px;">The Veil and the Flame</div><div class="a">Carl Lyons</div></div>
+              <div class="vmeta"><div class="l">First pass</div><div class="d">Yesterday · <span class="by">saved by you</span></div></div>
+              <div class="vfoot">reserved · comments land here</div>
+            </div>
+          </div>
+          <div class="showmore">Show earlier versions</div>
+          <div class="confirm">
+            <span class="a">T</span>
+            <span>It&rsquo;s on the book. <a href="#">Your Library shows it now →</a></span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Taylor chat panel -->
+    <aside class="chat">
+      <div class="hd">
+        <div class="n"><span class="d">T</span>Taylor</div>
+        <div class="r">Design &amp; Publishing · Cover</div>
+      </div>
+      <div class="body">
+        <div class="cm t"><span class="a">T</span><div class="b">I&rsquo;ve set the title in something classical to match the tone — move it around, or tell me what to change.</div></div>
+        <div class="cm me"><span class="a">C</span><div class="b">Make the title bigger and try something more classical.</div></div>
+        <div class="cm t"><span class="a">T</span><div class="b">Done — up 20% and into the Classical pairing. If it starts crowding the art, I&rsquo;d drop the subtitle before shrinking the title.</div></div>
+      </div>
+      <div class="in"><input placeholder="Ask Taylor…"><button>Send</button></div>
+    </aside>
+  </div>
+  <p class="foot-note">AL-UX-008 mockup — cover art simulated with gradients (real artwork is text-free per TDP-DT-01); dashed outlines mark reserved publisher affordances.</p>
+</div>
+
+<script>
+  const WHY = {
+    1: 'Two pathways in, Taylor’s design brief visible, and the “persona is working” standard — pulsing sage halo, voiced staged label, no fake progress bar.',
+    2: 'The cover as an object on a desk: sage selection handles, terracotta snap guide, dashed safe margins, advisory contrast nudge, named-pairing card in the properties panel. Taylor’s seeded layers marked with her gold dot.',
+    3: 'Versions as the comparison surface: state-grammar ✓ on the chosen cover, attribution from day one, reserved comment strip per card, and the quiet “it’s on the book” moment.'
+  };
+  function show(k){
+    for (const i of [1,2,3]){
+      document.getElementById('v'+i).classList.toggle('show', i===k);
+      document.getElementById('b'+i).classList.toggle('on', i===k);
+    }
+    document.getElementById('why').textContent = WHY[k];
+  }
+</script>
+</body>
+</html>

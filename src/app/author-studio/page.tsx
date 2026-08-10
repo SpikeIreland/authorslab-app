@@ -29,6 +29,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { N8N_WEBHOOKS } from '@/lib/n8n-config'
+import { trackEvent } from '@/lib/analytics'
 import { startJourney, pollJourney, terminalUserMessage } from '@/lib/as_journeys'
 
 // Import types and helpers
@@ -2048,6 +2049,37 @@ function StudioContent() {
 
     // Add user message
     await addChatMessage('Author', message, chapters[currentChapterIndex]?.chapter_number)
+
+    // MKT-004 Ask 3: fire editor_session_started_first the very first time
+    // this author sends a message to any editor (Alex/Sam/Jordan) across any
+    // of their manuscripts. Guard with a query — only fire if no prior
+    // Author-authored chat messages exist across the author's manuscripts.
+    try {
+      const supabaseForCheck = createClient()
+      const { data: authorManuscripts } = await supabaseForCheck
+        .from('manuscripts')
+        .select('id')
+        .eq('author_id', manuscript.author_id)
+      const manuscriptIds = (authorManuscripts ?? []).map(m => m.id)
+      if (manuscriptIds.length > 0) {
+        const { count } = await supabaseForCheck
+          .from('editor_chat_messages')
+          .select('id', { count: 'exact', head: true })
+          .in('manuscript_id', manuscriptIds)
+          .eq('sender', 'Author')
+        // The message we just added is included in the count, so first === 1.
+        if ((count ?? 0) <= 1) {
+          trackEvent('editor_session_started_first', {
+            editor:
+              activePhase.phase_number === 2 ? 'sam' :
+              activePhase.phase_number === 3 ? 'jordan' : 'alex',
+            manuscriptId: manuscript.id,
+          })
+        }
+      }
+    } catch (firstChatErr) {
+      console.warn('Could not check first-editor-session status:', firstChatErr)
+    }
 
     // Show thinking state
     setIsThinking(true)

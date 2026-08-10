@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><style>
+  :root{
+    --ivory:#FAF8F4; --charcoal:#2C2C2A;
+    --sage:#8FAF8A; --sage-deep:#5C7A6B; --terracotta:#D4956A;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:1080px;height:1080px;overflow:hidden;}
+  body{background:var(--charcoal);font-family:'TeX Gyre Pagella',Georgia,serif;color:var(--ivory);position:relative;}
+  .wordmark{position:absolute;top:64px;left:72px;display:flex;align-items:center;gap:16px;}
+  .wordmark .disc{width:40px;height:40px;border-radius:50%;background:var(--sage);display:flex;align-items:center;justify-content:center;color:var(--charcoal);font-size:22px;font-weight:bold;}
+  .wordmark span{font-size:30px;color:var(--ivory);}
+  .stack{position:absolute;top:250px;left:96px;right:96px;}
+  .l1{font-size:96px;line-height:1.08;letter-spacing:-.01em;}
+  .l2{font-size:96px;line-height:1.08;font-style:italic;color:var(--terracotta);margin-top:14px;}
+  .rule{width:120px;height:3px;background:var(--sage);margin:64px 0 48px;}
+  .sub{font-size:40px;line-height:1.45;color:rgba(250,248,244,.85);max-width:820px;}
+  .sub .n{color:var(--ivory);}
+  .footer{position:absolute;bottom:80px;left:96px;right:96px;display:flex;align-items:center;justify-content:space-between;}
+  .pill{background:var(--ivory);color:var(--charcoal);font-family:'DejaVu Sans',sans-serif;font-size:29px;padding:22px 48px;border-radius:999px;}
+  .url{font-family:'DejaVu Sans',sans-serif;font-size:24px;color:rgba(250,248,244,.6);letter-spacing:.06em;}
+  .discs{position:absolute;top:96px;right:80px;display:flex;}
+  .pd{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--charcoal);font-size:28px;border:3px solid var(--charcoal);margin-left:-14px;font-family:'TeX Gyre Pagella',serif;}
+</style></head>
+<body>
+  <div class="wordmark"><div class="disc">A</div><span>AuthorsLab</span></div>
+  <div class="discs">
+    <div class="pd" style="background:var(--sage)">A</div>
+    <div class="pd" style="background:var(--terracotta)">S</div>
+    <div class="pd" style="background:var(--sage-deep);color:var(--ivory)">J</div>
+  </div>
+  <div class="stack">
+    <div class="l1">You finished<br>the novel.</div>
+    <div class="l2">Now edit it.</div>
+    <div class="rule"></div>
+    <div class="sub"><span class="n">Alex, Sam &amp; Jordan</span> — an editorial team for your finished manuscript. First read to final polish.</div>
+  </div>
+  <div class="footer">
+    <div class="pill">Free manuscript assessment</div>
+    <div class="url">authorslab.ai</div>
+  </div>
+</body></html>

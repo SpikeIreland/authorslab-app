@@ -40,7 +40,7 @@ export default function FAQPage() {
       questions: [
         {
           q: "Who are the editors, and what does each one do?",
-          a: "Each book travels a journey with named editors. Eden helps you start (including ghostwriter matching if you're beginning from a blank page). Alex gives your book its First read — a full-manuscript developmental assessment. Sam does the Line edit, working through your prose chapter by chapter. Jordan handles the Polish — a final consistency and rhythm pass. Taylor takes care of Design & Publishing — cover, interior files, and platform preparation. Riley builds your Marketing launch plan. Every stage is live now."
+          a: "Each book travels a journey with named editors. Eden helps you start (including Wright, for books that begin from a blank page). Alex gives your book its First read — a full-manuscript developmental assessment. Sam does the Line edit, working through your prose chapter by chapter. Jordan handles the Polish — a final consistency and rhythm pass. Taylor takes care of Design & Publishing — cover, interior files, and platform preparation. Riley builds your Marketing launch plan. The editing journey — Alex, Sam and Jordan — is live now; Wright, Design & Publishing, and Marketing are coming soon."
         },
         {
           q: "Do I have to go through the stages in order?",
@@ -139,7 +139,7 @@ export default function FAQPage() {
       questions: [
         {
           q: "What does Riley do?",
-          a: "Riley is your marketing editor and builds your launch plan: identifying your target readers, shaping your positioning and book description for discovery, and planning the launch itself so your book meets its readers rather than disappearing quietly. Riley is live now, like every other stage of the journey."
+          a: "Riley is your marketing editor and builds your launch plan: identifying your target readers, shaping your positioning and book description for discovery, and planning the launch itself so your book meets its readers rather than disappearing quietly. Riley's Marketing stage is coming soon — it releases as your book approaches launch."
         },
         {
           q: "Can I use AuthorsLab for multiple books?",

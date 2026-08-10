@@ -4,11 +4,12 @@
  * PersonaAvatar — small coloured circle with persona initial.
  *
  * Colour map per AL-UX-004 §1 (already established in code):
- *   sage       — Eden, Alex
+ *   sage       — Riley (ghostwriter matcher), Alex
  *   terracotta — Sam, Ivy
  *   sage-deep  — Jordan, Reid
  *   #A98A6B    — Taylor
- *   faint      — Riley (placeholder)
+ *   faint      — Kai (marketing; placeholder)
+ * (2026-07-30: Eden renamed to Riley; old Marketing Riley renamed to Kai.)
  */
 
 import { personaColourFor } from './derivations'

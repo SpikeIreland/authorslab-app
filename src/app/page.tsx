@@ -52,7 +52,7 @@ const JOURNEY = [
     initial: 'E',
     name: 'Eden',
     disc: 'bg-sage',
-    role: "Meets you first, and matches you with a ghostwriter if you're starting from a blank page",
+    role: "Meets you first, and pairs you with Wright if you're starting from a blank page",
     phase: 'Begin',
   },
   {

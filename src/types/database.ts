@@ -187,14 +187,37 @@ export interface Subscription {
   author_id: string
 
   // Plan Details
-  plan_type: 'free' | 'basic' | 'professional' | 'enterprise'
+  /**
+   * @deprecated Pre-pivot plan enum. Replaced by `tier` + `lookup_key`
+   * after DP-STRIPE-01 (2026-08-05). Kept nullable on the row while any
+   * residual reads catch up; new writes leave it null. Remove in a
+   * follow-up sweep once no code path reads it.
+   */
+  plan_type: 'free' | 'basic' | 'professional' | 'enterprise' | null
   billing_cycle: 'monthly' | 'annual' | null
 
-  // Status
-  status: 'active' | 'canceled' | 'expired' | 'payment_failed'
+  // Tier (post-DP-STRIPE-01)
+  /** starter | author | author_founding | pro. Sourced from Stripe product metadata.tier. */
+  tier: string | null
+  /** Stripe price lookup key (e.g. author_monthly). */
+  lookup_key: string | null
+  stripe_price_id: string | null
+  stripe_product_id: string | null
 
-  // Limits
-  manuscripts_allowed: number | null // NULL = unlimited
+  // Status
+  status: 'active' | 'trialing' | 'canceled' | 'expired' | 'payment_failed' | 'incomplete' | 'past_due' | 'paused'
+
+  // Limits (post-DP-STRIPE-01)
+  /** Passes bundled per billing cycle. NULL = unlimited. */
+  passes_included: number | null
+  /** Simple counter reset by the webhook on subscription_cycle. */
+  current_period_passes_used: number
+  /** Projects the author may keep concurrently. NULL = unlimited. */
+  projects_allowed: number | null
+
+  /** @deprecated Superseded by `passes_included` for the tier model. */
+  manuscripts_allowed: number | null
+  /** @deprecated Superseded by `current_period_passes_used`. */
   manuscripts_used: number
 
   // Stripe Integration
@@ -209,6 +232,25 @@ export interface Subscription {
   created_at: string
   updated_at: string
   canceled_at: string | null
+}
+
+/**
+ * One row per Single-Project Pass purchase. Written by the Stripe webhook
+ * on `checkout.session.completed` (mode=payment). The checkout endpoint
+ * reads this within the 90-day window to decide whether to attach the
+ * pass-bridge coupon to a new subscription.
+ */
+export interface PassPurchase {
+  id: string
+  author_id: string
+  stripe_checkout_session_id: string
+  stripe_payment_intent_id: string | null
+  manuscript_id: string | null
+  amount_cents: number
+  currency: string
+  purchased_at: string
+  credit_applied_to_subscription_id: string | null
+  credit_applied_at: string | null
 }
 
 export interface Payment {

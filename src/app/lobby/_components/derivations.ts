@@ -65,25 +65,25 @@ export function editorForPhase(phase: number | null): string | null {
 
 /** Active persona name for the current stage (used by BookCard's Next line). */
 export function activePersonaFor(p: LobbyProject): string {
-  if (p.status === 'ghostwriting') return 'Eden'
+  if (p.status === 'ghostwriting') return 'Riley'
   const phase = p.current_phase_number ?? 1
   if (phase === 1) return 'Alex'
   if (phase === 2) return 'Sam'
   if (phase === 3) return 'Jordan'
   if (phase === 4) return 'Taylor'
-  if (phase === 5) return 'Riley'
+  if (phase === 5) return 'Kai'
   return 'Alex'
 }
 
 export function nextActionFor(p: LobbyProject): string {
   if (p.status === 'complete') return 'Live and available — review sales or run a campaign'
-  if (p.status === 'ghostwriting') return 'Eden is waiting to introduce your ghostwriter'
+  if (p.status === 'ghostwriting') return 'Riley is waiting to introduce your ghostwriter'
   const phase = p.current_phase_number ?? 1
   if (phase === 1) return 'Alex is reading your manuscript'
   if (phase === 2) return 'Sam is reviewing your manuscript with you'
   if (phase === 3) return 'Jordan is polishing the final pass'
   if (phase === 4) return 'Set up cover, metadata and platforms'
-  if (phase === 5) return 'Plan your launch with Riley'
+  if (phase === 5) return 'Plan your launch with Kai'
   return 'Open the project to keep going'
 }
 
@@ -129,16 +129,20 @@ export function greetingFor(name: string): string {
   return name ? `${period}, ${name}.` : `${period}.`
 }
 
-/** Persona colour tokens. */
-export type PersonaKey = 'alex' | 'sam' | 'jordan' | 'eden' | 'ivy' | 'reid' | 'taylor' | 'riley'
+/** Persona colour tokens.
+ *  2026-07-30 rename: Eden → Riley (Ghostwriter matcher), old Marketing
+ *  persona Riley → Kai. Riley now inherits Eden's sage colour; Kai
+ *  inherits the faint colour previously held by Marketing Riley.
+ */
+export type PersonaKey = 'alex' | 'sam' | 'jordan' | 'riley' | 'ivy' | 'reid' | 'taylor' | 'kai'
 
 export function personaColourFor(persona: string): { bg: string; ink: string } {
   const p = persona.toLowerCase() as PersonaKey
-  if (p === 'alex' || p === 'eden') return { bg: 'var(--color-sage)', ink: 'var(--color-paper)' }
+  if (p === 'alex' || p === 'riley') return { bg: 'var(--color-sage)', ink: 'var(--color-paper)' }
   if (p === 'sam' || p === 'ivy') return { bg: 'var(--color-terracotta)', ink: 'var(--color-paper)' }
   if (p === 'jordan' || p === 'reid') return { bg: 'var(--color-sage-deep)', ink: 'var(--color-paper)' }
   if (p === 'taylor') return { bg: '#A98A6B', ink: 'var(--color-paper)' }
-  if (p === 'riley') return { bg: 'var(--color-faint)', ink: 'var(--color-paper)' }
+  if (p === 'kai') return { bg: 'var(--color-faint)', ink: 'var(--color-paper)' }
   return { bg: 'var(--color-muted)', ink: 'var(--color-paper)' }
 }
 

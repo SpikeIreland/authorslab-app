@@ -1,5 +1,5 @@
 // Launch plan template — shared by the Marketing tab page and the chat
-// system prompt so Riley and the UI stay in sync.
+// system prompt so Kai and the UI stay in sync.
 //
 // Milestones are defined as offsets in days from the writer's chosen launch
 // date. Task IDs are stable strings; the database stores which IDs the

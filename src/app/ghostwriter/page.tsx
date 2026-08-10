@@ -10,7 +10,7 @@ import { N8N_WEBHOOKS } from '@/lib/n8n-config'
 // ─── Webhook config ────────────────────────────────────────────────────────────
 
 const GHOSTWRITER_WEBHOOKS = {
-  edenMatch: N8N_WEBHOOKS.edenMatch,
+  rileyMatch: N8N_WEBHOOKS.rileyMatch,
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -28,7 +28,7 @@ type Stage =
   | 'done'
 
 type GhostWriter = 'ivy' | 'reid'
-type MessageSender = 'eden' | 'author' | 'ghost'
+type MessageSender = 'riley' | 'author' | 'ghost'
 
 interface Message {
   id: string
@@ -54,10 +54,10 @@ function delay(ms: number) {
 
 // ─── Avatars ──────────────────────────────────────────────────────────────────
 
-function EdenAvatar() {
+function RileyAvatar() {
   return (
     <div className="w-9 h-9 rounded-full bg-[#8FAF8A] flex items-center justify-center flex-shrink-0">
-      <span className="text-white text-sm font-semibold">E</span>
+      <span className="text-white text-sm font-semibold">R</span>
     </div>
   )
 }
@@ -97,7 +97,7 @@ function ChatMessage({ message, ghost }: { message: Message; ghost: GhostWriter 
       {message.sender === 'ghost' && senderGhost ? (
         <GhostAvatar ghost={senderGhost} />
       ) : (
-        <EdenAvatar />
+        <RileyAvatar />
       )}
       <div className="max-w-[80%] px-4 py-3 rounded-2xl rounded-tl-sm bg-white border border-[#8FAF8A] text-[#2C2C2C] text-sm leading-relaxed">
         {message.text}
@@ -109,7 +109,7 @@ function ChatMessage({ message, ghost }: { message: Message; ghost: GhostWriter 
 function TypingIndicator() {
   return (
     <div className="flex items-start gap-3">
-      <EdenAvatar />
+      <RileyAvatar />
       <div className="px-4 py-3 rounded-2xl rounded-tl-sm bg-white border border-[#8FAF8A]">
         <div className="flex gap-1 items-center h-4">
           <span className="w-1.5 h-1.5 rounded-full bg-[#8FAF8A] animate-bounce [animation-delay:0ms]" />
@@ -192,8 +192,8 @@ function GhostWriterContent() {
       setAuthorProfile(ap)
       authorProfileRef.current = ap
 
-      addEdenMessage(
-        "Hi, I'm Eden. Before you meet your writing partner, I'd like to ask you a few questions — nothing complicated, just enough to understand you and your book. There are no wrong answers. This will take about two minutes."
+      addRileyMessage(
+        "Hi, I'm Riley. Before you meet your writing partner, I'd like to ask you a few questions — nothing complicated, just enough to understand you and your project. There are no wrong answers. This will take about two minutes."
       )
       setStage('welcome')
     }
@@ -206,15 +206,15 @@ function GhostWriterContent() {
   function addMessage(sender: MessageSender, text: string, ghost?: GhostWriter) {
     setMessages((prev) => [...prev, { id: makeId(), sender, text, ghost }])
   }
-  function addEdenMessage(text: string) { addMessage('eden', text) }
+  function addRileyMessage(text: string) { addMessage('riley', text) }
   function addAuthorMessage(text: string) { addMessage('author', text) }
   function addGhostMessage(ghost: GhostWriter, text: string) { addMessage('ghost', text, ghost) }
 
-  async function edenSays(text: string, pauseBefore = 600) {
+  async function rileySays(text: string, pauseBefore = 600) {
     setShowTyping(true)
     await delay(pauseBefore)
     setShowTyping(false)
-    addEdenMessage(text)
+    addRileyMessage(text)
   }
 
   // ── Q1 ────────────────────────────────────────────────────────────────────
@@ -224,8 +224,8 @@ function GhostWriterContent() {
     const description = q1Text.trim()
     q1TextRef.current = description
     addAuthorMessage(description)
-    await edenSays('Thank you for sharing that.', 500)
-    await edenSays("Is this based on your own life, or is it a story you're telling?", 900)
+    await rileySays('Thank you for sharing that.', 500)
+    await rileySays("Is this based on your own life, or is it a story you're telling?", 900)
     setStage('q2')
   }
 
@@ -244,8 +244,8 @@ function GhostWriterContent() {
       "A story I'm telling": 'Stories we carry for others matter too.',
       'Both': 'Those are often the richest books of all.',
     }
-    await edenSays(bridges[choice], 500)
-    await edenSays('Do you have anything written already — even rough notes or journal entries?', 900)
+    await rileySays(bridges[choice], 500)
+    await rileySays('Do you have anything written already — even rough notes or journal entries?', 900)
     setStage('q3')
   }
 
@@ -254,11 +254,11 @@ function GhostWriterContent() {
   async function handleQ3Choice(hasIt: boolean) {
     addAuthorMessage(hasIt ? 'Yes' : 'Not yet')
     if (hasIt) {
-      await edenSays("That's a great start — more than you might think.", 500)
+      await rileySays("That's a great start — more than you might think.", 500)
       setStage('q3-upload')
     } else {
-      await edenSays("Perfect. We'll build it together from scratch.", 500)
-      await edenSays('What does finishing this book mean to you?', 900)
+      await rileySays("Perfect. We'll build it together from scratch.", 500)
+      await rileySays('What does finishing this book mean to you?', 900)
       setStage('q4')
     }
   }
@@ -277,7 +277,7 @@ function GhostWriterContent() {
       const profile = authorProfileRef.current
       if (!profile) throw new Error('No profile')
 
-      // Read text content for plain-text files so it can be sent to eden-match
+      // Read text content for plain-text files so it can be sent to riley-match
       if (ext === '.txt' || ext === '.md') {
         uploadedMaterialContentRef.current = await file.text()
       }
@@ -290,13 +290,13 @@ function GhostWriterContent() {
       if (error) throw error
       uploadedFilePathRef.current = path
       setIsUploading(false)
-      await edenSays('What does finishing this book mean to you?', 800)
+      await rileySays('What does finishing this book mean to you?', 800)
       setStage('q4')
     } catch {
       setIsUploading(false)
       setUploadError('Upload failed. You can continue without it.')
       await delay(1500)
-      await edenSays('What does finishing this book mean to you?', 800)
+      await rileySays('What does finishing this book mean to you?', 800)
       setStage('q4')
     }
   }
@@ -307,8 +307,8 @@ function GhostWriterContent() {
     if (!q4Text.trim()) return
     q4TextRef.current = q4Text.trim()
     addAuthorMessage(q4Text.trim())
-    await edenSays('Thank you for telling me that.', 600)
-    await edenSays('One last question — would you prefer to work with a male or female writing partner?', 1000)
+    await rileySays('Thank you for telling me that.', 600)
+    await rileySays('One last question — would you prefer to work with a male or female writing partner?', 1000)
     setStage('q5')
   }
 
@@ -318,25 +318,25 @@ function GhostWriterContent() {
     addAuthorMessage(choice)
     const q5Map = { 'Female': 'female' as const, 'Male': 'male' as const, 'No preference': 'no_preference' as const }
     q5ChoiceRef.current = q5Map[choice]
-    await edenSays('Got it.', 400)
+    await rileySays('Got it.', 400)
     setStage('matching')
     await delay(300)
-    await runEdenMatch()
+    await runRileyMatch()
   }
 
-  // ── Eden match webhook ────────────────────────────────────────────────────
+  // ── Riley match webhook ───────────────────────────────────────────────────
 
-  const runEdenMatch = useCallback(async () => {
+  const runRileyMatch = useCallback(async () => {
     const profile = authorProfileRef.current
     if (!profile) return
 
     let assignedAgent: GhostWriter = 'ivy'
-    let edenReflection = "That's a book worth writing."
+    let rileyReflection = "That's a book worth writing."
     let bookTitle = ''
     let bookBrief: Record<string, unknown> = {}
 
     try {
-      const res = await fetch(GHOSTWRITER_WEBHOOKS.edenMatch, {
+      const res = await fetch(GHOSTWRITER_WEBHOOKS.rileyMatch, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -352,7 +352,10 @@ function GhostWriterContent() {
       if (res.ok) {
         const data = await res.json()
         assignedAgent = data.assignedAgent ?? 'ivy'
-        edenReflection = data.edenReflection ?? edenReflection
+        // Kept the field name `edenReflection` on the webhook payload for
+        // now — n8n workflow rename lands separately. Frontend var name
+        // updated. Coordination brief 2026-07-30 covers the payload rename.
+        rileyReflection = data.rileyReflection ?? data.edenReflection ?? rileyReflection
         bookTitle = data.bookTitle ?? ''
         bookBrief = data.bookBrief ?? {}
       }
@@ -375,17 +378,17 @@ function GhostWriterContent() {
     bookTitleRef.current = bookTitle
     bookBriefRef.current = bookBrief
 
-    // Show Eden's reflection, then reveal
+    // Show Riley's reflection, then reveal
     await delay(1500)
-    await edenSays(edenReflection, 300)
+    await rileySays(rileyReflection, 300)
 
     if (assignedAgent === 'ivy') {
-      await edenSays(
+      await rileySays(
         "I think you should work with Ivy. She's patient, she's perceptive, and she's very good at finding the story inside the story. I think you'll get on well.",
         900
       )
     } else {
-      await edenSays(
+      await rileySays(
         "I think you should work with Reid. He's structured, direct, and he'll help you build something with real architecture. He'll know where your book is going before you do.",
         900
       )
@@ -470,7 +473,7 @@ function GhostWriterContent() {
         return (
           <div className="flex justify-center">
             <button
-              onClick={() => { setStage('q1'); edenSays("What's your book about?", 400) }}
+              onClick={() => { setStage('q1'); rileySays("What's your book about?", 400) }}
               className="px-8 py-3 rounded-xl bg-[#8FAF8A] text-white font-medium text-sm hover:bg-[#7a9e75] transition-colors"
             >
               Let&apos;s begin
@@ -547,7 +550,7 @@ function GhostWriterContent() {
             />
             <div className="flex justify-center">
               <button
-                onClick={async () => { await edenSays('What does finishing this book mean to you?', 600); setStage('q4') }}
+                onClick={async () => { await rileySays('What does finishing this book mean to you?', 600); setStage('q4') }}
                 className="text-xs text-gray-400 underline hover:text-gray-600"
               >
                 Continue without uploading
@@ -632,7 +635,7 @@ function GhostWriterContent() {
           <div className="w-7 h-7 rounded-full bg-[#8FAF8A] flex items-center justify-center">
             <span className="text-white text-xs font-semibold">E</span>
           </div>
-          <span className="text-sm font-medium text-[#2C2C2C]">Eden</span>
+          <span className="text-sm font-medium text-[#2C2C2C]">Riley</span>
         </div>
       </div>
 

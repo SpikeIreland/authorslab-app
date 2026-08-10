@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { N8N_WEBHOOKS } from '@/lib/n8n-config'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { MarketingFooter } from '@/components/marketing/MarketingFooter'
+import { trackEvent } from '@/lib/analytics'
 
 // -----------------------------------------------------------------------------
 // TEMPORARY GATE — free-analysis retrofit in progress (MKT-005 / MKT-006).
@@ -216,6 +217,15 @@ function FreeAnalysisForm() {
       if (!response.ok) {
         throw new Error(`Submission failed (${response.status})`)
       }
+
+      // MKT-004 Ask 3: fire free_analysis_submitted once webhook accepts the
+      // submission. (Free-analysis form is currently gated behind
+      // FREE_ANALYSIS_ACTIVE = false; this is instrumented for when the gate
+      // flips.)
+      trackEvent('free_analysis_submitted', {
+        wordCount: Number(wordCount) || 0,
+        fileSizeBytes: file.size,
+      })
 
       setTimeout(() => {
         setIsSubmitting(false)

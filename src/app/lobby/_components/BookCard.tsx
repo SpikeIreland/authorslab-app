@@ -46,7 +46,7 @@ export function BookCard({ project, launched }: BookCardProps) {
   const activeDetail = launched
     ? null
     : project.status === 'ghostwriting'
-      ? 'Drafting with Eden'
+      ? 'Drafting with Riley'
       : editor
         ? `${labelForActivePhase(project.current_phase_number)} · ${editor}`
         : null
