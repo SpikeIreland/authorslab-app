@@ -1,5 +1,20 @@
 # SIS – System Admin — Project Ledger
 
+## 2026-08-07 — Entry 30: Messaging V1.1 + branded shareable PDF
+
+Two-track split ratified in practice: **internal card** (V1.1, adds "A
+nervous system, not a brain" forward story — lay translation of the
+Function-Centres paper: reflexes=machined routes, attention=craft,
+second nature=distillation ladder, triage=dispatcher — plus the investor
+kicker: a better model is a better worker arriving at a plant that knows
+how to use it; guardrails stay internal-only) and **shareable PDF**
+(SIS/SIS-How-We-Think-About-AI.pdf): 2pp A4, first artifact produced in
+the ratified brand (Breakwater mark, Playfair, light lockup palette,
+Prussian hairlines, gold pulls), rendered HTML→Chromium, both pages
+raster-verified. PDF contains message + forward story + claim/non-claim;
+NO guardrails — safe for John to hand to third parties. Internal md
+carries a do-not-circulate note pointing at the split.
+
 ## 2026-08-07 — Entry 29: Messaging Card V1 — the lay-person "why"
 
 Prompted by John's field experience (the sandwich anecdote; Harvey/Legora
