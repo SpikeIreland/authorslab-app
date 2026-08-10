@@ -1,5 +1,35 @@
 # SIS – System Admin — Project Ledger
 
+## 2026-08-07 — Entry 28: Function-Centres working paper V0 — neural extension explored
+
+Paul opened the methodology's next horizon: neural-inspired
+function-centres (memory, inference, probability, distillation) plus a
+routing-intelligence agent, referencing Jeff Dean's line of work
+(distillation, MoE, Pathways sparse activation). Written up as
+**Methodology-Exchange/SIS-Function-Centres-Working-Paper-V0.md**
+(EXPLORATION stamp, not ratified).
+
+Core findings of the mapping: inference = craft stations (rename only);
+distillation = the class-closer convention at its limit — new work is
+naming the MIDDLE rung (corpus-taught cheaper models, lmo_ledger holds
+the economics); probability = NEW signal class (confidence as routed
+signal, ships with mandatory calibration sensor); memory = the real gap
+(archival vs working recall; promotion/retrieval/forgetting rules).
+Central tension named: a routing agent is a craft station making
+stochastic routing decisions — free composition is the disease the
+method cures. Resolution: the **Dispatcher** — a traced station choosing
+among DRAWN journeys, positioned on the F-008 route-enforcement
+spectrum, autonomy earned by evidence. Pilot ranking: 1) confidence
+signal on AL Craft Call Cell, 2) distillation middle rung, 3) working
+recall, 4) dispatcher last (it consumes the others' signals).
+
+Recon dispatch cut to CL – System Admin (one question: name what
+memory/routing behaviour already exists implicitly in the Clarence
+estate) — Clarence root, awaiting courier + response. D-SIS-1 (IP)
+urgency RISES: function-centres = the platform product's component
+library. Book chapter candidate: "What the factory can borrow from the
+brain without losing the plot."
+
 ## 2026-08-07 — Entry 27: Two chats founded — SIS-Design and SIS-Investor-Research
 
 Chat ecosystem grows to five SIS-side stations. Ruling: website deploy
