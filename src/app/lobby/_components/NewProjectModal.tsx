@@ -74,17 +74,17 @@ export function NewProjectModal({ open, onClose }: Props) {
         className="bg-white rounded-lg shadow-xl max-w-xl w-full p-6"
         onClick={e => e.stopPropagation()}
       >
-        <h2 id="new-project-title" className="text-lg font-medium text-slate-900 mb-1">
+        <h2 id="new-project-title" className="text-lg font-medium text-ink mb-1">
           Start a new project
         </h2>
-        <p className="text-sm text-slate-600 mb-5">
+        <p className="text-sm text-muted mb-5">
           {RELEASED.ghostwriter
             ? 'What are you here to do?'
             : 'Upload your manuscript to get started.'}
         </p>
 
         {error && (
-          <div className="mb-4 px-3 py-2 bg-rose-50 border border-rose-200 rounded text-sm text-rose-800">
+          <div className="mb-4 px-3 py-2 bg-status-high/10 border border-status-high/40 rounded text-sm text-status-high">
             {error}
           </div>
         )}
@@ -95,15 +95,15 @@ export function NewProjectModal({ open, onClose }: Props) {
               type="button"
               onClick={chooseWrite}
               disabled={creating}
-              className="text-left p-4 border border-slate-200 rounded-md hover:border-slate-400 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-wait transition-colors"
+              className="text-left p-4 border border-line rounded-md hover:border-faint hover:bg-paper-warm disabled:opacity-50 disabled:cursor-wait transition-colors"
             >
-              <p className="text-sm font-medium text-slate-900 mb-1.5">
+              <p className="text-sm font-medium text-ink mb-1.5">
                 {creating ? 'Creating project…' : 'Write a book'}
               </p>
-              <p className="text-xs text-slate-600 mb-3 leading-relaxed">
+              <p className="text-xs text-muted mb-3 leading-relaxed">
                 I have an idea or rough material — help me build it out.
               </p>
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <p className="text-xs text-faint leading-relaxed">
                 A Ghostwriter (Ivy or Reid) takes you from here.
               </p>
             </button>
@@ -112,13 +112,13 @@ export function NewProjectModal({ open, onClose }: Props) {
               type="button"
               onClick={chooseEdit}
               disabled={creating}
-              className="text-left p-4 border border-slate-200 rounded-md hover:border-slate-400 hover:bg-slate-50 disabled:opacity-50 transition-colors"
+              className="text-left p-4 border border-line rounded-md hover:border-faint hover:bg-paper-warm disabled:opacity-50 transition-colors"
             >
-              <p className="text-sm font-medium text-slate-900 mb-1.5">Edit a manuscript</p>
-              <p className="text-xs text-slate-600 mb-3 leading-relaxed">
+              <p className="text-sm font-medium text-ink mb-1.5">Edit a manuscript</p>
+              <p className="text-xs text-muted mb-3 leading-relaxed">
                 I have a draft and I&rsquo;m ready to polish it.
               </p>
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <p className="text-xs text-faint leading-relaxed">
                 Alex begins reading and gives developmental notes.
               </p>
             </button>
@@ -132,13 +132,13 @@ export function NewProjectModal({ open, onClose }: Props) {
               type="button"
               onClick={chooseEdit}
               disabled={creating}
-              className="w-full text-left p-4 border border-slate-200 rounded-md hover:border-slate-400 hover:bg-slate-50 disabled:opacity-50 transition-colors"
+              className="w-full text-left p-4 border border-line rounded-md hover:border-faint hover:bg-paper-warm disabled:opacity-50 transition-colors"
             >
-              <p className="text-sm font-medium text-slate-900 mb-1.5">Upload your manuscript</p>
-              <p className="text-xs text-slate-600 mb-3 leading-relaxed">
+              <p className="text-sm font-medium text-ink mb-1.5">Upload your manuscript</p>
+              <p className="text-xs text-muted mb-3 leading-relaxed">
                 Drop your draft in and Alex will begin the developmental read.
               </p>
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <p className="text-xs text-faint leading-relaxed">
                 Supported: .docx, .txt, and other common manuscript formats.
               </p>
             </button>
@@ -150,7 +150,7 @@ export function NewProjectModal({ open, onClose }: Props) {
             type="button"
             onClick={onClose}
             disabled={creating}
-            className="text-sm text-slate-500 hover:text-slate-900 disabled:opacity-50"
+            className="text-sm text-muted hover:text-ink disabled:opacity-50"
           >
             Cancel
           </button>

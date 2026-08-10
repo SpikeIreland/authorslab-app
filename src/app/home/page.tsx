@@ -252,7 +252,7 @@ export default function HomePage() {
   if (!authChecked) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="text-sm text-slate-500">Loading…</div>
+        <div className="text-sm text-muted">Loading…</div>
       </div>
     )
   }
@@ -262,11 +262,11 @@ export default function HomePage() {
       {/* Two-pane chat */}
       <div className="flex-1 flex overflow-hidden h-[calc(100vh-56px)]">
         {/* Left: conversation history */}
-        <aside className="w-[260px] border-r border-slate-200 bg-white flex flex-col flex-shrink-0">
-          <div className="p-3 border-b border-slate-200">
+        <aside className="w-[260px] border-r border-line bg-white flex flex-col flex-shrink-0">
+          <div className="p-3 border-b border-line">
             <button
               onClick={newConversation}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-sm font-medium transition-colors"
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-charcoal hover:bg-charcoal/90 text-white rounded-md text-sm font-medium transition-colors"
             >
               <span aria-hidden>+</span>
               New conversation
@@ -275,7 +275,7 @@ export default function HomePage() {
 
           <div className="flex-1 overflow-y-auto py-2">
             {conversations.length === 0 ? (
-              <p className="px-4 py-6 text-sm text-slate-500">
+              <p className="px-4 py-6 text-sm text-muted">
                 No conversations yet. Start one on the right.
               </p>
             ) : (
@@ -312,11 +312,11 @@ export default function HomePage() {
         {/* Right: chat thread */}
         <section className="flex-1 flex flex-col bg-white min-w-0">
           {/* Thread header */}
-          <header className="px-5 py-4 border-b border-slate-200">
-            <h2 className="text-sm font-medium text-slate-900 truncate">
+          <header className="px-5 py-4 border-b border-line">
+            <h2 className="text-sm font-medium text-ink truncate">
               {activeConversation?.title ?? 'Companion'}
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-muted mt-0.5">
               {activeConversation
                 ? 'Conversation stored in your history.'
                 : "Your creative companion. Tell me what you're thinking about."}
@@ -331,7 +331,7 @@ export default function HomePage() {
                 onSeed={(prompt) => setInput(prompt)}
               />
             ) : loadingMessages ? (
-              <p className="text-sm text-slate-500">Loading…</p>
+              <p className="text-sm text-muted">Loading…</p>
             ) : (
               <div className="max-w-2xl mx-auto space-y-4">
                 {messages.map(m => (
@@ -345,13 +345,13 @@ export default function HomePage() {
 
           {/* Send error */}
           {sendError && (
-            <div className="px-5 py-2 bg-rose-50 border-t border-rose-200 text-sm text-rose-800">
+            <div className="px-5 py-2 bg-status-high/10 border-t border-status-high/40 text-sm text-status-high">
               {sendError}
             </div>
           )}
 
           {/* Input */}
-          <form onSubmit={sendMessage} className="border-t border-slate-200 p-4">
+          <form onSubmit={sendMessage} className="border-t border-line p-4">
             <div className="max-w-2xl mx-auto flex items-end gap-2">
               <textarea
                 ref={inputRef}
@@ -361,12 +361,12 @@ export default function HomePage() {
                 placeholder="Reply to your companion…"
                 rows={2}
                 disabled={sending}
-                className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm resize-none focus:outline-none focus:border-slate-500 disabled:bg-slate-50 disabled:text-slate-500"
+                className="flex-1 px-3 py-2 border border-line rounded-md text-sm resize-none focus:outline-none focus:border-sage-deep disabled:bg-paper-warm disabled:text-muted"
               />
               <button
                 type="submit"
                 disabled={sending || !input.trim()}
-                className="px-4 py-2 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white text-sm font-medium rounded-md transition-colors"
+                className="px-4 py-2 bg-charcoal hover:bg-charcoal/90 disabled:bg-line text-white text-sm font-medium rounded-md transition-colors"
               >
                 Send
               </button>
@@ -374,11 +374,11 @@ export default function HomePage() {
 
             {/* Make-this-a-project CTA — placeholder until Lobby is built */}
             {messages.length >= 4 && (
-              <div className="max-w-2xl mx-auto mt-3 pt-3 border-t border-dashed border-slate-200 flex items-center justify-between text-sm">
-                <span className="text-slate-500">Ready to develop this further?</span>
+              <div className="max-w-2xl mx-auto mt-3 pt-3 border-t border-dashed border-line flex items-center justify-between text-sm">
+                <span className="text-muted">Ready to develop this further?</span>
                 <button
                   type="button"
-                  className="px-3 py-1.5 border border-slate-300 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-50"
+                  className="px-3 py-1.5 border border-line rounded-md text-sm font-medium text-ink hover:bg-paper-warm"
                   onClick={() => router.push('/lobby')}
                 >
                   Make this a project →
@@ -411,7 +411,7 @@ function HistoryGroup({
 
   return (
     <div className="mb-3">
-      <p className="px-4 pb-1 text-[10px] font-medium uppercase tracking-wider text-slate-400">
+      <p className="px-4 pb-1 text-[10px] font-medium uppercase tracking-wider text-faint">
         {label}
       </p>
       <ul className="space-y-0.5 px-2">
@@ -421,8 +421,8 @@ function HistoryGroup({
               onClick={() => onSelect(c.id)}
               className={`w-full text-left px-3 py-2 text-sm rounded-md truncate transition-colors ${
                 activeId === c.id
-                  ? 'bg-slate-100 text-slate-900 font-medium'
-                  : 'text-slate-700 hover:bg-slate-50'
+                  ? 'bg-paper-warm text-ink font-medium'
+                  : 'text-ink hover:bg-paper-warm'
               }`}
             >
               {c.title}
@@ -442,7 +442,7 @@ function MessageBubble({ message }: { message: Message }) {
   if (message.role === 'user') {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[85%] bg-slate-900 text-white rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap">
+        <div className="max-w-[85%] bg-charcoal text-white rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap">
           {message.content}
         </div>
       </div>
@@ -451,7 +451,7 @@ function MessageBubble({ message }: { message: Message }) {
 
   return (
     <div className="flex justify-start">
-      <div className="max-w-[90%] bg-slate-100 text-slate-800 rounded-2xl rounded-tl-sm px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap">
+      <div className="max-w-[90%] bg-paper-warm text-ink rounded-2xl rounded-tl-sm px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap">
         {message.content}
       </div>
     </div>
@@ -461,10 +461,10 @@ function MessageBubble({ message }: { message: Message }) {
 function TypingIndicator() {
   return (
     <div className="flex justify-start">
-      <div className="bg-slate-100 rounded-2xl rounded-tl-sm px-4 py-3 inline-flex gap-1">
-        <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-        <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-        <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+      <div className="bg-paper-warm rounded-2xl rounded-tl-sm px-4 py-3 inline-flex gap-1">
+        <span className="w-1.5 h-1.5 bg-faint rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+        <span className="w-1.5 h-1.5 bg-faint rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+        <span className="w-1.5 h-1.5 bg-faint rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
       </div>
     </div>
   )
@@ -486,8 +486,8 @@ function EmptyState({
 
   return (
     <div className="max-w-xl mx-auto text-center py-12">
-      <p className="text-lg text-slate-900 font-medium mb-2">{greeting}</p>
-      <p className="text-sm text-slate-600 mb-8 leading-relaxed">
+      <p className="text-lg text-ink font-medium mb-2">{greeting}</p>
+      <p className="text-sm text-muted mb-8 leading-relaxed">
         I&rsquo;m your creative companion. Tell me what you&rsquo;re thinking about — an idea, a question, something you&rsquo;ve been turning over. There are no wrong starting points.
       </p>
       <div className="space-y-2 text-left">
@@ -495,7 +495,7 @@ function EmptyState({
           <button
             key={i}
             onClick={() => onSeed(s)}
-            className="w-full px-4 py-3 border border-slate-200 rounded-md text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+            className="w-full px-4 py-3 border border-line rounded-md text-sm text-ink hover:bg-paper-warm transition-colors"
           >
             {s}
           </button>

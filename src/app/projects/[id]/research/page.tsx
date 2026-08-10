@@ -112,23 +112,23 @@ export default function ResearchTabPage() {
     <div className="h-full flex flex-col min-h-[480px]">
 
       {/* Tab header — sets context for what the agent knows */}
-      <header className="px-6 py-4 border-b border-slate-200 flex items-center gap-3">
+      <header className="px-6 py-4 border-b border-line flex items-center gap-3">
         <div
           className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-medium"
-          style={{ background: '#64748b' }}
+          style={{ background: '#2C2C2A' }}
         >
           C
         </div>
         <div>
-          <p className="text-sm font-medium text-slate-900 leading-tight">Companion</p>
-          <p className="text-[11px] text-slate-500">Research · I have your project loaded</p>
+          <p className="text-sm font-medium text-ink leading-tight">Companion</p>
+          <p className="text-[11px] text-muted">Research · I have your project loaded</p>
         </div>
       </header>
 
       {/* Message thread */}
       <div className="flex-1 overflow-y-auto px-6 py-6">
         {loading ? (
-          <p className="text-sm text-slate-500 max-w-2xl mx-auto">Loading…</p>
+          <p className="text-sm text-muted max-w-2xl mx-auto">Loading…</p>
         ) : messages.length === 0 ? (
           <EmptyState onSeed={(prompt) => setInput(prompt)} />
         ) : (
@@ -143,13 +143,13 @@ export default function ResearchTabPage() {
       </div>
 
       {sendError && (
-        <div className="px-6 py-2 bg-rose-50 border-t border-rose-200 text-sm text-rose-800">
+        <div className="px-6 py-2 bg-status-high/10 border-t border-status-high/40 text-sm text-status-high">
           {sendError}
         </div>
       )}
 
       {/* Input */}
-      <form onSubmit={sendMessage} className="border-t border-slate-200 p-4">
+      <form onSubmit={sendMessage} className="border-t border-line p-4">
         <div className="max-w-2xl mx-auto flex items-end gap-2">
           <textarea
             ref={inputRef}
@@ -159,12 +159,12 @@ export default function ResearchTabPage() {
             placeholder="Ask anything — about your book, a setting, a character, a craft question…"
             rows={2}
             disabled={sending}
-            className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm resize-none focus:outline-none focus:border-slate-500 disabled:bg-slate-50 disabled:text-slate-500"
+            className="flex-1 px-3 py-2 border border-line rounded-md text-sm resize-none focus:outline-none focus:border-sage-deep disabled:bg-paper-warm disabled:text-muted"
           />
           <button
             type="submit"
             disabled={sending || !input.trim()}
-            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white text-sm font-medium rounded-md transition-colors"
+            className="px-4 py-2 bg-charcoal hover:bg-charcoal/90 disabled:bg-line text-white text-sm font-medium rounded-md transition-colors"
           >
             Send
           </button>
@@ -178,7 +178,7 @@ function MessageBubble({ message }: { message: ResearchMessage }) {
   if (message.role === 'user') {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[85%] bg-slate-900 text-white rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap">
+        <div className="max-w-[85%] bg-charcoal text-white rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap">
           {message.content}
         </div>
       </div>
@@ -187,7 +187,7 @@ function MessageBubble({ message }: { message: ResearchMessage }) {
 
   return (
     <div className="flex justify-start">
-      <div className="max-w-[90%] bg-slate-100 text-slate-800 rounded-2xl rounded-tl-sm px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap">
+      <div className="max-w-[90%] bg-paper-warm text-ink rounded-2xl rounded-tl-sm px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap">
         {message.content}
       </div>
     </div>
@@ -197,10 +197,10 @@ function MessageBubble({ message }: { message: ResearchMessage }) {
 function TypingIndicator() {
   return (
     <div className="flex justify-start">
-      <div className="bg-slate-100 rounded-2xl rounded-tl-sm px-4 py-3 inline-flex gap-1">
-        <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-        <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-        <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+      <div className="bg-paper-warm rounded-2xl rounded-tl-sm px-4 py-3 inline-flex gap-1">
+        <span className="w-1.5 h-1.5 bg-faint rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+        <span className="w-1.5 h-1.5 bg-faint rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+        <span className="w-1.5 h-1.5 bg-faint rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
       </div>
     </div>
   )
@@ -209,7 +209,7 @@ function TypingIndicator() {
 function EmptyState({ onSeed }: { onSeed: (prompt: string) => void }) {
   return (
     <div className="max-w-xl mx-auto text-center py-8">
-      <p className="text-sm text-slate-600 leading-relaxed mb-6">
+      <p className="text-sm text-muted leading-relaxed mb-6">
         I&rsquo;ve got your project loaded — title, genre, summary, and any analysis we&rsquo;ve done together. Ask me anything that helps you move the work forward.
       </p>
       <div className="space-y-2 text-left">
@@ -218,7 +218,7 @@ function EmptyState({ onSeed }: { onSeed: (prompt: string) => void }) {
             key={i}
             type="button"
             onClick={() => onSeed(s)}
-            className="w-full px-4 py-3 border border-slate-200 rounded-md text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+            className="w-full px-4 py-3 border border-line rounded-md text-sm text-ink hover:bg-paper-warm transition-colors"
           >
             {s}
           </button>

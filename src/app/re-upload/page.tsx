@@ -296,23 +296,23 @@ function ReUploadContent() {
 
     if (!manuscript) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
+            <div className="min-h-screen bg-charcoal flex items-center justify-center">
                 <div className="text-white text-2xl">Loading...</div>
             </div>
         )
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-600 p-5">
+        <div className="min-h-screen bg-charcoal p-5">
             {/* Loading Overlay */}
             {isSubmitting && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-2xl p-12 text-center max-w-md shadow-2xl">
-                        <div className="w-12 h-12 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-6"></div>
-                        <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                        <div className="w-12 h-12 border-4 border-line border-t-sage-deep rounded-full animate-spin mx-auto mb-6"></div>
+                        <h3 className="text-2xl font-bold text-ink mb-3">
                             Replacing Your Manuscript
                         </h3>
-                        <p className="text-gray-600">
+                        <p className="text-muted">
                             {statusMessage || 'Setting up your new manuscript...'}
                         </p>
                     </div>
@@ -326,20 +326,20 @@ function ReUploadContent() {
                     <div className="text-3xl font-semibold mb-4 opacity-95">{authorName}</div>
 
                     {/* Warning Box */}
-                    <div className="bg-yellow-500 border-4 border-yellow-600 rounded-2xl p-6 mb-6">
-                        <div className="text-4xl mb-3">⚠️</div>
-                        <h2 className="text-2xl font-bold text-yellow-900 mb-3">Important Warning</h2>
-                        <p className="text-yellow-900 font-medium">
+                    <div className="bg-amber-bg border-4 border-terracotta rounded-2xl p-6 mb-6">
+                        <div className="text-4xl mb-3"></div>
+                        <h2 className="text-2xl font-bold text-status-warn mb-3">Important Warning</h2>
+                        <p className="text-status-warn font-medium">
                             Uploading a new manuscript will permanently delete:
                         </p>
-                        <ul className="text-yellow-900 font-medium mt-3 space-y-1">
+                        <ul className="text-status-warn font-medium mt-3 space-y-1">
                             <li>• All current chapters</li>
                             <li>• All editor notes and analysis</li>
                             <li>• All chat history</li>
                             <li>• All editing progress</li>
                             <li>• All cover designs and publishing setup</li>
                         </ul>
-                        <p className="text-yellow-900 font-bold mt-4">
+                        <p className="text-status-warn font-bold mt-4">
                             This action cannot be undone!
                         </p>
                     </div>
@@ -359,33 +359,33 @@ function ReUploadContent() {
                                 onDragLeave={handleDragLeave}
                                 onDrop={handleDrop}
                                 onClick={() => document.getElementById('fileInput')?.click()}
-                                className={`border-4 border-dashed rounded-3xl p-12 text-center transition-all cursor-pointer ${dragOver ? 'border-blue-600 bg-blue-50' :
-                                    uploadStatus === 'processing' ? 'border-yellow-500 bg-yellow-50 animate-pulse' :
-                                        uploadStatus === 'success' ? 'border-green-500 bg-green-50' :
-                                            'border-gray-300 bg-gray-50 hover:border-blue-400 hover:bg-blue-50/50'
+                                className={`border-4 border-dashed rounded-3xl p-12 text-center transition-all cursor-pointer ${dragOver ? 'border-sage-deep bg-sage-bg' :
+                                    uploadStatus === 'processing' ? 'border-terracotta bg-amber-bg animate-pulse' :
+                                        uploadStatus === 'success' ? 'border-status-ok bg-sage-bg' :
+                                            'border-line bg-ivory hover:border-sage hover:bg-sage-bg/50'
                                     }`}
                             >
                                 <div className="text-6xl mb-5">
-                                    {uploadStatus === 'processing' ? '⏳' : uploadStatus === 'success' ? '✅' : '📖'}
+                                    {uploadStatus === 'processing' ? '' : uploadStatus === 'success' ? '' : ''}
                                 </div>
-                                <div className="text-2xl font-semibold text-gray-900 mb-3">
+                                <div className="text-2xl font-semibold text-ink mb-3">
                                     {uploadStatus === 'success' && file ? `${file.name} uploaded!` : 'Upload New Manuscript'}
                                 </div>
-                                <div className="text-gray-600 mb-6">
+                                <div className="text-muted mb-6">
                                     {uploadStatus === 'success' && wordCount > 0
                                         ? `${wordCount.toLocaleString()} words ready for analysis`
                                         : 'Drag and drop your PDF or click to browse'}
                                 </div>
 
                                 {/* Manuscript Preparation Tips */}
-                                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 text-left max-w-md mx-auto">
-                                    <div className="font-semibold text-blue-900 mb-2 text-center text-sm">
-                                        📝 Manuscript Requirements
+                                <div className="bg-sage-bg border border-sage/40 rounded-xl p-4 mb-6 text-left max-w-md mx-auto">
+                                    <div className="font-semibold text-ink mb-2 text-center text-sm">
+                                        Manuscript Requirements
                                     </div>
-                                    <div className="text-blue-800 text-xs space-y-1">
-                                        <p>✅ Clear chapter markers (e.g., &quot;Chapter 1 - Title&quot;)</p>
-                                        <p>❌ Remove Table of Contents and Index</p>
-                                        <p>❌ Remove headers/footers with page numbers</p>
+                                    <div className="text-muted text-xs space-y-1">
+                                        <p>Clear chapter markers (e.g., &quot;Chapter 1 - Title&quot;)</p>
+                                        <p>Remove Table of Contents and Index</p>
+                                        <p>Remove headers/footers with page numbers</p>
                                     </div>
                                 </div>
 
@@ -404,16 +404,16 @@ function ReUploadContent() {
                                         e.stopPropagation()
                                         document.getElementById('fileInput')?.click()
                                     }}
-                                    className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-blue-800 transition-all disabled:opacity-60"
+                                    className="bg-sage-deep text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-sage-deep/90 transition-all disabled:opacity-60"
                                 >
                                     {isProcessing ? 'Processing...' : file ? 'Change File' : 'Choose File'}
                                 </button>
                             </div>
 
                             {statusMessage && !isSubmitting && (
-                                <div className={`mt-6 p-5 rounded-xl text-center font-medium ${uploadStatus === 'processing' ? 'bg-yellow-50 text-yellow-900 border-2 border-yellow-500' :
-                                    uploadStatus === 'success' ? 'bg-green-50 text-green-900 border-2 border-green-500' :
-                                        uploadStatus === 'error' ? 'bg-red-50 text-red-900 border-2 border-red-500' :
+                                <div className={`mt-6 p-5 rounded-xl text-center font-medium ${uploadStatus === 'processing' ? 'bg-amber-bg text-status-warn border-2 border-terracotta' :
+                                    uploadStatus === 'success' ? 'bg-sage-bg text-status-ok border-2 border-status-ok' :
+                                        uploadStatus === 'error' ? 'bg-status-high/10 text-status-high border-2 border-status-high/40' :
                                             ''
                                     }`}>
                                     {statusMessage}
@@ -424,7 +424,7 @@ function ReUploadContent() {
                         {/* Manuscript Details */}
                         <div className="grid md:grid-cols-2 gap-6 mb-8">
                             <div>
-                                <label htmlFor="manuscriptTitle" className="block font-semibold text-gray-800 mb-2">
+                                <label htmlFor="manuscriptTitle" className="block font-semibold text-ink mb-2">
                                     Manuscript Title *
                                 </label>
                                 <input
@@ -434,12 +434,12 @@ function ReUploadContent() {
                                     required
                                     defaultValue={manuscript?.title || ''}
                                     placeholder="Your manuscript title"
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-600 focus:outline-none"
+                                    className="w-full px-4 py-3 border-2 border-line rounded-xl focus:border-sage-deep focus:outline-none"
                                 />
                             </div>
 
                             <div>
-                                <label htmlFor="genre" className="block font-semibold text-gray-800 mb-2">
+                                <label htmlFor="genre" className="block font-semibold text-ink mb-2">
                                     Genre *
                                 </label>
                                 <select
@@ -447,7 +447,7 @@ function ReUploadContent() {
                                     name="genre"
                                     required
                                     defaultValue={manuscript?.genre || ''}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-600 focus:outline-none bg-white"
+                                    className="w-full px-4 py-3 border-2 border-line rounded-xl focus:border-sage-deep focus:outline-none bg-white"
                                 >
                                     <option value="">Choose your genre</option>
                                     <option value="fiction">Fiction</option>
@@ -469,7 +469,7 @@ function ReUploadContent() {
 
                         {/* Chapter Count */}
                         <div className="mb-6">
-                            <label htmlFor="chapterCount" className="block font-semibold text-gray-800 mb-2">
+                            <label htmlFor="chapterCount" className="block font-semibold text-ink mb-2">
                                 Number of Chapters *
                             </label>
                             <input
@@ -480,9 +480,9 @@ function ReUploadContent() {
                                 max="200"
                                 required
                                 defaultValue={existingChapterCount || ''}
-                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-600 focus:outline-none"
+                                className="w-full px-4 py-3 border-2 border-line rounded-xl focus:border-sage-deep focus:outline-none"
                             />
-                            <small className="text-gray-600">
+                            <small className="text-muted">
                                 How many chapters does your manuscript have? (excluding prologue/epilogue)
                             </small>
                         </div>
@@ -495,9 +495,9 @@ function ReUploadContent() {
                                     id="hasPrologue"
                                     name="hasPrologue"
                                     defaultChecked={existingHasPrologue}
-                                    className="w-5 h-5 text-blue-600 rounded"
+                                    className="w-5 h-5 text-sage-deep rounded"
                                 />
-                                <span className="text-gray-800">My manuscript has a prologue</span>
+                                <span className="text-ink">My manuscript has a prologue</span>
                             </label>
 
                             <label className="flex items-center gap-3 cursor-pointer">
@@ -506,9 +506,9 @@ function ReUploadContent() {
                                     id="hasEpilogue"
                                     name="hasEpilogue"
                                     defaultChecked={existingHasEpilogue}
-                                    className="w-5 h-5 text-blue-600 rounded"
+                                    className="w-5 h-5 text-sage-deep rounded"
                                 />
-                                <span className="text-gray-800">My manuscript has an epilogue</span>
+                                <span className="text-ink">My manuscript has an epilogue</span>
                             </label>
                         </div>
 
@@ -517,16 +517,16 @@ function ReUploadContent() {
                             <button
                                 type="button"
                                 onClick={() => router.back()}
-                                className="flex-1 bg-gray-200 text-gray-800 px-8 py-4 rounded-xl text-lg font-bold hover:bg-gray-300 transition-all"
+                                className="flex-1 bg-line-soft text-ink px-8 py-4 rounded-xl text-lg font-bold hover:bg-line transition-all"
                             >
                                 ← Cancel
                             </button>
                             <button
                                 type="submit"
                                 disabled={!isFormValid || isSubmitting}
-                                className="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white px-8 py-4 rounded-xl text-lg font-bold hover:from-red-600 hover:to-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex-1 bg-status-high text-white px-8 py-4 rounded-xl text-lg font-bold hover:bg-status-high/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                🔄 Replace Manuscript
+                                Replace Manuscript
                             </button>
                         </div>
                     </form>
@@ -539,7 +539,7 @@ function ReUploadContent() {
 export default function ReUploadPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
+            <div className="min-h-screen bg-charcoal flex items-center justify-center">
                 <div className="text-white text-2xl">Loading...</div>
             </div>
         }>

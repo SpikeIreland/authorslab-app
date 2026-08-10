@@ -94,78 +94,78 @@ export default function PricingPage() {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading...</p>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sage-deep mx-auto mb-4"></div>
+                    <p className="text-muted">Loading...</p>
                 </div>
             </div>
         )
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-green-50 py-12 px-4">
+        <div className="min-h-screen bg-ivory py-12 px-4">
             <div className="max-w-4xl mx-auto">
                 <div className="text-center mb-12">
-                    <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                    <h1 className="text-4xl font-bold text-ink mb-4">
                         Complete Your Registration
                     </h1>
-                    <p className="text-xl text-gray-600">
+                    <p className="text-xl text-muted">
                         Get professional AI editing for your manuscript
                     </p>
                 </div>
 
                 {/* Pricing Card */}
-                <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-auto border-4 border-blue-500">
+                <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-auto border-4 border-sage/40">
                     <div className="text-center mb-6">
-                        <div className="text-sm font-bold text-blue-600 uppercase tracking-wide mb-2">
+                        <div className="text-sm font-bold text-sage-deep uppercase tracking-wide mb-2">
                             3-Phase Editing Package
                         </div>
-                        <div className="text-5xl font-bold text-gray-900 mb-2">
+                        <div className="text-5xl font-bold text-ink mb-2">
                             $299
                         </div>
-                        <div className="text-gray-600">One-time payment</div>
+                        <div className="text-muted">One-time payment</div>
                     </div>
 
                     <div className="space-y-4 mb-8">
                         <div className="flex items-start gap-3">
-                            <span className="text-green-600 text-xl">✓</span>
+                            <span className="text-alex-text text-xl">✓</span>
                             <div>
                                 <strong>Phase 1: Alex</strong> - Developmental editing
-                                <p className="text-sm text-gray-600">Story structure, character development, pacing</p>
+                                <p className="text-sm text-muted">Story structure, character development, pacing</p>
                             </div>
                         </div>
                         <div className="flex items-start gap-3">
-                            <span className="text-purple-600 text-xl">✓</span>
+                            <span className="text-sam-text text-xl">✓</span>
                             <div>
                                 <strong>Phase 2: Sam</strong> - Line editing
-                                <p className="text-sm text-gray-600">Sentence flow, word choice, voice clarity</p>
+                                <p className="text-sm text-muted">Sentence flow, word choice, voice clarity</p>
                             </div>
                         </div>
                         <div className="flex items-start gap-3">
-                            <span className="text-blue-600 text-xl">✓</span>
+                            <span className="text-jordan-text text-xl">✓</span>
                             <div>
                                 <strong>Phase 3: Jordan</strong> - Copy editing
-                                <p className="text-sm text-gray-600">Grammar, punctuation, consistency</p>
+                                <p className="text-sm text-muted">Grammar, punctuation, consistency</p>
                             </div>
                         </div>
                         <div className="flex items-start gap-3">
-                            <span className="text-gray-900 text-xl">✓</span>
+                            <span className="text-ink text-xl">✓</span>
                             <div>
                                 <strong>Real-time collaboration</strong>
-                                <p className="text-sm text-gray-600">Work chapter-by-chapter with AI editors</p>
+                                <p className="text-sm text-muted">Work chapter-by-chapter with AI editors</p>
                             </div>
                         </div>
                         <div className="flex items-start gap-3">
-                            <span className="text-gray-900 text-xl">✓</span>
+                            <span className="text-ink text-xl">✓</span>
                             <div>
                                 <strong>Comprehensive reports</strong>
-                                <p className="text-sm text-gray-600">PDF analysis after each phase</p>
+                                <p className="text-sm text-muted">PDF analysis after each phase</p>
                             </div>
                         </div>
                     </div>
 
                     {/* ADD THE BETA TERMS HERE ↓ */}
-                    <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                        <p className="text-sm text-blue-900 leading-relaxed">
+                    <div className="mt-6 p-4 bg-sage-bg rounded-lg border border-sage/40">
+                        <p className="text-sm text-ink leading-relaxed">
                             <strong>Beta Program:</strong> AuthorsLab is currently in beta testing.
                             By purchasing, you agree to provide feedback to help us improve the platform.
                             This early access price of $299 is a special beta rate - standard pricing will be higher at full launch.
@@ -175,29 +175,29 @@ export default function PricingPage() {
                     {/* THEN THE BUTTON */}
                     <Button
                         onClick={handleCheckout}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg py-6 rounded-xl font-bold mt-4"
+                        className="w-full bg-sage-deep hover:bg-sage-deep/90 text-white text-lg py-6 rounded-xl font-bold mt-4"
                     >
                         Join Beta Program - $299
                     </Button>
 
-                    <p className="text-center text-sm text-gray-500 mt-4">
+                    <p className="text-center text-sm text-muted mt-4">
                         Secure payment powered by Stripe
                     </p>
                     
                     <Button
                         onClick={handleCheckout}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg py-6 rounded-xl font-bold"
+                        className="w-full bg-sage-deep hover:bg-sage-deep/90 text-white text-lg py-6 rounded-xl font-bold"
                     >
                         Continue to Payment
                     </Button>
 
-                    <p className="text-center text-sm text-gray-500 mt-4">
+                    <p className="text-center text-sm text-muted mt-4">
                         Secure payment powered by Stripe
                     </p>
                 </div>
 
-                <div className="text-center mt-8 text-sm text-gray-600">
-                    <p>Questions? Email us at <a href="mailto:support@authorslab.ai" className="text-blue-600 hover:underline">support@authorslab.ai</a></p>
+                <div className="text-center mt-8 text-sm text-muted">
+                    <p>Questions? Email us at <a href="mailto:support@authorslab.ai" className="text-sage-deep hover:underline">support@authorslab.ai</a></p>
                 </div>
             </div>
         </div>

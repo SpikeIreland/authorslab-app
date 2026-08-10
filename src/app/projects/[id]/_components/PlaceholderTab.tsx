@@ -25,18 +25,18 @@ export function PlaceholderTab({
   return (
     <div className="max-w-xl mx-auto py-16 px-6 text-center">
       {statusLabel && (
-        <p className="text-[11px] uppercase tracking-wider font-medium text-slate-400 mb-3">
+        <p className="text-[11px] uppercase tracking-wider font-medium text-faint mb-3">
           {statusLabel}
         </p>
       )}
-      <h2 className="text-2xl font-medium text-slate-900 mb-3">{title}</h2>
-      <p className="text-sm text-slate-600 leading-relaxed mb-8 max-w-md mx-auto">
+      <h2 className="text-2xl font-medium text-ink mb-3">{title}</h2>
+      <p className="text-sm text-muted leading-relaxed mb-8 max-w-md mx-auto">
         {description}
       </p>
       {legacyHref && (
         <Link
           href={legacyHref}
-          className="inline-block px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-sm font-medium"
+          className="inline-block px-4 py-2 bg-charcoal hover:bg-charcoal/90 text-white rounded-md text-sm font-medium"
         >
           {legacyLabel ?? 'Open'} →
         </Link>

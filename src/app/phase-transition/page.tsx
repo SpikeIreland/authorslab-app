@@ -209,11 +209,11 @@ function TransitionContent() {
   const getEditorDetails = (phase: number) => {
     const editors = [
       { name: '', emoji: '', color: '', role: '' },
-      { name: 'Alex', emoji: '👔', color: 'green', role: 'Developmental Editor' },
-      { name: 'Sam', emoji: '✨', color: 'purple', role: 'Line Editor' },
-      { name: 'Jordan', emoji: '🔍', color: 'blue', role: 'Copy Editor' },
-      { name: 'Taylor', emoji: '📚', color: 'teal', role: 'Publishing Editor' },
-      { name: 'Quinn', emoji: '🚀', color: 'orange', role: 'Marketing Strategist' }
+      { name: 'Alex', emoji: 'A', color: 'green', role: 'Developmental Editor' },
+      { name: 'Sam', emoji: 'S', color: 'purple', role: 'Line Editor' },
+      { name: 'Jordan', emoji: 'J', color: 'blue', role: 'Copy Editor' },
+      { name: 'Taylor', emoji: 'T', color: 'teal', role: 'Publishing Editor' },
+      { name: 'Quinn', emoji: 'Q', color: 'orange', role: 'Marketing Strategist' }
     ]
     return editors[phase] || editors[1]
   }
@@ -223,22 +223,22 @@ function TransitionContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-purple-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-ivory flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading transition...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sage-deep mx-auto mb-4"></div>
+          <p className="text-muted">Loading transition...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-purple-50 to-blue-50">
+    <div className="min-h-screen bg-ivory">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm">
+      <header className="bg-white border-b border-line shadow-sm">
         <div className="container mx-auto px-4 py-4">
-          <Link href="/" className="text-2xl font-bold text-gray-900">
-            AuthorsLab.ai
+          <Link href="/" className="text-2xl font-bold font-serif text-ink">
+            AuthorsLab
           </Link>
         </div>
       </header>
@@ -248,22 +248,22 @@ function TransitionContent() {
         {/* Celebration Banner */}
         <div className="text-center mb-12">
           {fromPhase === 1 && (
-            <div className="inline-block bg-green-100 text-green-800 px-6 py-3 rounded-full text-lg font-bold mb-4">
-              🎉 Phase 1 Complete!
+            <div className="inline-block bg-alex-light text-alex-text px-6 py-3 rounded-full text-lg font-bold mb-4">
+              Phase 1 Complete!
             </div>
           )}
           {fromPhase === 2 && (
-            <div className="inline-block bg-purple-100 text-purple-800 px-6 py-3 rounded-full text-lg font-bold mb-4">
-              ✨ Phase 2 Complete!
+            <div className="inline-block bg-sam-light text-sam-text px-6 py-3 rounded-full text-lg font-bold mb-4">
+              Phase 2 Complete!
             </div>
           )}
 
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+          <h1 className="text-4xl font-bold text-ink mb-2">
             {fromPhase === 1 && "Your Story Structure is Solid"}
             {fromPhase === 2 && "Your Prose is Polished"}
           </h1>
 
-          <p className="text-xl text-gray-600">
+          <p className="text-xl text-muted">
             {manuscript?.title} - {fromPhase === 1 ? "Developmental" : fromPhase === 2 ? "Line" : "Copy"} Editing Complete
           </p>
         </div>
@@ -271,44 +271,44 @@ function TransitionContent() {
         {/* The Handoff */}
         <div className="grid md:grid-cols-2 gap-8 mb-12">
           {/* Current Editor's Farewell */}
-          <div className={`bg-white rounded-2xl shadow-lg p-8 border-2 ${fromPhase === 1 ? 'border-green-200' : fromPhase === 2 ? 'border-purple-200' : 'border-blue-200'
+          <div className={`bg-white rounded-2xl shadow-lg p-8 border-2 ${fromPhase === 1 ? 'border-alex/40' : fromPhase === 2 ? 'border-sam/40' : 'border-jordan/40'
             }`}>
             <div className="flex items-center gap-4 mb-6">
-              <div className={`w-16 h-16 bg-gradient-to-br ${fromPhase === 1
-                  ? 'from-green-400 to-green-600'
+              <div className={`w-16 h-16 text-white ${fromPhase === 1
+                  ? 'bg-alex'
                   : fromPhase === 2
-                    ? 'from-purple-400 to-purple-600'
-                    : 'from-blue-400 to-blue-600'
+                    ? 'bg-sam'
+                    : 'bg-jordan'
                 } rounded-full flex items-center justify-center text-3xl`}>
                 {fromEditor.emoji}
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-gray-900">{fromEditor.name}</h3>
-                <p className={`font-semibold ${fromPhase === 1 ? 'text-green-600' : fromPhase === 2 ? 'text-purple-600' : 'text-blue-600'
+                <h3 className="text-2xl font-bold text-ink">{fromEditor.name}</h3>
+                <p className={`font-semibold ${fromPhase === 1 ? 'text-alex-text' : fromPhase === 2 ? 'text-sam-text' : 'text-jordan-text'
                   }`}>
                   {fromEditor.role}
                 </p>
               </div>
             </div>
 
-            <div className={`rounded-xl p-6 mb-6 ${fromPhase === 1 ? 'bg-green-50' : fromPhase === 2 ? 'bg-purple-50' : 'bg-blue-50'
+            <div className={`rounded-xl p-6 mb-6 ${fromPhase === 1 ? 'bg-alex-light' : fromPhase === 2 ? 'bg-sam-light' : 'bg-jordan-light'
               }`}>
               {fromPhase === 1 && (
                 <>
-                  <p className="text-gray-800 leading-relaxed mb-4">
+                  <p className="text-ink leading-relaxed mb-4">
                     &ldquo;We&apos;ve done incredible work together. Your story structure is strong, your character arcs are clear, and the pacing flows beautifully.&rdquo;
                   </p>
-                  <p className="text-gray-800 leading-relaxed">
+                  <p className="text-ink leading-relaxed">
                     &ldquo;I&apos;m handing you off to Sam now, who&apos;s going to polish your prose until it absolutely shines. You&apos;re in excellent hands!&rdquo;
                   </p>
                 </>
               )}
               {fromPhase === 2 && (
                 <>
-                  <p className="text-gray-800 leading-relaxed mb-4">
+                  <p className="text-ink leading-relaxed mb-4">
                     &ldquo;Your prose is singing now! We&apos;ve refined the word choice, smoothed out the rhythm, and made sure every sentence lands with impact.&rdquo;
                   </p>
-                  <p className="text-gray-800 leading-relaxed">
+                  <p className="text-ink leading-relaxed">
                     &ldquo;Now it&apos;s time for Jordan to ensure every technical detail is perfect. They&apos;re meticulous and will catch anything we might have missed!&rdquo;
                   </p>
                 </>
@@ -316,41 +316,41 @@ function TransitionContent() {
             </div>
 
             {fromPhase === 1 && (
-              <div className="space-y-2 text-sm text-gray-600">
+              <div className="space-y-2 text-sm text-muted">
                 <div className="flex items-center gap-2">
-                  <span className="text-green-600">✓</span>
+                  <span className="text-alex-text">✓</span>
                   <span>Structure refined</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-green-600">✓</span>
+                  <span className="text-alex-text">✓</span>
                   <span>Characters developed</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-green-600">✓</span>
+                  <span className="text-alex-text">✓</span>
                   <span>Plot tightened</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-green-600">✓</span>
+                  <span className="text-alex-text">✓</span>
                   <span>Pacing optimized</span>
                 </div>
               </div>
             )}
             {fromPhase === 2 && (
-              <div className="space-y-2 text-sm text-gray-600">
+              <div className="space-y-2 text-sm text-muted">
                 <div className="flex items-center gap-2">
-                  <span className="text-purple-600">✓</span>
+                  <span className="text-sam-text">✓</span>
                   <span>Word choice refined</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-purple-600">✓</span>
+                  <span className="text-sam-text">✓</span>
                   <span>Rhythm perfected</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-purple-600">✓</span>
+                  <span className="text-sam-text">✓</span>
                   <span>Dialogue polished</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-purple-600">✓</span>
+                  <span className="text-sam-text">✓</span>
                   <span>Voice strengthened</span>
                 </div>
               </div>
@@ -358,44 +358,44 @@ function TransitionContent() {
           </div>
 
           {/* Next Editor's Introduction */}
-          <div className={`bg-white rounded-2xl shadow-lg p-8 border-2 ${toPhase === 2 ? 'border-purple-200' : toPhase === 3 ? 'border-blue-200' : 'border-teal-200'
+          <div className={`bg-white rounded-2xl shadow-lg p-8 border-2 ${toPhase === 2 ? 'border-sam/40' : toPhase === 3 ? 'border-jordan/40' : 'border-taylor/40'
             }`}>
             <div className="flex items-center gap-4 mb-6">
-              <div className={`w-16 h-16 bg-gradient-to-br ${toPhase === 2
-                  ? 'from-purple-400 to-purple-600'
+              <div className={`w-16 h-16 text-white ${toPhase === 2
+                  ? 'bg-sam'
                   : toPhase === 3
-                    ? 'from-blue-400 to-blue-600'
-                    : 'from-teal-400 to-teal-600'
+                    ? 'bg-jordan'
+                    : 'bg-taylor'
                 } rounded-full flex items-center justify-center text-3xl`}>
                 {toEditor.emoji}
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-gray-900">{toEditor.name}</h3>
-                <p className={`font-semibold ${toPhase === 2 ? 'text-purple-600' : toPhase === 3 ? 'text-blue-600' : 'text-teal-600'
+                <h3 className="text-2xl font-bold text-ink">{toEditor.name}</h3>
+                <p className={`font-semibold ${toPhase === 2 ? 'text-sam-text' : toPhase === 3 ? 'text-jordan-text' : 'text-taylor-text'
                   }`}>
                   {toEditor.role}
                 </p>
               </div>
             </div>
 
-            <div className={`rounded-xl p-6 mb-6 ${toPhase === 2 ? 'bg-purple-50' : toPhase === 3 ? 'bg-blue-50' : 'bg-teal-50'
+            <div className={`rounded-xl p-6 mb-6 ${toPhase === 2 ? 'bg-sam-light' : toPhase === 3 ? 'bg-jordan-light' : 'bg-taylor-light'
               }`}>
               {toPhase === 2 && (
                 <>
-                  <p className="text-gray-800 leading-relaxed mb-4">
+                  <p className="text-ink leading-relaxed mb-4">
                     &ldquo;Hey! I&apos;ve read what you and Alex accomplished together—impressive work. Now let&apos;s make your prose sing.&rdquo;
                   </p>
-                  <p className="text-gray-800 leading-relaxed">
+                  <p className="text-ink leading-relaxed">
                     &ldquo;I focus on the craft of writing: word choice, rhythm, flow, and voice. Every sentence will be polished to perfection.&rdquo;
                   </p>
                 </>
               )}
               {toPhase === 3 && (
                 <>
-                  <p className="text-gray-800 leading-relaxed mb-4">
+                  <p className="text-ink leading-relaxed mb-4">
                     &ldquo;Hello! I&apos;m Jordan, your copy editor. I&apos;m here to ensure your manuscript is technically flawless.&rdquo;
                   </p>
-                  <p className="text-gray-800 leading-relaxed">
+                  <p className="text-ink leading-relaxed">
                     &ldquo;Sam&apos;s done beautiful work on your prose—now I&apos;ll make sure every comma is in the right place, every detail is consistent, and your manuscript meets professional standards.&rdquo;
                   </p>
                 </>
@@ -403,41 +403,41 @@ function TransitionContent() {
             </div>
 
             {toPhase === 2 && (
-              <div className="space-y-2 text-sm text-gray-600">
+              <div className="space-y-2 text-sm text-muted">
                 <div className="flex items-center gap-2">
-                  <span className="text-purple-600">→</span>
+                  <span className="text-sam-text">→</span>
                   <span>Sentence-level refinement</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-purple-600">→</span>
+                  <span className="text-sam-text">→</span>
                   <span>Word choice precision</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-purple-600">→</span>
+                  <span className="text-sam-text">→</span>
                   <span>Dialogue enhancement</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-purple-600">→</span>
+                  <span className="text-sam-text">→</span>
                   <span>Voice consistency</span>
                 </div>
               </div>
             )}
             {toPhase === 3 && (
-              <div className="space-y-2 text-sm text-gray-600">
+              <div className="space-y-2 text-sm text-muted">
                 <div className="flex items-center gap-2">
-                  <span className="text-blue-600">→</span>
+                  <span className="text-jordan-text">→</span>
                   <span>Grammar perfection</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-blue-600">→</span>
+                  <span className="text-jordan-text">→</span>
                   <span>Punctuation accuracy</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-blue-600">→</span>
+                  <span className="text-jordan-text">→</span>
                   <span>Consistency checks</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-blue-600">→</span>
+                  <span className="text-jordan-text">→</span>
                   <span>Style guide compliance</span>
                 </div>
               </div>
@@ -447,7 +447,7 @@ function TransitionContent() {
 
         {/* What Changes Section */}
         <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          <h2 className="text-2xl font-bold text-ink mb-6">
             What Changes in Phase {toPhase}?
           </h2>
 
@@ -455,23 +455,23 @@ function TransitionContent() {
             {toPhase === 2 && (
               <>
                 <div>
-                  <div className="text-3xl mb-3">🔍</div>
-                  <h3 className="font-bold text-gray-900 mb-2">Microscopic Focus</h3>
-                  <p className="text-gray-600 text-sm">
+                  <div className="text-3xl mb-3"></div>
+                  <h3 className="font-bold text-ink mb-2">Microscopic Focus</h3>
+                  <p className="text-muted text-sm">
                     We zoom in from story structure to individual sentences and word choices.
                   </p>
                 </div>
                 <div>
-                  <div className="text-3xl mb-3">🎨</div>
-                  <h3 className="font-bold text-gray-900 mb-2">Prose Crafting</h3>
-                  <p className="text-gray-600 text-sm">
+                  <div className="text-3xl mb-3"></div>
+                  <h3 className="font-bold text-ink mb-2">Prose Crafting</h3>
+                  <p className="text-muted text-sm">
                     Sam helps you find the perfect word, smooth the rhythm, and strengthen your voice.
                   </p>
                 </div>
                 <div>
-                  <div className="text-3xl mb-3">⚡</div>
-                  <h3 className="font-bold text-gray-900 mb-2">Same Workspace</h3>
-                  <p className="text-gray-600 text-sm">
+                  <div className="text-3xl mb-3"></div>
+                  <h3 className="font-bold text-ink mb-2">Same Workspace</h3>
+                  <p className="text-muted text-sm">
                     The Author Studio interface stays the same—just with Sam&apos;s line-editing expertise.
                   </p>
                 </div>
@@ -480,23 +480,23 @@ function TransitionContent() {
             {toPhase === 3 && (
               <>
                 <div>
-                  <div className="text-3xl mb-3">🔬</div>
-                  <h3 className="font-bold text-gray-900 mb-2">Technical Precision</h3>
-                  <p className="text-gray-600 text-sm">
+                  <div className="text-3xl mb-3"></div>
+                  <h3 className="font-bold text-ink mb-2">Technical Precision</h3>
+                  <p className="text-muted text-sm">
                     We shift from prose polish to technical correctness: grammar, punctuation, and consistency.
                   </p>
                 </div>
                 <div>
-                  <div className="text-3xl mb-3">📐</div>
-                  <h3 className="font-bold text-gray-900 mb-2">Professional Standards</h3>
-                  <p className="text-gray-600 text-sm">
+                  <div className="text-3xl mb-3"></div>
+                  <h3 className="font-bold text-ink mb-2">Professional Standards</h3>
+                  <p className="text-muted text-sm">
                     Jordan ensures your manuscript meets Chicago Manual of Style and industry standards.
                   </p>
                 </div>
                 <div>
                   <div className="text-3xl mb-3">✓</div>
-                  <h3 className="font-bold text-gray-900 mb-2">Final Polish</h3>
-                  <p className="text-gray-600 text-sm">
+                  <h3 className="font-bold text-ink mb-2">Final Polish</h3>
+                  <p className="text-muted text-sm">
                     Catching every technical detail so your manuscript is publication-ready.
                   </p>
                 </div>
@@ -511,49 +511,49 @@ function TransitionContent() {
             onClick={handlePhaseTransition}
             disabled={isTransitioning}
             className={`px-12 py-4 rounded-xl text-lg font-bold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed ${toPhase === 2
-                ? 'bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 text-white'
+                ? 'bg-sam hover:bg-sam/90 text-white'
                 : toPhase === 3
-                  ? 'bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white'
-                  : 'bg-gradient-to-r from-teal-500 to-teal-700 hover:from-teal-600 hover:to-teal-800 text-white'
+                  ? 'bg-jordan hover:bg-jordan/90 text-white'
+                  : 'bg-taylor hover:bg-taylor/90 text-white'
               }`}
           >
             {isGeneratingVersion ? (
               <>
-                <span className="inline-block animate-spin mr-2">📦</span>
+                <span className="inline-block animate-spin mr-2"></span>
                 Preparing Your Manuscript...
               </>
             ) : versionGenerated ? (
               <>
-                <span className="mr-2">✅</span>
+                <span className="mr-2"></span>
                 Email Sent! Starting Phase {toPhase}...
               </>
             ) : isTransitioning ? (
               <>
-                <span className="inline-block animate-spin mr-2">⏳</span>
+                <span className="inline-block animate-spin mr-2"></span>
                 Starting Phase {toPhase}...
               </>
             ) : (
               <>
-                Begin Phase {toPhase} with {toEditor.name} {toEditor.emoji}
+                Begin Phase {toPhase} with {toEditor.name}
               </>
             )}
           </button>
 
           {isGeneratingVersion && (
-            <p className={`text-sm mt-4 font-medium ${toPhase === 2 ? 'text-purple-600' : toPhase === 3 ? 'text-blue-600' : 'text-teal-600'
+            <p className={`text-sm mt-4 font-medium ${toPhase === 2 ? 'text-sam-text' : toPhase === 3 ? 'text-jordan-text' : 'text-taylor-text'
               }`}>
               Generating downloadable versions and sending to your email...
             </p>
           )}
 
           {versionGenerated && !isGeneratingVersion && (
-            <p className="text-green-600 text-sm mt-4 font-medium">
-              📧 Check your email for download links!
+            <p className="text-status-ok text-sm mt-4 font-medium">
+              Check your email for download links!
             </p>
           )}
 
           {!isGeneratingVersion && !versionGenerated && (
-            <p className="text-gray-500 text-sm mt-4">
+            <p className="text-muted text-sm mt-4">
               Your approved manuscript will be emailed to you
             </p>
           )}
@@ -566,10 +566,10 @@ function TransitionContent() {
 export default function PhaseTransitionPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-purple-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-ivory flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sage-deep mx-auto mb-4"></div>
+          <p className="text-muted">Loading...</p>
         </div>
       </div>
     }>
