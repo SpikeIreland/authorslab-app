@@ -2623,7 +2623,7 @@ function StudioContent() {
       <div className="h-screen flex flex-col bg-ivory">
         {/* Header */}
         <header className="bg-white border-b border-line p-4 shadow-sm">
-          {/* TOP ROW: Logo, Beta Feedback, and User Menu */}
+          {/* TOP ROW: Logo, Feedback, and User Menu */}
           <div className="flex items-center justify-between mb-4 pb-3 border-b border-line-soft">
             <Link href="/" className="text-lg font-bold font-serif text-ink hover:opacity-80 transition-opacity">
               AuthorsLab
@@ -2631,12 +2631,12 @@ function StudioContent() {
 
 
             <div className="flex items-center gap-4">
-              {/* Beta Feedback Button */}
+              {/* Feedback Button */}
               <button
                 onClick={() => setShowFeedbackModal(true)}
                 className="px-4 py-2 bg-riley text-white rounded-lg hover:bg-riley-text transition-colors text-sm font-semibold"
               >
-                Beta Feedback
+                Feedback
               </button>
 
               {/* DP-AS-04: notifications bell (UCO in-app surface) */}
@@ -3814,7 +3814,7 @@ function StudioContent() {
           )
         }
       </div >
-      {/* Beta Feedback Modal */}
+      {/* Feedback Modal */}
       <FeedbackModal
         isOpen={showFeedbackModal}
         onClose={() => setShowFeedbackModal(false)}
