@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useRef, useCallback, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { N8N_WEBHOOKS } from '@/lib/n8n-config'
 
@@ -630,7 +631,23 @@ function WrightContent() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FAF8F4' }}>
+    <div className="min-h-screen flex flex-col relative" style={{ backgroundColor: '#FAF8F4' }}>
+      {/* Subtle wordmark — top-left, links back to Home. Absolute-positioned so
+          the centred Eliot header below is undisturbed. */}
+      <Link
+        href="/home"
+        className="absolute top-4 left-4 flex items-baseline gap-1.5 hover:opacity-70 transition-opacity z-10"
+        title="Back to AuthorsLab home"
+      >
+        <span
+          className="text-[15px] leading-none font-normal text-[#2C2C2C]"
+          style={{ fontFamily: "'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif" }}
+        >
+          AuthorsLab
+        </span>
+        <span className="text-[10px] italic text-gray-400">Wright</span>
+      </Link>
+
       <div className="text-center pt-10 pb-4 flex-shrink-0">
         <div className="inline-flex items-center gap-2">
           <div className="w-7 h-7 rounded-full bg-[#8FAF8A] flex items-center justify-center">

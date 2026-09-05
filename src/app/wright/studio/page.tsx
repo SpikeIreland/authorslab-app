@@ -1001,14 +1001,36 @@ export default function GhostWriterStudio() {
         className="flex-shrink-0 h-12 flex items-center justify-between px-5 border-b"
         style={{ borderColor: 'rgba(143,175,138,0.25)' }}
       >
-        <div className="flex items-center gap-2.5">
-          <GhostAvatar ghost={ghost} size="sm" />
-          <span className="text-sm font-medium text-[#2C2C2C]">{ghostName}</span>
-          <span className="text-xs text-gray-400">
-            · Phase {session.phase} — {session.phase_name}
-          </span>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/home"
+            className="flex items-baseline gap-1.5 hover:opacity-70 transition-opacity"
+            title="Back to AuthorsLab home"
+          >
+            <span
+              className="text-[15px] leading-none font-normal text-[#2C2C2C]"
+              style={{ fontFamily: "'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif" }}
+            >
+              AuthorsLab
+            </span>
+            <span className="text-[10px] italic text-gray-400">Wright</span>
+          </Link>
+          <span aria-hidden="true" className="text-gray-300">·</span>
+          <div className="flex items-center gap-2">
+            <GhostAvatar ghost={ghost} size="sm" />
+            <span className="text-sm font-medium text-[#2C2C2C]">{ghostName}</span>
+            <span className="text-xs text-gray-400">
+              · Phase {session.phase} — {session.phase_name}
+            </span>
+          </div>
         </div>
         <div className="flex items-center gap-4">
+          <Link
+            href="/lobby"
+            className="text-xs text-gray-400 hover:text-[#5C7A6B] transition-colors"
+          >
+            ← Library
+          </Link>
           <Link
             href="/wright"
             className="text-xs text-gray-400 hover:text-[#5C7A6B] transition-colors"
