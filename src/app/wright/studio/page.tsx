@@ -429,7 +429,7 @@ export default function GhostWriterStudio() {
           .single()
 
         if (sessionError || !sessionData) {
-          setLoadError("We couldn't find your Ghost Writing session. Please complete onboarding first.")
+          setLoadError("No Wright project open yet. Eliot is ready to help you begin one.")
           setLoading(false)
           return
         }
@@ -462,7 +462,7 @@ export default function GhostWriterStudio() {
         chatMessagesRef.current = existingChat
         setChatMessages(existingChat)
 
-        // Seed the ghost writer's first message if chat is empty
+        // Seed the Wright partner's first message if chat is empty
         if (existingChat.length === 0) {
           await seedFirstMessage(sessionData, profile.id)
         }
@@ -975,7 +975,7 @@ export default function GhostWriterStudio() {
             onClick={() => router.push('/wright')}
             className="px-6 py-2.5 rounded-xl bg-[#8FAF8A] text-white text-sm font-medium hover:bg-[#7a9e75] transition-colors"
           >
-            Back to onboarding
+            Start a project
           </button>
         </div>
       </div>
