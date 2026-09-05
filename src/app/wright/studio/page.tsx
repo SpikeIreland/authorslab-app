@@ -4,6 +4,26 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { createClient } from '@/lib/supabase/client'
 import { N8N_WEBHOOKS } from '@/lib/n8n-config'
 
@@ -54,6 +74,13 @@ interface AuthorProfile {
   first_name: string
 }
 
+// Per-message metadata surfaced in the chat panel — tracks draft insertions
+// that arrived alongside a ghost reply.
+interface ChatMsgMeta {
+  insertedInto?: string // section title the draftInsert was written into
+  pendingInsert?: string // draftInsert text held until author selects a section
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function statusIcon(status: SectionStatus) {
@@ -64,6 +91,11 @@ function statusIcon(status: SectionStatus) {
     drafted: '✅',
   }
   return icons[status]
+}
+
+function computeWordCount(text: string): number {
+  if (!text) return 0
+  return text.trim().split(/\s+/).filter((w) => w.length > 0).length
 }
 
 // ─── Avatar ───────────────────────────────────────────────────────────────────
@@ -96,15 +128,52 @@ function AuthorBubble({ text }: { text: string }) {
   )
 }
 
-function GhostBubble({ ghost, text }: { ghost: GhostWriter; text: string }) {
+function GhostBubble({
+  ghost,
+  text,
+  meta,
+  onInsertHere,
+  selectedSectionTitle,
+}: {
+  ghost: GhostWriter
+  text: string
+  meta?: ChatMsgMeta
+  onInsertHere?: () => void
+  selectedSectionTitle?: string | null
+}) {
   const border = ghost === 'ivy' ? 'border-[#D4956A]/40' : 'border-[#5C7A6B]/40'
+  const ghostName = ghost === 'ivy' ? 'Ivy' : 'Reid'
   return (
     <div className="flex items-start gap-2.5">
       <GhostAvatar ghost={ghost} size="sm" />
-      <div
-        className={`max-w-[85%] px-4 py-3 rounded-2xl rounded-tl-sm bg-white border ${border} text-[#2C2C2C] text-sm leading-relaxed`}
-      >
-        {text}
+      <div className="flex-1 min-w-0 space-y-1.5">
+        <div
+          className={`max-w-[95%] px-4 py-3 rounded-2xl rounded-tl-sm bg-white border ${border} text-[#2C2C2C] text-sm leading-relaxed`}
+        >
+          {text}
+        </div>
+        {meta?.insertedInto && (
+          <p className="text-xs italic text-gray-400 pl-1">
+            Written into {meta.insertedInto}
+          </p>
+        )}
+        {meta?.pendingInsert && !meta.insertedInto && (
+          <div className="pl-1 space-y-1.5">
+            <p className="text-xs italic text-gray-400">
+              {selectedSectionTitle
+                ? `${ghostName} has a draft ready.`
+                : `${ghostName} has a draft ready. Select a section to insert it.`}
+            </p>
+            {selectedSectionTitle && onInsertHere && (
+              <button
+                onClick={onInsertHere}
+                className="text-xs px-2.5 py-1 rounded-md bg-[#8FAF8A]/15 text-[#5C7A6B] hover:bg-[#8FAF8A]/25 transition-colors"
+              >
+                Insert into {selectedSectionTitle}
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -127,6 +196,142 @@ function ChatTypingIndicator({ ghost }: { ghost: GhostWriter }) {
   )
 }
 
+// ─── Sortable section row ─────────────────────────────────────────────────────
+
+interface SortableSectionRowProps {
+  section: Section
+  isSelected: boolean
+  isNew: boolean
+  isRenaming: boolean
+  renameValue: string
+  onRenameChange: (value: string) => void
+  onRenameCommit: () => void
+  onRenameCancel: () => void
+  onSelect: () => void
+  onStartRename: () => void
+  onDelete: () => void
+}
+
+function SortableSectionRow({
+  section,
+  isSelected,
+  isNew,
+  isRenaming,
+  renameValue,
+  onRenameChange,
+  onRenameCommit,
+  onRenameCancel,
+  onSelect,
+  onStartRename,
+  onDelete,
+}: SortableSectionRowProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: section.id,
+  })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 1000 : 'auto' as const,
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      className={`group relative w-full transition-colors ${
+        isSelected ? 'bg-[#8FAF8A]/10' : 'hover:bg-[#8FAF8A]/5'
+      } ${isNew ? 'animate-[slideDown_0.4s_ease-out]' : ''}`}
+    >
+      <div className="flex items-start gap-1.5 px-2 py-2.5">
+        {/* Drag handle */}
+        <button
+          {...listeners}
+          className="flex-shrink-0 mt-0.5 p-0.5 rounded cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity touch-none"
+          title="Drag to reorder"
+          aria-label="Drag to reorder"
+        >
+          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M8 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm8-16a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4z" />
+          </svg>
+        </button>
+
+        {/* Status icon + selectable body */}
+        <button
+          onClick={onSelect}
+          className="flex-shrink-0 mt-0.5 text-base leading-none"
+          title="Open section"
+        >
+          {statusIcon(section.status)}
+        </button>
+
+        <div className="flex-1 min-w-0">
+          {isRenaming ? (
+            <input
+              autoFocus
+              value={renameValue}
+              onChange={(e) => onRenameChange(e.target.value)}
+              onBlur={onRenameCommit}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  onRenameCommit()
+                } else if (e.key === 'Escape') {
+                  e.preventDefault()
+                  onRenameCancel()
+                }
+              }}
+              className="w-full text-sm text-[#2C2C2C] bg-white border border-[#8FAF8A]/60 rounded px-1.5 py-0.5 focus:outline-none"
+            />
+          ) : (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                if (isSelected) {
+                  onStartRename()
+                } else {
+                  onSelect()
+                }
+              }}
+              className="text-left w-full text-sm text-[#2C2C2C] truncate"
+              title={isSelected ? 'Click again to rename' : section.title}
+            >
+              {section.title}
+            </button>
+          )}
+          {section.word_count > 0 && !isRenaming && (
+            <p className="text-xs text-gray-400 mt-0.5">{section.word_count.toLocaleString()} words</p>
+          )}
+        </div>
+
+        {/* Delete on hover */}
+        {!isRenaming && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onDelete()
+            }}
+            className="flex-shrink-0 mt-0.5 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-[#D4956A]"
+            title="Delete section"
+            aria-label="Delete section"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function GhostWriterStudio() {
@@ -141,27 +346,52 @@ export default function GhostWriterStudio() {
   const [sections, setSections] = useState<Section[]>([])
   const [chatMessages, setChatMessages] = useState<ChatMsg[]>([])
   const [selectedSection, setSelectedSection] = useState<Section | null>(null)
+  const [chatMeta, setChatMeta] = useState<Record<string, ChatMsgMeta>>({})
 
   const [chatInput, setChatInput] = useState('')
   const [isSending, setIsSending] = useState(false)
   const [showTyping, setShowTyping] = useState(false)
   const [newSectionId, setNewSectionId] = useState<string | null>(null) // drives entrance animation
 
+  // Section CRUD UI state
+  const [isAddingSection, setIsAddingSection] = useState(false)
+  const [newSectionTitle, setNewSectionTitle] = useState('')
+  const [renamingSectionId, setRenamingSectionId] = useState<string | null>(null)
+  const [renameValue, setRenameValue] = useState('')
+
+  // Autosave state
+  const [savedFlash, setSavedFlash] = useState(false)
+  const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const savedFlashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pendingSaveRef = useRef<{ sectionId: string; content: string } | null>(null)
+  const lastSavedContentRef = useRef<Record<string, string>>({}) // sectionId -> last saved text
+
   const sessionRef = useRef<Session | null>(null)
   const authorProfileRef = useRef<AuthorProfile | null>(null)
   const chatMessagesRef = useRef<ChatMsg[]>([])
   const selectedSectionRef = useRef<Section | null>(null)
+  const sectionsRef = useRef<Section[]>([])
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // DnD sensors
+  const dndSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [chatMessages, showTyping])
 
-  // Keep selectedSectionRef in sync
+  // Keep refs in sync
   useEffect(() => {
     selectedSectionRef.current = selectedSection
   }, [selectedSection])
+
+  useEffect(() => {
+    sectionsRef.current = sections
+  }, [sections])
 
   // ── Initial load ──────────────────────────────────────────────────────────
 
@@ -221,7 +451,12 @@ export default function GhostWriterStudio() {
             .order('created_at', { ascending: true }),
         ])
 
-        setSections(sectionsRes.data ?? [])
+        const loadedSections = (sectionsRes.data ?? []) as Section[]
+        setSections(loadedSections)
+        // Seed lastSavedContentRef so we don't spuriously flash "Saved"
+        loadedSections.forEach((s) => {
+          lastSavedContentRef.current[s.id] = s.draft_content ?? ''
+        })
 
         const existingChat = chatRes.data ?? []
         chatMessagesRef.current = existingChat
@@ -274,10 +509,7 @@ export default function GhostWriterStudio() {
     void authorId
   }
 
-  // ── Section update handler ────────────────────────────────────────────────
-
-  const sectionsRef = useRef<Section[]>([])
-  useEffect(() => { sectionsRef.current = sections }, [sections])
+  // ── Section update handler (existing SECTION-tag mechanism) ───────────────
 
   async function handleSectionUpdate(
     sectionUpdate: {
@@ -290,7 +522,7 @@ export default function GhostWriterStudio() {
   ) {
     if (sectionUpdate.action === 'created' && sectionUpdate.section) {
       const { title, status } = sectionUpdate.section
-      const orderIndex = sectionsRef.current.length // use actual count as order_index
+      const orderIndex = sectionsRef.current.length
 
       const { data: newSection } = await supabase
         .from('ghostwriter_sections')
@@ -300,8 +532,8 @@ export default function GhostWriterStudio() {
 
       if (newSection) {
         setSections((prev) => [...prev, newSection as Section])
+        lastSavedContentRef.current[newSection.id] = ''
         setNewSectionId(newSection.id)
-        // Clear animation flag after transition completes
         setTimeout(() => setNewSectionId(null), 700)
       }
     } else if (sectionUpdate.action === 'update' && sectionUpdate.sectionId && sectionUpdate.status) {
@@ -317,6 +549,294 @@ export default function GhostWriterStudio() {
       )
     }
   }
+
+  // ── Autosave ──────────────────────────────────────────────────────────────
+
+  const flashSaved = useCallback(() => {
+    setSavedFlash(true)
+    if (savedFlashTimerRef.current) clearTimeout(savedFlashTimerRef.current)
+    savedFlashTimerRef.current = setTimeout(() => setSavedFlash(false), 1000)
+  }, [])
+
+  const persistDraft = useCallback(
+    async (sectionId: string, content: string) => {
+      const wc = computeWordCount(content)
+      const { error } = await supabase
+        .from('ghostwriter_sections')
+        .update({
+          draft_content: content,
+          word_count: wc,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', sectionId)
+
+      if (error) {
+        console.error('Autosave failed:', error)
+        return false
+      }
+
+      lastSavedContentRef.current[sectionId] = content
+      setSections((prev) =>
+        prev.map((s) => (s.id === sectionId ? { ...s, draft_content: content, word_count: wc } : s))
+      )
+      // Keep selectedSection in sync if this is the one being edited
+      setSelectedSection((prev) =>
+        prev && prev.id === sectionId ? { ...prev, draft_content: content, word_count: wc } : prev
+      )
+      flashSaved()
+      return true
+    },
+    [supabase, flashSaved]
+  )
+
+  // Flush any pending debounced save immediately (e.g. before switching sections)
+  const flushPendingSave = useCallback(async () => {
+    if (autosaveTimerRef.current) {
+      clearTimeout(autosaveTimerRef.current)
+      autosaveTimerRef.current = null
+    }
+    const pending = pendingSaveRef.current
+    if (pending) {
+      pendingSaveRef.current = null
+      await persistDraft(pending.sectionId, pending.content)
+    }
+  }, [persistDraft])
+
+  const handleDraftChange = useCallback(
+    (value: string) => {
+      const current = selectedSectionRef.current
+      if (!current) return
+
+      // Update local state immediately so UI stays responsive
+      const wc = computeWordCount(value)
+      setSelectedSection({ ...current, draft_content: value, word_count: wc })
+      setSections((prev) =>
+        prev.map((s) => (s.id === current.id ? { ...s, draft_content: value, word_count: wc } : s))
+      )
+
+      // Debounce persistence — 800ms after last keystroke
+      pendingSaveRef.current = { sectionId: current.id, content: value }
+      if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current)
+      autosaveTimerRef.current = setTimeout(() => {
+        const pending = pendingSaveRef.current
+        if (!pending) return
+        // Only save if content actually differs from last-saved snapshot
+        if (lastSavedContentRef.current[pending.sectionId] === pending.content) {
+          pendingSaveRef.current = null
+          return
+        }
+        pendingSaveRef.current = null
+        persistDraft(pending.sectionId, pending.content)
+      }, 800)
+    },
+    [persistDraft]
+  )
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current)
+      if (savedFlashTimerRef.current) clearTimeout(savedFlashTimerRef.current)
+    }
+  }, [])
+
+  // ── Section CRUD ──────────────────────────────────────────────────────────
+
+  const handleSelectSection = useCallback(
+    async (sec: Section) => {
+      // If we have a pending save on a different section, flush it first
+      const current = selectedSectionRef.current
+      if (current && current.id !== sec.id) {
+        await flushPendingSave()
+      }
+      setSelectedSection(sec)
+    },
+    [flushPendingSave]
+  )
+
+  const handleCreateSection = useCallback(async () => {
+    const title = newSectionTitle.trim()
+    const sess = sessionRef.current
+    if (!title || !sess) {
+      setIsAddingSection(false)
+      setNewSectionTitle('')
+      return
+    }
+
+    const orderIndex = sectionsRef.current.length
+
+    // Optimistic insert
+    const tempId = `temp-${Date.now()}`
+    const optimistic: Section = {
+      id: tempId,
+      session_id: sess.id,
+      title,
+      status: 'not_started',
+      raw_material: null,
+      draft_content: '',
+      order_index: orderIndex,
+      word_count: 0,
+    }
+    setSections((prev) => [...prev, optimistic])
+    setNewSectionTitle('')
+    setIsAddingSection(false)
+
+    const { data: created, error } = await supabase
+      .from('ghostwriter_sections')
+      .insert({
+        session_id: sess.id,
+        title,
+        status: 'not_started',
+        order_index: orderIndex,
+        raw_material: null,
+        draft_content: '',
+      })
+      .select()
+      .single()
+
+    if (error || !created) {
+      console.error('Failed to create section:', error)
+      // Roll back
+      setSections((prev) => prev.filter((s) => s.id !== tempId))
+      return
+    }
+
+    // Swap optimistic row for the real one
+    setSections((prev) => prev.map((s) => (s.id === tempId ? (created as Section) : s)))
+    lastSavedContentRef.current[created.id] = created.draft_content ?? ''
+    setNewSectionId(created.id)
+    setTimeout(() => setNewSectionId(null), 700)
+    setSelectedSection(created as Section)
+  }, [newSectionTitle, supabase])
+
+  const handleStartRename = useCallback((sec: Section) => {
+    setRenamingSectionId(sec.id)
+    setRenameValue(sec.title)
+  }, [])
+
+  const handleCancelRename = useCallback(() => {
+    setRenamingSectionId(null)
+    setRenameValue('')
+  }, [])
+
+  const handleCommitRename = useCallback(async () => {
+    const id = renamingSectionId
+    if (!id) return
+    const nextTitle = renameValue.trim()
+    const original = sectionsRef.current.find((s) => s.id === id)
+    setRenamingSectionId(null)
+    setRenameValue('')
+    if (!original || !nextTitle || nextTitle === original.title) return
+
+    // Optimistic
+    setSections((prev) => prev.map((s) => (s.id === id ? { ...s, title: nextTitle } : s)))
+    setSelectedSection((prev) => (prev && prev.id === id ? { ...prev, title: nextTitle } : prev))
+
+    const { error } = await supabase
+      .from('ghostwriter_sections')
+      .update({ title: nextTitle, updated_at: new Date().toISOString() })
+      .eq('id', id)
+
+    if (error) {
+      console.error('Rename failed:', error)
+      // Roll back
+      setSections((prev) => prev.map((s) => (s.id === id ? { ...s, title: original.title } : s)))
+      setSelectedSection((prev) =>
+        prev && prev.id === id ? { ...prev, title: original.title } : prev
+      )
+    }
+  }, [renamingSectionId, renameValue, supabase])
+
+  const handleDeleteSection = useCallback(
+    async (sec: Section) => {
+      const ok = window.confirm(`Delete "${sec.title}"? Its content will be permanently lost.`)
+      if (!ok) return
+
+      const snapshot = sectionsRef.current
+      // Optimistic remove
+      setSections((prev) => prev.filter((s) => s.id !== sec.id))
+      if (selectedSectionRef.current?.id === sec.id) {
+        setSelectedSection(null)
+      }
+
+      const { error } = await supabase.from('ghostwriter_sections').delete().eq('id', sec.id)
+      if (error) {
+        console.error('Delete failed:', error)
+        // Roll back
+        setSections(snapshot)
+      } else {
+        delete lastSavedContentRef.current[sec.id]
+      }
+    },
+    [supabase]
+  )
+
+  const handleReorder = useCallback(
+    async (event: DragEndEvent) => {
+      const { active, over } = event
+      if (!over || active.id === over.id) return
+
+      const oldIndex = sectionsRef.current.findIndex((s) => s.id === active.id)
+      const newIndex = sectionsRef.current.findIndex((s) => s.id === over.id)
+      if (oldIndex < 0 || newIndex < 0) return
+
+      const snapshot = sectionsRef.current
+      const reordered = arrayMove(snapshot, oldIndex, newIndex).map((s, i) => ({
+        ...s,
+        order_index: i,
+      }))
+      setSections(reordered)
+
+      // Persist all new order_index values
+      try {
+        await Promise.all(
+          reordered.map((s) =>
+            supabase
+              .from('ghostwriter_sections')
+              .update({ order_index: s.order_index })
+              .eq('id', s.id)
+          )
+        )
+      } catch (err) {
+        console.error('Reorder persist failed:', err)
+        setSections(snapshot)
+      }
+    },
+    [supabase]
+  )
+
+  // ── Insert draft (from chat webhook) ──────────────────────────────────────
+
+  const insertDraftIntoSection = useCallback(
+    async (sectionId: string, draft: string, ghostMsgId: string) => {
+      const target = sectionsRef.current.find((s) => s.id === sectionId)
+      if (!target) return
+
+      const existing = target.draft_content ?? ''
+      const separator = existing.trim().length > 0 ? '\n\n' : ''
+      const nextContent = `${existing}${separator}${draft}`
+
+      const ok = await persistDraft(sectionId, nextContent)
+      if (ok) {
+        setChatMeta((prev) => ({
+          ...prev,
+          [ghostMsgId]: { insertedInto: target.title },
+        }))
+      }
+    },
+    [persistDraft]
+  )
+
+  // Handler passed to GhostBubble for pending-insert click
+  const handleInsertPending = useCallback(
+    async (ghostMsgId: string) => {
+      const meta = chatMeta[ghostMsgId]
+      const current = selectedSectionRef.current
+      if (!meta?.pendingInsert || !current) return
+      await insertDraftIntoSection(current.id, meta.pendingInsert, ghostMsgId)
+    },
+    [chatMeta, insertDraftIntoSection]
+  )
 
   // ── Send message ──────────────────────────────────────────────────────────
 
@@ -375,6 +895,7 @@ export default function GhostWriterStudio() {
 
       const data = await res.json()
       const reply: string = data.reply ?? "I'm thinking about that — give me a moment."
+      const draftInsert: string | null | undefined = data.draftInsert
 
       // Handle section surfacing — null sectionUpdate is a no-op
       if (data.sectionUpdate) {
@@ -398,6 +919,19 @@ export default function GhostWriterStudio() {
         const updated = [...chatMessagesRef.current, ghostMsg]
         chatMessagesRef.current = updated
         setChatMessages(updated)
+
+        // Handle draft auto-insertion
+        if (typeof draftInsert === 'string' && draftInsert.trim().length > 0) {
+          const currentSection = selectedSectionRef.current
+          if (currentSection) {
+            await insertDraftIntoSection(currentSection.id, draftInsert, ghostMsg.id)
+          } else {
+            setChatMeta((prev) => ({
+              ...prev,
+              [ghostMsg.id]: { pendingInsert: draftInsert },
+            }))
+          }
+        }
       }
     } catch {
       setShowTyping(false)
@@ -419,7 +953,8 @@ export default function GhostWriterStudio() {
     } finally {
       setIsSending(false)
     }
-  }, [chatInput, isSending, supabase])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chatInput, isSending, supabase, insertDraftIntoSection])
 
   // ── Loading / error states ────────────────────────────────────────────────
 
@@ -454,6 +989,8 @@ export default function GhostWriterStudio() {
   const ghostAccent = ghost === 'ivy' ? '#D4956A' : '#5C7A6B'
   const firstName = authorProfile?.first_name ?? 'there'
 
+  const draftValue = selectedSection?.draft_content ?? ''
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
@@ -471,7 +1008,15 @@ export default function GhostWriterStudio() {
             · Phase {session.phase} — {session.phase_name}
           </span>
         </div>
-        <span className="text-xs text-gray-400">{firstName}&apos;s studio</span>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/wright"
+            className="text-xs text-gray-400 hover:text-[#5C7A6B] transition-colors"
+          >
+            Start new project
+          </Link>
+          <span className="text-xs text-gray-400">{firstName}&apos;s studio</span>
+        </div>
       </header>
 
       {/* Three panels */}
@@ -488,81 +1033,168 @@ export default function GhostWriterStudio() {
           >
             <p className="text-xs font-semibold text-[#2C2C2C] uppercase tracking-wider">Sections</p>
           </div>
-          <div className="flex-1 overflow-y-auto py-2">
-            {sections.length === 0 ? (
+          <div className="flex-1 overflow-y-auto py-1">
+            {sections.length === 0 && !isAddingSection ? (
               <div className="px-4 py-8 text-center">
                 <p className="text-xs text-gray-400 leading-relaxed">
                   Sections will appear here as your book takes shape.
                 </p>
               </div>
             ) : (
-              sections.map((sec) => (
-                <button
-                  key={sec.id}
-                  onClick={() => setSelectedSection(sec)}
-                  className={`w-full text-left px-4 py-2.5 transition-colors ${
-                    selectedSection?.id === sec.id
-                      ? 'bg-[#8FAF8A]/10'
-                      : 'hover:bg-[#8FAF8A]/5'
-                  } ${
-                    newSectionId === sec.id
-                      ? 'animate-[slideDown_0.4s_ease-out]'
-                      : ''
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-base leading-none flex-shrink-0">{statusIcon(sec.status)}</span>
-                    <span className="text-sm text-[#2C2C2C] truncate">{sec.title}</span>
-                  </div>
-                  {sec.word_count > 0 && (
-                    <p className="text-xs text-gray-400 mt-0.5 pl-6">{sec.word_count.toLocaleString()} words</p>
-                  )}
-                </button>
-              ))
+              <DndContext sensors={dndSensors} collisionDetection={closestCenter} onDragEnd={handleReorder}>
+                <SortableContext items={sections.map((s) => s.id)} strategy={verticalListSortingStrategy}>
+                  {sections.map((sec) => (
+                    <SortableSectionRow
+                      key={sec.id}
+                      section={sec}
+                      isSelected={selectedSection?.id === sec.id}
+                      isNew={newSectionId === sec.id}
+                      isRenaming={renamingSectionId === sec.id}
+                      renameValue={renameValue}
+                      onRenameChange={setRenameValue}
+                      onRenameCommit={handleCommitRename}
+                      onRenameCancel={handleCancelRename}
+                      onSelect={() => handleSelectSection(sec)}
+                      onStartRename={() => handleStartRename(sec)}
+                      onDelete={() => handleDeleteSection(sec)}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
+            )}
+          </div>
+
+          {/* Add section */}
+          <div
+            className="flex-shrink-0 border-t px-3 py-2"
+            style={{ borderColor: 'rgba(143,175,138,0.25)' }}
+          >
+            {isAddingSection ? (
+              <div className="space-y-1.5">
+                <input
+                  autoFocus
+                  value={newSectionTitle}
+                  onChange={(e) => setNewSectionTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      handleCreateSection()
+                    } else if (e.key === 'Escape') {
+                      e.preventDefault()
+                      setIsAddingSection(false)
+                      setNewSectionTitle('')
+                    }
+                  }}
+                  placeholder="Section title"
+                  className="w-full text-sm text-[#2C2C2C] bg-white border border-[#8FAF8A]/60 rounded px-2 py-1.5 focus:outline-none placeholder-gray-400"
+                />
+                <div className="flex items-center justify-end gap-2">
+                  <button
+                    onClick={() => {
+                      setIsAddingSection(false)
+                      setNewSectionTitle('')
+                    }}
+                    className="text-xs text-gray-400 hover:text-[#2C2C2C]"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleCreateSection}
+                    disabled={!newSectionTitle.trim()}
+                    className="text-xs px-2 py-1 rounded bg-[#8FAF8A] text-white disabled:opacity-40 hover:bg-[#7a9e75] transition-colors"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsAddingSection(true)}
+                className="w-full text-left text-xs text-gray-500 hover:text-[#5C7A6B] px-1 py-1 transition-colors"
+              >
+                + New section
+              </button>
             )}
           </div>
         </aside>
 
         {/* ── Centre: content area ── */}
-        <main className="flex-1 flex flex-col overflow-hidden">
+        <main className="flex-1 flex flex-col overflow-hidden relative">
           {selectedSection ? (
-            <div className="flex-1 overflow-y-auto px-10 py-8">
-              <div className="max-w-2xl mx-auto">
-                <div className="flex items-center gap-3 mb-8">
-                  <span className="text-2xl leading-none">{statusIcon(selectedSection.status)}</span>
-                  <h1 className="text-xl font-medium text-[#2C2C2C]">{selectedSection.title}</h1>
+            <>
+              {/* Section header */}
+              <div
+                className="flex-shrink-0 px-10 pt-6 pb-4 border-b flex items-center justify-between"
+                style={{ borderColor: 'rgba(143,175,138,0.15)' }}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="text-2xl leading-none flex-shrink-0">{statusIcon(selectedSection.status)}</span>
+                  <h1 className="text-xl font-medium text-[#2C2C2C] truncate">{selectedSection.title}</h1>
+                </div>
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  <span className="text-xs text-gray-400">
+                    {selectedSection.word_count.toLocaleString()} words
+                  </span>
+                  <span
+                    className={`text-xs text-[#5C7A6B] transition-opacity duration-300 ${
+                      savedFlash ? 'opacity-100' : 'opacity-0'
+                    }`}
+                  >
+                    Saved ✓
+                  </span>
+                </div>
+              </div>
+
+              {/* Editable top half + preview bottom half */}
+              <div className="flex-1 flex flex-col overflow-hidden">
+
+                {/* Top: textarea */}
+                <div className="flex-1 min-h-0 overflow-y-auto px-10 py-6">
+                  <div className="max-w-2xl mx-auto h-full">
+                    <textarea
+                      key={selectedSection.id}
+                      value={draftValue}
+                      onChange={(e) => handleDraftChange(e.target.value)}
+                      placeholder={`Start writing, or ask ${ghostName} to draft…`}
+                      className="w-full h-full min-h-[200px] resize-none bg-transparent text-sm text-[#2C2C2C] leading-relaxed focus:outline-none border border-transparent focus:border-[#8FAF8A]/40 rounded-md p-3 placeholder-gray-400 transition-colors"
+                      style={{ fontFamily: 'inherit' }}
+                    />
+                  </div>
                 </div>
 
-                {selectedSection.draft_content && (
-                  <div className="mb-8">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">Draft</p>
-                    <div className="text-sm text-[#2C2C2C] leading-relaxed whitespace-pre-wrap">
-                      {selectedSection.draft_content}
-                    </div>
-                  </div>
-                )}
+                {/* Divider */}
+                <div
+                  className="flex-shrink-0 border-t"
+                  style={{ borderColor: 'rgba(143,175,138,0.25)' }}
+                />
 
-                {selectedSection.raw_material && (
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">Raw material</p>
-                    <div className="text-sm text-[#2C2C2C] leading-relaxed whitespace-pre-wrap opacity-60">
-                      {selectedSection.raw_material}
-                    </div>
-                  </div>
-                )}
+                {/* Bottom: live markdown preview */}
+                <div className="flex-1 min-h-0 overflow-y-auto px-10 py-6">
+                  <div className="max-w-2xl mx-auto">
+                    {draftValue.trim().length === 0 ? (
+                      <p className="text-sm text-gray-400 italic">
+                        Preview appears here as you write.
+                      </p>
+                    ) : (
+                      <div className="wright-preview text-[#2C2C2C] text-sm leading-relaxed">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{draftValue}</ReactMarkdown>
+                      </div>
+                    )}
 
-                {!selectedSection.draft_content && !selectedSection.raw_material && (
-                  <div className="text-center mt-20">
-                    <p className="text-sm text-gray-400">
-                      This section is waiting to be written.
-                    </p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      Chat with {ghostName} to get started.
-                    </p>
+                    {selectedSection.raw_material && (
+                      <div className="mt-10 pt-6 border-t" style={{ borderColor: 'rgba(143,175,138,0.2)' }}>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
+                          Raw material
+                        </p>
+                        <div className="text-sm text-[#2C2C2C] leading-relaxed whitespace-pre-wrap opacity-60">
+                          {selectedSection.raw_material}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
-            </div>
+            </>
           ) : (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center">
@@ -610,7 +1242,14 @@ export default function GhostWriterStudio() {
               msg.sender === 'author' ? (
                 <AuthorBubble key={msg.id} text={msg.message} />
               ) : (
-                <GhostBubble key={msg.id} ghost={msg.sender as GhostWriter} text={msg.message} />
+                <GhostBubble
+                  key={msg.id}
+                  ghost={msg.sender as GhostWriter}
+                  text={msg.message}
+                  meta={chatMeta[msg.id]}
+                  selectedSectionTitle={selectedSection?.title ?? null}
+                  onInsertHere={() => handleInsertPending(msg.id)}
+                />
               )
             )}
             {showTyping && <ChatTypingIndicator ghost={ghost} />}
@@ -652,6 +1291,86 @@ export default function GhostWriterStudio() {
         </aside>
 
       </div>
+
+      {/* Preview styling — kept minimal, matches Manuscript Room tokens */}
+      <style jsx global>{`
+        .wright-preview h1,
+        .wright-preview h2,
+        .wright-preview h3,
+        .wright-preview h4 {
+          font-weight: 500;
+          color: #2C2C2C;
+          margin-top: 1.25em;
+          margin-bottom: 0.5em;
+          line-height: 1.3;
+        }
+        .wright-preview h1 { font-size: 1.5rem; }
+        .wright-preview h2 { font-size: 1.25rem; }
+        .wright-preview h3 { font-size: 1.1rem; }
+        .wright-preview p {
+          margin: 0 0 0.9em;
+          line-height: 1.65;
+        }
+        .wright-preview ul,
+        .wright-preview ol {
+          margin: 0 0 0.9em 1.5em;
+          line-height: 1.65;
+        }
+        .wright-preview ul { list-style: disc; }
+        .wright-preview ol { list-style: decimal; }
+        .wright-preview li { margin: 0.15em 0; }
+        .wright-preview blockquote {
+          border-left: 3px solid rgba(143, 175, 138, 0.5);
+          padding: 0.1em 0 0.1em 1em;
+          margin: 0.75em 0;
+          color: #5C7A6B;
+          font-style: italic;
+        }
+        .wright-preview code {
+          background: rgba(143, 175, 138, 0.12);
+          padding: 0.1em 0.35em;
+          border-radius: 3px;
+          font-size: 0.9em;
+        }
+        .wright-preview pre {
+          background: rgba(143, 175, 138, 0.08);
+          padding: 0.75em 1em;
+          border-radius: 6px;
+          overflow-x: auto;
+          margin: 0.75em 0;
+        }
+        .wright-preview pre code {
+          background: transparent;
+          padding: 0;
+        }
+        .wright-preview a {
+          color: #5C7A6B;
+          text-decoration: underline;
+          text-decoration-color: rgba(143, 175, 138, 0.5);
+        }
+        .wright-preview strong { font-weight: 600; color: #2C2C2C; }
+        .wright-preview em { font-style: italic; }
+        .wright-preview hr {
+          border: none;
+          border-top: 1px solid rgba(143, 175, 138, 0.35);
+          margin: 1.5em 0;
+        }
+        .wright-preview table {
+          border-collapse: collapse;
+          margin: 0.75em 0;
+          font-size: 0.9em;
+        }
+        .wright-preview th,
+        .wright-preview td {
+          border: 1px solid rgba(143, 175, 138, 0.35);
+          padding: 0.4em 0.75em;
+          text-align: left;
+        }
+        .wright-preview th {
+          background: rgba(143, 175, 138, 0.1);
+          font-weight: 600;
+        }
+      `}</style>
     </div>
   )
 }
