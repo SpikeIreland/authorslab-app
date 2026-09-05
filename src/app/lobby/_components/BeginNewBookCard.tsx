@@ -2,7 +2,7 @@
 
 /**
  * BeginNewBookCard — dashed card that names both new-book paths per AL-UX-004
- * §3.3 (upload / ghostwriter). Opens the existing NewProjectModal fork.
+ * §3.3 (upload / wright). Opens the existing NewProjectModal fork.
  */
 
 interface BeginNewBookCardProps {
@@ -48,7 +48,7 @@ export function BeginNewBookCard({ onClick }: BeginNewBookCardProps) {
             Begin a new book
           </h3>
           <p className="text-[13px] leading-relaxed" style={{ color: 'var(--color-muted)' }}>
-            Upload a manuscript you&apos;ve already drafted, or start from scratch with a Ghostwriter.
+            Upload a manuscript you&apos;ve already drafted, or start from scratch in Wright.
           </p>
         </div>
 

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
 // GET /api/projects/[id]/marketing/messages
-// Returns the Marketing tab's chat history with Kai for this project.
+// Returns the Marketing tab's chat history with Riley for this project.
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }

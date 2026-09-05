@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 // Shared placeholder used by every tab whose interior hasn't been built into
 // the project shell yet. Some tabs link to a legacy standalone page (Author
-// Studio, Publishing Hub, Marketing Hub, Ghostwriter); others just say
+// Studio, Publishing Hub, Marketing Hub, Wright); others just say
 // "coming soon".
 export function PlaceholderTab({
   title,

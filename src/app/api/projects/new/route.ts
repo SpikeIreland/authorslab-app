@@ -2,12 +2,12 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
 // POST /api/projects/new
-// Creates a fresh Write-path project with Ghostwriter as the active stage.
-// Title and other metadata get filled in as Riley's onboarding completes.
+// Creates a fresh Write-path project with Wright as the active stage.
+// Title and other metadata get filled in as Eliot's onboarding completes.
 //
-// status='ghostwriting' is a new value that signals "Ghostwriter stage is
-// active, no phase yet." Existing manuscripts use values like 'uploaded',
-// 'editing', 'complete' — those are unaffected.
+// status='ghostwriting' (DB value kept as-is for schema compatibility) signals
+// "Wright stage is active, no phase yet." Existing manuscripts use values
+// like 'uploaded', 'editing', 'complete' — those are unaffected.
 export async function POST() {
   const supabase = await createClient()
 

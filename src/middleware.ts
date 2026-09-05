@@ -6,10 +6,11 @@ export async function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') ?? ''
   const pathname = request.nextUrl.pathname
 
-  // Redirect ghostwriter subdomain root (and stray /onboarding hits) to /ghostwriter
+  // Redirect ghostwriter subdomain root (and stray /onboarding hits) to /wright
+  // Subdomain 'ghostwriter.' kept as DNS shim; destination path renamed to /wright.
   if (hostname.startsWith('ghostwriter.')) {
     if (pathname === '/' || pathname === '/onboarding') {
-      return NextResponse.redirect(new URL('/ghostwriter', request.url))
+      return NextResponse.redirect(new URL('/wright', request.url))
     }
   }
 

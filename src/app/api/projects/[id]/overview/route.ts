@@ -135,7 +135,7 @@ export async function GET(
     { n: 2, name: 'line_editing', editor: 'Sam' },
     { n: 3, name: 'copy_editing', editor: 'Jordan' },
     { n: 4, name: 'publishing', editor: 'Taylor' },
-    { n: 5, name: 'marketing', editor: 'Kai' },
+    { n: 5, name: 'marketing', editor: 'Riley' },
   ]
 
   const phases: OverviewPhase[] = PHASE_DEFAULTS.map(def => {

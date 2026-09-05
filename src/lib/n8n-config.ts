@@ -122,22 +122,23 @@ export const N8N_WEBHOOKS = {
     // Add here when wiring up.
 
     // ─────────────────────────────────────────────
-    // Phase 7 — Ghost Writer (Riley / Ivy / Reid)
-    // Riley is the ghostwriter-companion / onboarding matcher
-    // (renamed from Eden on 2026-07-30 per Platform Dev memo
-    // AL-PDC-GW-UPDATE-001). Webhook path renamed in n8n
-    // separately by Paul — this constant tracks the new path.
+    // Phase 7 — Wright (Eliot / Ivy / Reid)
+    // Eliot is the Wright companion / onboarding matcher
+    // (renamed from Riley on 2026-09-05 per Wright Path B rename;
+    // itself renamed from Eden on 2026-07-30 per Platform Dev memo
+    // AL-PDC-GW-UPDATE-001). Webhook path in n8n unchanged for now —
+    // 'riley-match' still resolves; n8n path rename tracked separately.
     // ─────────────────────────────────────────────
-    /** 07.01 Riley Match — used by ghostwriter/page.tsx */
-    rileyMatch: webhook('riley-match'),
+    /** 07.01 Eliot Match — used by wright/page.tsx */
+    eliotMatch: webhook('riley-match'),
 
-    /** 07.02 Ivy Chat — used by ghostwriter/studio/page.tsx */
+    /** 07.02 Ivy Chat — used by wright/studio/page.tsx */
     ivyChat: webhook('ivy-chat'),
 
-    /** 07.03 Reid Chat — used by ghostwriter/studio/page.tsx */
+    /** 07.03 Reid Chat — used by wright/studio/page.tsx */
     reidChat: webhook('reid-chat'),
 
-    /** Ghostwriter Gap Analysis — used by ghostwriter/studio/page.tsx.
+    /** Wright Gap Analysis — used by wright/studio/page.tsx.
      *  Note: n8n workflow 07.04 is named "Ghostwriter Read Material";
      *  confirm the registered webhook path matches this constant. */
     ghostwriterGapAnalysis: webhook('ghostwriter-gap-analysis'),

@@ -13,7 +13,7 @@
 import type { StageKey, StageState } from './derivations'
 
 const STAGE_ORDER: { key: StageKey; label: string }[] = [
-  { key: 'ghostwriter', label: 'Ghostwriter' },
+  { key: 'wright', label: 'Wright' },
   { key: 'author_studio', label: 'Author Studio' },
   { key: 'design', label: 'Design' },
   { key: 'publishing', label: 'Publishing' },

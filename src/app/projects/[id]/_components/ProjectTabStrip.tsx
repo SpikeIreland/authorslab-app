@@ -25,7 +25,7 @@ import { RELEASED } from '@/lib/feature-flags'
 type StageState = 'pending' | 'active' | 'complete' | 'skipped'
 
 const JOURNEY_TABS = [
-  { id: 'ghostwriter', label: 'Ghostwriter' },
+  { id: 'wright', label: 'Wright' },
   { id: 'author-studio', label: 'Author Studio' },
   { id: 'design', label: 'Design' },
   { id: 'publishing', label: 'Publishing' },
@@ -45,14 +45,14 @@ function deriveTabState(
   status: string | null,
 ): StageState {
   if (status === 'complete') {
-    return tabId === 'ghostwriter' ? 'skipped' : 'complete'
+    return tabId === 'wright' ? 'skipped' : 'complete'
   }
   if (status === 'ghostwriting') {
-    if (tabId === 'ghostwriter') return 'active'
+    if (tabId === 'wright') return 'active'
     return 'pending'
   }
-  // Existing manuscripts (uploaded via legacy onboarding) skipped Ghostwriter.
-  if (tabId === 'ghostwriter') return 'skipped'
+  // Existing manuscripts (uploaded via legacy onboarding) skipped Wright.
+  if (tabId === 'wright') return 'skipped'
 
   const p = phase ?? 1
   if (tabId === 'author-studio') {

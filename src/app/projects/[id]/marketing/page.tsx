@@ -132,7 +132,7 @@ export default function MarketingTabPage() {
     }
   }, [projectId, completedTaskIds])
 
-  // Send a message to Kai.
+  // Send a message to Riley.
   const sendMessage = useCallback(async (e?: React.FormEvent) => {
     e?.preventDefault()
     const text = input.trim()
@@ -237,7 +237,7 @@ export default function MarketingTabPage() {
         )}
       </main>
 
-      {/* Kai chat panel */}
+      {/* Riley chat panel */}
       <aside className="w-72 border-l border-slate-200 flex flex-col bg-white">
         <header className="px-3 py-3 border-b border-slate-200 flex items-center gap-2.5">
           <div
@@ -247,7 +247,7 @@ export default function MarketingTabPage() {
             R
           </div>
           <div>
-            <p className="text-sm font-medium text-slate-900 leading-tight">Kai</p>
+            <p className="text-sm font-medium text-slate-900 leading-tight">Riley</p>
             <p className="text-[11px] text-slate-500">Marketing</p>
           </div>
         </header>
@@ -257,7 +257,7 @@ export default function MarketingTabPage() {
             <p className="text-xs text-slate-500">Loading…</p>
           ) : messages.length === 0 ? (
             <p className="text-xs text-slate-500 leading-relaxed">
-              Tell Kai what you&rsquo;re working on. Ask which tasks matter most this week, what to skip, or how to write your launch announcement.
+              Tell Riley what you&rsquo;re working on. Ask which tasks matter most this week, what to skip, or how to write your launch announcement.
             </p>
           ) : (
             messages.map(m => (
@@ -299,7 +299,7 @@ export default function MarketingTabPage() {
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Reply to Kai…"
+              placeholder="Reply to Riley…"
               rows={2}
               disabled={sending}
               className="flex-1 px-2.5 py-1.5 border border-slate-300 rounded-md text-xs resize-none focus:outline-none focus:border-slate-500 disabled:bg-slate-50"
@@ -454,7 +454,7 @@ function PickLaunchDate({ onSave }: { onSave: (next: string) => void }) {
     <div className="p-6 max-w-md">
       <h2 className="text-base font-medium text-slate-900 mb-1">Pick a launch date</h2>
       <p className="text-xs text-slate-500 mb-5 leading-relaxed">
-        Set a target date and Kai will lay out a sensible launch plan around it. You can change this later — or push it back if life intervenes.
+        Set a target date and Riley will lay out a sensible launch plan around it. You can change this later — or push it back if life intervenes.
       </p>
       <div className="flex items-center gap-2">
         <input
@@ -485,8 +485,8 @@ function SectionPlaceholder({ sectionId }: { sectionId: SectionId }) {
     performance: 'Performance',
   }
   const blurbs: Record<SectionId, string> = {
-    audience: 'Define who this book is for, where they spend time, what else they read. Kai will help you build a sharp picture before the launch plan locks in.',
-    pitch: 'Short pitch, long pitch, social one-liner, podcast intro. Same book, different containers. Kai will draft and refine.',
+    audience: 'Define who this book is for, where they spend time, what else they read. Riley will help you build a sharp picture before the launch plan locks in.',
+    pitch: 'Short pitch, long pitch, social one-liner, podcast intro. Same book, different containers. Riley will draft and refine.',
     'launch-plan': '',
     content: 'Drafts of social posts, email sequences, press releases, podcast pitches. Generated against your audience and pitch.',
     reviews: 'ARC strategy, reviewer outreach, review prompts and follow-up. Pre-launch and ongoing.',

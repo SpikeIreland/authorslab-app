@@ -437,7 +437,7 @@ export default function GhostWriterStudio() {
         <div className="text-center space-y-4">
           <p className="text-[#2C2C2C] text-sm">{loadError}</p>
           <button
-            onClick={() => router.push('/ghostwriter')}
+            onClick={() => router.push('/wright')}
             className="px-6 py-2.5 rounded-xl bg-[#8FAF8A] text-white text-sm font-medium hover:bg-[#7a9e75] transition-colors"
           >
             Back to onboarding

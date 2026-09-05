@@ -7,32 +7,34 @@
 import type { OverviewPayload, OverviewPhase } from '@/app/api/projects/[id]/overview/route'
 import { RELEASED } from '@/lib/feature-flags'
 
-export type Persona = 'Riley' | 'Alex' | 'Sam' | 'Jordan' | 'Taylor' | 'Kai' | 'Ivy' | 'Reid'
+export type Persona = 'Eliot' | 'Alex' | 'Sam' | 'Jordan' | 'Taylor' | 'Riley' | 'Ivy' | 'Reid'
 
 /**
  * Which persona owns the greeting card for this project state?
- *   - ghostwriting → Riley (was Eden; renamed 2026-07-30)
+ *   - ghostwriting → Eliot (Wright matcher; was Riley, renamed 2026-09-05;
+ *                    itself renamed from Eden 2026-07-30)
  *   - phase 1-3 → editor for that phase
  *   - phase 4 → Taylor (publishing)
- *   - phase 5 → Kai (marketing; was Riley, renamed 2026-07-30)
- *   - complete → Kai (post-launch lives with Marketing)
+ *   - phase 5 → Riley (marketing; Kai retired 2026-09-05, Riley reinstated
+ *              as the marketing persona)
+ *   - complete → Riley (post-launch lives with Marketing)
  */
 export function greetingPersona(payload: OverviewPayload): Persona {
   const { status, current_phase_number } = payload.manuscript
-  if (status === 'ghostwriting') return 'Riley'
-  if (status === 'complete') return 'Kai'
+  if (status === 'ghostwriting') return 'Eliot'
+  if (status === 'complete') return 'Riley'
   const phase = current_phase_number ?? 1
   if (phase === 1) return 'Alex'
   if (phase === 2) return 'Sam'
   if (phase === 3) return 'Jordan'
   if (phase === 4) return 'Taylor'
-  return 'Kai'
+  return 'Riley'
 }
 
 /** Phase label used in the kicker ("Author Studio · Line edit"). */
 export function greetingKicker(payload: OverviewPayload): string {
   const { status, current_phase_number } = payload.manuscript
-  if (status === 'ghostwriting') return 'Ghostwriter · Drafting'
+  if (status === 'ghostwriting') return 'Wright · Drafting'
   if (status === 'complete') return 'Marketing · Launched'
   const phase = current_phase_number ?? 1
   if (phase === 1) return 'Author Studio · Developmental edit'
@@ -54,13 +56,13 @@ export function greetingMessage(payload: OverviewPayload): { headline: string; b
   if (status === 'ghostwriting') {
     return {
       headline: 'Ready when you are.',
-      body: `Riley's holding your project. Book a session and she'll introduce your ghostwriter.`,
+      body: `Eliot's holding your project. Book a session and they'll introduce your writing partner.`,
     }
   }
   if (status === 'complete') {
     return {
       headline: 'Live and out in the world.',
-      body: `Kai can walk you through recent activity, or help you plan a promo push.`,
+      body: `Riley can walk you through recent activity, or help you plan a promo push.`,
     }
   }
 
@@ -97,8 +99,8 @@ export function greetingMessage(payload: OverviewPayload): { headline: string; b
   }
   if (phase === 5) {
     return {
-      headline: `Kai's ready to plan ${title}'s launch.`,
-      body: `Positioning, audience, campaign plan. Open Marketing to start with Kai.`,
+      headline: `Riley's ready to plan ${title}'s launch.`,
+      body: `Positioning, audience, campaign plan. Open Marketing to start with Riley.`,
     }
   }
   return {
@@ -116,7 +118,7 @@ export function primaryCta(payload: OverviewPayload): { href: string; label: str
   const { status, current_phase_number } = payload.manuscript
 
   if (status === 'ghostwriting') {
-    return { href: `/projects/${projectId}/ghostwriter`, label: 'Continue with Riley →' }
+    return { href: `/projects/${projectId}/wright`, label: 'Continue with Eliot →' }
   }
   if (status === 'complete') {
     return { href: `/projects/${projectId}/marketing`, label: 'Open Marketing →' }
@@ -130,7 +132,7 @@ export function primaryCta(payload: OverviewPayload): { href: string; label: str
     return { href: `/projects/${projectId}/publishing`, label: 'Continue with Taylor →' }
   }
   if (phase === 5) {
-    return { href: `/projects/${projectId}/marketing`, label: 'Continue with Kai →' }
+    return { href: `/projects/${projectId}/marketing`, label: 'Continue with Riley →' }
   }
   return { href: `/projects/${projectId}/author-studio`, label: 'Open project →' }
 }
@@ -208,7 +210,7 @@ const STEP_LABELS: Record<number, { label: string; copy: string; hrefSuffix: str
   },
   5: {
     label: 'Marketing',
-    copy: 'Positioning, audience, launch plan — with Kai.',
+    copy: 'Positioning, audience, launch plan — with Riley.',
     hrefSuffix: 'marketing',
     cta: 'Open Marketing →',
   },

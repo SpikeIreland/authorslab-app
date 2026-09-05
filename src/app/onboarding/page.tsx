@@ -14,11 +14,11 @@ function OnboardingContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
 
-    // Ghost Writer returning-author path (Brief 2)
+    // Wright returning-author path (Brief 2)
     const [isGhostWriterAuthor, setIsGhostWriterAuthor] = useState(false)
     const [ghostWriterAgent, setGhostWriterAgent] = useState<'ivy' | 'reid' | null>(null)
     const [ghostWriterBookTitle, setGhostWriterBookTitle] = useState('')
-    const [rileyMessage, setRileyMessage] = useState('')
+    const [eliotMessage, setEliotMessage] = useState('')
 
     const [authorName, setAuthorName] = useState('')
     const [file, setFile] = useState<File | null>(null)
@@ -208,7 +208,7 @@ function OnboardingContent() {
                 console.log('✅ Subscription verified - access granted')
             }
 
-            // Brief 2 — detect returning ghost writer author
+            // Brief 2 — detect returning Wright author
             if (profile.ghostwriter_onboarding_completed) {
                 const firstName = profile.first_name || searchParams.get('firstName') || 'there'
                 const agent = profile.ghostwriter_agent as 'ivy' | 'reid' | null
@@ -219,11 +219,11 @@ function OnboardingContent() {
                 setGhostWriterBookTitle(bookTitle)
 
                 if (agent === 'ivy') {
-                    setRileyMessage(
+                    setEliotMessage(
                         `Oh, ${firstName} — look at you. You came in here not knowing where to start, and now you've got a book. You and Ivy did that together and I'm genuinely impressed. Things are a little different from here — you're not a beginner anymore, you're an author with a manuscript. Let me introduce you to Alex. He's going to love what you've brought him.`
                     )
                 } else {
-                    setRileyMessage(
+                    setEliotMessage(
                         `${firstName}, well done — seriously. You came in with an idea and you leave with a book. You and Reid did good work together. ${bookTitle} is ready for the next stage now, and so are you. Alex is waiting — let's get you in.`
                     )
                 }
@@ -640,13 +640,13 @@ function OnboardingContent() {
             )}
 
             <div className="max-w-3xl mx-auto">
-                {/* Brief 2 — Ghost Writer returning author: Riley greeting */}
-                {isGhostWriterAuthor && rileyMessage && (
+                {/* Brief 2 — Wright returning author: Eliot greeting */}
+                {isGhostWriterAuthor && eliotMessage && (
                     <div className="mb-8 flex items-start gap-3 bg-white/10 backdrop-blur rounded-2xl p-6">
                         <div className="w-10 h-10 rounded-full bg-white/30 flex items-center justify-center flex-shrink-0">
-                            <span className="text-white font-semibold text-sm">R</span>
+                            <span className="text-white font-semibold text-sm">E</span>
                         </div>
-                        <p className="text-white text-base leading-relaxed">{rileyMessage}</p>
+                        <p className="text-white text-base leading-relaxed">{eliotMessage}</p>
                     </div>
                 )}
 

@@ -3,11 +3,12 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { LAUNCH_TEMPLATE, launchCountdown } from '@/lib/marketing/launchTemplate'
 
-// Kai is the Marketing lead — audience, pitch, launch plan, content,
+// Riley is the Marketing lead — audience, pitch, launch plan, content,
 // reviews, performance. The system prompt is enriched with the project's
 // metadata, the chosen launch date, and which template tasks have been
-// completed so Kai can advise specifically.
-function buildKaiSystemPrompt(args: {
+// completed so Riley can advise specifically.
+// (Persona renamed from Kai → Riley on 2026-09-05.)
+function buildRileySystemPrompt(args: {
   title: string
   genre: string
   launchDate: string | null
@@ -20,7 +21,7 @@ function buildKaiSystemPrompt(args: {
     ? `Launch date: ${new Date(launchDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} — ${launchCountdown(launchDate)}.`
     : 'No launch date has been set yet. Encourage the author to pick one when it feels natural — it anchors everything.'
 
-  // List incomplete tasks so Kai knows what's outstanding.
+  // List incomplete tasks so Riley knows what's outstanding.
   const completedSet = new Set(completedTaskIds)
   const outstanding: string[] = []
   for (const m of LAUNCH_TEMPLATE) {
@@ -34,7 +35,7 @@ function buildKaiSystemPrompt(args: {
     ? `Outstanding launch tasks the author hasn't ticked yet:\n${outstanding.map(s => `- ${s}`).join('\n')}`
     : 'All template launch tasks are marked complete.'
 
-  return `You are Kai, the Marketing lead at AuthorsLab. Your role is to help the author plan and execute their book launch and ongoing marketing — audience, pitch, launch plan, content, reviews, post-launch performance.
+  return `You are Riley, the Marketing lead at AuthorsLab. Your role is to help the author plan and execute their book launch and ongoing marketing — audience, pitch, launch plan, content, reviews, post-launch performance.
 
 You are working on the project: ${projectMeta}.
 ${launchLine}
@@ -45,7 +46,7 @@ ${outstandingBlock}
 
 Voice: warm, energetic, practical. You speak like a marketer who has launched many books and knows what actually moves the needle. Direct about what works — including being honest when something isn't worth the effort. Brief is better than long. Plain prose, never markdown headings or bullet points.
 
-If asked about other parts of the journey — editing (Alex/Sam/Jordan), design (Taylor), publishing logistics (Morgan), ghostwriting (Riley/Ivy/Reid) — point the author to those agents.
+If asked about other parts of the journey — editing (Alex/Sam/Jordan), design (Taylor), publishing logistics (Morgan), Wright (Eliot/Ivy/Reid) — point the author to those agents.
 
 You're at your most useful in launch week and the weeks leading up to it. Help the author prioritize: what matters most this week, what they can defer, what they should NOT do. Indie authors waste enormous energy on marketing that doesn't pay back — your job is to help them spend their time well.`
 }
@@ -127,7 +128,7 @@ export async function POST(
 
   const anthropic = new Anthropic({ apiKey })
 
-  const systemPrompt = buildKaiSystemPrompt({
+  const systemPrompt = buildRileySystemPrompt({
     title: manuscript.title ?? 'Untitled project',
     genre: manuscript.genre ?? '',
     launchDate: marketing?.launch_date ?? null,
@@ -160,7 +161,7 @@ export async function POST(
     return NextResponse.json({ error: message }, { status: 502 })
   }
 
-  // Persist Kai's reply.
+  // Persist Riley's reply.
   const { error: insertAssistantError } = await supabase
     .from('project_tab_messages')
     .insert({

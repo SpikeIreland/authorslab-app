@@ -3,7 +3,7 @@
 // Fork modal opened from "+ Start a new project" on the Lobby.
 // Two paths:
 //   - Write a book → POST /api/projects/new, then route to the new project's
-//     Ghostwriter tab inside the project shell.
+//     Wright tab inside the project shell.
 //   - Edit a manuscript → route to the existing /onboarding page, which
 //     handles file upload + chapter parsing + manuscript creation as it
 //     does today.
@@ -44,12 +44,12 @@ export function NewProjectModal({ open, onClose }: Props) {
         throw new Error(errBody.error || `Failed to create project (${res.status})`)
       }
       const json = await res.json() as { id: string }
-      // Ghostwriter is a staged future release; when it flips live this
-      // routes back to the Ghostwriter tab. In the meantime the upload-only
+      // Wright is a staged future release; when it flips live this
+      // routes back to the Wright tab. In the meantime the upload-only
       // modal never invokes chooseWrite, so this branch is inert.
       router.push(
-        RELEASED.ghostwriter
-          ? `/projects/${json.id}/ghostwriter`
+        RELEASED.wright
+          ? `/projects/${json.id}/wright`
           : `/projects/${json.id}`,
       )
     } catch (err) {
@@ -78,7 +78,7 @@ export function NewProjectModal({ open, onClose }: Props) {
           Start a new project
         </h2>
         <p className="text-sm text-muted mb-5">
-          {RELEASED.ghostwriter
+          {RELEASED.wright
             ? 'What are you here to do?'
             : 'Upload your manuscript to get started.'}
         </p>
@@ -89,7 +89,7 @@ export function NewProjectModal({ open, onClose }: Props) {
           </div>
         )}
 
-        {RELEASED.ghostwriter ? (
+        {RELEASED.wright ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
             <button
               type="button"
@@ -104,7 +104,7 @@ export function NewProjectModal({ open, onClose }: Props) {
                 I have an idea or rough material — help me build it out.
               </p>
               <p className="text-xs text-faint leading-relaxed">
-                A Ghostwriter (Ivy or Reid) takes you from here.
+                A writing partner in Wright (Ivy or Reid) takes you from here.
               </p>
             </button>
 
@@ -124,8 +124,8 @@ export function NewProjectModal({ open, onClose }: Props) {
             </button>
           </div>
         ) : (
-          // MVP: Ghostwriter station is held for a staged release, so the
-          // fork collapses to upload-only. When RELEASED.ghostwriter flips
+          // MVP: Wright station is held for a staged release, so the
+          // fork collapses to upload-only. When RELEASED.wright flips
           // true, the two-path grid above restores automatically.
           <div className="mb-5">
             <button

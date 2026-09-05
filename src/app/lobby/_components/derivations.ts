@@ -16,20 +16,20 @@ export interface LobbyProject {
   cover_url: string | null
 }
 
-export type StageKey = 'ghostwriter' | 'author_studio' | 'design' | 'publishing' | 'marketing'
+export type StageKey = 'wright' | 'author_studio' | 'design' | 'publishing' | 'marketing'
 export type StageState = 'skipped' | 'pending' | 'active' | 'complete'
 
 // Map a manuscript's current_phase_number + status to states for each of the
-// five Library pills. Existing manuscripts skipped Ghostwriter (they came in via
+// five Library pills. Existing manuscripts skipped Wright (they came in via
 // the upload onboarding); future projects from the new flow may show
-// Ghostwriter active.
+// Wright active.
 export function deriveStageStates(p: LobbyProject): Record<StageKey, StageState> {
   const phase = p.current_phase_number ?? 1
   const status = p.status ?? ''
 
   if (status === 'complete') {
     return {
-      ghostwriter: 'skipped',
+      wright: 'skipped',
       author_studio: 'complete',
       design: 'complete',
       publishing: 'complete',
@@ -39,7 +39,7 @@ export function deriveStageStates(p: LobbyProject): Record<StageKey, StageState>
 
   if (status === 'ghostwriting') {
     return {
-      ghostwriter: 'active',
+      wright: 'active',
       author_studio: 'pending',
       design: 'pending',
       publishing: 'pending',
@@ -48,7 +48,7 @@ export function deriveStageStates(p: LobbyProject): Record<StageKey, StageState>
   }
 
   return {
-    ghostwriter: 'skipped',
+    wright: 'skipped',
     author_studio: phase >= 1 && phase <= 3 ? 'active' : phase > 3 ? 'complete' : 'pending',
     design: phase === 4 ? 'active' : phase > 4 ? 'complete' : 'pending',
     publishing: phase === 4 ? 'active' : phase > 4 ? 'complete' : 'pending',
@@ -65,25 +65,25 @@ export function editorForPhase(phase: number | null): string | null {
 
 /** Active persona name for the current stage (used by BookCard's Next line). */
 export function activePersonaFor(p: LobbyProject): string {
-  if (p.status === 'ghostwriting') return 'Riley'
+  if (p.status === 'ghostwriting') return 'Eliot'
   const phase = p.current_phase_number ?? 1
   if (phase === 1) return 'Alex'
   if (phase === 2) return 'Sam'
   if (phase === 3) return 'Jordan'
   if (phase === 4) return 'Taylor'
-  if (phase === 5) return 'Kai'
+  if (phase === 5) return 'Riley'
   return 'Alex'
 }
 
 export function nextActionFor(p: LobbyProject): string {
   if (p.status === 'complete') return 'Live and available — review sales or run a campaign'
-  if (p.status === 'ghostwriting') return 'Riley is waiting to introduce your ghostwriter'
+  if (p.status === 'ghostwriting') return 'Eliot is waiting to introduce your writing partner'
   const phase = p.current_phase_number ?? 1
   if (phase === 1) return 'Alex is reading your manuscript'
   if (phase === 2) return 'Sam is reviewing your manuscript with you'
   if (phase === 3) return 'Jordan is polishing the final pass'
   if (phase === 4) return 'Set up cover, metadata and platforms'
-  if (phase === 5) return 'Plan your launch with Kai'
+  if (phase === 5) return 'Plan your launch with Riley'
   return 'Open the project to keep going'
 }
 
@@ -130,19 +130,20 @@ export function greetingFor(name: string): string {
 }
 
 /** Persona colour tokens.
- *  2026-07-30 rename: Eden → Riley (Ghostwriter matcher), old Marketing
- *  persona Riley → Kai. Riley now inherits Eden's sage colour; Kai
- *  inherits the faint colour previously held by Marketing Riley.
+ *  2026-09-05 rename: Riley (Wright matcher) → Eliot, and Kai → Riley
+ *  (marketing). Eliot inherits the sage colour previously held by Riley;
+ *  Riley (marketing) inherits Kai's faint colour slot.
+ *  (Prior lineage: Eden → Riley 2026-07-30; old Marketing Riley → Kai.)
  */
-export type PersonaKey = 'alex' | 'sam' | 'jordan' | 'riley' | 'ivy' | 'reid' | 'taylor' | 'kai'
+export type PersonaKey = 'alex' | 'sam' | 'jordan' | 'riley' | 'ivy' | 'reid' | 'taylor' | 'eliot'
 
 export function personaColourFor(persona: string): { bg: string; ink: string } {
   const p = persona.toLowerCase() as PersonaKey
-  if (p === 'alex' || p === 'riley') return { bg: 'var(--color-sage)', ink: 'var(--color-paper)' }
+  if (p === 'alex' || p === 'eliot') return { bg: 'var(--color-sage)', ink: 'var(--color-paper)' }
   if (p === 'sam' || p === 'ivy') return { bg: 'var(--color-terracotta)', ink: 'var(--color-paper)' }
   if (p === 'jordan' || p === 'reid') return { bg: 'var(--color-sage-deep)', ink: 'var(--color-paper)' }
   if (p === 'taylor') return { bg: '#A98A6B', ink: 'var(--color-paper)' }
-  if (p === 'kai') return { bg: 'var(--color-faint)', ink: 'var(--color-paper)' }
+  if (p === 'riley') return { bg: 'var(--color-faint)', ink: 'var(--color-paper)' }
   return { bg: 'var(--color-muted)', ink: 'var(--color-paper)' }
 }
 
