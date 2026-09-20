@@ -50,24 +50,15 @@ function LoginContent() {
       localStorage.setItem('currentUserLastName', profile.last_name || '')
       localStorage.setItem('authorProfileId', profile.id)
 
-      // Step 4: Check for existing manuscripts
-      const manuscripts = await getManuscriptsByAuthor(profile.id)
-      console.log('✅ Found manuscripts:', manuscripts.length)
-
-      // Step 5: Redirect appropriately
-      if (manuscripts && manuscripts.length > 0) {
-        // User has manuscripts — land in The Library. From there they pick a
-        // book and step into its Overview / studio via the new chrome.
-        // (AL-UX-004 §2 landing surface. Was: /author-studio with query params.)
-        console.log('✅ Redirecting to /lobby')
-        router.push('/lobby')
-      } else {
-        // No manuscripts - send to onboarding to create one
-        console.log('✅ No manuscripts found, redirecting to onboarding')
-        router.push(
-          `/onboarding?userId=${authData.user.id}&authorProfileId=${profile.id}&email=${profile.email}&firstName=${profile.first_name || ''}&lastName=${profile.last_name || ''}`
-        )
-      }
+      // Step 4: Always land in The Library (AL-UX-004 §2 landing surface).
+      // With or without existing manuscripts, /lobby is the main dashboard:
+      // it shows the book grid AND carries the "Begin a new book" card that
+      // routes to Wright (drafting from scratch) or manuscript upload.
+      // Was: legacy /onboarding?userId=… flow for first-time authors, which
+      // is the pre-pivot uploader and inconsistent with the new architecture
+      // where all new-project starts flow from the dashboard.
+      console.log('✅ Redirecting to /lobby')
+      router.push('/lobby')
 
     } catch (error: unknown) {
       console.error('Login error:', error)
