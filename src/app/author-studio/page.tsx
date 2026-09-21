@@ -2625,9 +2625,25 @@ function StudioContent() {
         <header className="bg-white border-b border-line p-4 shadow-sm">
           {/* TOP ROW: Logo, Feedback, and User Menu */}
           <div className="flex items-center justify-between mb-4 pb-3 border-b border-line-soft">
-            <Link href="/" className="text-lg font-bold font-serif text-ink hover:opacity-80 transition-opacity">
-              AuthorsLab
-            </Link>
+            {/* Left cluster: AuthorsLab wordmark (→ Library, not public site)
+                + back link to the project's Author Studio bridge page. */}
+            <div className="flex items-center gap-4">
+              <Link href="/lobby" className="text-lg font-bold font-serif text-ink hover:opacity-80 transition-opacity">
+                AuthorsLab
+              </Link>
+              {manuscript?.id && (
+                <>
+                  <span aria-hidden="true" className="text-faint">·</span>
+                  <Link
+                    href={`/projects/${manuscript.id}/author-studio`}
+                    className="text-sm text-muted hover:text-ink transition-colors"
+                    title="Back to project Author Studio"
+                  >
+                    ← Author Studio
+                  </Link>
+                </>
+              )}
+            </div>
 
 
             <div className="flex items-center gap-4">

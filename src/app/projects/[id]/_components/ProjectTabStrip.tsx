@@ -34,7 +34,10 @@ const JOURNEY_TABS = [
 
 const TOOL_TABS = [
   { id: 'research', label: 'Research' },
-  { id: 'script', label: 'Script', soon: true },
+  // 2026-09-21: 'soon' flipped to false for the Blair demo — Script tab
+  // reads as available. Content is still placeholder; restore when Script
+  // ships.
+  { id: 'script', label: 'Script', soon: false },
 ] as const
 
 // Same derivation rule as Lobby / Overview stepper, so a project's state stays

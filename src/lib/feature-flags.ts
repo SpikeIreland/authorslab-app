@@ -10,10 +10,15 @@
  * Roadmap: docs/sis/platform-dev/2026-07-30-release-roadmap-v1.md
  */
 export const RELEASED = {
-  wright: false,        // R3 (October target)
-  design: false,        // R2 (September target)
-  publishing: false,    // R4 (November target)
-  marketing: false,     // R5 (December target)
+  // 2026-09-21: all flags flipped to true for the Blair Partnership demo —
+  // journey tabs (Wright / Design / Publishing / Marketing) render as
+  // regular clickable tabs, no 'Soon' chips shown. Wright is fully wired;
+  // Design/Publishing/Marketing route to placeholder tabs but the audience
+  // sees them as available. Restore to staged values after launch.
+  wright: true,         // was false — R3 (October target)
+  design: true,         // was false — R2 (September target)
+  publishing: true,     // was false — R4 (November target)
+  marketing: true,      // was false — R5 (December target)
 } as const
 
 export type ReleasedStation = keyof typeof RELEASED
