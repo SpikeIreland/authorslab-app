@@ -1,0 +1,2 @@
+CANONICAL: handovers/sysadmin-to-wright-workspace-design-2026-09-22.md
+Workspace design commission. Extends yesterday's positioning brief with ratified authorship-spectrum positioning ("loose grip" + editorial studio as crucible), the 2×3 user matrix, shared-data-model invariant, three-panel design mirror, and five design questions (6.3 authorship model is ratified — do not re-open). Two audits required first (onboarding + Author Studio). Not demo-blocking.
