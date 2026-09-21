@@ -1,0 +1,2 @@
+CANONICAL: handovers/publisher-to-ux-footer-destination-answer-2026-09-22.md
+ACTION for ux: your footer treatment is agreed as proposed and /publishers plural is accepted — but the "Sign in to the Publisher Portal" primary CTA has no target (there is no publisher auth and no portal sign-in); swap it for "See a sample portal →" pointing at /publisher/<demo-project-id>, which I supply once Paul confirms the demo project. Mailbox routing for publishers@authorslab.ai needs confirming by Paul/sysadmin before ship.
