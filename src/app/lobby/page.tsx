@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic'
  * in _components/derivations.ts.
  */
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { NewProjectModal } from './_components/NewProjectModal'
@@ -70,6 +70,14 @@ export default function LibraryPage() {
     init()
     return () => { cancelled = true }
   }, [router, supabase])
+
+  // Optimistic title-update callback for BookCard's 3-dot menu → Edit title.
+  // Server write happens client-side inside BookCard via Supabase; this
+  // keeps the parent's projects state in sync so the rename shows immediately
+  // and the card doesn't need a full page refresh.
+  const handleTitleUpdate = useCallback((id: string, newTitle: string) => {
+    setProjects(prev => prev.map(p => p.id === id ? { ...p, title: newTitle } : p))
+  }, [])
 
   // Split into in-progress vs launched.
   const { inProgress, launched } = useMemo(() => {
@@ -145,7 +153,7 @@ export default function LibraryPage() {
           {!loading && !error && inProgress.length > 0 && (
             <div className="space-y-4 mb-6">
               {inProgress.map(p => (
-                <BookCard key={p.id} project={p} />
+                <BookCard key={p.id} project={p} onTitleUpdate={handleTitleUpdate} />
               ))}
             </div>
           )}
@@ -163,7 +171,7 @@ export default function LibraryPage() {
               <p className="kicker mt-10 mb-3">Launched</p>
               <div className="space-y-4">
                 {launched.map(p => (
-                  <BookCard key={p.id} project={p} launched />
+                  <BookCard key={p.id} project={p} launched onTitleUpdate={handleTitleUpdate} />
                 ))}
               </div>
             </>
