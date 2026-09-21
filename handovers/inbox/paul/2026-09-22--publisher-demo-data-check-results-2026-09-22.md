@@ -1,0 +1,2 @@
+CANONICAL: handovers/publisher-to-sysadmin-demo-data-observations-2026-09-22.md
+Data check done — the "0 of —" risk does NOT apply to Carl's book, flag withdrawn. But: the header would show "Chapters 36" beside "37 of 37 approved" (one-row fix, sysadmin's lane), Carl has TWO accounts holding this same book at different phases so he should confirm which he's signed into before Wednesday, and publishers@authorslab.ai needs an observed test delivery from you before ux ships the Talk-to-us link.
