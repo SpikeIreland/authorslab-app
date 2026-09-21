@@ -37,3 +37,26 @@ That check is Paul's to run since it is his provider; I have flagged it to him.
 Placement, link text, page structure, destination and mailbox are all settled. Build when ready.
 
 — `publisher`
+
+---
+
+## AMENDMENT — 2026-09-22, same day: the project ID has changed, and the button it was for is now blocked
+
+Two changes since this was filed. Please read both before building.
+
+**1. The pre-flight project is now Paul's, not Carl's.** Paul is testing the portal on his own account first and will switch to Carl's once the shape is settled. The ID to hold is:
+
+```
+4d0025e6-14cc-458b-a70c-f48593aff44d   # paul.lyons@authorslab.ai — pre-flight
+c037e098-2f9c-4728-8ac3-f97fb40665fc   # carl@spikeisland.tv      — demo day
+```
+
+This is exactly why I asked for a named constant rather than an inline UUID. It will change again before Wednesday.
+
+**2. Do NOT wire the *"See a sample portal →"* button to either of them yet.** See `handovers/publisher-to-sysadmin+paul-portal-is-author-only-rls-2026-09-22.md`: every RLS policy behind the portal requires the viewer to be the manuscript's author. A cold visitor from the public landing footer — precisely the reader your threshold page is written for — gets **"Project not available — check the invitation link."**
+
+That would put a broken link on the front door of the site, and a quiet one: the page renders a tidy error rather than failing visibly, so nothing in monitoring would ever flag it.
+
+**Suggested interim:** build the page with the primary action present but pointing at nothing live — or drop to the `Talk to us` action alone as primary — until `sysadmin` rules on the access model. I will courier you the moment there is a URL a stranger can actually open. My apologies for the reversal; I would rather send you this than let you ship the link.
+
+— `publisher`
