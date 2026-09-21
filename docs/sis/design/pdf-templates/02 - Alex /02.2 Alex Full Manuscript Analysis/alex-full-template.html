@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{{ reportType | replace("📖", "") | trim }} - {{ manuscriptTitle | replace("_", " ") }}</title>
+</head>
+<body>
+<!-- ============================================================================
+  AL-UX-PDF-02 · Alex Full Manuscript Analysis (Developmental Editing Roadmap)
+  Design: Manuscript Room · Chrome: AL-UX-PDF-chrome-v1 · Variant: MEMBER
+  (clean chrome — no conversion layer; members are never upsold in deliverables)
+  Variable contract (do not rename): authorName, manuscriptTitle, manuscriptId,
+  analysisDate, totalWordCount, reportType, analysisReport (html).
+  Preserved Jinja behaviours: underscore-to-space on title, default() fallbacks,
+  the if/else guard on analysisReport, emoji stripped from reportType template-side.
+  NB: never write literal Jinja tags inside comments — Jinja parses them there too.
+============================================================================ -->
+
+<!-- ================= COVER ================= -->
+<div class="cover">
+  <div class="cover-brand">
+    <span class="brand-disc">A</span>
+    <span class="brand-word">AuthorsLab</span>
+  </div>
+
+  <div class="cover-centre">
+    <p class="kicker">Developmental editing &middot; with Alex</p>
+    <h1 class="cover-title">{{ reportType | replace("📖", "") | trim }}</h1>
+    <div class="cover-rule"></div>
+    <p class="cover-book"><em>{{ manuscriptTitle | replace("_", " ") }}</em></p>
+    <p class="cover-author">by {{ authorName }}</p>
+    <p class="cover-meta">&asymp;{{ totalWordCount | default("N/A") }} words &middot; read in full</p>
+  </div>
+
+  <div class="cover-foot">
+    <p class="cover-date">{{ analysisDate }}</p>
+    <p class="cover-reader">Prepared by Alex &middot; Developmental Editor</p>
+  </div>
+</div>
+
+<!-- ================= BODY ================= -->
+<div class="body-pages">
+
+  <!-- How we'll work together -->
+  <div class="opening">
+    <p class="kicker">From your editor</p>
+    <p class="opening-line">Dear {{ authorName }} &mdash; I&rsquo;ve read
+    <em>{{ manuscriptTitle | replace("_", " ") }}</em> from first page to last.
+    This roadmap is the complete picture of what we&rsquo;ll strengthen together,
+    element by element, in the Author Studio.</p>
+  </div>
+
+  <div class="elements">
+    <p class="elements-head">We&rsquo;ll work through five elements, in this order:</p>
+    <div class="el-row"><span class="el-disc">1</span><div><strong>Structure</strong> &mdash; foundation and pacing architecture</div></div>
+    <div class="el-row"><span class="el-disc">2</span><div><strong>Characters</strong> &mdash; arcs, consistency, and depth</div></div>
+    <div class="el-row"><span class="el-disc">3</span><div><strong>Plot</strong> &mdash; logic, threads, and resolution</div></div>
+    <div class="el-row"><span class="el-disc">4</span><div><strong>Pacing</strong> &mdash; scene-level flow and rhythm</div></div>
+    <div class="el-row"><span class="el-disc">5</span><div><strong>Theme</strong> &mdash; coherence and meaningful integration</div></div>
+    <p class="elements-note">Each section shows what I&rsquo;ve flagged and why it matters.
+    We&rsquo;ll take them one at a time &mdash; you can accept my suggestions, make your own
+    changes, or ask me to explain more. Progress saves chapter by chapter as you approve.</p>
+  </div>
+
+  <!-- The analysis itself — injected by the workflow -->
+  <div class="report">
+    {% if analysisReport %}
+        {{ analysisReport | safe }}
+    {% else %}
+        <h1>Developmental Analysis</h1>
+        <p>Report content is being processed. Please contact support if this message persists.</p>
+    {% endif %}
+  </div>
+
+  <!-- ================= CLOSE ================= -->
+  <div class="next-steps">
+    <div class="ns-head">
+      <span class="ns-disc">&rarr;</span>
+      <h2>Ready when you are</h2>
+    </div>
+    <p>Keep this roadmap to hand &mdash; we&rsquo;ll address everything in it systematically,
+    chapter by chapter. When you&rsquo;re ready, head to the Author Studio and we&rsquo;ll begin
+    with structure: foundations first, refinements after.</p>
+    <p>You&rsquo;re in control of this process. I&rsquo;m here to guide and suggest, but every
+    decision about your manuscript is yours &mdash; and you&rsquo;re welcome to share this
+    roadmap with writing partners or beta readers whose judgement you trust.</p>
+    <p class="ns-sign">&mdash; Alex, your Developmental Editor</p>
+  </div>
+</div>
+</body>
+</html>

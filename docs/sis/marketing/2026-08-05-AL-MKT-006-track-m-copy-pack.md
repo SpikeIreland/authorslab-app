@@ -59,16 +59,17 @@ author can act on today. Generosity is the strategy.
 6. What a full edit would add (see NEXT STEPS)
 
 **NEXT STEPS SECTION (final section only — no prices anywhere else):**
+[REVISED 2026-08-10 per AL-MKT-008 — the £119 pass is removed]
 Describe, concretely, what the full developmental edit with Alex goes on to
 do that this assessment cannot: chapter-by-chapter work, scene-level notes,
 character arc tracking across the whole book, and revision conversation as
-you rework. Then present exactly two options, plainly:
-- Single-Project Pass — £119 one-time: the full editorial journey (Alex,
-  Sam and Jordan) on this manuscript. No subscription.
-- Membership — from £10/month at authorslab.ai/pricing.
-If they buy a pass and subscribe within 90 days, £13 is credited toward
-their first month.
-Never mention: $399, packages, discounts, deadlines, limited availability.
+you rework. Then present the single option, plainly:
+- Membership — from £7/month, billed annually, at authorslab.ai/pricing
+  (per PD-2: annual price is always the headline). Covers the editing
+  studio: Alex's full developmental edit, Sam's line edit, and Jordan's
+  final polish on your manuscript.
+Never mention: $399, packages, passes, discounts, deadlines, limited
+availability.
 ```
 
 ## 2 · Delivery email — replacement copy
@@ -93,9 +94,8 @@ banner imagery.
 >
 > It's yours to use however you like. If you'd like to go further, the full
 > editorial journey takes *{{bookTitle}}* through Alex's complete
-> developmental edit, Sam's line edit, and Jordan's final polish — as a
-> one-time Single-Project Pass (£119, no subscription) or with membership
-> from £10/month. Details at authorslab.ai/pricing.
+> developmental edit, Sam's line edit, and Jordan's final polish — with
+> membership from £7/month, billed annually. Details at authorslab.ai/pricing.
 >
 > Whatever you decide — keep going. The manuscript is further along than
 > most that never get finished.
@@ -153,8 +153,8 @@ minutes." Page copy pass comes with the Ask-2 truth confirmation.
 | Claim | Status |
 |---|---|
 | "Read your manuscript in full" | ✔ contingent on Option A retrofit — do not ship this copy with a 3-chapter workflow |
-| £119 = full journey (Alex+Sam+Jordan, one manuscript) | ⚑ pending Pricing Chat's one-line ratification (§0.3) |
-| £13 bridge credit within 90 days | ✔ per pricing launch note §3 |
+| £119 pass | REMOVED from all copy 2026-08-10 (AL-MKT-008) — §0.3 ratification moot |
+| £13 bridge credit | REMOVED with the pass |
 | "From £10/month" | ✔ Starter monthly |
 | No turnaround promise anywhere | ✔ deliberately absent until smoke-test data exists |
 | Founding £9.50 | ✔ absent, as always |

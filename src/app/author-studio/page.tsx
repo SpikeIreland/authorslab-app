@@ -1423,27 +1423,42 @@ function StudioContent() {
         setChapterEditingStatus(initialStatus)
         console.log('✅ Initialized editing status for', chaptersData.length, 'chapters based on existing issues')
 
-        // Load the first chapter in the array
-        setCurrentChapterIndex(0)
-        const firstChapter = chaptersData[0]
+        // 2026-09-21: honour ?chapterId=... in the URL so the bridge page
+        // (/projects/[id]/author-studio) "Open" link jumps to the chapter
+        // the author clicked, not chapter 0. Fall back to first chapter
+        // when no chapterId is supplied or the id doesn't match.
+        const chapterIdParam = searchParams.get('chapterId')
+        let initialChapterIndex = 0
+        if (chapterIdParam) {
+          const matchIndex = chaptersData.findIndex(ch => ch.id === chapterIdParam)
+          if (matchIndex >= 0) {
+            initialChapterIndex = matchIndex
+            console.log(`📖 Opening requested chapter ${chaptersData[matchIndex].chapter_number} (id ${chapterIdParam})`)
+          } else {
+            console.warn(`⚠️ chapterId ${chapterIdParam} not found in manuscript — falling back to first chapter`)
+          }
+        }
 
-        setEditorContent(firstChapter.content)
-        setWordCount(firstChapter.content.split(/\s+/).filter((w: string) => w.length > 0).length)
+        setCurrentChapterIndex(initialChapterIndex)
+        const initialChapter = chaptersData[initialChapterIndex]
+
+        setEditorContent(initialChapter.content)
+        setWordCount(initialChapter.content.split(/\s+/).filter((w: string) => w.length > 0).length)
         setHasUnsavedChanges(false)
 
-        // Load issues for first chapter if they exist
-        if (initialStatus[firstChapter.chapter_number] === 'ready') {
-          const { data: firstChapterIssues } = await supabase
+        // Load issues for the initial chapter if they exist
+        if (initialStatus[initialChapter.chapter_number] === 'ready') {
+          const { data: initialChapterIssues } = await supabase
             .from('manuscript_issues')
             .select('*')
             .eq('manuscript_id', manuscriptId)
-            .eq('chapter_number', firstChapter.chapter_number)
+            .eq('chapter_number', initialChapter.chapter_number)
             .eq('phase_number', phaseToLoad!.phase_number)
             .neq('status', 'dismissed')
             .order('severity', { ascending: false })
 
-          setChapterIssues(firstChapterIssues || [])
-          console.log(`✅ Loaded ${firstChapterIssues?.length || 0} existing issues for first chapter`)
+          setChapterIssues(initialChapterIssues || [])
+          console.log(`✅ Loaded ${initialChapterIssues?.length || 0} existing issues for chapter ${initialChapter.chapter_number}`)
         }
       }
 

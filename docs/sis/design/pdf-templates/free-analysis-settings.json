@@ -1,0 +1,22 @@
+{
+  "_comment": "AL-UX-PDF-01 · APITemplate.io Settings tab. Enter these in the template's Settings UI; header/footer HTML below is self-contained (inline styles — external CSS does not reach header/footer in chromium print).",
+
+  "paper_size": "A4",
+  "orientation": "portrait",
+  "margin_top": "22mm",
+  "margin_bottom": "18mm",
+  "margin_left": "18mm",
+  "margin_right": "18mm",
+  "display_header_footer": true,
+
+  "header_html": "<div style=\"width:100%;font-family:Georgia,serif;font-size:8pt;color:#8A857C;padding:0 18mm;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #8FAF8A;padding-bottom:4px;\"><span><span style=\"display:inline-block;width:8px;height:8px;border-radius:2px;background:#5C7A6B;margin-right:6px;\"></span>AuthorsLab</span><span style=\"font-family:-apple-system,'Segoe UI',sans-serif;font-size:7pt;letter-spacing:0.12em;text-transform:uppercase;\">Manuscript Assessment</span></div>",
+
+  "footer_html": "<div style=\"width:100%;font-family:-apple-system,'Segoe UI',sans-serif;font-size:7pt;color:#B5AFA4;padding:0 18mm;text-align:center;\"><div>Page <span class=\"pageNumber\"></span> of <span class=\"totalPages\"></span> &nbsp;&middot;&nbsp; <a style=\"color:#5C7A6B;text-decoration:none;font-weight:600;\" href=\"https://authorslab.ai/pricing?utm_source=pdf&utm_medium=report&utm_campaign=free-analysis&utm_content=footer\">Continue the journey &rarr; authorslab.ai/pricing</a></div><div style=\"margin-top:2px;font-size:6.5pt;\">&copy; 2026 AuthorsLab &middot; a Spike Island Studios company &middot; authorslab.ai &nbsp;&middot;&nbsp; {{manuscriptId}}</div></div>",
+
+  "_notes": [
+    "Header appears on every page including the cover if APITemplate has no first-page suppression. Check the template Settings for a 'skip header on first page' option; if absent, this header is quiet enough (8pt, muted) that the cover survives it — accepted fallback per AL-UX-PDF-chrome-v1 §4.",
+    "pageNumber/totalPages spans are the chromium print convention APITemplate uses. If the preview shows them empty, swap for APITemplate's documented page-number placeholders.",
+    "Footer 'Continue the journey' line is the FREE-variant conversion layer (MKT-010 §2a). Member-variant templates use the same footer WITHOUT that line — see AL-UX-PDF-chrome-v1 §3.",
+    "Back page counts in page N of M — deliberate (MKT-010 §5)."
+  ]
+}

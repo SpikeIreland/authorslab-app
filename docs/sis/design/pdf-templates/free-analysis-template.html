@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Manuscript Assessment</title>
+</head>
+<body>
+<!-- ============================================================================
+  AL-UX-PDF-01 · Free Manuscript Assessment — APITemplate.io Template tab
+  Design: Manuscript Room (AL-UX-004 tokens) · Chrome: AL-UX-PDF-chrome-v1
+  Variant: FREE (carries the MKT-010 conversion layer; member templates do not)
+  Variable contract (do not rename): authorName, manuscriptTitle, analysisDate,
+  totalWordCount, reportContent (html). Optional: manuscriptId.
+============================================================================ -->
+
+<!-- ================= COVER (no header/footer chrome) ================= -->
+<div class="cover">
+  <div class="cover-brand">
+    <span class="brand-disc">A</span>
+    <span class="brand-word">AuthorsLab</span>
+  </div>
+
+  <div class="cover-centre">
+    <p class="kicker">Free manuscript assessment</p>
+    <h1 class="cover-title">Manuscript<br>Assessment</h1>
+    <div class="cover-rule"></div>
+    <p class="cover-book"><em>{{manuscriptTitle}}</em></p>
+    <p class="cover-author">by {{authorName}}</p>
+    <p class="cover-meta">&asymp;{{totalWordCount}} words &middot; read in full</p>
+  </div>
+
+  <div class="cover-foot">
+    <p class="cover-date">{{analysisDate}}</p>
+    <p class="cover-reader">Read and assessed by Alex &middot; Developmental Editor</p>
+  </div>
+</div>
+
+<!-- ================= BODY ================= -->
+<div class="body-pages">
+
+  <!-- Alex's letter opening -->
+  <div class="opening">
+    <p class="kicker">From your editor</p>
+    <p class="opening-line">Dear {{authorName}} — I&rsquo;ve read <em>{{manuscriptTitle}}</em> in full.
+    What follows is my honest assessment: what carries the book, what needs work,
+    and where I&rsquo;d begin.</p>
+  </div>
+
+  <!-- The assessment itself — injected by the workflow -->
+  <div class="report">
+    {{ reportContent | safe }}
+  </div>
+
+  <!-- ================= NEXT STEPS (final section) ================= -->
+  <div class="next-steps">
+    <div class="ns-head">
+      <span class="ns-disc">&rarr;</span>
+      <h2>Where this goes next</h2>
+    </div>
+    <p>This assessment is the view from altitude — the shape of the whole book.
+    The full developmental edit is where Alex comes down to the ground with you:
+    chapter-by-chapter work through the manuscript, scene-level notes, character
+    arcs tracked across the whole book, and revision conversation as you rework —
+    with Sam&rsquo;s line edit and Jordan&rsquo;s final polish waiting behind it.</p>
+    <p class="ns-offer">Membership from &pound;7/month, billed annually &mdash;
+      <a href="https://authorslab.ai/pricing?utm_source=pdf&amp;utm_medium=report&amp;utm_campaign=free-analysis&amp;utm_content=nextsteps">authorslab.ai/pricing</a>
+    </p>
+  </div>
+</div>
+
+<!-- ================= BACK PAGE (free-variant conversion layer, MKT-010 §2b) ================= -->
+<div class="back-page">
+  <div class="bp-centre">
+    <h2 class="bp-headline">Every book deserves<br>an <em>editorial team.</em></h2>
+    <div class="bp-rule"></div>
+    <p class="bp-body">You&rsquo;ve just read what one editor saw from a single pass.
+    The full journey is Alex working through your manuscript chapter by chapter,
+    Sam refining the prose line by line, Jordan giving it the final polish &mdash;
+    and unlimited conversation with all three as you revise.</p>
+    <p class="bp-offer">Membership from &pound;7/month, billed annually &mdash;
+      <a href="https://authorslab.ai/pricing?utm_source=pdf&amp;utm_medium=report&amp;utm_campaign=free-analysis&amp;utm_content=backpage">authorslab.ai/pricing</a>
+    </p>
+  </div>
+  <div class="bp-foot">
+    <p class="bp-forward">Reading a friend&rsquo;s copy? Get your own free assessment at
+      <a href="https://authorslab.ai/free-analysis?utm_source=pdf&amp;utm_medium=report&amp;utm_campaign=free-analysis&amp;utm_content=referral">authorslab.ai/free-analysis</a>
+    </p>
+    <div class="bp-brand">
+      <span class="brand-disc">A</span>
+      <span class="brand-word">AuthorsLab</span>
+      <span class="bp-url">authorslab.ai</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

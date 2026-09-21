@@ -1,0 +1,21 @@
+{
+  "_comment": "AL-UX-PDF-02 · Alex Full Manuscript Analysis — APITemplate.io Settings tab. MEMBER variant: clean chrome, no conversion layer (AL-UX-PDF-chrome-v1 §3). Old template had px margins and no header/footer; chrome v1 supersedes.",
+
+  "paper_size": "A4",
+  "orientation": "portrait",
+  "margin_top": "22mm",
+  "margin_bottom": "18mm",
+  "margin_left": "18mm",
+  "margin_right": "18mm",
+  "display_header_footer": true,
+
+  "header_html": "<div style=\"width:100%;font-family:Georgia,serif;font-size:8pt;color:#8A857C;padding:0 18mm;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #8FAF8A;padding-bottom:4px;\"><span><span style=\"display:inline-block;width:8px;height:8px;border-radius:2px;background:#5C7A6B;margin-right:6px;\"></span>AuthorsLab</span><span style=\"font-family:-apple-system,'Segoe UI',sans-serif;font-size:7pt;letter-spacing:0.12em;text-transform:uppercase;\">Developmental Roadmap</span></div>",
+
+  "footer_html": "<div style=\"width:100%;font-family:-apple-system,'Segoe UI',sans-serif;font-size:7pt;color:#B5AFA4;padding:0 18mm;text-align:center;\"><div>Page <span class=\"pageNumber\"></span> of <span class=\"totalPages\"></span></div><div style=\"margin-top:2px;font-size:6.5pt;\">&copy; 2026 AuthorsLab &middot; a Spike Island Studios company &middot; authorslab.ai &nbsp;&middot;&nbsp; {{manuscriptId}}</div></div>",
+
+  "_notes": [
+    "MEMBER variant — the footer carries NO 'Continue the journey' line and there is no back page. The copyright line's authorslab.ai is the only URL in the document.",
+    "reportType arrives from the workflow with a leading 📖 emoji; the template strips it via Jinja (replace + trim). Recommended follow-up for Platform Dev: drop the emoji at source in the workflow's body mapping — then the template filter becomes a harmless no-op.",
+    "The old JSON tab held the n8n body-mapping placeholders ({{ AUTHOR_NAME }} etc.) rather than sample data — that mapping lives in the workflow and is unchanged. This bundle's JSON tab is true sample data so the APITemplate preview renders."
+  ]
+}

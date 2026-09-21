@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AuthorsLab: A Controlled AI System</title>
+<meta name="description" content="How AuthorsLab prevents AI slop in commercial book publishing.">
+<meta name="author" content="Paul Lyons">
+<meta name="robots" content="noindex, nofollow">
+<style>
+  @page {
+    size: A4;
+    margin: 20mm 22mm 18mm 22mm;
+  }
+
+  :root {
+    --ink: #1A1A1A;
+    --body: #2C2C2C;
+    --muted: #6B6B6B;
+    --faint: #A2A0A0;
+    --accent: #1E3A5F;
+    --rule: #D0CFCB;
+    --paper: #FFFFFF;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    background: var(--paper);
+    color: var(--body);
+    font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, 'Times New Roman', serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Screen-only container so on-screen viewing has a paper-like frame */
+  @media screen {
+    body {
+      background: #F5F4F0;
+      padding: 40px 20px;
+    }
+    .page {
+      max-width: 720px;
+      margin: 0 auto;
+      background: var(--paper);
+      padding: 56px 64px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.06);
+    }
+  }
+  @media print {
+    .page { padding: 0; }
+  }
+
+  .kicker {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    font-size: 8.5pt;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin: 0 0 10px 0;
+  }
+
+  h1 {
+    font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    font-size: 22pt;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+    margin: 0 0 6px 0;
+    line-height: 1.15;
+  }
+
+  .subtitle {
+    font-style: italic;
+    color: var(--muted);
+    font-size: 11pt;
+    margin: 0 0 22px 0;
+  }
+
+  hr.rule {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 22px 0;
+  }
+
+  h2 {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    font-size: 9.5pt;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 22px 0 8px 0;
+    page-break-after: avoid;
+  }
+
+  p {
+    margin: 0 0 10px 0;
+    orphans: 3;
+    widows: 3;
+  }
+
+  .commitment {
+    margin: 12px 0;
+    padding-left: 0;
+  }
+
+  .commitment strong {
+    color: var(--ink);
+  }
+
+  em {
+    font-style: italic;
+  }
+
+  .pullquote {
+    color: var(--accent);
+    font-weight: 600;
+    font-style: italic;
+    font-size: 11pt;
+    margin: 4px 0 0 0;
+  }
+
+  footer {
+    margin-top: 28px;
+    padding-top: 14px;
+    border-top: 1px solid var(--rule);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    font-size: 8.5pt;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  footer .wordmark {
+    color: var(--ink);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  footer a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+</style>
+</head>
+<body>
+<article class="page">
+
+  <p class="kicker">AuthorsLab</p>
+  <h1>A Controlled AI System</h1>
+  <p class="subtitle">Why publishers can trust the work our platform produces</p>
+
+  <hr class="rule" />
+
+  <h2>How we prevent AI slop</h2>
+
+  <p>The problem with AI in publishing is not intelligence. It is control. Most AI systems that touch a book are open &mdash; a general model, an unbounded prompt, a single output the human is asked to accept or reject. The result is what the industry has begun to call &ldquo;slop&rdquo;: generic, ungrounded, unaccountable output that the market cannot build on.</p>
+
+  <p>AuthorsLab is engineered on the opposite premise. Every AI capability in the platform is a <strong>controlled call</strong> &mdash; with a specific purpose, a specific gate, a specific human in the loop. The system is designed to enhance human creativity, not replace it, and its architecture makes that commitment observable rather than aspirational.</p>
+
+  <h2>Five architectural commitments</h2>
+
+  <p class="commitment"><strong>1. Every AI call is a controlled call.</strong> Nothing in the platform reaches a language model as a raw prompt. Every call routes through what we call a Cell: a wrapper that carries the call&rsquo;s purpose, its budget, its validators, and its return contract. Cells produce cited, auditable output &mdash; or they fail cleanly. There are no unbounded chains of AI action.</p>
+
+  <p class="commitment"><strong>2. Specialised editors, not a general chatbot.</strong> The AI in AuthorsLab does not present itself as one entity that does everything. There is Alex, who handles developmental editing; Sam, who does line editing; Jordan, who does copy editing; Taylor, who oversees design; Morgan, who manages the publishing pathway; Riley, who supports marketing. Each has a focused role, a specific prompt, and clear boundaries. This is the same argument publishers use for their own teams &mdash; you don&rsquo;t hand one editor everything.</p>
+
+  <p class="commitment"><strong>3. Human-in-the-loop at every phase.</strong> Nothing autonomous. The author reviews and approves the output of each editor before the next phase begins. There are no automated chains that write, edit, and publish while the human watches. Every consequential decision is a human decision.</p>
+
+  <p class="commitment"><strong>4. Voice preservation is a design principle.</strong> Our editors improve, they do not rewrite. When our writing partners (Ivy and Reid) work with authors in what we call the Wright environment, they act as <em>foils</em> &mdash; they challenge, question, retrieve information, and hold the author to their own best judgement. They draft prose only when the author explicitly asks for it, and even then they articulate what the author has decided. The author is always the source of the idea.</p>
+
+  <p class="commitment"><strong>5. A traceable ledger of every AI decision.</strong> Every model call in AuthorsLab is logged with its inputs, outputs, costs, and provenance. Every citation from a web search is preserved. Publishers can trace any editorial decision back to its origin. This is the same standard publishing has always applied to production accountability, applied here to AI.</p>
+
+  <h2>Wright &mdash; where the risk is highest, and the discipline is strictest</h2>
+
+  <p>Wright is our creative workshop, where authors work with a human-and-AI partnership to shape a book from lived experience. Because Wright is generative &mdash; where new prose is being produced &mdash; it is where the risk of &ldquo;AI slop&rdquo; is highest. That is precisely why its constraints are strictest. The partner never manufactures substance; only the author does. When the partner drafts prose, it articulates what the author has already decided. When it searches the web, it cites its sources. When it identifies a chapter, the author must confirm it.</p>
+
+  <p class="pullquote">The AI holds the tools. The author holds the pen.</p>
+
+  <h2>Where publishers sit in the system</h2>
+
+  <p>Publishers are invited into projects with full editorial visibility &mdash; every phase, every AI decision, every cited source. The publisher&rsquo;s portal carries approve, revise, and message affordances at every step, and the publishing route (traditional, hybrid, or self with endorsement) is the publisher&rsquo;s decision, not the platform&rsquo;s. Nothing ships without both the author and the publisher choosing that it should.</p>
+
+  <h2>The horizon</h2>
+
+  <p>The 1980s promise of robots handling all our physical labour did not quite come true. What happened instead is that humans, freed from a different kind of drudgery, invented the internet &mdash; and then everything the internet made possible. Our thesis is that the next transformation will come the same way. AI picks up the workload that has been blocking human imagination. What comes next is something we cannot yet define, because the point is to make room for it.</p>
+
+  <p>The books that follow will be better than the books that came before &mdash; not because AI wrote them, but because the humans who did were finally free to think.</p>
+
+  <footer>
+    <span><span class="wordmark">AuthorsLab</span> &middot; <a href="https://authorslab.ai">authorslab.ai</a></span>
+    <span><strong>Paul Lyons</strong>, Founder &middot; paul.lyons@authorslab.ai</span>
+  </footer>
+
+</article>
+</body>
+</html>
