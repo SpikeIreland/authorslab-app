@@ -13,6 +13,7 @@ export function MarketingFooter() {
       <div className="max-w-6xl mx-auto px-6 py-7 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs border-t border-white/10">
         <span>© 2026 AuthorsLab · a Spike Island Studios company</span>
         <span className="flex flex-wrap items-center gap-x-5 gap-y-2 justify-center">
+          <Link href="/publishers" className="hover:text-ivory">For publishers</Link>
           <Link href="/how-it-works" className="hover:text-ivory">How it works</Link>
           <Link href="/pricing" className="hover:text-ivory">Pricing</Link>
           <Link href="/faq" className="hover:text-ivory">FAQ</Link>
