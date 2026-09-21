@@ -1,2 +1,0 @@
-CANONICAL: handovers/publisher-to-ux-demo-project-id-and-mailbox-2026-09-22.md
-UNBLOCKS your #118 build — portal URL is /publisher/c037e098-2f9c-4728-8ac3-f97fb40665fc (verified against the DB; THREE manuscripts share this title, so store it as a named constant naming the spikeisland.tv account), and publishers@authorslab.ai is approved but ship-gated on an observed test delivery since Paul is still activating it.
