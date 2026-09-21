@@ -12,10 +12,16 @@ interface ResearchMessage {
   created_at: string
 }
 
+// 2026-09-21: repositioned Research as the project's knowledge base — facts,
+// background, comps, references — rather than a craft-coaching surface.
+// Craft prompts ("think through a tricky scene", "questions about my main
+// character") belong to Wright (pre-manuscript) or Alex (in-edit). Keeping
+// Research disciplined on "what would an author need to KNOW to write this
+// well" mirrors the pattern that made Clarence work.
 const STARTERS = [
-  'Help me think through a tricky scene I\'ve been stuck on.',
-  'I need background on a setting I\'m writing about — can we research it together?',
-  'What questions should I be asking about my main character?',
+  'Find strong comps for my genre published in the last three years.',
+  'Give me the period-accurate details I’ll need for a scene set in a specific time and place.',
+  'Build a timeline of events I can draw on for the world of my book.',
 ]
 
 export default function ResearchTabPage() {
@@ -156,7 +162,7 @@ export default function ResearchTabPage() {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask anything — about your book, a setting, a character, a craft question…"
+            placeholder="Ask anything that informs the world of your book — facts, background, comps, references…"
             rows={2}
             disabled={sending}
             className="flex-1 px-3 py-2 border border-line rounded-md text-sm resize-none focus:outline-none focus:border-sage-deep disabled:bg-paper-warm disabled:text-muted"
@@ -210,7 +216,7 @@ function EmptyState({ onSeed }: { onSeed: (prompt: string) => void }) {
   return (
     <div className="max-w-xl mx-auto text-center py-8">
       <p className="text-sm text-muted leading-relaxed mb-6">
-        I&rsquo;ve got your project loaded — title, genre, summary, and any analysis we&rsquo;ve done together. Ask me anything that helps you move the work forward.
+        I&rsquo;ve got your project loaded — title, genre, summary, characters. Ask me for facts, background, comps, or references that inform the world of your book.
       </p>
       <div className="space-y-2 text-left">
         {STARTERS.map((s, i) => (
