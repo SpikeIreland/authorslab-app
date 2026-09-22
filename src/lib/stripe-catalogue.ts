@@ -35,7 +35,28 @@ export type LookupKey = (typeof LOOKUP_KEYS)[keyof typeof LOOKUP_KEYS]
 
 /**
  * Lookup keys the public pricing page and Customer Portal may reference.
+ *
  * Excludes `author_founding` — that price is Founding-Author-only.
+ *
+ * Excludes `single_project_pass` as of 2026-09-22: the £119 Pass and its £13
+ * bridge credit were REMOVED by Paul on 2026-08-10 (AL-MKT-008 §1). Code that
+ * still sold it was implementing a revoked decision. Confirmed dead by
+ * `finance` in
+ * `handovers/finance-to-sysadmin+identity-billing-state-of-monetisation-2026-09-22.md`
+ * (addendum, ask 6).
+ *
+ * Dropping the key here is what makes the decision enforceable: POST
+ * /api/create-checkout validates against THIS list, so the Pass now 400s
+ * `unknown_lookup_key` and no Checkout path can sell it. The constant stays in
+ * LOOKUP_KEYS because `pass_purchases` rows and the Stripe price object still
+ * exist as history — this removes the sale, not the record.
+ *
+ * NOT yet done, and not doable from this chat: archiving the Pass product and
+ * price in the AuthorsLab Stripe account (`acct_1U0u4gEGeehw2YKO`). This
+ * session's Stripe connector points at Clarence Legal — see finding A of
+ * `handovers/identity-billing-to-sysadmin+paul+finance-state-of-the-estate-2026-09-22.md`.
+ * Until that archive lands, the price exists in Stripe and is unreachable from
+ * the app rather than gone.
  */
 export const PUBLIC_LOOKUP_KEYS: LookupKey[] = [
   LOOKUP_KEYS.STARTER_MONTHLY,
@@ -44,7 +65,6 @@ export const PUBLIC_LOOKUP_KEYS: LookupKey[] = [
   LOOKUP_KEYS.AUTHOR_ANNUAL,
   LOOKUP_KEYS.PRO_MONTHLY,
   LOOKUP_KEYS.PRO_ANNUAL,
-  LOOKUP_KEYS.SINGLE_PROJECT_PASS,
 ]
 
 /** Lookup keys that represent one-time (Checkout `payment` mode) purchases. */
