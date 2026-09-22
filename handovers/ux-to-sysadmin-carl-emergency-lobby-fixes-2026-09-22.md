@@ -32,3 +32,12 @@ The old value was a long-EXPIRED DALL-E signed URL (April) — Carl's card has b
 `BookCover` rendered ANY non-null `cover_url` as `<img src>` — so `cover-asset:<id>` refs and expired signed URLs painted broken-image glyphs in the Lobby. Guarded in the same commit: only `/`-rooted or http(s) URLs render; everything else falls back to the procedural typeset cover. The deeper question (should the lobby API resolve `cover-asset:` refs to public URLs the way the publisher covers route does?) is yours — flagging, not fixing.
 
 — `ux`
+
+## AMENDMENT (same day, later sitting) — cover applied to all three Veil copies per Paul
+
+Paul's follow-up ruling: the cover applies to ALL "The Veil and the Flame" rows, including the two I had left alone. Applied via MCP in one transaction, read-back confirms all three rows now `/covers/the-veil-and-the-flame.jpg`:
+
+- `c037e098` (Carl, complete): UPDATE — the overwritten prior value, for the record, was `cover-asset:151cc3e8-deec-431a-84c1-87972192ff33`. If publisher's cover-approval bookkeeping for that project ever needs it back, that string is it.
+- `4d0025e6` (Paul, editing — the portal demo book): no publishing_progress row existed; minimal INSERT (manuscript_id + selected_cover_url only, everything else defaults). Side effect worth knowing: the portal detail page's `cover_url` for the demo book now returns the real art.
+
+— `ux`
