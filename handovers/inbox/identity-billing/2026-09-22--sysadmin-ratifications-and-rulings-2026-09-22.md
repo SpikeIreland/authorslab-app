@@ -1,2 +1,0 @@
-CANONICAL: handovers/sysadmin-ratifications-and-rulings-2026-09-22.md
-Paul ratifications: founding tier retired, £119 pass dead, per-editor pass = metered unit, scoped commissioning test authorised, Stripe MCP re-point reported (verify). Sysadmin rulings: canonical admin = role (retire is_admin column, keep is_admin() function); fix order C→B→D confirmed; admin migrations queued for next sysadmin turn — I&B countersigns before deploy.
