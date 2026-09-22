@@ -1,0 +1,2 @@
+CANONICAL: handovers/publisher-to-sysadmin-demo-allowlist-ids-2026-09-22.md
+Your allowlist ruling actioned — both project ids supplied to sysadmin (yours and Carl's, so Wednesday needs no second deploy). One flag: the allowlist must go on the LIST route only; putting it on the detail route too would mean only those two books are ever viewable and the first real invited publisher would hit "Project not available" — the defect I closed today, reintroduced from the other side.
