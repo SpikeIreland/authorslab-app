@@ -280,7 +280,7 @@ function PortalBody({ project }: { project: PublisherProject }) {
           phaseNum={phaseNum}
         />
         <EditorialStatusSection phases={project.phases} />
-        <CoverProposalsSection />
+        <CoverProposalsSection projectId={project.id} />
         <MarketingPlanSection />
         <PublishingRouteSection />
         <CommunicationsThreadSection authorFirst={authorFirst} phases={project.phases} />
@@ -491,129 +491,288 @@ function StatusStep({
 
 // ─── 3. Cover proposals ───────────────────────────────────────────────────────
 
-function CoverProposalsSection() {
-  const covers = [
-    {
-      id: 'A' as const,
-      label: 'Cover A',
-      note: 'Restrained genre entry — signals literary sci-fi.',
-      designer: 'Taylor — AuthorsLab design',
-    },
-    {
-      id: 'B' as const,
-      label: 'Cover B',
-      note: 'Signals speculative; hooks the sci-fi shelf browser.',
-      designer: 'Taylor — AuthorsLab design',
-    },
-    {
-      id: 'C' as const,
-      label: 'Cover C',
-      note: 'Warmest option; hints at the character journey.',
-      designer: 'Taylor — AuthorsLab design',
-    },
-  ]
+/**
+ * THE AUTHOR'S COVER
+ *
+ * Reframed 2026-09-22. This section used to present three invented CSS covers
+ * as equal proposals with an Approve button on each — which implied the
+ * publisher chooses. They don't: `design`'s Option 2 build gives each demo
+ * book three real concepts and the AUTHOR selects one
+ * (publishing_progress.selected_cover_url). So the honest publisher view is
+ * the author's selected cover awaiting approval, with the other concepts as
+ * context.
+ *
+ * It also fixes a continuity break that pre-flight could not have caught:
+ * Paul's pre-flight manuscript has zero cover assets, so the CSS placeholders
+ * looked fine there, while Carl's demo manuscript has real artwork — meaning
+ * the author's browser and the publisher's browser would have shown different
+ * covers for the same book, and only on demo day.
+ *
+ * Fallback: a manuscript with no cover assets still renders the three
+ * placeholder concepts, so nothing regresses for a book that has not been
+ * through cover generation.
+ */
 
-  const [state, setState] = useState<Record<'A' | 'B' | 'C', CoverState>>({
-    A: { status: 'pending', approvedAt: null, revisionsNote: '', messaging: false, messageDraft: '', messageSent: false },
-    B: { status: 'pending', approvedAt: null, revisionsNote: '', messaging: false, messageDraft: '', messageSent: false },
-    C: { status: 'pending', approvedAt: null, revisionsNote: '', messaging: false, messageDraft: '', messageSent: false },
-  })
+interface PublisherCover {
+  id: string
+  url: string | null
+  kind: string | null
+  createdAt: string
+  isSelected: boolean
+}
 
-  const update = (id: 'A' | 'B' | 'C', patch: Partial<CoverState>) =>
-    setState((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }))
+function CoverProposalsSection({ projectId }: { projectId: string }) {
+  const [covers, setCovers] = useState<PublisherCover[] | null>(null)
+  const [coversLoaded, setCoversLoaded] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    async function load() {
+      if (!projectId) return
+      try {
+        const res = await fetch(`/api/publisher/projects/${projectId}/covers`)
+        if (cancelled) return
+        if (!res.ok) {
+          setCoversLoaded(true)
+          return
+        }
+        const json = (await res.json()) as { covers?: PublisherCover[] }
+        if (cancelled) return
+        setCovers(json.covers ?? [])
+        setCoversLoaded(true)
+      } catch {
+        if (cancelled) return
+        // A failed cover read falls back to the placeholders rather than
+        // blanking the section. The publisher still sees a page.
+        setCoversLoaded(true)
+      }
+    }
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [projectId])
+
+  const real = covers?.filter((c) => c.url) ?? []
+  const selected = real.find((c) => c.isSelected) ?? null
+  const alsoConsidered = real.filter((c) => !c.isSelected)
+
+  // Until the read settles, show nothing rather than flashing placeholders
+  // that are about to be replaced by real artwork.
+  if (!coversLoaded) {
+    return (
+      <section>
+        <SectionHeading eyebrow="Cover" title="The author&rsquo;s cover" />
+        <Card className="p-8">
+          <div className="h-[120px] flex items-center justify-center">
+            <div className="w-5 h-5 border-2 border-[#E8E5E0] border-t-[#1E3A5F] rounded-full animate-spin" />
+          </div>
+        </Card>
+      </section>
+    )
+  }
+
+  if (!selected) {
+    // No selected real artwork — either nothing generated yet, or generated
+    // and not yet chosen. Either way the publisher is not the one choosing,
+    // so this says so plainly instead of offering a decision.
+    return (
+      <section>
+        <SectionHeading eyebrow="Cover" title="The author&rsquo;s cover" />
+        {real.length > 0 ? (
+          <>
+            <p className="text-[14px] text-[#8A8A8A] mb-5 max-w-[640px]">
+              {real.length} concepts are with the author. Once they choose one, it
+              arrives here for your approval.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {real.map((c) => (
+                <Card key={c.id} className="overflow-hidden">
+                  <RealCoverImage url={c.url} alt="Cover concept" />
+                </Card>
+              ))}
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="text-[14px] text-[#8A8A8A] mb-5 max-w-[640px]">
+              Cover design hasn&rsquo;t started on this book yet. Taylor&rsquo;s
+              concepts will appear here for the author to choose from.
+            </p>
+            <PlaceholderConcepts />
+          </>
+        )}
+      </section>
+    )
+  }
 
   return (
     <section>
-      <SectionHeading eyebrow="Cover proposals" title="Three directions to consider" />
+      <SectionHeading eyebrow="Cover" title="The author&rsquo;s cover" />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {covers.map((c) => (
-          <Card key={c.id} className="overflow-hidden flex flex-col">
-            <CoverArt id={c.id} state={state[c.id]} />
+      <div className="grid grid-cols-1 md:grid-cols-[minmax(0,320px)_1fr] gap-8 items-start">
+        <Card className="overflow-hidden">
+          <RealCoverImage url={selected.url} alt="The author's selected cover" />
+        </Card>
 
-            <div className="p-5 flex-1 flex flex-col">
-              <div className="text-[11px] tracking-[0.14em] uppercase text-[#8A8A8A] mb-1">
-                {c.label}
+        <div className="pt-1">
+          <CoverDecision />
+
+          {alsoConsidered.length > 0 && (
+            <div className="mt-8 pt-6 border-t border-[#E8E5E0]">
+              <div className="text-[11px] tracking-[0.14em] uppercase text-[#8A8A8A] mb-3">
+                Also considered
               </div>
-              <div className="text-[14px] text-[#1A1A1A] mb-4">{c.note}</div>
-
-              {state[c.id].status === 'approved' && (
-                <div className="mb-3 text-[12px] text-[#2E4A3C] border border-[#2E4A3C]/30 bg-[#2E4A3C]/5 px-3 py-2 rounded-[3px]">
-                  Approved on {state[c.id].approvedAt}
-                </div>
-              )}
-              {state[c.id].status === 'revisions' && (
-                <div className="mb-3 text-[12px] text-[#8A5A2B] border border-[#8A5A2B]/30 bg-[#8A5A2B]/5 px-3 py-2 rounded-[3px]">
-                  Revisions requested
-                </div>
-              )}
-
-              <div className="mt-auto flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  disabled={state[c.id].status === 'approved'}
-                  onClick={() =>
-                    update(c.id, {
-                      status: 'approved',
-                      approvedAt: formatDate(new Date().toISOString()),
-                    })
-                  }
-                  className="text-[12px] px-3 py-1.5 rounded-[3px] border border-[#1E3A5F] text-white bg-[#1E3A5F] hover:bg-[#17304F] disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/40"
-                >
-                  Approve
-                </button>
-                <button
-                  type="button"
-                  disabled={state[c.id].status === 'approved'}
-                  onClick={() => update(c.id, { status: 'revisions' })}
-                  className="text-[12px] px-3 py-1.5 rounded-[3px] border border-[#E8E5E0] text-[#3F3F3F] hover:bg-[#F7F7F5] disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30"
-                >
-                  Request revisions
-                </button>
-                <button
-                  type="button"
-                  onClick={() => update(c.id, { messaging: !state[c.id].messaging })}
-                  className="text-[12px] px-3 py-1.5 rounded-[3px] border border-[#E8E5E0] text-[#3F3F3F] hover:bg-[#F7F7F5] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30"
-                >
-                  Message the designer
-                </button>
-              </div>
-
-              {state[c.id].messaging && (
-                <div className="mt-3">
-                  <textarea
-                    value={state[c.id].messageDraft}
-                    onChange={(e) => update(c.id, { messageDraft: e.target.value, messageSent: false })}
-                    rows={3}
-                    className="w-full text-[13px] px-3 py-2 border border-[#E8E5E0] rounded-[3px] bg-white focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 focus:border-[#1E3A5F] resize-none"
-                    placeholder="A note to the designer…"
-                  />
-                  <div className="mt-2 flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        update(c.id, { messageDraft: '', messageSent: true })
-                      }
-                      disabled={!state[c.id].messageDraft.trim()}
-                      className="text-[12px] px-3 py-1.5 rounded-[3px] border border-[#1E3A5F] text-white bg-[#1E3A5F] hover:bg-[#17304F] disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Send
-                    </button>
-                    {state[c.id].messageSent && (
-                      <span className="text-[12px] text-[#8A8A8A]">Message sent</span>
-                    )}
+              <div className="flex gap-3">
+                {alsoConsidered.map((c) => (
+                  <div
+                    key={c.id}
+                    className="w-[76px] rounded-[2px] overflow-hidden border border-[#E8E5E0]"
+                  >
+                    <RealCoverImage url={c.url} alt="Cover concept not selected" />
                   </div>
-                </div>
-              )}
-
-              <div className="mt-4 pt-3 border-t border-[#E8E5E0] text-[11px] text-[#8A8A8A]">
-                {c.designer}
+                ))}
+              </div>
+              <div className="mt-3 text-[12px] text-[#8A8A8A]">
+                Taylor &mdash; AuthorsLab design
               </div>
             </div>
-          </Card>
-        ))}
+          )}
+        </div>
       </div>
     </section>
+  )
+}
+
+/** The publisher's decision on the author's selection. */
+function CoverDecision() {
+  const [state, setState] = useState<CoverState>({
+    status: 'pending',
+    approvedAt: null,
+    revisionsNote: '',
+    messaging: false,
+    messageDraft: '',
+    messageSent: false,
+  })
+
+  const update = (patch: Partial<CoverState>) =>
+    setState((prev) => ({ ...prev, ...patch }))
+
+  return (
+    <div>
+      <div className="text-[15px] text-[#1A1A1A] leading-relaxed max-w-[520px]">
+        This is the cover the author has chosen. It carries your imprint if you
+        approve it.
+      </div>
+
+      {state.status === 'approved' && (
+        <div className="mt-5 text-[13px] text-[#2E4A3C] border border-[#2E4A3C]/30 bg-[#2E4A3C]/5 px-3.5 py-2.5 rounded-[3px] inline-block">
+          Approved on {state.approvedAt}
+        </div>
+      )}
+      {state.status === 'revisions' && (
+        <div className="mt-5 text-[13px] text-[#8A5A2B] border border-[#8A5A2B]/30 bg-[#8A5A2B]/5 px-3.5 py-2.5 rounded-[3px] inline-block">
+          Revisions requested &mdash; the author and Taylor have been notified.
+        </div>
+      )}
+
+      <div className="mt-6 flex flex-wrap gap-2.5">
+        <button
+          type="button"
+          disabled={state.status === 'approved'}
+          onClick={() =>
+            update({
+              status: 'approved',
+              approvedAt: formatDate(new Date().toISOString()),
+            })
+          }
+          className="text-[13px] px-5 py-2.5 rounded-[3px] border border-[#1E3A5F] text-white bg-[#1E3A5F] hover:bg-[#17304F] disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/40"
+        >
+          Approve this cover
+        </button>
+        <button
+          type="button"
+          disabled={state.status === 'approved'}
+          onClick={() => update({ status: 'revisions' })}
+          className="text-[13px] px-4 py-2.5 rounded-[3px] border border-[#E8E5E0] text-[#3F3F3F] hover:bg-[#F7F7F5] disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30"
+        >
+          Request revisions
+        </button>
+        <button
+          type="button"
+          onClick={() => update({ messaging: !state.messaging })}
+          className="text-[13px] px-4 py-2.5 rounded-[3px] border border-[#E8E5E0] text-[#3F3F3F] hover:bg-[#F7F7F5] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30"
+        >
+          Message the designer
+        </button>
+      </div>
+
+      {state.messaging && (
+        <div className="mt-4 max-w-[520px]">
+          <textarea
+            value={state.messageDraft}
+            onChange={(e) => update({ messageDraft: e.target.value, messageSent: false })}
+            rows={3}
+            className="w-full text-[13px] px-3 py-2 border border-[#E8E5E0] rounded-[3px] bg-white focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 focus:border-[#1E3A5F] resize-none"
+            placeholder="A note to Taylor&hellip;"
+          />
+          <div className="mt-2 flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => update({ messageDraft: '', messageSent: true })}
+              disabled={!state.messageDraft.trim()}
+              className="text-[12px] px-3 py-1.5 rounded-[3px] border border-[#1E3A5F] text-white bg-[#1E3A5F] hover:bg-[#17304F] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Send
+            </button>
+            {state.messageSent && (
+              <span className="text-[12px] text-[#8A8A8A]">Message sent</span>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function RealCoverImage({ url, alt }: { url: string | null; alt: string }) {
+  if (!url) {
+    return (
+      <div className="w-full aspect-[2/3] bg-[#F0EEEA] flex items-center justify-center">
+        <span className="text-[11px] text-[#8A8A8A]">Artwork unavailable</span>
+      </div>
+    )
+  }
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={url} alt={alt} className="w-full aspect-[2/3] object-cover block" />
+  )
+}
+
+/**
+ * The original three CSS-drawn concepts, kept as the no-artwork fallback so a
+ * manuscript that has not been through cover generation still shows the shape
+ * of what is coming.
+ */
+function PlaceholderConcepts() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {(['A', 'B', 'C'] as const).map((id) => (
+        <Card key={id} className="overflow-hidden">
+          <CoverArt
+            id={id}
+            state={{
+              status: 'pending',
+              approvedAt: null,
+              revisionsNote: '',
+              messaging: false,
+              messageDraft: '',
+              messageSent: false,
+            }}
+          />
+        </Card>
+      ))}
+    </div>
   )
 }
 
