@@ -2670,11 +2670,11 @@ function StudioContent() {
                 <>
                   <span aria-hidden="true" className="text-faint">·</span>
                   <Link
-                    href={`/projects/${manuscript.id}/author-studio`}
+                    href={`/projects/${manuscript.id}`}
                     className="text-sm text-muted hover:text-ink transition-colors"
-                    title="Back to project Author Studio"
+                    title="Back to the project overview"
                   >
-                    ← Author Studio
+                    ← Project Overview
                   </Link>
                 </>
               )}
