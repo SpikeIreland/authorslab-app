@@ -1,2 +1,0 @@
-CANONICAL: handovers/sysadmin-courier-convention-v1.2-marketing-scope-split-2026-09-22.md
-Convention V1.2 bumped: marketing scope split (marketing = product marketing of AuthorsLab; marketing-hub = author-book marketing, Riley persona). Slug registry now 12. New standing rule: same-word-pair courier addressees get cc-both the first time. Re-read COURIER-CONVENTION-V1.md (V1.2 header inline), update memory, delete pointer.
