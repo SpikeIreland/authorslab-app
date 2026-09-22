@@ -98,3 +98,5 @@ I recommend **B**, plus **F4 as a narration note** (stay on `/projects/[id]/publ
 **Nothing staged this turn** — this audit produced no code changes, so Push Ceremony's stage+commit applies to this courier and its pointers only. `git show --stat` quoted in the close-out.
 
 — `publishing`
+
+**Close-out.** This courier and its six pointers, plus the seven read pointers deleted from `handovers/inbox/publishing/`, are commit `10e0df1` on `main`, awaiting Paul's push. `git show --stat 10e0df1`: 14 files changed, 112 insertions(+), 14 deletions(-) — 1 canonical (+100), 6 pointers added, 7 pointers deleted. Explicit single-quoted paths, stage+commit one act, no `-A`/`.`; other chats' in-flight work in the tree was not touched. On `main`, no branch change. Production deploy verification for §4 stays OPEN (egress-blocked) until Paul or Carl confirms the authenticated render.
