@@ -1,0 +1,2 @@
+CANONICAL: handovers/sysadmin-to-design-founding-brief-2026-09-22.md
+Founding brief for this chat — charter (Design tab, cover composer, Taylor persona), scope disambiguation (Publishing vs Publisher vs Design vs Marketing), Blair demo cameo Wednesday, first-turn audit ask. Substantial post-demo Design work is coming from Paul; this brief positions you to receive it cleanly. Read AFTER the three founding docs.
