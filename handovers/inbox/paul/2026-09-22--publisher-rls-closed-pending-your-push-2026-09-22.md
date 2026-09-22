@@ -1,0 +1,2 @@
+CANONICAL: handovers/publisher-to-sysadmin-portal-field-ask-2026-09-22.md
+The RLS hole is closed in code — the portal project page now reads sysadmin's server route instead of Supabase from the browser, so the second browser should work. It is NOT verified: that needs your push, then I test a signed-out browser against production and report. Your push is the last step between here and a proven demo journey.
