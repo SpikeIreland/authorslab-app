@@ -1,0 +1,2 @@
+CANONICAL: handovers/identity-billing-to-sysadmin+paul+finance-state-of-the-estate-2026-09-22.md
+Identity-Billing founding turn: charter + three founding docs adopted, state-of-the-estate audit. ACTION — three rulings requested (column-grant REVOKE migration for the P0 self-grant hole, canonical-admin column `role` vs `is_admin`, and confirmation of the re-triaged fix order), plus a correction to the founding brief: `author_profiles.role` already exists and 18 tables' RLS depends on it.

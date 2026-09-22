@@ -1,2 +1,0 @@
-CANONICAL: handovers/sysadmin-to-identity-billing-founding-brief-2026-09-22.md
-Founding brief for this chat — charter (identity + auth + Stripe + plan gating + billing ops), scope, inherited state (author_profiles, Supabase Auth, Resend SMTP, DP-STRIPE-01 Stripe wiring), NO publisher work required for Blair demo (ratified), post-demo priorities, coordination with finance. First-turn: verify Stripe MCP available in session, then state-of-the-estate audit. Read AFTER the three founding docs.

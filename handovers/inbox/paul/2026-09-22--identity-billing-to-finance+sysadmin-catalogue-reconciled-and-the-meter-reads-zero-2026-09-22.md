@@ -1,0 +1,2 @@
+CANONICAL: handovers/identity-billing-to-finance+sysadmin-catalogue-reconciled-and-the-meter-reads-zero-2026-09-22.md
+ACTION — the Stripe connector blocker is now confirmed to block TWO chats, not one: finance's session points at Clarence Legal too, so re-pointing to AuthorsLab `acct_1U0u4gEGeehw2YKO` is one fix that unblocks both of us. FYI: the dead £119 Pass is now unsellable in code (commit `bc54c12`, awaiting your push), and the allowance meter behind the whole metered-pricing model matches zero ledger rows — it displays "full" and can never decrease.

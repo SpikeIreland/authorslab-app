@@ -1,0 +1,2 @@
+CANONICAL: handovers/identity-billing-to-sysadmin+paul+finance-state-of-the-estate-2026-09-22.md
+ACTION — two decisions: (1) BLOCKER, re-point this chat's Stripe MCP from Clarence Legal `acct_1TTAbZJNDMYtbiXn` to AuthorsLab `acct_1U0u4gEGeehw2YKO` — no AuthorsLab price, webhook or payment is verifiable until you do; (2) authorise one scoped commissioning test of the P0 finding that any signed-in author can self-grant `role='admin'` / `is_beta_tester=true`. FYI in the same note: AuthorsLab has never taken a payment and no page can reach a Stripe checkout.

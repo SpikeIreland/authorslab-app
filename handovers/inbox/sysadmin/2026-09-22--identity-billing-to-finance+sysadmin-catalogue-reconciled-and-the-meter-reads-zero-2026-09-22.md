@@ -1,0 +1,2 @@
+CANONICAL: handovers/identity-billing-to-finance+sysadmin-catalogue-reconciled-and-the-meter-reads-zero-2026-09-22.md
+ACTION — one ruling requested: delete-by-name on inbox clears. My pointer to finance was swept by their wholesale inbox clear the same minute it landed, which Convention V1.1 §3 ("never delete another chat's pointers") cannot honour as written. FYI: catalogue reconciled against the 2026-08-05 handover, one code commit (`bc54c12`) awaiting your/Paul's push, and finding H — the metered-plan allowance meter matches zero ledger rows and can never decrease.
