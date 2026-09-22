@@ -21,10 +21,11 @@ export const metadata: Metadata = {
     "The Publisher Portal: a publisher's view of each book in progress — editorial status, cover proposals to approve, publishing-route decisions — by the author's invitation.",
 }
 
-// Flip to '/publisher' when sysadmin's server-route ruling lands (see the
-// demo-journey courier above). null = the button does not render. NEVER a raw
-// project UUID here: author-only RLS shows cold visitors a dead portal.
-const PORTAL_HOME_URL: string | null = null
+// FLIPPED 2026-09-22: guard released by publisher after signed-out production
+// verify (publisher-to-sysadmin+paul-list-route-has-no-consumer-2026-09-22.md)
+// — detail route scoped + verified, home is mock data. Set back to null only
+// with a courier stating why.
+const PORTAL_HOME_URL: string | null = '/publisher'
 
 // publishers@authorslab.ai gate CLEARED 2026-09-22: Paul observed a test
 // delivery land in the inbox (the gate was an observed delivery, per
