@@ -61,7 +61,12 @@ export interface EditingPhase {
   phase_name: 'developmental' | 'line_editing' | 'copy_editing' | 'publishing' | 'marketing'
 
   // Editor Configuration
-  editor_name: 'Alex' | 'Sam' | 'Jordan' | 'Publishing Agent' | 'Marketing Agent'
+  // 2026-09-22: aligned with editing_phases_editor_name_check (migration
+  // editing_phases_add_morgan_backfill_phase4). Prior 'Publishing Agent' /
+  // 'Marketing Agent' were type-file-only — the DB CHECK never accepted them.
+  // Taylor retained pending publishing-hub sweep per AL-UX Persona Registry
+  // V1.2. Quinn retained pending marketing-hub persona resolution.
+  editor_name: 'Alex' | 'Sam' | 'Jordan' | 'Taylor' | 'Morgan' | 'Quinn'
   editor_color: 'green' | 'purple' | 'blue' | 'teal' | 'orange'
   editor_avatar_url: string | null
 
@@ -302,7 +307,7 @@ export interface Invoice {
 // Helper Types & Utilities
 // ============================================
 
-export type EditorName = 'Alex' | 'Sam' | 'Jordan' | 'Publishing Agent' | 'Marketing Agent'
+export type EditorName = 'Alex' | 'Sam' | 'Jordan' | 'Taylor' | 'Morgan' | 'Quinn'
 export type EditorColor = 'green' | 'purple' | 'blue' | 'teal' | 'orange'
 export type PhaseNumber = 1 | 2 | 3 | 4 | 5
 export type PhaseStatus = 'pending' | 'active' | 'complete' | 'on_hold' | 'skipped'
@@ -312,8 +317,12 @@ export const EDITOR_CONFIG: Record<PhaseNumber, { name: EditorName; color: Edito
   1: { name: 'Alex', color: 'green', phaseName: 'Developmental Editing' },
   2: { name: 'Sam', color: 'purple', phaseName: 'Line Editing' },
   3: { name: 'Jordan', color: 'blue', phaseName: 'Copy Editing' },
-  4: { name: 'Publishing Agent', color: 'teal', phaseName: 'Publishing Preparation' },
-  5: { name: 'Marketing Agent', color: 'orange', phaseName: 'Marketing Strategy' }
+  // 2026-09-22: phase 4 name aligned with migration
+  // editing_phases_add_morgan_backfill_phase4 (Taylor rows backfilled to
+  // Morgan). Phase 5 retains Quinn pending marketing-hub persona resolution
+  // (V1.2 Persona Registry §OPEN — Riley token-vs-charter).
+  4: { name: 'Morgan', color: 'teal', phaseName: 'Publishing Preparation' },
+  5: { name: 'Quinn', color: 'orange', phaseName: 'Marketing Strategy' }
 }
 
 // Issue Categories by Phase
