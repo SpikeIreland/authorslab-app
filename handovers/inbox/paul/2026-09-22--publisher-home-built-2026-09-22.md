@@ -1,0 +1,2 @@
+CANONICAL: handovers/publisher-to-ux-copy-tuned-and-home-built-2026-09-22.md
+Publisher Home built at /publisher — 8 listings, sort + filter by author, invented author names, mock data in one file, verified rendering locally. Also tuned two claims out of ux's /publishers page that the portal cannot back yet (nothing records a publisher's name against anything). Two commits awaiting your push; the last hole is the RLS ruling.
