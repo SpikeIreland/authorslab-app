@@ -17,28 +17,29 @@ export const metadata: Metadata = {
 }
 
 // ---------------------------------------------------------------------------
-// Hero book objects — Carl Lyons's Flame series (Book III title TBC)
+// Hero book objects — illustrative mock covers (fictional titles/authors, one
+// per genre, per Paul 2026-09-22; art in /public/covers/mock/). Not real books.
 // ---------------------------------------------------------------------------
 
 function HeroBook({
-  title,
+  src,
   className,
-  cover,
-  ruleClass,
 }: {
-  title: React.ReactNode
+  src: string
   className: string
-  cover: string
-  ruleClass: string
 }) {
   return (
     <div
-      className={`absolute rounded-r-lg rounded-l-[4px] flex flex-col justify-center text-center px-5 shadow-[14px_18px_40px_rgba(44,44,42,0.30)] ${cover} ${className}`}
+      className={`absolute rounded-r-lg rounded-l-[4px] overflow-hidden shadow-[18px_24px_50px_rgba(44,44,42,0.35)] ${className}`}
     >
-      <span className="absolute left-2 top-0 bottom-0 w-px bg-white/20" aria-hidden />
-      <div className="font-serif leading-tight">{title}</div>
-      <div className={`h-px mx-auto my-3 ${ruleClass}`} style={{ width: 26 }} aria-hidden />
-      <div className="text-[8px] tracking-[0.18em] uppercase opacity-75">Carl Lyons</div>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={src} alt="" className="w-full h-full object-cover" />
+      <span className="absolute left-2 top-0 bottom-0 w-px bg-white/25" aria-hidden />
+      <span
+        className="absolute inset-0 rounded-r-lg rounded-l-[4px]"
+        style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12), inset -1px 0 0 rgba(0,0,0,0.08)' }}
+        aria-hidden
+      />
     </div>
   )
 }
@@ -126,24 +127,18 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Book collage — the Flame series */}
+        {/* Book collage — illustrative covers across genres */}
         <div className="relative h-[420px] hidden md:block" aria-hidden>
           <HeroBook
-            title={<span className="text-base">The Signal and the Shadow</span>}
-            cover="bg-sage-deep text-amber-bg"
-            ruleClass="bg-terracotta"
+            src="/covers/mock/the-orchard-at-night.png"
             className="w-[170px] h-[250px] right-[225px] top-[95px] -rotate-[4deg] z-[2]"
           />
           <HeroBook
-            title={<span className="text-[21px]">The Veil and<br />the Flame</span>}
-            cover="bg-charcoal text-ivory"
-            ruleClass="bg-sage"
+            src="/covers/mock/the-ninth-lantern.png"
             className="w-[200px] h-[295px] right-[60px] top-[20px] z-[3]"
           />
           <HeroBook
-            title={<span className="text-sm">The Flame Series<br />Book III</span>}
-            cover="bg-gradient-to-br from-terracotta to-[#B87C50] text-[#4A1B0C]"
-            ruleClass="bg-[#4A1B0C]"
+            src="/covers/mock/a-field-guide-to-leaving.png"
             className="w-[150px] h-[220px] right-0 top-[150px] rotate-[5deg] z-[1]"
           />
         </div>
