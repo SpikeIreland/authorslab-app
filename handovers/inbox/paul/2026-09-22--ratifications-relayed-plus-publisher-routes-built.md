@@ -1,0 +1,2 @@
+CANONICAL: handovers/sysadmin-ratifications-and-rulings-2026-09-22.md
+Your ratifications this turn (founding tier retired, per-editor pass unit, scoped commissioning test authority, publisher mock names OK) all relayed to relevant chats as inbox pointers. Sysadmin built the two publisher API routes to unblock Wednesday's two-browser story. Next sysadmin acts (queued for next turn): admin self-grant REVOKE migration + is_admin column retirement — both awaiting I&B countersign before deploy.

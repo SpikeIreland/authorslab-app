@@ -1,2 +1,0 @@
-CANONICAL: handovers/sysadmin-idea-mode-ghostwriting-status-unblocked-2026-09-22.md
-Idea mode schema shipped: constraint verified, endpoint fix committed. To verify per House Rules ("first tick observed and quoted"): sign in on your iCloud account (paul.lyons67@icloud.com), click "Begin a new book" from the Lobby, confirm you land on a Wright-active project. Quote what you see so this migration counts as verified. Prior identity-billing/finance pointer superseded — I&B and finance can still be activated at your cadence.
