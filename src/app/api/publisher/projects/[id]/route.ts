@@ -30,6 +30,8 @@ interface PhaseState {
   phase_number: number
   phase_status: string | null
   editor_name: string | null
+  chapters_analyzed: number | null
+  chapters_approved: number | null
 }
 
 interface PublisherProject {
@@ -37,8 +39,10 @@ interface PublisherProject {
   title: string
   genre: string | null
   current_word_count: number | null
+  total_chapters: number | null
   current_phase_number: number | null
   status: string | null
+  created_at: string | null
   updated_at: string
   author: {
     first_name: string | null
@@ -53,8 +57,10 @@ interface ManuscriptRow {
   title: string | null
   genre: string | null
   current_word_count: number | null
+  total_chapters: number | null
   current_phase_number: number | null
   status: string | null
+  created_at: string | null
   updated_at: string
   author_profiles: {
     first_name: string | null
@@ -77,8 +83,10 @@ export async function GET(
           title,
           genre,
           current_word_count,
+          total_chapters,
           current_phase_number,
           status,
+          created_at,
           updated_at,
           author_profiles!inner (
             first_name,
@@ -110,7 +118,7 @@ export async function GET(
     // for missing entries.
     const { data: phaseRows } = await supabaseAdmin
       .from('editing_phases')
-      .select('phase_number, phase_status, editor_name')
+      .select('phase_number, phase_status, editor_name, chapters_analyzed, chapters_approved')
       .eq('manuscript_id', id)
       .order('phase_number', { ascending: true })
 
@@ -119,8 +127,10 @@ export async function GET(
       title: manuscript.title ?? 'Untitled project',
       genre: manuscript.genre,
       current_word_count: manuscript.current_word_count,
+      total_chapters: manuscript.total_chapters,
       current_phase_number: manuscript.current_phase_number,
       status: manuscript.status,
+      created_at: manuscript.created_at,
       updated_at: manuscript.updated_at,
       author: {
         first_name: manuscript.author_profiles?.first_name ?? null,
@@ -131,6 +141,8 @@ export async function GET(
         phase_number: p.phase_number,
         phase_status: p.phase_status,
         editor_name: p.editor_name,
+        chapters_analyzed: p.chapters_analyzed,
+        chapters_approved: p.chapters_approved,
       })),
     }
 

@@ -1,0 +1,2 @@
+CANONICAL: handovers/sysadmin-to-publisher-portal-fields-shipped-2026-09-22.md
+Publisher's three field asks shipped + 6 trilogy books total_chapters drift fixed (Veil 36→37 x3, Signal 68→69 x3). Two non-trilogy manuscripts still drift and are flagged for a wider audit — root cause is likely upload webhook counting parse-time only, not updating on later insertChapterAt. Prior migration-shipped-morgan pointer stays; this is a new item.
