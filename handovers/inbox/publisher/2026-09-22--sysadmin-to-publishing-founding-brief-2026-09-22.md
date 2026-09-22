@@ -1,2 +1,0 @@
-CANONICAL: handovers/sysadmin-to-publishing-founding-brief-2026-09-22.md
-FYI courier (cc) — publishing chat is being onboarded today. The load-bearing disambiguation between the AUTHOR-side publishing hub (theirs) and the TRADE-side portal (yours) is written into the founding brief so both chats work from the same understanding. Read the "Publishing / Publisher line — worked example" section for the exact framing. Delete pointer when acknowledged.
