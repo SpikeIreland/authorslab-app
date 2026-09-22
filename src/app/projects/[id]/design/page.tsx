@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams } from 'next/navigation'
 
 // ============================================================================
@@ -16,25 +16,16 @@ interface DesignMessage {
   created_at: string
 }
 
-type SectionId = 'cover' | 'front-matter' | 'back-matter' | 'interior-format'
-
-interface ConceptDefinition {
+interface CoverAsset {
   id: string
-  label: string
-  bg: string
-  text: string
-  meta: string
+  kind: string
+  storagePath: string
+  createdAt: string
+  coverIndex: number | null
+  url: string | null
 }
 
-// Four mock cover concepts. When real cover generation is wired in via
-// Taylor's n8n workflow, these get replaced with actual generated images and
-// the bg/text fields go away in favour of <img> tags.
-const COVER_CONCEPTS: ConceptDefinition[] = [
-  { id: 'concept-1', label: 'Concept 1', bg: '#FDF6EE', text: '#5C7A6B', meta: 'cream + sage' },
-  { id: 'concept-2', label: 'Concept 2', bg: '#5C7A6B', text: '#FDF6EE', meta: 'sage + cream' },
-  { id: 'concept-3', label: 'Concept 3', bg: '#D4956A', text: '#4A1B0C', meta: 'amber + cocoa' },
-  { id: 'concept-4', label: 'Concept 4', bg: '#2C2C2A', text: '#FAF8F4', meta: 'charcoal + ivory' },
-]
+type SectionId = 'cover' | 'front-matter' | 'back-matter' | 'interior-format'
 
 const SECTIONS: Array<{ id: SectionId; label: string; comingSoon?: boolean }> = [
   { id: 'cover', label: 'Cover' },
@@ -42,6 +33,9 @@ const SECTIONS: Array<{ id: SectionId; label: string; comingSoon?: boolean }> = 
   { id: 'back-matter', label: 'Back matter', comingSoon: true },
   { id: 'interior-format', label: 'Interior format', comingSoon: true },
 ]
+
+const POLL_INTERVAL_MS = 8000
+const POLL_MAX_TRIES = 40 // ~5 minutes
 
 // ============================================================================
 // Page
@@ -56,6 +50,10 @@ export default function DesignTabPage() {
   const [coverLoading, setCoverLoading] = useState(true)
   const [savingCover, setSavingCover] = useState(false)
 
+  const [assets, setAssets] = useState<CoverAsset[]>([])
+  const [generating, setGenerating] = useState(false)
+  const [genError, setGenError] = useState<string | null>(null)
+
   const [messages, setMessages] = useState<DesignMessage[]>([])
   const [messagesLoading, setMessagesLoading] = useState(true)
   const [input, setInput] = useState('')
@@ -64,21 +62,27 @@ export default function DesignTabPage() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  // Load the currently-selected cover and the chat history on mount.
+  // Load the selected cover, existing artwork, and chat history on mount.
   useEffect(() => {
     let cancelled = false
 
     async function load() {
       try {
-        const [coverRes, msgRes] = await Promise.all([
+        const [coverRes, assetsRes, msgRes] = await Promise.all([
           fetch(`/api/projects/${projectId}/design/cover`),
+          fetch(`/api/projects/${projectId}/design/assets`),
           fetch(`/api/projects/${projectId}/design/messages`),
         ])
 
         if (!cancelled && coverRes.ok) {
           const json = await coverRes.json() as { selected: string | null }
           setSelectedCover(json.selected)
+        }
+        if (!cancelled && assetsRes.ok) {
+          const json = await assetsRes.json() as { assets: CoverAsset[] }
+          setAssets(json.assets)
         }
         if (!cancelled && msgRes.ok) {
           const json = await msgRes.json() as { messages: DesignMessage[] }
@@ -93,7 +97,10 @@ export default function DesignTabPage() {
     }
 
     load()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+      if (pollRef.current) clearInterval(pollRef.current)
+    }
   }, [projectId])
 
   // Autoscroll on new messages.
@@ -101,23 +108,18 @@ export default function DesignTabPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, sending])
 
-  const selectedConcept = useMemo(
-    () => COVER_CONCEPTS.find(c => c.id === selectedCover) ?? null,
-    [selectedCover]
-  )
-
   // Persist a cover selection.
-  const chooseCover = useCallback(async (conceptId: string) => {
+  const chooseCover = useCallback(async (value: string) => {
     if (savingCover) return
     setSavingCover(true)
     const previous = selectedCover
-    setSelectedCover(conceptId)   // optimistic
+    setSelectedCover(value || null)   // optimistic
 
     try {
       const res = await fetch(`/api/projects/${projectId}/design/cover`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ selected: conceptId }),
+        body: JSON.stringify({ selected: value || null }),
       })
       if (!res.ok) throw new Error(`save failed (${res.status})`)
     } catch {
@@ -126,6 +128,50 @@ export default function DesignTabPage() {
       setSavingCover(false)
     }
   }, [projectId, savingCover, selectedCover])
+
+  // Ask Taylor to generate three artwork concepts, then poll for arrival.
+  const startGeneration = useCallback(async () => {
+    if (generating) return
+    setGenerating(true)
+    setGenError(null)
+    const baseline = assets.length
+
+    try {
+      const res = await fetch(`/api/projects/${projectId}/design/assets`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      })
+      if (!res.ok) throw new Error(`request failed (${res.status})`)
+    } catch {
+      setGenerating(false)
+      setGenError('Taylor couldn’t start the run — try again in a moment.')
+      return
+    }
+
+    let tries = 0
+    pollRef.current = setInterval(async () => {
+      tries += 1
+      if (tries > POLL_MAX_TRIES) {
+        if (pollRef.current) clearInterval(pollRef.current)
+        setGenerating(false)
+        setGenError('This is taking longer than usual — the concepts will appear here once they’re done.')
+        return
+      }
+      try {
+        const res = await fetch(`/api/projects/${projectId}/design/assets`)
+        if (!res.ok) return
+        const json = await res.json() as { assets: CoverAsset[] }
+        if (json.assets.length > baseline) {
+          if (pollRef.current) clearInterval(pollRef.current)
+          setAssets(json.assets)
+          setGenerating(false)
+        }
+      } catch {
+        // transient — keep polling
+      }
+    }, POLL_INTERVAL_MS)
+  }, [projectId, generating, assets.length])
 
   // Send a message to Taylor.
   const sendMessage = useCallback(async (e?: React.FormEvent) => {
@@ -183,6 +229,8 @@ export default function DesignTabPage() {
     }
   }, [sendMessage])
 
+  const selectedAsset = assets.find(a => selectedCover === `cover-asset:${a.id}`) ?? null
+
   return (
     <div className="h-full flex min-h-[480px]">
 
@@ -222,71 +270,136 @@ export default function DesignTabPage() {
             <div className="flex items-baseline justify-between mb-4">
               <h2 className="text-base font-medium text-slate-900">Cover concepts</h2>
               <p className="text-xs text-slate-500">
-                {coverLoading ? 'Loading…' : selectedConcept ? `${selectedConcept.label} selected` : '4 concepts · none selected'}
+                {coverLoading
+                  ? 'Loading…'
+                  : generating
+                    ? 'Taylor is working…'
+                    : assets.length === 0
+                      ? 'No concepts yet'
+                      : selectedAsset
+                        ? `Concept ${selectedAsset.coverIndex ?? ''} selected`.replace('  ', ' ')
+                        : `${assets.length} concepts · none selected`}
               </p>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-              {COVER_CONCEPTS.map(c => {
-                const isSelected = selectedCover === c.id
-                return (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => chooseCover(c.id)}
-                    disabled={savingCover}
-                    className={`text-left flex flex-col gap-1.5 group disabled:opacity-50 disabled:cursor-wait`}
-                  >
-                    <div
-                      className={`aspect-[2/3] rounded-md p-3 flex flex-col justify-between transition-shadow ${
-                        isSelected
-                          ? 'ring-2 ring-blue-600 ring-offset-1'
-                          : 'border border-slate-200 group-hover:border-slate-400'
-                      }`}
-                      style={{ background: c.bg, color: c.text }}
+            {/* Concept gallery — real artwork from Taylor's generation runs */}
+            {assets.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5">
+                {assets.map(a => {
+                  const value = `cover-asset:${a.id}`
+                  const isSelected = selectedCover === value
+                  return (
+                    <button
+                      key={a.id}
+                      type="button"
+                      onClick={() => chooseCover(value)}
+                      disabled={savingCover}
+                      className="text-left flex flex-col gap-1.5 group disabled:opacity-50 disabled:cursor-wait"
                     >
-                      <p className="text-[10px] font-medium leading-tight">
-                        Your book title
-                      </p>
-                      <p className="text-[8px] opacity-85">Author Name</p>
-                    </div>
-                    <div className="text-xs">
-                      <span className={isSelected ? 'text-blue-700 font-medium' : 'text-slate-700'}>
-                        {c.label}
-                      </span>
-                      <span className="text-slate-400 ml-1">· {c.meta}</span>
-                    </div>
-                  </button>
-                )
-              })}
-            </div>
+                      <div
+                        className={`aspect-[2/3] rounded-md overflow-hidden bg-slate-100 transition-shadow ${
+                          isSelected
+                            ? 'ring-2 ring-sage-deep ring-offset-1'
+                            : 'border border-slate-200 group-hover:border-slate-400'
+                        }`}
+                      >
+                        {a.url ? (
+                          // Signed URLs from the private bucket; plain img avoids
+                          // next/image remote-domain config for expiring hosts.
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={a.url}
+                            alt={`Cover concept ${a.coverIndex ?? ''}`}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-[10px] text-slate-400">
+                            Unavailable
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-xs flex items-center gap-1.5">
+                        <span className={isSelected ? 'text-sage-deep font-medium' : 'text-slate-700'}>
+                          {a.coverIndex ? `Concept ${a.coverIndex}` : 'Concept'}
+                        </span>
+                        {isSelected && <span className="text-sage-deep">✓ Your cover</span>}
+                        {a.kind === 'uploaded' && (
+                          <span className="text-slate-400 border border-slate-200 rounded px-1">Uploaded</span>
+                        )}
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
 
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                disabled
-                className="text-xs px-3 py-1.5 border border-slate-200 rounded-md text-slate-400 cursor-not-allowed"
-                title="Coming soon — Taylor will generate fresh concepts based on your book"
-              >
-                Generate more concepts
-              </button>
-              {selectedCover && (
+            {/* Taylor is working — persona working state */}
+            {generating && (
+              <div className="flex items-center gap-3 px-4 py-4 bg-white border border-slate-200 rounded-md mb-5">
+                <div className="relative w-9 h-9 shrink-0">
+                  <span className="absolute inset-0 rounded-full bg-sage-bg animate-ping motion-reduce:animate-none" aria-hidden="true" />
+                  <span className="relative w-9 h-9 rounded-full bg-taylor text-white text-sm font-medium flex items-center justify-center font-serif">
+                    T
+                  </span>
+                </div>
+                <p className="text-sm text-slate-700">
+                  Painting three concepts — this can take a few minutes…
+                </p>
+              </div>
+            )}
+
+            {/* Intake — no artwork yet */}
+            {!coverLoading && assets.length === 0 && !generating && (
+              <div className="px-5 py-6 bg-white border border-slate-200 rounded-md mb-5 max-w-xl">
+                <div className="flex items-start gap-3">
+                  <span className="w-9 h-9 rounded-full bg-taylor text-white text-sm font-medium flex items-center justify-center font-serif shrink-0">
+                    T
+                  </span>
+                  <div>
+                    <p className="text-sm text-slate-800 leading-relaxed mb-3">
+                      Ready when you are — I’ll read the book’s genre and tone and paint
+                      three artwork directions to start from. Tell me in the chat if you
+                      already have a mood, palette, or imagery in mind.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={startGeneration}
+                      className="text-xs px-3.5 py-2 rounded-md text-white bg-sage-deep hover:opacity-90 font-medium"
+                    >
+                      Ask Taylor for concepts
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {genError && (
+              <p className="text-xs text-rose-800 bg-rose-50 border border-rose-200 rounded-md px-3 py-2 mb-5">
+                {genError}
+              </p>
+            )}
+
+            {assets.length > 0 && !generating && (
+              <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
-                  onClick={() => chooseCover('')}
-                  disabled={savingCover}
+                  onClick={startGeneration}
                   className="text-xs px-3 py-1.5 border border-slate-200 rounded-md text-slate-700 hover:bg-slate-50"
                 >
-                  Clear selection
+                  Generate more concepts
                 </button>
-              )}
-            </div>
-
-            <div className="mt-8 px-4 py-3 bg-slate-50 border border-slate-200 rounded-md">
-              <p className="text-xs text-slate-600 leading-relaxed">
-                These four concepts are mock placeholders for now — Taylor&rsquo;s cover-generation workflow will replace them with concepts based on your book&rsquo;s genre, tone, and audience. Selection persists either way.
-              </p>
-            </div>
+                {selectedCover && (
+                  <button
+                    type="button"
+                    onClick={() => chooseCover('')}
+                    disabled={savingCover}
+                    className="text-xs px-3 py-1.5 border border-slate-200 rounded-md text-slate-700 hover:bg-slate-50"
+                  >
+                    Clear selection
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -310,7 +423,7 @@ export default function DesignTabPage() {
       {/* Taylor chat panel */}
       <aside className="w-72 border-l border-slate-200 flex flex-col bg-white">
         <header className="px-3 py-3 border-b border-slate-200 flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-medium" style={{ background: '#1D9E75' }}>
+          <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-medium bg-taylor font-serif">
             T
           </div>
           <div>
@@ -324,7 +437,8 @@ export default function DesignTabPage() {
             <p className="text-xs text-slate-500">Loading…</p>
           ) : messages.length === 0 ? (
             <p className="text-xs text-slate-500 leading-relaxed">
-              Tell Taylor what you&rsquo;re thinking — about a concept above, your audience, or anything design-related. She&rsquo;s here to help you choose well.
+              Tell Taylor what you’re thinking — about a concept, your audience, or
+              anything design-related. She’s here to help you choose well.
             </p>
           ) : (
             messages.map(m => (
