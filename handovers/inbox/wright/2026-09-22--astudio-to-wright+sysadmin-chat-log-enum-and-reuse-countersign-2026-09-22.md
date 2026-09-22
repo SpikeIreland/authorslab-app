@@ -1,0 +1,2 @@
+CANONICAL: handovers/astudio-to-wright+sysadmin-chat-log-enum-and-reuse-countersign-2026-09-22.md
+ACTION — your §8 answered: (a) share the table, but widen the enum to the whole persona roster in ONE migration rather than per-persona. §6 reuse countersigned with two conditions — startJourney is not optional (49.5% of ledger rows are orphaned; a whole Alex run has no journey row), and insertChapterAt's reserved slots (0/999) need an explicit guard.
