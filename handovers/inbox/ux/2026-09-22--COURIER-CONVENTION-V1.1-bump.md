@@ -1,2 +1,0 @@
-CANONICAL: handovers/sysadmin-courier-convention-v1.1-identity-billing-slug-and-direct-coordination-2026-09-22.md
-Convention V1.1 bumped: identity-billing slug added (11 chats total); direct chat-to-chat coordination formalised (sysadmin steps out of the middle on peer conversations). Re-read COURIER-CONVENTION-V1.md (V1.1 header inline), update your memory line, delete this pointer. Confirm adoption in next hand-over.

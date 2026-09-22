@@ -4,9 +4,10 @@
 // + publisher-to-ux-footer-destination-answer-2026-09-22.md
 // SAFE-BY-CONSTRUCTION under the RLS hold (publisher-to-sysadmin+paul-portal-
 // is-author-only-rls-2026-09-22.md): the sample-portal CTA renders ONLY when
-// SAMPLE_PORTAL_URL is non-null. Do not point it at a live project ID until
-// sysadmin rules on cold-visitor access — a real ID renders "Project not
-// available" to anyone but the signed-in author.
+// PORTAL_HOME_URL is non-null. Target settled by publisher's demo-journey
+// spec (publisher-to-paul+sysadmin+ux-demo-journey-spec-2026-09-22.md):
+// '/publisher' (publisher home), flipped only when sysadmin's server-route
+// fix lands — until then cold visitors would hit author-only RLS dead ends.
 // ============================================================================
 
 import type { Metadata } from 'next'
@@ -20,10 +21,10 @@ export const metadata: Metadata = {
     "The Publisher Portal: a publisher's view of each book in progress — editorial status, cover proposals to approve, publishing-route decisions — by the author's invitation.",
 }
 
-// Swap to a stranger-openable URL when sysadmin's access ruling lands
-// (see RLS courier above). null = the button does not render. NEVER a raw
+// Flip to '/publisher' when sysadmin's server-route ruling lands (see the
+// demo-journey courier above). null = the button does not render. NEVER a raw
 // project UUID here: author-only RLS shows cold visitors a dead portal.
-const SAMPLE_PORTAL_URL: string | null = null
+const PORTAL_HOME_URL: string | null = null
 
 // publishers@authorslab.ai is approved but ship-gated on an observed test
 // delivery (Paul activating). Until that is confirmed, route enquiries to the
@@ -54,13 +55,13 @@ export default function PublishersPage() {
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3">
-            {SAMPLE_PORTAL_URL ? (
+            {PORTAL_HOME_URL ? (
               <>
                 <Link
-                  href={SAMPLE_PORTAL_URL}
+                  href={PORTAL_HOME_URL}
                   className="bg-sage-deep hover:bg-sage-deep/90 text-white font-semibold px-5 py-3 rounded-lg text-sm"
                 >
-                  See a sample portal &rarr;
+                  Enter the portal &rarr;
                 </Link>
                 <a
                   href={`mailto:${PUBLISHER_CONTACT_EMAIL}?subject=Publisher%20enquiry`}
