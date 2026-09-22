@@ -5,9 +5,14 @@ import { createClient } from '@/lib/supabase/server'
 // Creates a fresh Write-path project with Wright as the active stage.
 // Title and other metadata get filled in as Eliot's onboarding completes.
 //
-// status='ghostwriting' (DB value kept as-is for schema compatibility) signals
-// "Wright stage is active, no phase yet." Existing manuscripts use values
-// like 'uploaded', 'editing', 'complete' — those are unaffected.
+// status='ghostwriting' signals "Wright stage is active, no phase yet."
+// Existing manuscripts use values like 'uploaded', 'editing', 'complete' —
+// those are unaffected. As of 2026-09-22, the CHECK constraint on
+// manuscripts.status includes 'ghostwriting' (migration
+// add_ghostwriting_to_manuscripts_status_check); before that, this endpoint
+// silently 500'd. current_phase_number is set NULL for pre-manuscript
+// projects — the >=1 CHECK skips NULLs, and NULL is semantically correct
+// for "no phase yet".
 export async function POST() {
   const supabase = await createClient()
 
@@ -41,7 +46,7 @@ export async function POST() {
       has_epilogue: false,
       status: 'ghostwriting',
       portal_phase: 0,
-      current_phase_number: 0,
+      current_phase_number: null,
     })
     .select('id')
     .single()
