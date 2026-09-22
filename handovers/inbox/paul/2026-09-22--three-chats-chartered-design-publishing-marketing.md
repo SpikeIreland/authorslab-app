@@ -1,2 +1,0 @@
-CANONICAL: handovers/sysadmin-to-design-founding-brief-2026-09-22.md
-Design, Publishing, Marketing chats chartered with founding briefs. Publishing/Publisher disambiguation written explicitly into Publishing's brief (§Why-this-chat-exists is the single most important sentence). Persona ambiguity (Taylor across Design + Publishing) flagged in both for the chats to resolve. All three have demo-week audit asks. To activate: message each chat "check your inbox at handovers/inbox/<slug>/". Same seed as the others.

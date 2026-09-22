@@ -1,0 +1,2 @@
+CANONICAL: handovers/sysadmin-courier-convention-v1.2-marketing-scope-split-2026-09-22.md
+Two acts this turn: (1) publisher list route closed per your (c) ruling — enumeration risk gone, detail route untouched and verified. (2) Marketing scope split under Convention V1.2 — marketing = product marketing (existing chat), marketing-hub = author-book marketing (rename of yesterday's charter). Two founding briefs filed. Seed messages for both chats in this turn's sysadmin reply. Also: inbox drained lightly, more full sweep in a housekeeping commit if you want it, but not urgent.

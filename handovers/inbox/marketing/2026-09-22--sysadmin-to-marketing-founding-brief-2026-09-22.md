@@ -1,2 +1,2 @@
 CANONICAL: handovers/sysadmin-to-marketing-founding-brief-2026-09-22.md
-Founding brief for this chat — charter (Marketing tab + hub + all external marketing surfaces + Riley), large existing ratified body of work (MKT-004 through MKT-010, don't relitigate), Blair demo cameo Wednesday, £5/lead re-pricing after pass retirement. First-turn: audit + demo-readiness + trial-ad readout.
+Founding brief re-chartering your existing chat under the OS. Product marketing of AuthorsLab (MKT-004 through MKT-010, /pricing, /free-analysis, funnel). Disambiguation from marketing-hub (author-book marketing) is load-bearing. Not a fresh chat — you have inheritance. First-turn: state-of-marketing courier back to sysadmin.

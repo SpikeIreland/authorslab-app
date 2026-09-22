@@ -1,6 +1,6 @@
-# AUTHORSLAB COURIER CONVENTION — V1.1 (2026-09-22; V1 + `identity-billing` slug + direct-coordination reinforcement)
+# AUTHORSLAB COURIER CONVENTION — V1.2 (2026-09-22; V1.1 + marketing-scope split + same-word-pair cc-both rule)
 
-**From:** `sysadmin` (via Paul) · **Status:** standing convention, effective on ratification. Adapted from Clarence's Courier Convention V2. Read once, save to memory, adopt this turn. V1.1 bump detail in `sysadmin-courier-convention-v1.1-identity-billing-slug-and-direct-coordination-2026-09-22.md`.
+**From:** `sysadmin` (via Paul) · **Status:** standing convention, effective on ratification. Adapted from Clarence's Courier Convention V2. Read once, save to memory, adopt this turn. Bump details: V1.1 in `sysadmin-courier-convention-v1.1-identity-billing-slug-and-direct-coordination-2026-09-22.md`; V1.2 in `sysadmin-courier-convention-v1.2-marketing-scope-split-2026-09-22.md`.
 
 ## Why
 
@@ -23,10 +23,11 @@ Coordination across ten chats + Paul cannot survive on "Paul names the file to t
    - `sysadmin` — this chat: architecture, shell, DB, n8n, coordination
    - `wright` — Wright
    - `astudio` — Author Studio (Alex/Sam/Jordan)
-   - `design` — Design (Taylor)
-   - `publishing` — Publishing
-   - `marketing` — Marketing
-   - `publisher` — Publisher's Journey / Portal
+   - `design` — Design (Taylor: cover craft)
+   - `publishing` — Publishing (**AUTHOR-side** launch prep — metadata, ISBN, distribution; not the trade portal, see `publisher`)
+   - `marketing` — Marketing (**product marketing of AuthorsLab** — funnel, /pricing, /free-analysis, ads, MKT-004 through MKT-010; not author-book marketing, see `marketing-hub`) *(scope narrowed V1.2, 2026-09-22)*
+   - `marketing-hub` — Marketing Hub (**author-book marketing** — Riley, /marketing-hub, /projects/[id]/marketing; helping authors market their books) *(added V1.2, 2026-09-22)*
+   - `publisher` — Publisher's Journey / Portal (**TRADE-side** — publisher/agent/imprint view of a manuscript)
    - `ux` — UX
    - `finance` — Financial Modeling (pricing model, unit economics, forecasts)
    - `identity-billing` — User identity, auth flows, Stripe integration, plan gating, billing operations *(added V1.1, 2026-09-22)*
@@ -35,6 +36,8 @@ Coordination across ten chats + Paul cannot survive on "Paul names the file to t
 6. **Paul's role shrinks to a poke.** His message to any chat can be "check your inbox". He no longer names files, and multi-addressee notes cost him nothing extra. When Paul owes any chat a decision, chats queue it in `handovers/inbox/paul/` rather than blocking mid-turn.
 
 7. **Direct chat-to-chat coordination is the norm** *(V1.1, 2026-09-22)*. When one chat needs something from another, the pointer goes to that chat's inbox — not to `sysadmin` as a middleman. `sysadmin` coordinates architectural, schema, and deployment-lane decisions; operational conversations between chats run peer-to-peer. Cc `sysadmin` when: (a) the outcome touches the shell, schema, or a deployment lane; (b) the decision sets a precedent worth recording centrally; (c) a peer ask has been open for more than three turns without response.
+
+8. **Same-word-pair cc-both rule** *(V1.2, 2026-09-22)*. Three same-word-different-discipline pairs exist in the registry: `publishing`/`publisher` (author-side vs trade-side), `marketing`/`marketing-hub` (product vs author-book), `design`/`publisher` (cover craft vs cover approval loop). When a courier could plausibly go to either of a pair, cc BOTH the first time. The disambiguation lands as a discoverable record; either chat can then pick up the primary. One extra pointer per courier is cheaper than a mis-shelved decision.
 
 ## Delete-on-read protocol
 
