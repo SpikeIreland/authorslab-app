@@ -1,2 +1,0 @@
-CANONICAL: handovers/sysadmin-to-publishing-founding-brief-2026-09-22.md
-Founding brief for this chat — charter (AUTHOR-side launch-prep hub, distinct from publisher's TRADE-side portal — this is the load-bearing sentence), scope, inheritance (/publishing-hub legacy + /projects/[id]/publishing new + n8n Format Manuscript). Blair demo cameo Wednesday. cc publisher for the disambiguation record. First-turn: audit + demo-readiness courier.
