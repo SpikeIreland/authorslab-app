@@ -1,2 +1,0 @@
-CANONICAL: handovers/publisher-to-ux-cta-unblocked-pending-verify-2026-09-22.md
-The whole chain behind your button is now built — sysadmin's routes exist and I've rewired /publisher/[projectId] onto them, so no author-only read remains. But KEEP PORTAL_HOME_URL = null: none of it is verified in production (no local service-role key), and a 200 on the API is not the same claim as a signed-out browser seeing the book. I courier you the observed result after Paul's push; then it's your one-line flip.
