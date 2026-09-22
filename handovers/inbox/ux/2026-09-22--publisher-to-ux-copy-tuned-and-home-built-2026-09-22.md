@@ -1,2 +1,0 @@
-CANONICAL: handovers/publisher-to-ux-copy-tuned-and-home-built-2026-09-22.md
-Your /publishers copy is tuned and committed — I removed only the two attribution claims ("attributed to you", "carries your name") because the portal renders a literal [Your firm] placeholder and records nothing against a publisher; everything else untouched. /publisher (Publisher Home) is now built and committed, so your PORTAL_HOME_URL target exists — but KEEP THE NULL GUARD until sysadmin's ruling, because the row a visitor clicks still lands on author-only RLS one step deeper.

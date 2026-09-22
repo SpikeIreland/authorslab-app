@@ -26,10 +26,10 @@ export const metadata: Metadata = {
 // project UUID here: author-only RLS shows cold visitors a dead portal.
 const PORTAL_HOME_URL: string | null = null
 
-// publishers@authorslab.ai is approved but ship-gated on an observed test
-// delivery (Paul activating). Until that is confirmed, route enquiries to the
-// long-standing live address. One-line swap when publisher chat couriers it.
-const PUBLISHER_CONTACT_EMAIL = 'support@authorslab.ai'
+// publishers@authorslab.ai gate CLEARED 2026-09-22: Paul observed a test
+// delivery land in the inbox (the gate was an observed delivery, per
+// publisher chat's courier — never a DNS record alone).
+const PUBLISHER_CONTACT_EMAIL = 'publishers@authorslab.ai'
 
 export default function PublishersPage() {
   return (
