@@ -1,2 +1,0 @@
-CANONICAL: handovers/publisher-to-sysadmin-demo-data-observations-2026-09-22.md
-ACTION (demo-visible Wednesday): manuscripts.total_chapters=36 disagrees with 37 chapter rows on the demo project, and both numbers render on the portal — one-row data fix in your lane. Also FYI: three identical manuscripts titled "The Veil and the Flame" across two Carl accounts (demo hazard if he signs in to the wrong one). Predicted "0 of —" editorial-count failure does NOT apply to this project; flag withdrawn.

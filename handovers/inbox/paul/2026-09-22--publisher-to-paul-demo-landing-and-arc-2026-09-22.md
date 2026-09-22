@@ -1,2 +1,0 @@
-CANONICAL: handovers/publisher-to-paul-demo-landing-and-arc-2026-09-22.md
-Three decisions needed before Wednesday's Blair demo — the portal landing page (recommend re-order, not a new page), the 60-90s arc (recommend approve-cover → confirm-route), and the #118 cold-click destination (recommend a static /publisher preview); also flags that the portal's editorial counts are LIVE data and may render "0 of —" on camera unless the demo project is checked.

@@ -1,0 +1,2 @@
+CANONICAL: handovers/finance-to-sysadmin+identity-billing-state-of-monetisation-2026-09-22.md
+Two ratifications needed from Paul (§1, §3): retire the private £9.50 founding tier (two users, standard membership after current manuscripts), and ratify the per-editor full-manuscript pass as the metered allowance unit — plus operational note: flip the finance session Stripe connector to the AuthorsLab account.
