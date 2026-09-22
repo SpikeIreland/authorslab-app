@@ -199,7 +199,7 @@ export function BookCard({ project, launched, onTitleUpdate }: BookCardProps) {
                   className="text-[12px] font-medium whitespace-nowrap transition-transform group-hover:translate-x-0.5"
                   style={{ color: 'var(--color-sage-deep)' }}
                 >
-                  {href.endsWith('/author-studio') ? 'Pick up where you left off' : 'Open'} →
+                  {href.startsWith('/author-studio') ? 'Pick up where you left off' : 'Open'} →
                 </span>
               </div>
             </div>

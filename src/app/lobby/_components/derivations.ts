@@ -101,12 +101,15 @@ export function openHrefFor(p: LobbyProject): string {
   const inEdit =
     (p.status === 'editing' || p.status === 'analyzing' || p.status === 'uploaded') &&
     phase >= 1 && phase <= 3
-  return inEdit ? `/projects/${p.id}/author-studio` : `/projects/${p.id}`
+  // The working studio is the legacy surface at /author-studio?manuscriptId=…
+  // (the /projects/[id]/author-studio bridge is an extra hop, which is the
+  // exact hop this fix removes — Paul, 2026-09-22).
+  return inEdit ? `/author-studio?manuscriptId=${p.id}` : `/projects/${p.id}`
 }
 
 /** True when openHrefFor() resumes straight into the Author Studio. */
 export function resumesInStudio(p: LobbyProject): boolean {
-  return openHrefFor(p).endsWith('/author-studio')
+  return openHrefFor(p).startsWith('/author-studio')
 }
 
 /** "Updated 2 days ago", "Updated today", etc. */
