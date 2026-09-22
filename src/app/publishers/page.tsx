@@ -46,12 +46,12 @@ export default function PublishersPage() {
             AuthorsLab gives every manuscript an editorial team. The Publisher
             Portal is your side of that work: each book&rsquo;s editorial
             progress with its named editors, cover proposals waiting for your
-            approval, and the publishing-route decision — all in one place,
-            attributed to you.
+            approval, and the publishing-route decision — all in one place.
           </p>
           <p className="text-muted text-[15px] leading-relaxed mb-9">
             The portal is invitation-based: your authors bring you into their
-            books, and everything you approve or decide carries your name.
+            books, so you see the work as it stands rather than waiting for a
+            finished file.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3">
