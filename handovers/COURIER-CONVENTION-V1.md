@@ -1,6 +1,6 @@
-# AUTHORSLAB COURIER CONVENTION — V1 (2026-09-21)
+# AUTHORSLAB COURIER CONVENTION — V1.1 (2026-09-22; V1 + `identity-billing` slug + direct-coordination reinforcement)
 
-**From:** `sysadmin` (via Paul) · **Status:** standing convention, effective on ratification. Adapted from Clarence's Courier Convention V2. Read once, save to memory, adopt this turn.
+**From:** `sysadmin` (via Paul) · **Status:** standing convention, effective on ratification. Adapted from Clarence's Courier Convention V2. Read once, save to memory, adopt this turn. V1.1 bump detail in `sysadmin-courier-convention-v1.1-identity-billing-slug-and-direct-coordination-2026-09-22.md`.
 
 ## Why
 
@@ -28,10 +28,13 @@ Coordination across ten chats + Paul cannot survive on "Paul names the file to t
    - `marketing` — Marketing
    - `publisher` — Publisher's Journey / Portal
    - `ux` — UX
-   - `finance` — Financial Modeling
+   - `finance` — Financial Modeling (pricing model, unit economics, forecasts)
+   - `identity-billing` — User identity, auth flows, Stripe integration, plan gating, billing operations *(added V1.1, 2026-09-22)*
    - `paul` — Paul himself (direction/decision inbox; not a chat, an addressee)
 
 6. **Paul's role shrinks to a poke.** His message to any chat can be "check your inbox". He no longer names files, and multi-addressee notes cost him nothing extra. When Paul owes any chat a decision, chats queue it in `handovers/inbox/paul/` rather than blocking mid-turn.
+
+7. **Direct chat-to-chat coordination is the norm** *(V1.1, 2026-09-22)*. When one chat needs something from another, the pointer goes to that chat's inbox — not to `sysadmin` as a middleman. `sysadmin` coordinates architectural, schema, and deployment-lane decisions; operational conversations between chats run peer-to-peer. Cc `sysadmin` when: (a) the outcome touches the shell, schema, or a deployment lane; (b) the decision sets a precedent worth recording centrally; (c) a peer ask has been open for more than three turns without response.
 
 ## Delete-on-read protocol
 
