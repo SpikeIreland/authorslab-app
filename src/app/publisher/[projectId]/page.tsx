@@ -283,7 +283,7 @@ function PortalBody({ project }: { project: PublisherProject }) {
         <CoverProposalsSection />
         <MarketingPlanSection />
         <PublishingRouteSection />
-        <CommunicationsThreadSection authorFirst={authorFirst} />
+        <CommunicationsThreadSection authorFirst={authorFirst} phases={project.phases} />
       </main>
     </>
   )
@@ -902,41 +902,96 @@ function PublishingRouteSection() {
 
 // ─── 6. Communications thread ─────────────────────────────────────────────────
 
-function CommunicationsThreadSection({ authorFirst }: { authorFirst: string }) {
-  const initial: ThreadMessage[] = useMemo(
-    () => [
+/**
+ * The thread's editor messages are DERIVED from phase_status, not written as
+ * fixed copy.
+ *
+ * Why: the hard-coded seed thread said "Structural pass complete on 32 of 36
+ * chapters" and "Sentence-level pass beginning" while the Editorial Status
+ * section two blocks above read Complete / Complete / Complete from live data.
+ * Both were on screen at once in production. Getting the copy right once would
+ * have fixed today's contradiction; deriving it makes the contradiction
+ * impossible — constraint over sensor, per House Rules.
+ *
+ * Note the messages carry NO chapter counts. `manuscripts.total_chapters` (36)
+ * and the chapter rows (37) disagree on the demo project, so any number
+ * written here could contradict a number rendered elsewhere on the page.
+ */
+
+const EDITOR_LINES: Record<
+  number,
+  { complete: string; active: string; pending: string }
+> = {
+  1: {
+    complete:
+      'Developmental pass complete — every chapter signed off. The Chapter 12 timeline question is resolved.',
+    active:
+      'Structural pass underway. One question outstanding on the Chapter 12 timeline jump — details in the notes doc.',
+    pending: 'Ready to begin the developmental pass on this manuscript.',
+  },
+  2: {
+    complete:
+      'Line edit complete. The voice holds all the way through; nothing structural outstanding.',
+    active: 'Sentence-level pass in progress. Voice profile is strong and consistent.',
+    pending: 'Queued behind the developmental pass.',
+  },
+  3: {
+    complete: 'Copy pass complete and proofed. Clean manuscript, ready for your read.',
+    active: 'Copy pass in progress — consistency and house style.',
+    pending: 'Queued behind the line edit.',
+  },
+}
+
+const RELATIVE_WHEN: Record<number, string> = {
+  1: '3 weeks ago',
+  2: '2 weeks ago',
+  3: '6 days ago',
+}
+
+function CommunicationsThreadSection({
+  authorFirst,
+  phases,
+}: {
+  authorFirst: string
+  phases: PhaseRow[]
+}) {
+  const initial: ThreadMessage[] = useMemo(() => {
+    const editorMessages: ThreadMessage[] = [1, 2, 3].map((n) => {
+      const p = phases.find((row) => row.phase_number === n)
+      const lines = EDITOR_LINES[n]
+      const body =
+        p?.phase_status === 'complete'
+          ? lines.complete
+          : p?.phase_status === 'active'
+            ? lines.active
+            : lines.pending
+
+      return {
+        id: `phase-${n}`,
+        sender: p?.editor_name || PHASE_EDITORS[n].name,
+        role: PHASE_EDITORS[n].role,
+        body,
+        when: RELATIVE_WHEN[n],
+      }
+    })
+
+    return [
+      ...editorMessages,
       {
-        id: 'seed-alex',
-        sender: 'Alex',
-        role: 'Developmental Editor',
-        body:
-          'Structural pass complete on 32 of 36 chapters. One question outstanding on Chapter 12 — the timeline jump. Details in the notes doc.',
-        when: '4 days ago',
-      },
-      {
-        id: 'seed-sam',
-        sender: 'Sam',
-        role: 'Line Editor',
-        body: 'Sentence-level pass beginning. Voice profile is strong and consistent.',
-        when: '2 days ago',
-      },
-      {
-        id: 'seed-carl',
+        id: 'seed-author',
         sender: authorFirst,
         role: 'Author',
         body:
           'Grateful to have your team in the loop. Happy to jump on a call to walk through the cover proposals.',
         when: 'yesterday',
       },
-    ],
-    [authorFirst]
-  )
+    ]
+  }, [authorFirst, phases])
 
   const [messages, setMessages] = useState<ThreadMessage[]>(initial)
   const [draft, setDraft] = useState('')
 
   useEffect(() => {
-    // Reset seed thread if authorFirst changes after mount.
     setMessages(initial)
   }, [initial])
 
@@ -972,7 +1027,7 @@ function CommunicationsThreadSection({ authorFirst }: { authorFirst: string }) {
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             rows={3}
-            placeholder="Write a message to the team…"
+            placeholder="Write a message to the team&hellip;"
             className="w-full text-[14px] px-4 py-3 border border-[#E8E5E0] rounded-[3px] bg-white focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 focus:border-[#1E3A5F] resize-none"
           />
           <div className="mt-3 flex justify-end">
