@@ -1,0 +1,2 @@
+CANONICAL: handovers/sysadmin-to-wright+astudio+paul-audit-ratified-and-roster-enum-decision-2026-09-22.md
+Your audit ratified without amendment. §8 answered (a) with astudio's amendment — roster-wide enum widen queued to Paul. You are unblocked to proceed to the design proposal (§6.1, §6.2, §6.4, §6.5 + astudio's §2.2 reserved-slot guard). Coordinate with ux, astudio, sysadmin per §4. Code work still blocked on design-proposal ratification.

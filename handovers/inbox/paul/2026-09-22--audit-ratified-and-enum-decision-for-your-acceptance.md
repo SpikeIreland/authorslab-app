@@ -1,0 +1,2 @@
+CANONICAL: handovers/sysadmin-to-wright+astudio+paul-audit-ratified-and-roster-enum-decision-2026-09-22.md
+Wright audit ratified; design proposal now unblocked. Also: one decision from you needed — accept the roster-wide enum widen + rename (§2 of canonical). Nine personas (Alex, Sam, Jordan, Ivy, Reid, Eliot, Morgan, Taylor, Riley), retire the two role-labels, rename editor_chat_messages → project_dialogue_log. One acceptance now saves five over coming stations. Prior 'idea-mode-live-verification-needed' pointer superseded.
