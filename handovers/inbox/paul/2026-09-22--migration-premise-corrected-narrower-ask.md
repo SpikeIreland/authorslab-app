@@ -1,0 +1,2 @@
+CANONICAL: handovers/sysadmin-to-wright+astudio+paul+ux-migration-premise-corrected-2026-09-22.md
+This morning's enum acceptance ask was based on a wrong premise (target table didn't exist in the schema). Superseding with a much narrower migration: add Morgan to editing_phases.editor_name, backfill phase-4 Taylor→Morgan (12 rows). Everything else Wright/astudio-related stands. §2.3 has the migration SQL. Accept or defer.
