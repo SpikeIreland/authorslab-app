@@ -45,7 +45,13 @@ export async function POST() {
       has_prologue: false,
       has_epilogue: false,
       status: 'ghostwriting',
-      portal_phase: 0,
+      // 2026-09-22: `portal_phase: 0` removed. The column does not exist
+      // on the manuscripts schema; it was phantom code in this endpoint
+      // that never fired before Idea Mode landed (the status CHECK
+      // constraint rejected 'ghostwriting' first). Once ghostwriting was
+      // allowed via add_ghostwriting_to_manuscripts_status_check, the
+      // insert made it further and died on `portal_phase` not existing.
+      // Removed rather than added — nothing in the codebase reads it.
       current_phase_number: null,
     })
     .select('id')
