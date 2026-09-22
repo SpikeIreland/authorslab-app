@@ -1347,6 +1347,26 @@ function StudioContent() {
           phaseToLoad = allPhases.find(p => p.phase_status === 'active')
         }
 
+        // 2026-09-22: defensive fallback for complete books.
+        // If no `active` phase exists (every phase is 'complete'), fall back
+        // to the highest-numbered `complete` phase — this lets a launched
+        // book be opened without the studio crashing with "No phase found".
+        // The phase-5 redirect below then naturally routes the user to
+        // Marketing Hub, which is the correct post-launch destination.
+        // Root cause: /author-studio's initializeStudio requires an active
+        // phase; a launched book has none. Trilogy-reshape left one book in
+        // this state (Veil) — data fix + this code fallback both landed
+        // together to unbreak the demo path.
+        if (!phaseToLoad) {
+          const lastComplete = [...allPhases]
+            .reverse()
+            .find(p => p.phase_status === 'complete')
+          if (lastComplete) {
+            phaseToLoad = lastComplete
+            console.log(`📖 No active phase — loaded last complete phase ${lastComplete.phase_number} (${lastComplete.editor_name}) as fallback`)
+          }
+        }
+
         if (!phaseToLoad) {
           console.error('No phase found to load')
           throw new Error('No phase found')
