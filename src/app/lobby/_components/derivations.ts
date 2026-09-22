@@ -87,9 +87,26 @@ export function nextActionFor(p: LobbyProject): string {
   return 'Open the project to keep going'
 }
 
-/** Route target for a project card. Lands on the project shell. */
+/**
+ * Route target for a project card.
+ *
+ * In-edit books (phases 1-3) land DIRECTLY in the Author Studio — an author
+ * mid-book always wants to pick up where they left off (Carl's ask, ratified
+ * by Paul 2026-09-22; the full landing-routing ruling for other states is
+ * post-demo item A). Overview stays one click away via the project tab strip.
+ * All other states land on the project shell as before.
+ */
 export function openHrefFor(p: LobbyProject): string {
-  return `/projects/${p.id}`
+  const phase = p.current_phase_number ?? 1
+  const inEdit =
+    (p.status === 'editing' || p.status === 'analyzing' || p.status === 'uploaded') &&
+    phase >= 1 && phase <= 3
+  return inEdit ? `/projects/${p.id}/author-studio` : `/projects/${p.id}`
+}
+
+/** True when openHrefFor() resumes straight into the Author Studio. */
+export function resumesInStudio(p: LobbyProject): boolean {
+  return openHrefFor(p).endsWith('/author-studio')
 }
 
 /** "Updated 2 days ago", "Updated today", etc. */

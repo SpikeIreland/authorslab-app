@@ -29,7 +29,16 @@ const SIZES = {
 export function BookCover({ id, title, authorName, coverUrl, size = 'small' }: BookCoverProps) {
   const dim = SIZES[size]
 
-  if (coverUrl) {
+  // Only render URLs a browser can actually load. Internal schemes like
+  // `cover-asset:<id>` (publisher cover-approval bookkeeping) and anything
+  // else non-http/path would paint a broken-image glyph — fall through to
+  // the procedural typeset cover instead. Fail-visible beats fail-broken.
+  const renderableCoverUrl =
+    coverUrl && (coverUrl.startsWith('/') || coverUrl.startsWith('http'))
+      ? coverUrl
+      : null
+
+  if (renderableCoverUrl) {
     return (
       <div
         style={{ width: dim.w, height: dim.h }}
@@ -37,7 +46,7 @@ export function BookCover({ id, title, authorName, coverUrl, size = 'small' }: B
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={coverUrl}
+          src={renderableCoverUrl}
           alt={`${title} cover`}
           className="w-full h-full object-cover"
           style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08)' }}
