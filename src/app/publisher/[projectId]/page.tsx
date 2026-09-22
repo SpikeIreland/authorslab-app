@@ -4,42 +4,48 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useMemo } from 'react'
 import { useParams } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-
-type PhaseNumber = 1 | 2 | 3 | 4 | 5
 
 interface AuthorRow {
   first_name: string | null
   last_name: string | null
 }
 
-interface ManuscriptRow {
+/**
+ * Shape of GET /api/publisher/projects/[id], per sysadmin's contract in
+ * handovers/sysadmin-ratifications-and-rulings-2026-09-22.md §2.1.
+ *
+ * The page used to read Supabase directly from the browser, which meant every
+ * query ran under the viewer's RLS — and every policy behind these tables
+ * requires the viewer to BE the author. A publisher therefore saw "Project not
+ * available". Reading through the server route fixes that by construction.
+ *
+ * The three `?` fields below are NOT in the contract yet — asked for in
+ * handovers/publisher-to-sysadmin-portal-field-ask-2026-09-22.md. Everything
+ * renders correctly without them and lights up when they arrive.
+ */
+interface PhaseRow {
+  phase_number: number
+  phase_status: string | null
+  editor_name: string | null
+  chapters_analyzed?: number | null
+  chapters_approved?: number | null
+}
+
+interface PublisherProject {
   id: string
   title: string
   genre: string | null
-  total_chapters: number | null
   current_word_count: number | null
   current_phase_number: number | null
-  created_at: string
-  author_id: string
-  author_profiles?: AuthorRow | AuthorRow[] | null
-}
-
-interface PhaseRow {
-  phase_number: number
-  editor_name: string
-  phase_status: string
-  chapters_analyzed: number | null
-  chapters_approved: number | null
-}
-
-interface PhaseCounts {
-  total: number
-  p1: number
-  p2: number
-  p3: number
+  status: string | null
+  updated_at: string
+  author: AuthorRow
+  cover_url: string | null
+  phases: PhaseRow[]
+  total_chapters?: number | null
+  created_at?: string
 }
 
 interface CoverState {
@@ -107,10 +113,7 @@ export default function PublisherPortalPage() {
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [manuscript, setManuscript] = useState<ManuscriptRow | null>(null)
-  const [author, setAuthor] = useState<AuthorRow | null>(null)
-  const [phases, setPhases] = useState<PhaseRow[]>([])
-  const [chapterCounts, setChapterCounts] = useState<PhaseCounts | null>(null)
+  const [project, setProject] = useState<PublisherProject | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -120,59 +123,37 @@ export default function PublisherPortalPage() {
       setError(null)
 
       try {
-        const supabase = createClient()
-
-        const { data: mData, error: mErr } = await supabase
-          .from('manuscripts')
-          .select(
-            'id, title, genre, total_chapters, current_word_count, current_phase_number, created_at, author_id, author_profiles ( first_name, last_name )'
-          )
-          .eq('id', projectId)
-          .maybeSingle()
+        const res = await fetch(`/api/publisher/projects/${projectId}`)
 
         if (cancelled) return
-        if (mErr || !mData) {
+
+        if (res.status === 404) {
           setError('Project not available — check the invitation link.')
           setLoading(false)
           return
         }
+        if (!res.ok) {
+          // A server-side failure is NOT a bad link, and must not be reported
+          // as one — that was the original defect in a different costume.
+          setError('Something went wrong loading the project. Please try again.')
+          setLoading(false)
+          return
+        }
 
-        const m = mData as ManuscriptRow
-        setManuscript(m)
-        const authorRow = Array.isArray(m.author_profiles)
-          ? m.author_profiles[0] ?? null
-          : m.author_profiles ?? null
-        setAuthor(authorRow)
-
-        const { data: pData } = await supabase
-          .from('editing_phases')
-          .select('phase_number, editor_name, phase_status, chapters_analyzed, chapters_approved')
-          .eq('manuscript_id', projectId)
-          .order('phase_number', { ascending: true })
-
+        const json = (await res.json()) as { project?: PublisherProject }
         if (cancelled) return
-        setPhases((pData ?? []) as PhaseRow[])
 
-        // Fallback: read chapter-level approvals directly since chapters_analyzed
-        // is 0 across phases for this demo project.
-        const { data: chData } = await supabase
-          .from('chapters')
-          .select('phase_1_approved_at, phase_2_approved_at, phase_3_approved_at')
-          .eq('manuscript_id', projectId)
+        if (!json.project) {
+          setError('Something went wrong loading the project. Please try again.')
+          setLoading(false)
+          return
+        }
 
-        if (cancelled) return
-        const rows = chData ?? []
-        setChapterCounts({
-          total: rows.length,
-          p1: rows.filter((r) => r.phase_1_approved_at !== null).length,
-          p2: rows.filter((r) => r.phase_2_approved_at !== null).length,
-          p3: rows.filter((r) => r.phase_3_approved_at !== null).length,
-        })
-
+        setProject(json.project)
         setLoading(false)
       } catch {
         if (cancelled) return
-        setError('Something went wrong loading the project.')
+        setError('Something went wrong loading the project. Please try again.')
         setLoading(false)
       }
     }
@@ -190,13 +171,8 @@ export default function PublisherPortalPage() {
         <LoadingState />
       ) : error ? (
         <ErrorState message={error} />
-      ) : manuscript ? (
-        <PortalBody
-          manuscript={manuscript}
-          author={author}
-          phases={phases}
-          chapterCounts={chapterCounts}
-        />
+      ) : project ? (
+        <PortalBody project={project} />
       ) : null}
 
       <PortalFooter />
@@ -269,22 +245,12 @@ function ErrorState({ message }: { message: string }) {
 
 // ─── Body ─────────────────────────────────────────────────────────────────────
 
-function PortalBody({
-  manuscript,
-  author,
-  phases,
-  chapterCounts,
-}: {
-  manuscript: ManuscriptRow
-  author: AuthorRow | null
-  phases: PhaseRow[]
-  chapterCounts: PhaseCounts | null
-}) {
-  const authorName = author
-    ? `${author.first_name ?? ''} ${author.last_name ?? ''}`.trim() || 'Carl'
-    : 'Carl'
-  const authorFirst = author?.first_name || 'Carl'
-  const phaseNum = manuscript.current_phase_number ?? 1
+function PortalBody({ project }: { project: PublisherProject }) {
+  const authorName =
+    `${project.author.first_name ?? ''} ${project.author.last_name ?? ''}`.trim() ||
+    'the author'
+  const authorFirst = project.author.first_name || 'the author'
+  const phaseNum = project.current_phase_number ?? 1
   const phaseName = PHASE_NAMES[phaseNum] ?? 'Developmental'
 
   return (
@@ -296,24 +262,24 @@ function PortalBody({
             className="text-[#1A1A1A]"
             style={{ fontFamily: 'Iowan Old Style, Palatino, Georgia, serif' }}
           >
-            <em>{manuscript.title}</em>
+            <em>{project.title}</em>
           </span>
           <span>by {authorName}</span>
           <span aria-hidden>·</span>
-          <span>{formatWordCount(manuscript.current_word_count)} words</span>
+          <span>{formatWordCount(project.current_word_count)} words</span>
           <span aria-hidden>·</span>
-          <span>{manuscript.genre ?? '—'}</span>
+          <span>{project.genre ?? '—'}</span>
         </div>
       </div>
 
       <main className="max-w-[1200px] mx-auto px-8 py-10 space-y-10">
         <ProjectHeaderCard
-          manuscript={manuscript}
+          project={project}
           authorName={authorName}
           phaseName={phaseName}
           phaseNum={phaseNum}
         />
-        <EditorialStatusSection phases={phases} chapterCounts={chapterCounts} />
+        <EditorialStatusSection phases={project.phases} />
         <CoverProposalsSection />
         <MarketingPlanSection />
         <PublishingRouteSection />
@@ -353,12 +319,12 @@ function Card({ children, className = '' }: { children: React.ReactNode; classNa
 // ─── 1. Project header card ───────────────────────────────────────────────────
 
 function ProjectHeaderCard({
-  manuscript,
+  project,
   authorName,
   phaseName,
   phaseNum,
 }: {
-  manuscript: ManuscriptRow
+  project: PublisherProject
   authorName: string
   phaseName: string
   phaseNum: number
@@ -372,7 +338,7 @@ function ProjectHeaderCard({
         className="text-[42px] leading-[1.1] text-[#1A1A1A] mb-3"
         style={{ fontFamily: 'Iowan Old Style, Palatino, Georgia, serif' }}
       >
-        {manuscript.title}
+        {project.title}
       </h1>
       <div
         className="text-[17px] text-[#3F3F3F] italic mb-6"
@@ -382,14 +348,18 @@ function ProjectHeaderCard({
       </div>
 
       <div className="flex flex-wrap gap-x-10 gap-y-4 text-[14px]">
-        <MetaField label="Genre" value={manuscript.genre ?? '—'} />
-        <MetaField label="Word count" value={formatWordCount(manuscript.current_word_count)} />
-        <MetaField label="Chapters" value={String(manuscript.total_chapters ?? '—')} />
+        <MetaField label="Genre" value={project.genre ?? '—'} />
+        <MetaField label="Word count" value={formatWordCount(project.current_word_count)} />
+        {typeof project.total_chapters === 'number' && (
+          <MetaField label="Chapters" value={String(project.total_chapters)} />
+        )}
         <MetaField label="Current phase" value={`Phase ${phaseNum} — ${phaseName}`} />
       </div>
 
       <div className="mt-8 pt-6 border-t border-[#E8E5E0] text-[13px] text-[#8A8A8A]">
-        Invited by author on {formatDate(manuscript.created_at)}
+        {project.created_at
+          ? `Invited by author on ${formatDate(project.created_at)}`
+          : `Last activity ${formatDate(project.updated_at)}`}
       </div>
     </Card>
   )
@@ -406,36 +376,27 @@ function MetaField({ label, value }: { label: string; value: string }) {
 
 // ─── 2. Editorial status ──────────────────────────────────────────────────────
 
-function EditorialStatusSection({
-  phases,
-  chapterCounts,
-}: {
-  phases: PhaseRow[]
-  chapterCounts: PhaseCounts | null
-}) {
+function EditorialStatusSection({ phases }: { phases: PhaseRow[] }) {
   const stepData = [1, 2, 3].map((n) => {
     const p = phases.find((row) => row.phase_number === n)
     const editor = PHASE_EDITORS[n]
-    const analyzedFromPhase = p?.chapters_analyzed ?? 0
-    const approvedFromPhase = p?.chapters_approved ?? 0
 
-    // Fallback to direct chapter counts when phase table is 0'd.
-    const totalChapters = chapterCounts?.total ?? 0
-    const fallbackApproved =
-      n === 1 ? chapterCounts?.p1 ?? 0 : n === 2 ? chapterCounts?.p2 ?? 0 : chapterCounts?.p3 ?? 0
-
-    const analyzed = analyzedFromPhase > 0 ? analyzedFromPhase : totalChapters
-    const approved = approvedFromPhase > 0 ? approvedFromPhase : fallbackApproved
-
+    // Phase state comes from phase_status — the orchestrator's own field and
+    // the single source of truth per the editing_phases table comment. The
+    // page previously inferred it by counting chapter approval timestamps,
+    // which the publisher-facing route deliberately does not expose.
     let status: 'pending' | 'in-progress' | 'complete' = 'pending'
     if (p?.phase_status === 'complete') status = 'complete'
     else if (p?.phase_status === 'active') status = 'in-progress'
-    else if (approved > 0 && approved < analyzed) status = 'in-progress'
-    else if (approved > 0 && approved === analyzed && analyzed > 0) status = 'complete'
+
+    // Counts render ONLY when the route supplies them. Until then the step
+    // shows its state and its editor, and says nothing it cannot support.
+    const analyzed = p?.chapters_analyzed ?? null
+    const approved = p?.chapters_approved ?? null
 
     return {
       number: n,
-      editor: editor.name,
+      editor: p?.editor_name || editor.name,
       role: editor.role,
       analyzed,
       approved,
@@ -463,13 +424,13 @@ function EditorialStatusSection({
 
         <div className="mt-8 pt-6 border-t border-[#E8E5E0] flex items-center justify-between">
           <div className="text-[13px] text-[#8A8A8A]">
-            Chapters approved reflect the latest editorial pass.
+            Editorial state reflects the latest pass by each editor.
           </div>
           <a
             href="#"
             className="text-[13px] text-[#1E3A5F] border border-[#E8E5E0] px-4 py-2 rounded-[3px] hover:bg-[#F7F7F5] transition-colors focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30"
           >
-            Read the current draft →
+            Read the current draft &rarr;
           </a>
         </div>
       </Card>
@@ -484,8 +445,8 @@ function StatusStep({
     number: number
     editor: string
     role: string
-    analyzed: number
-    approved: number
+    analyzed: number | null
+    approved: number | null
     status: 'pending' | 'in-progress' | 'complete'
   }
 }) {
@@ -518,9 +479,11 @@ function StatusStep({
         {step.editor}
       </div>
       <div className="text-[13px] text-[#8A8A8A] mb-3">{step.role}</div>
-      <div className="text-[13px] text-[#3F3F3F]">
-        {step.approved} of {step.analyzed || '—'} chapters approved
-      </div>
+      {step.approved !== null && step.analyzed !== null && (
+        <div className="text-[13px] text-[#3F3F3F]">
+          {step.approved} of {step.analyzed} chapters approved
+        </div>
+      )}
       <div className="text-[12px] text-[#8A8A8A] mt-1">{statusLabel}</div>
     </div>
   )
