@@ -1,6 +1,6 @@
-# AUTHORSLAB COURIER CONVENTION — V1.2 (2026-09-22; V1.1 + marketing-scope split + same-word-pair cc-both rule)
+# AUTHORSLAB COURIER CONVENTION — V1.3 (2026-09-22; V1.2 + pointer-resolution + superseded-folder + quote-before-delete)
 
-**From:** `sysadmin` (via Paul) · **Status:** standing convention, effective on ratification. Adapted from Clarence's Courier Convention V2. Read once, save to memory, adopt this turn. Bump details: V1.1 in `sysadmin-courier-convention-v1.1-identity-billing-slug-and-direct-coordination-2026-09-22.md`; V1.2 in `sysadmin-courier-convention-v1.2-marketing-scope-split-2026-09-22.md`.
+**From:** `sysadmin` (via Paul) · **Status:** standing convention, effective on ratification. Adapted from Clarence's Courier Convention V2. Read once, save to memory, adopt this turn. Bump details: V1.1 in `sysadmin-courier-convention-v1.1-identity-billing-slug-and-direct-coordination-2026-09-22.md`; V1.2 in `sysadmin-courier-convention-v1.2-marketing-scope-split-2026-09-22.md`; V1.3 in `sysadmin-courier-convention-v1.3-pointer-resolution-and-fossil-record-2026-09-22.md`.
 
 ## Why
 
@@ -38,6 +38,12 @@ Coordination across ten chats + Paul cannot survive on "Paul names the file to t
 7. **Direct chat-to-chat coordination is the norm** *(V1.1, 2026-09-22)*. When one chat needs something from another, the pointer goes to that chat's inbox — not to `sysadmin` as a middleman. `sysadmin` coordinates architectural, schema, and deployment-lane decisions; operational conversations between chats run peer-to-peer. Cc `sysadmin` when: (a) the outcome touches the shell, schema, or a deployment lane; (b) the decision sets a precedent worth recording centrally; (c) a peer ask has been open for more than three turns without response.
 
 8. **Same-word-pair cc-both rule** *(V1.2, 2026-09-22)*. Three same-word-different-discipline pairs exist in the registry: `publishing`/`publisher` (author-side vs trade-side), `marketing`/`marketing-hub` (product vs author-book), `design`/`publisher` (cover craft vs cover approval loop). When a courier could plausibly go to either of a pair, cc BOTH the first time. The disambiguation lands as a discoverable record; either chat can then pick up the primary. One extra pointer per courier is cheaper than a mis-shelved decision.
+
+9. **Pointer resolution** *(V1.3, 2026-09-22)*. A pointer's `CANONICAL:` line MUST resolve to an existing file in `handovers/`. Where the pointer's filename differs from that file's basename, the filename MUST NOT itself name a different existing file in `handovers/`. On either failure, trust neither end: re-derive from `handovers/` and tell the sender. Marketing-hub's verification script (see V1.3 ruling doc) is the standing check — sysadmin runs it after every multi-inbox distribution.
+
+10. **Superseded canonicals move to `handovers/superseded/`** *(V1.3, 2026-09-22)*. When a canonical is replaced (multi-turn supersede, not same-turn amendment), the old file moves to `handovers/superseded/<original-name>`. Prevents the failure mode where a receiving chat lands on the superseded doc via a bad pointer and never reaches the line that told them it was superseded.
+
+11. **Quote malformed pointers verbatim before deleting** *(V1.3, 2026-09-22)*. Delete-on-read means an inbox defect is unreconstructable the moment it is processed. When a pointer is malformed — failed resolution (§9), wrong addressee, self-contradictory content — quote it verbatim into your hand-over BEFORE the delete. Healthy pointers still delete without ceremony.
 
 ## Delete-on-read protocol
 
