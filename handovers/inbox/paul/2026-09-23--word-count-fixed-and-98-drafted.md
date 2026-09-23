@@ -1,0 +1,2 @@
+CANONICAL: handovers/sysadmin-to-paul+astudio+ux+design-word-count-and-truncation-2026-09-23.md
+TWO PUBLISHES OWED: (1) 1.4 Parse Chapters — word_count was omitted from the INSERT column list entirely, now added; (2) 2.3 Alex Full Manuscript Analysis — #98 truncation, five analysis Cells 12000->24000. Backfill already live: every chapter in the estate now has a real count (Carl's Veil was 37 of 37 at zero). #98 stays in_progress until a test run is observed.

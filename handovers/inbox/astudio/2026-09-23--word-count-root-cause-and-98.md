@@ -1,0 +1,2 @@
+CANONICAL: handovers/sysadmin-to-paul+astudio+ux+design-word-count-and-truncation-2026-09-23.md
+Your surfaces' data: chapters.word_count was never written by ingest (omitted from the INSERT column list in 1.4 Parse Chapters, not written as 0). Backfilled estate-wide, root cause drafted. Also #98 diagnosed: 2.3 truncation was half-fixed in August and abandoned — one station still hit the 12000 ceiling. Two residuals in §4 you may care about, incl. a thematic-station hard failure that is NOT truncation.
