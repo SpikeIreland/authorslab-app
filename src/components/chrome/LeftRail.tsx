@@ -1,8 +1,9 @@
 'use client'
 
 /**
- * LeftRail — charcoal 64px, full height. Home + Projects only per the standing
- * two-rail decision (AL-UX-004 §2.2, AL-UX-HANDOVER-001 §6).
+ * LeftRail — charcoal 64px, full height. Home + Projects + Profile.
+ * (Two-rail decision AL-UX-004 §2.2 amended by Paul 2026-09-23: the Author
+ * Profile is the account-level "you" layer and earns a rail entry.)
  *
  * Active item shows a soft dark chip with a 3px sage left edge. Icons + 8.5px
  * labels. Wordmark mark on top.
@@ -34,6 +35,12 @@ const ITEMS: RailItem[] = [
       p.startsWith('/projects/') ||
       p.startsWith('/author-studio'),
     icon: <IconBooks />,
+  },
+  {
+    href: '/profile',
+    label: 'Profile',
+    match: (p) => p === '/profile' || p.startsWith('/profile/'),
+    icon: <IconProfile />,
   },
 ]
 
@@ -108,6 +115,20 @@ function IconBooks() {
     <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
       <path d="M4 4 H8 V16 H4 Z M9 4 H13 V16 H9 Z M14 6 L17 5 L18 15 L15 16 Z"
         stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function IconProfile() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <circle cx="10" cy="7" r="3.25" stroke="currentColor" strokeWidth="1.5" />
+      <path
+        d="M4 16.5c.9-2.6 3.2-4 6-4s5.1 1.4 6 4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
     </svg>
   )
 }

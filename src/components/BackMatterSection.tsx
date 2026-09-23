@@ -69,20 +69,26 @@ export default function BackMatterSection({
 
             const { data: profile } = await supabase
                 .from('author_profiles')
-                .select('id, profile_image_url')
+                .select('id, profile_image_url, bio')
                 .eq('auth_user_id', user.id)
                 .single()
 
             if (profile) {
                 setAuthorProfileId(profile.id)
 
-                // If back matter doesn't have profile image but profile does, use it
-                if (profile.profile_image_url && !backMatter.author_bio?.profile_image_url) {
+                // Pre-fill from the account-level Author Profile (/profile):
+                // the author writes their bio and photo ONCE and every book's
+                // back matter starts from them. Per-book edits still stick —
+                // we only fill fields the book hasn't set.
+                const fillImage = profile.profile_image_url && !backMatter.author_bio?.profile_image_url
+                const fillBio = profile.bio && !backMatter.author_bio?.bio_text
+                if (fillImage || fillBio) {
                     setBackMatter({
                         ...backMatter,
                         author_bio: {
                             ...backMatter.author_bio,
-                            profile_image_url: profile.profile_image_url
+                            ...(fillImage ? { profile_image_url: profile.profile_image_url } : {}),
+                            ...(fillBio ? { bio_text: profile.bio } : {})
                         }
                     })
                 }
