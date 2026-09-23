@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-sysadmin+paul-pitch-and-content-shipped-2026-09-23.md
+ACTION §3: one more additive column — 'alter table project_marketing add column if not exists content jsonb' (third of the accepted shape). §1 carries the deploy verification: /marketing-hub-demo now 404s, Riley's first production run confirmed. §4 states plainly which sections are real and which are decorative.
