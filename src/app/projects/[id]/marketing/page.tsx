@@ -522,7 +522,7 @@ function AudienceSection({ projectId }: { projectId: string }) {
         const res = await fetch(`/api/projects/${projectId}/marketing/audience`)
         if (!res.ok) {
           const body = await res.json().catch(() => ({})) as { error?: string }
-          throw new Error(body.error || `couldn\u2019t load (${res.status})`)
+          throw new Error(body.error || `couldn’t load (${res.status})`)
         }
         const json = await res.json() as { audience: AudienceProfile | null }
         if (!cancelled) setAudience(json.audience)
@@ -566,11 +566,11 @@ function AudienceSection({ projectId }: { projectId: string }) {
       if (!res.ok) throw new Error()
     } catch {
       setAudience(previous)
-      setError('Couldn\u2019t save that edit \u2014 your previous version is still here.')
+      setError('Couldn’t save that edit — your previous version is still here.')
     }
   }, [projectId, audience])
 
-  if (loading) return <p className="p-6 text-sm text-slate-500">Loading\u2026</p>
+  if (loading) return <p className="p-6 text-sm text-slate-500">Loading…</p>
 
   // Empty state — Riley offers to build it.
   if (!audience) {
@@ -579,7 +579,7 @@ function AudienceSection({ projectId }: { projectId: string }) {
         <h2 className="text-base font-medium text-slate-900 mb-1">Audience</h2>
         <p className="text-sm text-slate-600 leading-relaxed mb-5 max-w-lg">
           Before anything else in marketing: who is this book for? Riley will read your
-          opening chapters and draft a reader profile \u2014 comparable titles, where those
+          opening chapters and draft a reader profile — comparable titles, where those
           readers gather, and the angles worth leading with. You can edit every word of it.
         </p>
         {error && (
@@ -593,7 +593,7 @@ function AudienceSection({ projectId }: { projectId: string }) {
           disabled={generating}
           className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white rounded-md text-sm font-medium"
         >
-          {generating ? 'Riley is reading your book\u2026' : 'Build my audience profile'}
+          {generating ? 'Riley is reading your book…' : 'Build my audience profile'}
         </button>
         {generating && (
           <p className="mt-3 text-xs text-slate-500">This takes a few seconds.</p>
@@ -624,12 +624,12 @@ function AudienceSection({ projectId }: { projectId: string }) {
             disabled={generating}
             className="text-xs text-slate-500 underline hover:text-slate-700 disabled:no-underline disabled:text-slate-300"
           >
-            {generating ? 'Rebuilding\u2026' : 'Rebuild'}
+            {generating ? 'Rebuilding…' : 'Rebuild'}
           </button>
         </div>
       </div>
       <p className="text-xs text-slate-500 mb-6">
-        {audience.editedAt ? 'Edited by you' : 'Drafted by Riley from your opening chapters'} \u00b7 yours to change
+        {audience.editedAt ? 'Edited by you' : 'Drafted by Riley from your opening chapters'} · yours to change
       </p>
 
       {error && (
@@ -652,7 +652,7 @@ function AudienceSection({ projectId }: { projectId: string }) {
             {audience.comps.map((c, i) => (
               <li key={i} className="text-sm">
                 <span className="text-slate-900 font-medium">{c.title}</span>
-                {c.author && <span className="text-slate-500"> \u00b7 {c.author}</span>}
+                {c.author && <span className="text-slate-500"> · {c.author}</span>}
                 {c.why && <p className="text-slate-600 text-xs mt-0.5 leading-relaxed">{c.why}</p>}
               </li>
             ))}
@@ -697,7 +697,7 @@ function AudienceSection({ projectId }: { projectId: string }) {
       {audience.avoid.length > 0 && (
         <section>
           <h3 className="text-[11px] uppercase tracking-wider font-medium text-slate-400 mb-2.5">
-            Don\u2019t bother with
+            Don’t bother with
           </h3>
           <ul className="space-y-1.5">
             {audience.avoid.map((a, i) => (
@@ -722,11 +722,11 @@ function AudienceEditor({
     <div className="p-6 max-w-2xl">
       <h2 className="text-base font-medium text-slate-900 mb-1">Edit audience</h2>
       <p className="text-xs text-slate-500 mb-5">
-        Riley drafted this \u2014 you know your readers better. One item per line where there are lists.
+        Riley drafted this — you know your readers better. One item per line where there are lists.
       </p>
 
       <label className="block mb-4">
-        <span className="text-[11px] uppercase tracking-wider font-medium text-slate-400">Who it\u2019s for</span>
+        <span className="text-[11px] uppercase tracking-wider font-medium text-slate-400">Who it’s for</span>
         <input
           value={draft.primaryReader}
           onChange={e => onChange({ ...draft, primaryReader: e.target.value })}
@@ -755,7 +755,7 @@ function AudienceEditor({
       </label>
 
       <label className="block mb-5">
-        <span className="text-[11px] uppercase tracking-wider font-medium text-slate-400">Don\u2019t bother with</span>
+        <span className="text-[11px] uppercase tracking-wider font-medium text-slate-400">Don’t bother with</span>
         <textarea
           value={draft.avoid.join('\n')}
           onChange={e => onChange({ ...draft, avoid: e.target.value.split('\n').filter(Boolean) })}
@@ -819,7 +819,7 @@ function PitchSection({ projectId, onGoToAudience }: { projectId: string; onGoTo
         const res = await fetch(`/api/projects/${projectId}/marketing/pitch`)
         if (!res.ok) {
           const body = await res.json().catch(() => ({})) as { error?: string }
-          throw new Error(body.error || `couldn\u2019t load (${res.status})`)
+          throw new Error(body.error || `couldn’t load (${res.status})`)
         }
         const json = await res.json() as { pitch: PitchProfile | null; hasAudience: boolean }
         if (!cancelled) { setPitch(json.pitch); setHasAudience(json.hasAudience) }
@@ -841,7 +841,7 @@ function PitchSection({ projectId, onGoToAudience }: { projectId: string; onGoTo
         const body = await res.json().catch(() => ({})) as { error?: string }
         if (body.error === 'audience_required') {
           setHasAudience(false)
-          throw new Error('Riley needs your audience profile first \u2014 a pitch without a reader is just a summary.')
+          throw new Error('Riley needs your audience profile first — a pitch without a reader is just a summary.')
         }
         throw new Error(body.error || `generation failed (${res.status})`)
       }
@@ -867,18 +867,18 @@ function PitchSection({ projectId, onGoToAudience }: { projectId: string; onGoTo
       if (!res.ok) throw new Error()
     } catch {
       setPitch(previous)
-      setError('Couldn\u2019t save that edit \u2014 your previous version is still here.')
+      setError('Couldn’t save that edit — your previous version is still here.')
     }
   }, [projectId, pitch])
 
   const copy = useCallback((key: string, value: string) => {
     navigator.clipboard?.writeText(value).then(
       () => { setCopied(key); setTimeout(() => setCopied(null), 1600) },
-      () => setError('Couldn\u2019t copy that \u2014 select and copy manually.'),
+      () => setError('Couldn’t copy that — select and copy manually.'),
     )
   }, [])
 
-  if (loading) return <p className="p-6 text-sm text-slate-500">Loading\u2026</p>
+  if (loading) return <p className="p-6 text-sm text-slate-500">Loading…</p>
 
   // Audience gate — the dependency, made visible rather than implied.
   if (!pitch && !hasAudience) {
@@ -887,7 +887,7 @@ function PitchSection({ projectId, onGoToAudience }: { projectId: string; onGoTo
         <h2 className="text-base font-medium text-slate-900 mb-1">Pitch</h2>
         <p className="text-sm text-slate-600 leading-relaxed mb-5 max-w-lg">
           Your pitch comes after your audience. Riley writes every line for a specific
-          reader \u2014 without one she\u2019d just be summarising your plot, which is what most
+          reader — without one she’d just be summarising your plot, which is what most
           book blurbs get wrong.
         </p>
         <button
@@ -906,9 +906,9 @@ function PitchSection({ projectId, onGoToAudience }: { projectId: string; onGoTo
       <div className="p-6 max-w-2xl">
         <h2 className="text-base font-medium text-slate-900 mb-1">Pitch</h2>
         <p className="text-sm text-slate-600 leading-relaxed mb-5 max-w-lg">
-          One book, five containers \u2014 a line that stops a scroll, a shelf comparison, the
+          One book, five containers — a line that stops a scroll, a shelf comparison, the
           back cover, a long pitch for media, and thirty seconds you can say out loud.
-          Riley writes all five for the reader in your audience profile, in your book\u2019s voice.
+          Riley writes all five for the reader in your audience profile, in your book’s voice.
         </p>
         {error && (
           <div className="mb-4 px-3 py-2 bg-rose-50 border border-rose-200 rounded-md text-xs text-rose-800">{error}</div>
@@ -919,7 +919,7 @@ function PitchSection({ projectId, onGoToAudience }: { projectId: string; onGoTo
           disabled={generating}
           className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white rounded-md text-sm font-medium"
         >
-          {generating ? 'Riley is writing\u2026' : 'Write my pitch'}
+          {generating ? 'Riley is writing…' : 'Write my pitch'}
         </button>
         {generating && <p className="mt-3 text-xs text-slate-500">This takes a few seconds.</p>}
       </div>
@@ -930,7 +930,7 @@ function PitchSection({ projectId, onGoToAudience }: { projectId: string; onGoTo
     return (
       <div className="p-6 max-w-2xl">
         <h2 className="text-base font-medium text-slate-900 mb-1">Edit pitch</h2>
-        <p className="text-xs text-slate-500 mb-5">It\u2019s your book \u2014 say it your way.</p>
+        <p className="text-xs text-slate-500 mb-5">It’s your book — say it your way.</p>
         {PITCH_FIELDS.map(f => (
           <label key={f.key} className="block mb-4">
             <span className="text-[11px] uppercase tracking-wider font-medium text-slate-400">{f.label}</span>
@@ -976,12 +976,12 @@ function PitchSection({ projectId, onGoToAudience }: { projectId: string; onGoTo
             disabled={generating}
             className="text-xs text-slate-500 underline hover:text-slate-700 disabled:no-underline disabled:text-slate-300"
           >
-            {generating ? 'Rewriting\u2026' : 'Rewrite'}
+            {generating ? 'Rewriting…' : 'Rewrite'}
           </button>
         </div>
       </div>
       <p className="text-xs text-slate-500 mb-6">
-        {pitch.editedAt ? 'Edited by you' : 'Written by Riley for your audience profile'} \u00b7 yours to change
+        {pitch.editedAt ? 'Edited by you' : 'Written by Riley for your audience profile'} · yours to change
       </p>
 
       {error && (
@@ -1038,7 +1038,7 @@ function CopyButton({ value, onError }: { value: string; onError: (m: string) =>
       type="button"
       onClick={() => navigator.clipboard?.writeText(value).then(
         () => { setCopied(true); setTimeout(() => setCopied(false), 1600) },
-        () => onError('Couldn\u2019t copy that \u2014 select and copy manually.'),
+        () => onError('Couldn’t copy that — select and copy manually.'),
       )}
       className="text-[11px] text-slate-400 hover:text-slate-700 flex-shrink-0"
     >
@@ -1070,7 +1070,7 @@ function ContentSection({
         const res = await fetch(`/api/projects/${projectId}/marketing/content`)
         if (!res.ok) {
           const body = await res.json().catch(() => ({})) as { error?: string }
-          throw new Error(body.error || `couldn\u2019t load (${res.status})`)
+          throw new Error(body.error || `couldn’t load (${res.status})`)
         }
         const json = await res.json() as { content: ContentPack | null; hasAudience: boolean; hasPitch: boolean }
         if (!cancelled) { setPack(json.content); setHasAudience(json.hasAudience); setHasPitch(json.hasPitch) }
@@ -1116,11 +1116,11 @@ function ContentSection({
       if (!res.ok) throw new Error()
     } catch {
       setPack(previous)
-      setError('Couldn\u2019t save that edit \u2014 your previous version is still here.')
+      setError('Couldn’t save that edit — your previous version is still here.')
     }
   }, [projectId, pack])
 
-  if (loading) return <p className="p-6 text-sm text-slate-500">Loading\u2026</p>
+  if (loading) return <p className="p-6 text-sm text-slate-500">Loading…</p>
 
   // Prerequisite gates — name the missing one rather than failing vaguely.
   if (!pack && (!hasAudience || !hasPitch)) {
@@ -1131,7 +1131,7 @@ function ContentSection({
         <p className="text-sm text-slate-600 leading-relaxed mb-5 max-w-lg">
           {missingAudience
             ? 'Riley writes posts for the specific places your readers gather, so she needs your audience profile before she can write anything worth posting.'
-            : 'Your audience is set. Riley writes every post and email against your agreed pitch, so that comes next \u2014 otherwise each post says something slightly different about the same book.'}
+            : 'Your audience is set. Riley writes every post and email against your agreed pitch, so that comes next — otherwise each post says something slightly different about the same book.'}
         </p>
         <button
           type="button"
@@ -1149,8 +1149,8 @@ function ContentSection({
       <div className="p-6 max-w-2xl">
         <h2 className="text-base font-medium text-slate-900 mb-1">Content</h2>
         <p className="text-sm text-slate-600 leading-relaxed mb-5 max-w-lg">
-          Riley writes one post for each place in your audience profile \u2014 in that
-          place\u2019s own register, not the same caption five times \u2014 plus a four-email
+          Riley writes one post for each place in your audience profile — in that
+          place’s own register, not the same caption five times — plus a four-email
           sequence pegged to your launch milestones, and a note you can send a
           podcast host or blogger.
         </p>
@@ -1163,9 +1163,9 @@ function ContentSection({
           disabled={generating}
           className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white rounded-md text-sm font-medium"
         >
-          {generating ? 'Riley is writing\u2026' : 'Write my launch content'}
+          {generating ? 'Riley is writing…' : 'Write my launch content'}
         </button>
-        {generating && <p className="mt-3 text-xs text-slate-500">This one takes a little longer \u2014 it\u2019s several pieces.</p>}
+        {generating && <p className="mt-3 text-xs text-slate-500">This one takes a little longer — it’s several pieces.</p>}
       </div>
     )
   }
@@ -1174,7 +1174,7 @@ function ContentSection({
     return (
       <div className="p-6 max-w-2xl">
         <h2 className="text-base font-medium text-slate-900 mb-1">Edit content</h2>
-        <p className="text-xs text-slate-500 mb-5">Your voice beats Riley\u2019s every time.</p>
+        <p className="text-xs text-slate-500 mb-5">Your voice beats Riley’s every time.</p>
 
         {draft.social.map((post, i) => (
           <label key={`s${i}`} className="block mb-4">
@@ -1237,12 +1237,12 @@ function ContentSection({
             disabled={generating}
             className="text-xs text-slate-500 underline hover:text-slate-700 disabled:no-underline disabled:text-slate-300"
           >
-            {generating ? 'Rewriting\u2026' : 'Rewrite'}
+            {generating ? 'Rewriting…' : 'Rewrite'}
           </button>
         </div>
       </div>
       <p className="text-xs text-slate-500 mb-6">
-        {pack.editedAt ? 'Edited by you' : 'Written by Riley for your channels and pitch'} \u00b7 yours to change
+        {pack.editedAt ? 'Edited by you' : 'Written by Riley for your channels and pitch'} · yours to change
       </p>
 
       {error && <div className="mb-5 px-3 py-2 bg-rose-50 border border-rose-200 rounded-md text-xs text-rose-800">{error}</div>}
@@ -1273,7 +1273,7 @@ function ContentSection({
               <article key={i} className="border border-slate-200 rounded-lg p-4">
                 <div className="flex items-baseline justify-between gap-3 mb-1">
                   <p className="text-[11px] uppercase tracking-wider text-slate-400">
-                    {mail.label}{mail.timing ? ` \u00b7 ${mail.timing}` : ''}
+                    {mail.label}{mail.timing ? ` · ${mail.timing}` : ''}
                   </p>
                   <CopyButton value={`Subject: ${mail.subject}\n\n${mail.body}`} onError={setError} />
                 </div>
@@ -1316,7 +1316,7 @@ function SectionPreview({ sectionId }: { sectionId: SectionId }) {
     pitch: '',
     'launch-plan': '',
     content: '',
-    reviews: 'ARC strategy, reviewer outreach, and follow-up \u2014 tracked so you know who has your book and who has posted.',
+    reviews: 'ARC strategy, reviewer outreach, and follow-up — tracked so you know who has your book and who has posted.',
     performance: 'Sales by platform, review count, ad spend, email opens. Fills in once the book is out.',
   }
 
@@ -1340,8 +1340,8 @@ function SectionPreview({ sectionId }: { sectionId: SectionId }) {
 
       <p className="text-xs text-slate-400 mt-1">
         {sectionId === 'performance'
-          ? 'Shape shown above \u2014 real numbers arrive with your first sales.'
-          : 'Shape shown above \u2014 Riley fills it in once your audience profile is set.'}
+          ? 'Shape shown above — real numbers arrive with your first sales.'
+          : 'Shape shown above — Riley fills it in once your audience profile is set.'}
       </p>
     </div>
   )
@@ -1364,7 +1364,7 @@ function ReviewsPreview() {
   return (
     <PreviewBlock label="ARC readers">
       <ul className="space-y-2.5">
-        {['Sent \u00b7 awaiting review', 'Sent \u00b7 awaiting review', 'Posted', 'Not yet sent'].map((state, i) => (
+        {['Sent · awaiting review', 'Sent · awaiting review', 'Posted', 'Not yet sent'].map((state, i) => (
           <li key={i} className="flex items-center justify-between gap-3">
             <GhostLine w="w-40" />
             <span className="text-[11px] text-slate-400 flex-shrink-0">{state}</span>

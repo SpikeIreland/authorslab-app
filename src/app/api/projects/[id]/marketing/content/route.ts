@@ -161,32 +161,74 @@ Write:
 
 Write in the author's register, for this reader. No stock marketing phrases.
 
-Respond with ONLY a JSON object, no prose, no code fence:
-{
-  "social": [{"channel": "name from the list above", "body": "the post", "note": "one line on when/how to post it"}],
-  "emails": [{"label": "which milestone", "timing": "when to send", "subject": "subject line", "body": "the email"}],
-  "outreach": {"target": "which channel or kind of host", "subject": "subject line", "body": "the note"}
-}`
+Return the result through the save_content tool.`
 
   let pack: ContentPack
   try {
     const anthropic = new Anthropic({ apiKey })
+    // Structured tool output rather than parsing JSON out of prose. These
+    // bodies are multi-paragraph and contain quotes and line breaks, which is
+    // precisely where a hand-written JSON reply breaks — and did, in
+    // production: "Expected ',' or '}' after property value at position 513".
     const res = await anthropic.messages.create({
       model: 'claude-sonnet-4-5',
       max_tokens: 4000,
+      tools: [{
+        name: 'save_content',
+        description: 'Save the launch content pack for this book.',
+        input_schema: {
+          type: 'object',
+          properties: {
+            social: {
+              type: 'array',
+              description: 'One post per channel given, in that channel\'s own register.',
+              items: {
+                type: 'object',
+                properties: {
+                  channel: { type: 'string' },
+                  body: { type: 'string' },
+                  note: { type: 'string', description: 'One line on when or how to post it.' },
+                },
+                required: ['channel', 'body'],
+              },
+            },
+            emails: {
+              type: 'array',
+              description: 'Four emails, pegged to the launch milestones given.',
+              items: {
+                type: 'object',
+                properties: {
+                  label: { type: 'string' },
+                  timing: { type: 'string' },
+                  subject: { type: 'string' },
+                  body: { type: 'string' },
+                },
+                required: ['label', 'subject', 'body'],
+              },
+            },
+            outreach: {
+              type: 'object',
+              description: 'One note to a podcast host or book blogger.',
+              properties: {
+                target: { type: 'string' },
+                subject: { type: 'string' },
+                body: { type: 'string' },
+              },
+              required: ['target', 'subject', 'body'],
+            },
+          },
+          required: ['social', 'emails'],
+        },
+      }],
+      tool_choice: { type: 'tool', name: 'save_content' },
       messages: [{ role: 'user', content: prompt }],
     })
 
-    const text = res.content
-      .filter((b): b is Anthropic.TextBlock => b.type === 'text')
-      .map(b => b.text)
-      .join('')
-      .trim()
-
-    const start = text.indexOf('{')
-    const end = text.lastIndexOf('}')
-    if (start === -1 || end === -1) throw new Error('no JSON object in model reply')
-    const parsed = JSON.parse(text.slice(start, end + 1)) as Partial<ContentPack>
+    const block = res.content.find(
+      (b): b is Anthropic.ToolUseBlock => b.type === 'tool_use',
+    )
+    if (!block) throw new Error('model did not return the structured result')
+    const parsed = block.input as Partial<ContentPack>
 
     if (!Array.isArray(parsed.social) && !Array.isArray(parsed.emails)) {
       throw new Error('model reply had neither social posts nor emails')

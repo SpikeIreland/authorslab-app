@@ -132,37 +132,64 @@ ${opening ? `The opening pages:\n\n"""\n${opening}\n"""\n` : 'No manuscript text
 
 Produce a specific, useful audience profile. Ground it in what this book actually is — voice, tone, preoccupations — not in generic advice for the genre. Comparable titles must be real books a reader of THIS book would already own; say briefly why each one matches. Channels must be places that actually exist and that an indie author can reach without a publicist.
 
-Respond with ONLY a JSON object, no prose, no code fence:
-{
-  "primaryReader": "one vivid line naming who this is for",
-  "readerDescription": "2-3 sentences on what they read, what they want from a book like this, what makes them buy",
-  "comps": [{"title": "...", "author": "...", "why": "one line"}],
-  "channels": [{"name": "...", "kind": "subreddit|newsletter|podcast|goodreads-list|youtube|bookstore|other", "note": "how to approach it"}],
-  "hooks": ["3-5 short angles to lead with when pitching this book"],
-  "avoid": ["2-3 things that would waste this author's time or misrepresent the book"]
-}
-Give 4 comps and 5 channels.`
+Return the result through the save_audience tool. Give 4 comps and 5 channels.`
 
   let profile: AudienceProfile
   try {
     const anthropic = new Anthropic({ apiKey })
+    // Structured tool output rather than parsing JSON out of prose.
     const res = await anthropic.messages.create({
       model: 'claude-sonnet-4-5',
       max_tokens: 2000,
+      tools: [{
+        name: 'save_audience',
+        description: 'Save the reader-audience profile for this book.',
+        input_schema: {
+          type: 'object',
+          properties: {
+            primaryReader: { type: 'string', description: 'One vivid line naming who this is for.' },
+            readerDescription: { type: 'string', description: 'Two or three sentences on what they read, what they want, what makes them buy.' },
+            comps: {
+              type: 'array',
+              description: 'Four real books a reader of THIS book would already own.',
+              items: {
+                type: 'object',
+                properties: {
+                  title: { type: 'string' },
+                  author: { type: 'string' },
+                  why: { type: 'string', description: 'One line on why it matches.' },
+                },
+                required: ['title', 'author', 'why'],
+              },
+            },
+            channels: {
+              type: 'array',
+              description: 'Five real places this reader gathers that an indie author can reach.',
+              items: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  kind: { type: 'string', description: 'subreddit | newsletter | podcast | goodreads-list | youtube | bookstore | other' },
+                  note: { type: 'string', description: 'How to approach it.' },
+                },
+                required: ['name', 'kind', 'note'],
+              },
+            },
+            hooks: { type: 'array', description: 'Three to five short angles to lead with.', items: { type: 'string' } },
+            avoid: { type: 'array', description: 'Two or three things that would waste this author\'s time.', items: { type: 'string' } },
+          },
+          required: ['primaryReader', 'readerDescription', 'comps', 'channels', 'hooks', 'avoid'],
+        },
+      }],
+      tool_choice: { type: 'tool', name: 'save_audience' },
       messages: [{ role: 'user', content: prompt }],
     })
 
-    const text = res.content
-      .filter((b): b is Anthropic.TextBlock => b.type === 'text')
-      .map(b => b.text)
-      .join('')
-      .trim()
-
-    // Tolerate a stray code fence or leading prose.
-    const start = text.indexOf('{')
-    const end = text.lastIndexOf('}')
-    if (start === -1 || end === -1) throw new Error('no JSON object in model reply')
-    const parsed = JSON.parse(text.slice(start, end + 1)) as Partial<AudienceProfile>
+    const block = res.content.find(
+      (b): b is Anthropic.ToolUseBlock => b.type === 'tool_use',
+    )
+    if (!block) throw new Error('model did not return the structured result')
+    const parsed = block.input as Partial<AudienceProfile>
 
     if (!parsed.primaryReader) throw new Error('model reply missing primaryReader')
 

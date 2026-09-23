@@ -147,34 +147,41 @@ ${opening ? `The book's opening pages — match this voice, don't invent a diffe
 
 Write the pitch in five containers. Use the book's actual voice and actual specifics. No stock phrases ("a gripping tale", "will keep you turning pages", "in a world where"). No spoilers past the first act. Never claim awards, reviews, or sales.
 
-Respond with ONLY a JSON object, no prose, no code fence:
-{
-  "oneLiner": "one sentence, under 25 words, that makes the right reader stop scrolling",
-  "compLine": "an X-meets-Y line using books this audience actually owns",
-  "backCover": "the back-cover blurb, 120-170 words, in the book's voice",
-  "longPitch": "250-320 words for a blogger, journalist or agent - what it is, who it's for, why now",
-  "spokenIntro": "30 seconds the author can say out loud on a podcast, written the way people actually talk"
-}`
+Return the result through the save_pitch tool.`
 
   let pitch: PitchProfile
   try {
     const anthropic = new Anthropic({ apiKey })
+    // Structured tool output — backCover, longPitch and spokenIntro are
+    // multi-sentence prose with quotes and line breaks, which is where a
+    // hand-written JSON reply breaks.
     const res = await anthropic.messages.create({
       model: 'claude-sonnet-4-5',
       max_tokens: 2500,
+      tools: [{
+        name: 'save_pitch',
+        description: 'Save the five pitch containers for this book.',
+        input_schema: {
+          type: 'object',
+          properties: {
+            oneLiner: { type: 'string', description: 'One sentence, under 25 words, that makes the right reader stop scrolling.' },
+            compLine: { type: 'string', description: 'An X-meets-Y line using books this audience actually owns.' },
+            backCover: { type: 'string', description: "The back-cover blurb, 120-170 words, in the book's voice." },
+            longPitch: { type: 'string', description: '250-320 words for a blogger, journalist or agent: what it is, who it is for, why now.' },
+            spokenIntro: { type: 'string', description: '30 seconds the author can say out loud on a podcast, written the way people actually talk.' },
+          },
+          required: ['oneLiner', 'compLine', 'backCover', 'longPitch', 'spokenIntro'],
+        },
+      }],
+      tool_choice: { type: 'tool', name: 'save_pitch' },
       messages: [{ role: 'user', content: prompt }],
     })
 
-    const text = res.content
-      .filter((b): b is Anthropic.TextBlock => b.type === 'text')
-      .map(b => b.text)
-      .join('')
-      .trim()
-
-    const start = text.indexOf('{')
-    const end = text.lastIndexOf('}')
-    if (start === -1 || end === -1) throw new Error('no JSON object in model reply')
-    const parsed = JSON.parse(text.slice(start, end + 1)) as Partial<PitchProfile>
+    const block = res.content.find(
+      (b): b is Anthropic.ToolUseBlock => b.type === 'tool_use',
+    )
+    if (!block) throw new Error('model did not return the structured result')
+    const parsed = block.input as Partial<PitchProfile>
 
     if (!parsed.oneLiner || !parsed.backCover) {
       throw new Error('model reply missing oneLiner or backCover')
