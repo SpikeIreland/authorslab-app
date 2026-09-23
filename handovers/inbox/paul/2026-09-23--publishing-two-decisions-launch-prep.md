@@ -1,0 +1,2 @@
+CANONICAL: handovers/publishing-to-publisher+design-launch-prep-built-and-the-two-sided-question-2026-09-23.md
+TWO DECISIONS (§7): (1) Veil's metadata is still empty and the new Launch checklist now shows it as four unticked rows on the demo beat — seed it as data with Carl's copy? (2) May I seed YOUR pre-flight project b155f95d with realistic launch-prep values so the page has something in it — the write was refused as a shared-resource change and I did not work around it. Also awaiting your push of commit 5c6f881.
