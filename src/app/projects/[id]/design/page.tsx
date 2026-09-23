@@ -22,20 +22,30 @@ interface CoverAsset {
   storagePath: string
   createdAt: string
   coverIndex: number | null
+  layout: 'front' | 'wraparound'
   url: string | null
+}
+
+interface ProjectMeta {
+  title: string
+  genre: string
+  authorName: string
 }
 
 type SectionId = 'cover' | 'front-matter' | 'back-matter' | 'interior-format'
 
-const SECTIONS: Array<{ id: SectionId; label: string; comingSoon?: boolean }> = [
+const SECTIONS: Array<{ id: SectionId; label: string; preview?: boolean }> = [
   { id: 'cover', label: 'Cover' },
-  { id: 'front-matter', label: 'Front matter', comingSoon: true },
-  { id: 'back-matter', label: 'Back matter', comingSoon: true },
-  { id: 'interior-format', label: 'Interior format', comingSoon: true },
+  { id: 'front-matter', label: 'Front matter', preview: true },
+  { id: 'back-matter', label: 'Back matter', preview: true },
+  { id: 'interior-format', label: 'Interior format', preview: true },
 ]
 
 const POLL_INTERVAL_MS = 8000
-const POLL_MAX_TRIES = 40 // ~5 minutes
+const POLL_MAX_TRIES = 45 // ~6 minutes
+
+const SPECIMEN_TEXT =
+  'It began, as most true things do, quietly. A door left half open, a light in the window across the water, and the sense — before any evidence — that the evening had already decided something on her behalf.'
 
 // ============================================================================
 // Page
@@ -51,8 +61,10 @@ export default function DesignTabPage() {
   const [savingCover, setSavingCover] = useState(false)
 
   const [assets, setAssets] = useState<CoverAsset[]>([])
-  const [generating, setGenerating] = useState(false)
+  const [project, setProject] = useState<ProjectMeta>({ title: 'Untitled', genre: '', authorName: 'Author Name' })
+  const [generating, setGenerating] = useState<null | { baseline: number; expected: number; layout: string }>(null)
   const [genError, setGenError] = useState<string | null>(null)
+  const [showBack, setShowBack] = useState(false)
 
   const [messages, setMessages] = useState<DesignMessage[]>([])
   const [messagesLoading, setMessagesLoading] = useState(true)
@@ -64,7 +76,7 @@ export default function DesignTabPage() {
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  // Load the selected cover, existing artwork, and chat history on mount.
+  // Load the selected cover, existing artwork + project meta, and chat history.
   useEffect(() => {
     let cancelled = false
 
@@ -81,8 +93,9 @@ export default function DesignTabPage() {
           setSelectedCover(json.selected)
         }
         if (!cancelled && assetsRes.ok) {
-          const json = await assetsRes.json() as { assets: CoverAsset[] }
+          const json = await assetsRes.json() as { assets: CoverAsset[]; project?: ProjectMeta }
           setAssets(json.assets)
+          if (json.project) setProject(json.project)
         }
         if (!cancelled && msgRes.ok) {
           const json = await msgRes.json() as { messages: DesignMessage[] }
@@ -129,43 +142,49 @@ export default function DesignTabPage() {
     }
   }, [projectId, savingCover, selectedCover])
 
-  // Ask Taylor to generate three artwork concepts, then poll for arrival.
-  const startGeneration = useCallback(async () => {
+  // Ask Taylor to generate artwork, then poll — rendering each concept as it
+  // arrives (the workflow stores them one at a time over a few minutes).
+  const startGeneration = useCallback(async (layout?: 'wraparound') => {
     if (generating) return
-    setGenerating(true)
     setGenError(null)
     const baseline = assets.length
 
+    let expected = layout === 'wraparound' ? 1 : 3
     try {
       const res = await fetch(`/api/projects/${projectId}/design/assets`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
+        body: JSON.stringify(layout ? { layout } : {}),
       })
       if (!res.ok) throw new Error(`request failed (${res.status})`)
+      const json = await res.json() as { expected?: number }
+      if (json.expected) expected = json.expected
     } catch {
-      setGenerating(false)
       setGenError('Taylor couldn’t start the run — try again in a moment.')
       return
     }
+
+    setGenerating({ baseline, expected, layout: layout ?? 'front' })
 
     let tries = 0
     pollRef.current = setInterval(async () => {
       tries += 1
       if (tries > POLL_MAX_TRIES) {
         if (pollRef.current) clearInterval(pollRef.current)
-        setGenerating(false)
-        setGenError('This is taking longer than usual — the concepts will appear here once they’re done.')
+        setGenerating(null)
+        setGenError('This is taking longer than usual — new artwork will appear here once it’s done.')
         return
       }
       try {
         const res = await fetch(`/api/projects/${projectId}/design/assets`)
         if (!res.ok) return
         const json = await res.json() as { assets: CoverAsset[] }
-        if (json.assets.length > baseline) {
+        if (json.assets.length !== baseline) {
+          setAssets(json.assets)   // progressive arrival — show each as it lands
+        }
+        if (json.assets.length >= baseline + expected) {
           if (pollRef.current) clearInterval(pollRef.current)
-          setAssets(json.assets)
-          setGenerating(false)
+          setGenerating(null)
         }
       } catch {
         // transient — keep polling
@@ -229,7 +248,18 @@ export default function DesignTabPage() {
     }
   }, [sendMessage])
 
-  const selectedAsset = assets.find(a => selectedCover === `cover-asset:${a.id}`) ?? null
+  const fronts = assets.filter(a => a.layout !== 'wraparound')
+  const wraps = assets.filter(a => a.layout === 'wraparound')
+  const latestWrap = wraps.length > 0 ? wraps[wraps.length - 1] : null
+  const selectedAsset = fronts.find(a => selectedCover === `cover-asset:${a.id}`) ?? null
+  const bookFront = selectedAsset ?? (fronts.length > 0 ? fronts[fronts.length - 1] : null)
+
+  const arrived = generating ? Math.max(0, assets.length - generating.baseline) : 0
+  const workingLabel = generating
+    ? generating.layout === 'wraparound'
+      ? 'Painting the full jacket — back, spine and front in one scene…'
+      : `Painting concept ${Math.min(arrived + 1, generating.expected)} of ${generating.expected} — they’ll appear as they’re finished…`
+    : ''
 
   return (
     <div className="h-full flex min-h-[480px]">
@@ -254,8 +284,10 @@ export default function DesignTabPage() {
                 }`}
               >
                 <span>{s.label}</span>
-                {s.comingSoon && (
-                  <span className="text-[10px] text-slate-400 italic">soon</span>
+                {s.preview && (
+                  <span className="text-[9px] uppercase tracking-wider text-slate-400 border border-slate-200 rounded px-1 py-px">
+                    Preview
+                  </span>
                 )}
               </button>
             )
@@ -274,18 +306,18 @@ export default function DesignTabPage() {
                   ? 'Loading…'
                   : generating
                     ? 'Taylor is working…'
-                    : assets.length === 0
+                    : fronts.length === 0
                       ? 'No concepts yet'
                       : selectedAsset
-                        ? `Concept ${selectedAsset.coverIndex ?? ''} selected`.replace('  ', ' ')
-                        : `${assets.length} concepts · none selected`}
+                        ? 'Cover chosen'
+                        : `${fronts.length} concepts · none selected`}
               </p>
             </div>
 
             {/* Concept gallery — real artwork from Taylor's generation runs */}
-            {assets.length > 0 && (
+            {fronts.length > 0 && (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5">
-                {assets.map(a => {
+                {fronts.map(a => {
                   const value = `cover-asset:${a.id}`
                   const isSelected = selectedCover === value
                   return (
@@ -304,14 +336,8 @@ export default function DesignTabPage() {
                         }`}
                       >
                         {a.url ? (
-                          // Signed URLs from the private bucket; plain img avoids
-                          // next/image remote-domain config for expiring hosts.
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={a.url}
-                            alt={`Cover concept ${a.coverIndex ?? ''}`}
-                            className="w-full h-full object-cover"
-                          />
+                          <img src={a.url} alt={`Cover concept ${a.coverIndex ?? ''}`} className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-[10px] text-slate-400">
                             Unavailable
@@ -333,6 +359,37 @@ export default function DesignTabPage() {
               </div>
             )}
 
+            {/* Full jacket concepts — back · spine · front in one scene */}
+            {wraps.length > 0 && (
+              <div className="mb-5">
+                <p className="text-[10px] uppercase tracking-wider font-medium text-slate-400 mb-2">
+                  Full jacket
+                </p>
+                {wraps.map(w => (
+                  <div key={w.id} className="max-w-2xl mb-3">
+                    <div className="relative aspect-[3/2] rounded-md overflow-hidden border border-slate-200 bg-slate-100">
+                      {w.url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={w.url} alt="Full jacket concept" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[10px] text-slate-400">
+                          Unavailable
+                        </div>
+                      )}
+                      {/* Zone guides — where the jacket folds */}
+                      <div className="absolute inset-y-0 left-1/3 w-px bg-white/50 border-l border-dashed border-slate-900/25" aria-hidden="true" />
+                      <div className="absolute inset-y-0 left-2/3 w-px bg-white/50 border-l border-dashed border-slate-900/25" aria-hidden="true" />
+                    </div>
+                    <div className="flex text-[10px] uppercase tracking-wider text-slate-400 mt-1">
+                      <span className="w-1/3">Back</span>
+                      <span className="w-1/3 text-center">Spine</span>
+                      <span className="w-1/3 text-right">Front</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* Taylor is working — persona working state */}
             {generating && (
               <div className="flex items-center gap-3 px-4 py-4 bg-white border border-slate-200 rounded-md mb-5">
@@ -342,14 +399,12 @@ export default function DesignTabPage() {
                     T
                   </span>
                 </div>
-                <p className="text-sm text-slate-700">
-                  Painting three concepts — this can take a few minutes…
-                </p>
+                <p className="text-sm text-slate-700">{workingLabel}</p>
               </div>
             )}
 
             {/* Intake — no artwork yet */}
-            {!coverLoading && assets.length === 0 && !generating && (
+            {!coverLoading && fronts.length === 0 && !generating && (
               <div className="px-5 py-6 bg-white border border-slate-200 rounded-md mb-5 max-w-xl">
                 <div className="flex items-start gap-3">
                   <span className="w-9 h-9 rounded-full bg-taylor text-white text-sm font-medium flex items-center justify-center font-serif shrink-0">
@@ -363,7 +418,7 @@ export default function DesignTabPage() {
                     </p>
                     <button
                       type="button"
-                      onClick={startGeneration}
+                      onClick={() => startGeneration()}
                       className="text-xs px-3.5 py-2 rounded-md text-white bg-sage-deep hover:opacity-90 font-medium"
                     >
                       Ask Taylor for concepts
@@ -379,14 +434,21 @@ export default function DesignTabPage() {
               </p>
             )}
 
-            {assets.length > 0 && !generating && (
-              <div className="flex flex-wrap gap-2">
+            {fronts.length > 0 && !generating && (
+              <div className="flex flex-wrap gap-2 mb-8">
                 <button
                   type="button"
-                  onClick={startGeneration}
+                  onClick={() => startGeneration()}
                   className="text-xs px-3 py-1.5 border border-slate-200 rounded-md text-slate-700 hover:bg-slate-50"
                 >
                   Generate more concepts
+                </button>
+                <button
+                  type="button"
+                  onClick={() => startGeneration('wraparound')}
+                  className="text-xs px-3 py-1.5 border border-slate-200 rounded-md text-slate-700 hover:bg-slate-50"
+                >
+                  Paint a full jacket
                 </button>
                 {selectedCover && (
                   <button
@@ -400,22 +462,209 @@ export default function DesignTabPage() {
                 )}
               </div>
             )}
+
+            {/* On the shelf — 3D book preview of the (selected) cover */}
+            {bookFront?.url && (
+              <div className="max-w-2xl">
+                <div className="flex items-baseline justify-between mb-2">
+                  <p className="text-[10px] uppercase tracking-wider font-medium text-slate-400">
+                    In your hands
+                  </p>
+                  <div className="flex gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setShowBack(false)}
+                      className={`text-[10px] px-2 py-0.5 rounded border ${!showBack ? 'border-slate-400 text-slate-800 bg-white' : 'border-slate-200 text-slate-500'}`}
+                    >
+                      Front
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowBack(true)}
+                      className={`text-[10px] px-2 py-0.5 rounded border ${showBack ? 'border-slate-400 text-slate-800 bg-white' : 'border-slate-200 text-slate-500'}`}
+                    >
+                      Back
+                    </button>
+                  </div>
+                </div>
+                <div
+                  className="rounded-md border border-slate-200 flex items-center justify-center py-10"
+                  style={{ background: '#EDE9E1', perspective: '1200px' }}
+                >
+                  <div
+                    className="relative motion-reduce:transition-none"
+                    style={{
+                      width: '176px',
+                      height: '264px',
+                      transformStyle: 'preserve-3d',
+                      transform: showBack ? 'rotateY(-155deg)' : 'rotateY(-28deg)',
+                      transition: 'transform 0.9s ease',
+                    }}
+                  >
+                    {/* Front cover */}
+                    <div
+                      className="absolute inset-0 rounded-r-sm overflow-hidden"
+                      style={{
+                        transform: 'translateZ(14px)',
+                        backfaceVisibility: 'hidden',
+                        boxShadow: '14px 18px 40px rgba(44,44,42,.30)',
+                      }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={bookFront.url} alt="Selected cover on a book" className="w-full h-full object-cover" />
+                      <div className="absolute inset-y-0 left-0 w-2 bg-gradient-to-r from-black/25 to-transparent" aria-hidden="true" />
+                    </div>
+                    {/* Back cover — real jacket art when a wrap exists, derived otherwise */}
+                    <div
+                      className="absolute inset-0 rounded-l-sm overflow-hidden"
+                      style={{
+                        transform: 'rotateY(180deg) translateZ(14px)',
+                        backfaceVisibility: 'hidden',
+                        ...(latestWrap?.url
+                          ? {
+                              backgroundImage: `url(${latestWrap.url})`,
+                              backgroundSize: 'auto 100%',
+                              backgroundPosition: '0% 50%',
+                            }
+                          : {
+                              backgroundImage: `url(${bookFront.url})`,
+                              backgroundSize: 'cover',
+                              backgroundPosition: 'center',
+                              filter: 'brightness(0.55) saturate(0.8)',
+                            }),
+                      }}
+                    />
+                    {/* Spine */}
+                    <div
+                      className="absolute top-0 h-full"
+                      style={{
+                        width: '28px',
+                        left: '-14px',
+                        transform: 'rotateY(-90deg)',
+                        ...(latestWrap?.url
+                          ? {
+                              backgroundImage: `url(${latestWrap.url})`,
+                              backgroundSize: 'auto 100%',
+                              backgroundPosition: '50% 50%',
+                            }
+                          : { background: '#2C2C2A' }),
+                      }}
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-slate-500 mt-2">
+                  {latestWrap
+                    ? 'Back and spine come from the full-jacket artwork — one continuous scene around the book.'
+                    : 'Back and spine are previews derived from the front artwork — paint a full jacket to see the real thing.'}
+                </p>
+              </div>
+            )}
           </div>
         )}
 
-        {section !== 'cover' && (
-          <div className="p-12 text-center">
-            <p className="text-[11px] uppercase tracking-wider font-medium text-slate-400 mb-3">
-              Coming soon
-            </p>
-            <h2 className="text-xl font-medium text-slate-900 mb-2">
-              {SECTIONS.find(s => s.id === section)?.label}
-            </h2>
-            <p className="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
-              {section === 'front-matter' && 'Title page, copyright, dedication, table of contents — the pages that open your book. Taylor will help you set them up.'}
-              {section === 'back-matter' && 'Author bio, acknowledgments, also-by, about-the-publisher — the pages that close your book.'}
-              {section === 'interior-format' && 'Typography, chapter headers, trim size, spacing. Taylor will generate the formatted files for each platform.'}
-            </p>
+        {/* ==================== Front matter preview ==================== */}
+        {section === 'front-matter' && (
+          <div className="p-6">
+            <SectionHeader
+              title="Front matter"
+              blurb="The pages that open your book — Taylor sets them up from your manuscript and profile."
+            />
+            <div className="flex flex-wrap gap-6 items-start">
+              <div
+                className="w-56 aspect-[2/3] bg-white border border-slate-200 rounded-sm shadow-sm flex flex-col items-center justify-between text-center px-5 py-8"
+                aria-label="Title page preview"
+              >
+                <p className="text-[9px] uppercase tracking-[0.2em] text-slate-400">A novel</p>
+                <div>
+                  <p className="font-serif text-lg leading-snug text-slate-900">{project.title}</p>
+                  <div className="w-8 border-t border-slate-300 mx-auto my-3" />
+                  <p className="text-[11px] text-slate-600">{project.authorName}</p>
+                </div>
+                <p className="text-[9px] uppercase tracking-[0.2em] text-slate-400">AuthorsLab</p>
+              </div>
+              <div className="flex-1 min-w-[220px] max-w-sm">
+                <p className="text-xs text-slate-600 leading-relaxed mb-3">
+                  Your title page, typeset from the project — then the pages readers expect,
+                  each generated with you, not for you:
+                </p>
+                <div className="flex flex-wrap gap-1.5 mb-4">
+                  {['Title page', 'Copyright', 'Dedication', 'Epigraph', 'Contents'].map(p => (
+                    <span key={p} className="text-[11px] px-2 py-1 bg-slate-50 border border-slate-200 rounded text-slate-700">
+                      {p}
+                    </span>
+                  ))}
+                </div>
+                <InDesignNote note="Editing these pages arrives with the cover composer — the typography here follows whatever your cover establishes." />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==================== Back matter preview ==================== */}
+        {section === 'back-matter' && (
+          <div className="p-6">
+            <SectionHeader
+              title="Back matter"
+              blurb="The pages that close your book — and quietly sell your next one."
+            />
+            <div className="flex flex-wrap gap-6 items-start">
+              <div className="w-56 aspect-[2/3] bg-white border border-slate-200 rounded-sm shadow-sm px-5 py-7" aria-label="About the author preview">
+                <p className="text-[9px] uppercase tracking-[0.2em] text-slate-400 mb-3">About the author</p>
+                <p className="font-serif text-sm text-slate-900 mb-2">{project.authorName}</p>
+                <div className="space-y-1.5" aria-hidden="true">
+                  <div className="h-1.5 bg-slate-100 rounded w-full" />
+                  <div className="h-1.5 bg-slate-100 rounded w-11/12" />
+                  <div className="h-1.5 bg-slate-100 rounded w-full" />
+                  <div className="h-1.5 bg-slate-100 rounded w-4/5" />
+                </div>
+                <p className="text-[9px] uppercase tracking-[0.2em] text-slate-400 mt-6 mb-2">Also by</p>
+                <div className="space-y-1.5" aria-hidden="true">
+                  <div className="h-1.5 bg-slate-100 rounded w-2/3" />
+                  <div className="h-1.5 bg-slate-100 rounded w-1/2" />
+                </div>
+              </div>
+              <div className="flex-1 min-w-[220px] max-w-sm">
+                <p className="text-xs text-slate-600 leading-relaxed mb-3">
+                  Author bio drawn from your profile, acknowledgments in your voice, and an
+                  &ldquo;also by&rdquo; page that grows with your shelf:
+                </p>
+                <div className="flex flex-wrap gap-1.5 mb-4">
+                  {['About the author', 'Acknowledgments', 'Also by', 'Newsletter invitation'].map(p => (
+                    <span key={p} className="text-[11px] px-2 py-1 bg-slate-50 border border-slate-200 rounded text-slate-700">
+                      {p}
+                    </span>
+                  ))}
+                </div>
+                <InDesignNote note="Built with the composer — your bio and links come in from your author profile, ready to edit." />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==================== Interior format preview ==================== */}
+        {section === 'interior-format' && (
+          <div className="p-6">
+            <SectionHeader
+              title="Interior format"
+              blurb="Typography, trim size, chapter openings — how the inside of your book reads."
+            />
+            <div className="flex flex-wrap gap-4 mb-4">
+              <SpecimenPage
+                caption="Classic Serif · 5×8″"
+                serif
+                chapterLabel="Chapter One"
+                title={project.title}
+              />
+              <SpecimenPage
+                caption="Contemporary · 6×9″"
+                serif={false}
+                chapterLabel="1"
+                title={project.title}
+              />
+            </div>
+            <div className="max-w-sm">
+              <InDesignNote note="Two of the interior styles Taylor will offer — pick one, and every chapter, page number and running head follows it. Print-ready files per platform come from here." />
+            </div>
           </div>
         )}
       </main>
@@ -495,6 +744,56 @@ export default function DesignTabPage() {
           </div>
         </form>
       </aside>
+    </div>
+  )
+}
+
+// ============================================================================
+// Small presentational pieces
+// ============================================================================
+
+function SectionHeader({ title, blurb }: { title: string; blurb: string }) {
+  return (
+    <div className="mb-5">
+      <div className="flex items-center gap-2 mb-1">
+        <h2 className="text-base font-medium text-slate-900">{title}</h2>
+        <span className="text-[9px] uppercase tracking-wider text-slate-500 border border-slate-200 bg-slate-50 rounded px-1.5 py-px">
+          In design
+        </span>
+      </div>
+      <p className="text-xs text-slate-600">{blurb}</p>
+    </div>
+  )
+}
+
+function InDesignNote({ note }: { note: string }) {
+  return (
+    <div className="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-md">
+      <p className="text-[11px] text-slate-600 leading-relaxed">{note}</p>
+    </div>
+  )
+}
+
+function SpecimenPage({ caption, serif, chapterLabel, title }: {
+  caption: string
+  serif: boolean
+  chapterLabel: string
+  title: string
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="w-52 aspect-[2/3] bg-white border border-slate-200 rounded-sm shadow-sm px-4 py-6 overflow-hidden" aria-label={`Interior specimen — ${caption}`}>
+        <p className="text-[8px] uppercase tracking-[0.25em] text-slate-400 text-center mb-1.5">{chapterLabel}</p>
+        <p className={`text-center text-[13px] text-slate-900 mb-3 ${serif ? 'font-serif' : 'font-medium'}`}>{title}</p>
+        <p className={`text-[9px] leading-[1.7] text-slate-700 text-justify ${serif ? 'font-serif' : ''}`}>
+          <span className={`float-left text-[22px] leading-[0.85] pr-1 ${serif ? 'font-serif' : 'font-medium'}`}>I</span>
+          {SPECIMEN_TEXT.slice(3)}
+        </p>
+        <p className={`text-[9px] leading-[1.7] text-slate-700 text-justify mt-1.5 ${serif ? 'font-serif' : ''}`}>
+          {SPECIMEN_TEXT}
+        </p>
+      </div>
+      <p className="text-[11px] text-slate-500 text-center">{caption}</p>
     </div>
   )
 }

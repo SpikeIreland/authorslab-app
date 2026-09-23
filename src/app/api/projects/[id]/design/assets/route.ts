@@ -9,13 +9,14 @@ interface CoverAssetRow {
   kind: string
   storage_path: string
   created_at: string
-  source: { prompt?: string; cover_index?: number; execution_id?: string } | null
+  source: { prompt?: string; cover_index?: number; execution_id?: string; layout?: string } | null
 }
 
 // GET /api/projects/[id]/design/assets
 // Lists this project's cover artwork (generated + uploaded) with short-lived
-// signed URLs for the private cover-assets bucket. RLS scopes both the table
-// read and the signed-URL creation to the signed-in author.
+// signed URLs for the private cover-assets bucket, plus light project meta the
+// Design tab's previews typeset (title, author display name). RLS scopes the
+// table reads and signed-URL creation to the signed-in author.
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -28,11 +29,18 @@ export async function GET(
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   }
 
-  const { data, error } = await supabase
-    .from('cover_assets')
-    .select('id, kind, storage_path, created_at, source')
-    .eq('manuscript_id', id)
-    .order('created_at', { ascending: false })
+  const [{ data, error }, { data: manuscript }] = await Promise.all([
+    supabase
+      .from('cover_assets')
+      .select('id, kind, storage_path, created_at, source')
+      .eq('manuscript_id', id)
+      .order('created_at', { ascending: true }),
+    supabase
+      .from('manuscripts')
+      .select('title, genre, author_profiles ( first_name, last_name )')
+      .eq('id', id)
+      .maybeSingle(),
+  ])
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
@@ -50,19 +58,37 @@ export async function GET(
         storagePath: row.storage_path,
         createdAt: row.created_at,
         coverIndex: row.source?.cover_index ?? null,
+        layout: row.source?.layout === 'wraparound' ? 'wraparound' : 'front',
         url: signed?.signedUrl ?? null,
       }
     })
   )
 
-  return NextResponse.json({ assets })
+  const profile = (manuscript as unknown as {
+    title?: string
+    genre?: string
+    author_profiles?: { first_name?: string; last_name?: string } | null
+  } | null)
+  const authorName = [profile?.author_profiles?.first_name, profile?.author_profiles?.last_name]
+    .filter(Boolean)
+    .join(' ')
+
+  return NextResponse.json({
+    assets,
+    project: {
+      title: profile?.title ?? 'Untitled',
+      genre: profile?.genre ?? '',
+      authorName: authorName || 'Author Name',
+    },
+  })
 }
 
 // POST /api/projects/[id]/design/assets
-// Asks Taylor to generate three cover artwork concepts: verifies ownership,
-// guarantees the publishing_progress row the workflow's first node updates,
-// then fires the n8n webhook fire-and-forget (the workflow itself takes
-// minutes; the client polls GET for arrival).
+// Asks Taylor to generate cover artwork: verifies ownership, guarantees the
+// publishing_progress row the workflow's first node updates, then fires the
+// n8n webhook fire-and-forget (the workflow takes minutes; the client polls
+// GET for arrival). Body may carry mood/colors/elements overrides and
+// layout: 'wraparound' for a single full-jacket artwork.
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -98,6 +124,7 @@ export async function POST(
     mood?: string
     colors?: string
     elements?: string
+    layout?: string
   }
 
   // The workflow's first node UPDATEs publishing_progress and stops silently
@@ -109,6 +136,8 @@ export async function POST(
     return NextResponse.json({ error: progressError.message }, { status: 500 })
   }
 
+  const layout = body.layout === 'wraparound' ? 'wraparound' : undefined
+
   const payload = {
     manuscriptId: id,
     manuscriptTitle: manuscript.title ?? 'the book',
@@ -116,6 +145,7 @@ export async function POST(
     mood: body.mood?.trim() || 'atmospheric, evocative, true to the genre',
     colors: body.colors?.trim() || 'a restrained, sophisticated palette suited to the genre',
     elements: body.elements?.trim() || 'imagery drawn from the book’s themes, strong single focal point',
+    ...(layout ? { layout } : {}),
   }
 
   // Fire and forget: the webhook only responds when the whole run finishes,
@@ -138,5 +168,5 @@ export async function POST(
     clearTimeout(timer)
   }
 
-  return NextResponse.json({ started: true })
+  return NextResponse.json({ started: true, expected: layout === 'wraparound' ? 1 : 3 })
 }

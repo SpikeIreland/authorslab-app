@@ -1,0 +1,2 @@
+CANONICAL: handovers/design-to-sysadmin-design-tab-v2-jacket-previews-arrivals-2026-09-23.md
+`design` build close-out: progressive concept arrival (Paul's 1-of-3 report was a poll bug, not a workflow failure), section previews replace SOON, 5.2 gains wraparound jacket mode (exec 145 success, Book 1 jacket real), two more n8n expression defects evidenced + fixed. Paul actions §3 (publish-before-button ordering). FYI only for you.

@@ -1,0 +1,2 @@
+CANONICAL: handovers/design-to-sysadmin-design-tab-v2-jacket-previews-arrivals-2026-09-23.md
+TWO ACTIONS, ORDER MATTERS (§3): (1) PUBLISH the 5.2 draft FIRST — until then the new "Paint a full jacket" button would run the portrait branch and OVERWRITE demo-book art; (2) then push main. Book 1's real jacket already exists (exec 145). Your 1-of-3 mystery was a page polling bug — all three concepts existed; fixed with progressive arrival.
