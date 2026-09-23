@@ -26,7 +26,7 @@ type SectionId = 'audience' | 'pitch' | 'launch-plan' | 'content' | 'reviews' | 
 
 const SECTIONS: Array<{ id: SectionId; label: string; preview?: boolean }> = [
   { id: 'audience', label: 'Audience' },
-  { id: 'pitch', label: 'Pitch', preview: true },
+  { id: 'pitch', label: 'Pitch' },
   { id: 'launch-plan', label: 'Launch plan' },
   { id: 'content', label: 'Content', preview: true },
   { id: 'reviews', label: 'Reviews', preview: true },
@@ -228,6 +228,9 @@ export default function MarketingTabPage() {
         {section === 'audience' && (
           <AudienceSection projectId={projectId} />
         )}
+        {section === 'pitch' && (
+          <PitchSection projectId={projectId} onGoToAudience={() => setSection('audience')} />
+        )}
         {section === 'launch-plan' && (
           <LaunchPlanSection
             loading={stateLoading}
@@ -237,7 +240,7 @@ export default function MarketingTabPage() {
             onToggleTask={toggleTask}
           />
         )}
-        {section !== 'launch-plan' && section !== 'audience' && (
+        {section !== 'launch-plan' && section !== 'audience' && section !== 'pitch' && (
           <SectionPreview sectionId={section} />
         )}
       </main>
@@ -770,6 +773,242 @@ function AudienceEditor({
   )
 }
 
+// ============================================================================
+// Pitch section — the book in five containers, written for the agreed reader
+// ============================================================================
+
+interface PitchProfile {
+  oneLiner: string
+  compLine: string
+  backCover: string
+  longPitch: string
+  spokenIntro: string
+  generatedAt: string
+  editedAt?: string
+}
+
+const PITCH_FIELDS: Array<{ key: keyof PitchProfile; label: string; hint: string; rows: number }> = [
+  { key: 'oneLiner', label: 'One line', hint: 'Stops the right reader scrolling.', rows: 2 },
+  { key: 'compLine', label: 'Shelf comparison', hint: 'The X-meets-Y, using books they own.', rows: 2 },
+  { key: 'backCover', label: 'Back cover', hint: 'What a browser reads before buying.', rows: 8 },
+  { key: 'longPitch', label: 'Long pitch', hint: 'For a blogger, journalist or agent.', rows: 12 },
+  { key: 'spokenIntro', label: 'Said out loud', hint: 'Thirty seconds on a podcast.', rows: 6 },
+]
+
+function PitchSection({ projectId, onGoToAudience }: { projectId: string; onGoToAudience: () => void }) {
+  const [pitch, setPitch] = useState<PitchProfile | null>(null)
+  const [hasAudience, setHasAudience] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [generating, setGenerating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState<PitchProfile | null>(null)
+  const [copied, setCopied] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await fetch(`/api/projects/${projectId}/marketing/pitch`)
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({})) as { error?: string }
+          throw new Error(body.error || `couldn\u2019t load (${res.status})`)
+        }
+        const json = await res.json() as { pitch: PitchProfile | null; hasAudience: boolean }
+        if (!cancelled) { setPitch(json.pitch); setHasAudience(json.hasAudience) }
+      } catch (err) {
+        if (!cancelled) setError(err instanceof Error ? err.message : 'Something went wrong.')
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [projectId])
+
+  const generate = useCallback(async () => {
+    setGenerating(true)
+    setError(null)
+    try {
+      const res = await fetch(`/api/projects/${projectId}/marketing/pitch`, { method: 'POST' })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({})) as { error?: string }
+        if (body.error === 'audience_required') {
+          setHasAudience(false)
+          throw new Error('Riley needs your audience profile first \u2014 a pitch without a reader is just a summary.')
+        }
+        throw new Error(body.error || `generation failed (${res.status})`)
+      }
+      const json = await res.json() as { pitch: PitchProfile }
+      setPitch(json.pitch)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong.')
+    } finally {
+      setGenerating(false)
+    }
+  }, [projectId])
+
+  const save = useCallback(async (next: PitchProfile) => {
+    const previous = pitch
+    setPitch(next)
+    setEditing(false)
+    try {
+      const res = await fetch(`/api/projects/${projectId}/marketing/pitch`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pitch: next }),
+      })
+      if (!res.ok) throw new Error()
+    } catch {
+      setPitch(previous)
+      setError('Couldn\u2019t save that edit \u2014 your previous version is still here.')
+    }
+  }, [projectId, pitch])
+
+  const copy = useCallback((key: string, value: string) => {
+    navigator.clipboard?.writeText(value).then(
+      () => { setCopied(key); setTimeout(() => setCopied(null), 1600) },
+      () => setError('Couldn\u2019t copy that \u2014 select and copy manually.'),
+    )
+  }, [])
+
+  if (loading) return <p className="p-6 text-sm text-slate-500">Loading\u2026</p>
+
+  // Audience gate — the dependency, made visible rather than implied.
+  if (!pitch && !hasAudience) {
+    return (
+      <div className="p-6 max-w-2xl">
+        <h2 className="text-base font-medium text-slate-900 mb-1">Pitch</h2>
+        <p className="text-sm text-slate-600 leading-relaxed mb-5 max-w-lg">
+          Your pitch comes after your audience. Riley writes every line for a specific
+          reader \u2014 without one she\u2019d just be summarising your plot, which is what most
+          book blurbs get wrong.
+        </p>
+        <button
+          type="button"
+          onClick={onGoToAudience}
+          className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-sm font-medium"
+        >
+          Start with Audience
+        </button>
+      </div>
+    )
+  }
+
+  if (!pitch) {
+    return (
+      <div className="p-6 max-w-2xl">
+        <h2 className="text-base font-medium text-slate-900 mb-1">Pitch</h2>
+        <p className="text-sm text-slate-600 leading-relaxed mb-5 max-w-lg">
+          One book, five containers \u2014 a line that stops a scroll, a shelf comparison, the
+          back cover, a long pitch for media, and thirty seconds you can say out loud.
+          Riley writes all five for the reader in your audience profile, in your book\u2019s voice.
+        </p>
+        {error && (
+          <div className="mb-4 px-3 py-2 bg-rose-50 border border-rose-200 rounded-md text-xs text-rose-800">{error}</div>
+        )}
+        <button
+          type="button"
+          onClick={generate}
+          disabled={generating}
+          className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white rounded-md text-sm font-medium"
+        >
+          {generating ? 'Riley is writing\u2026' : 'Write my pitch'}
+        </button>
+        {generating && <p className="mt-3 text-xs text-slate-500">This takes a few seconds.</p>}
+      </div>
+    )
+  }
+
+  if (editing && draft) {
+    return (
+      <div className="p-6 max-w-2xl">
+        <h2 className="text-base font-medium text-slate-900 mb-1">Edit pitch</h2>
+        <p className="text-xs text-slate-500 mb-5">It\u2019s your book \u2014 say it your way.</p>
+        {PITCH_FIELDS.map(f => (
+          <label key={f.key} className="block mb-4">
+            <span className="text-[11px] uppercase tracking-wider font-medium text-slate-400">{f.label}</span>
+            <textarea
+              value={String(draft[f.key] ?? '')}
+              onChange={e => setDraft({ ...draft, [f.key]: e.target.value })}
+              rows={f.rows}
+              className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md text-sm resize-none focus:outline-none focus:border-slate-500"
+            />
+          </label>
+        ))}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => save(draft)}
+            className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-sm font-medium"
+          >
+            Save
+          </button>
+          <button type="button" onClick={() => setEditing(false)} className="px-3 py-2 text-sm text-slate-600 hover:text-slate-900">
+            Cancel
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="p-6 max-w-2xl">
+      <div className="flex items-baseline justify-between mb-1 gap-4">
+        <h2 className="text-base font-medium text-slate-900">Pitch</h2>
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <button
+            type="button"
+            onClick={() => { setDraft(pitch); setEditing(true) }}
+            className="text-xs text-slate-500 underline hover:text-slate-700"
+          >
+            Edit
+          </button>
+          <button
+            type="button"
+            onClick={generate}
+            disabled={generating}
+            className="text-xs text-slate-500 underline hover:text-slate-700 disabled:no-underline disabled:text-slate-300"
+          >
+            {generating ? 'Rewriting\u2026' : 'Rewrite'}
+          </button>
+        </div>
+      </div>
+      <p className="text-xs text-slate-500 mb-6">
+        {pitch.editedAt ? 'Edited by you' : 'Written by Riley for your audience profile'} \u00b7 yours to change
+      </p>
+
+      {error && (
+        <div className="mb-5 px-3 py-2 bg-rose-50 border border-rose-200 rounded-md text-xs text-rose-800">{error}</div>
+      )}
+
+      {PITCH_FIELDS.map(f => {
+        const value = String(pitch[f.key] ?? '')
+        if (!value) return null
+        return (
+          <section key={f.key} className="mb-7">
+            <div className="flex items-baseline justify-between gap-3 mb-1.5">
+              <h3 className="text-[11px] uppercase tracking-wider font-medium text-slate-400">{f.label}</h3>
+              <button
+                type="button"
+                onClick={() => copy(f.key, value)}
+                className="text-[11px] text-slate-400 hover:text-slate-700 flex-shrink-0"
+              >
+                {copied === f.key ? 'Copied' : 'Copy'}
+              </button>
+            </div>
+            <p className={`text-slate-800 whitespace-pre-wrap leading-relaxed ${
+              f.key === 'oneLiner' ? 'text-lg font-medium leading-snug' : 'text-sm'
+            }`}>
+              {value}
+            </p>
+            <p className="text-[11px] text-slate-400 mt-1">{f.hint}</p>
+          </section>
+        )
+      })}
+    </div>
+  )
+}
+
 function SectionPreview({ sectionId }: { sectionId: SectionId }) {
   const titles: Record<SectionId, string> = {
     audience: 'Audience',
@@ -781,7 +1020,7 @@ function SectionPreview({ sectionId }: { sectionId: SectionId }) {
   }
   const blurbs: Record<SectionId, string> = {
     audience: '',
-    pitch: 'Short pitch, long pitch, social one-liner, podcast intro. Same book, different containers \u2014 written against your audience profile.',
+    pitch: '',
     'launch-plan': '',
     content: 'Social posts, email sequences, podcast pitches \u2014 drafted from your pitch and aimed at the channels in your audience profile.',
     reviews: 'ARC strategy, reviewer outreach, and follow-up \u2014 tracked so you know who has your book and who has posted.',
@@ -800,7 +1039,6 @@ function SectionPreview({ sectionId }: { sectionId: SectionId }) {
 
       <div className="relative">
         <div aria-hidden className="pointer-events-none select-none space-y-5">
-          {sectionId === 'pitch' && <PitchPreview />}
           {sectionId === 'content' && <ContentPreview />}
           {sectionId === 'reviews' && <ReviewsPreview />}
           {sectionId === 'performance' && <PerformancePreview />}
@@ -828,24 +1066,6 @@ function PreviewBlock({ label, children }: { label: string; children: React.Reac
 
 function GhostLine({ w = 'w-full' }: { w?: string }) {
   return <span className={`block h-2 rounded bg-slate-200 ${w}`} />
-}
-
-function PitchPreview() {
-  return (
-    <>
-      <PreviewBlock label="One line">
-        <div className="space-y-1.5"><GhostLine w="w-4/5" /></div>
-      </PreviewBlock>
-      <PreviewBlock label="Back cover">
-        <div className="space-y-1.5">
-          <GhostLine /><GhostLine /><GhostLine w="w-11/12" /><GhostLine w="w-2/3" />
-        </div>
-      </PreviewBlock>
-      <PreviewBlock label="Podcast intro">
-        <div className="space-y-1.5"><GhostLine /><GhostLine w="w-3/4" /></div>
-      </PreviewBlock>
-    </>
-  )
 }
 
 function ContentPreview() {

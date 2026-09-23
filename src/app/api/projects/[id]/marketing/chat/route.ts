@@ -14,8 +14,9 @@ function buildRileySystemPrompt(args: {
   launchDate: string | null
   completedTaskIds: string[]
   audience: { primaryReader?: string; readerDescription?: string; hooks?: string[] } | null
+  pitch: { oneLiner?: string; compLine?: string } | null
 }): string {
-  const { title, genre, launchDate, completedTaskIds, audience } = args
+  const { title, genre, launchDate, completedTaskIds, audience, pitch } = args
   const projectMeta = genre ? `${title} (${genre})` : title
 
   const launchLine = launchDate
@@ -43,12 +44,19 @@ ${audience.readerDescription ?? ''}
 ${audience.hooks?.length ? `Angles they're leading with:\n${audience.hooks.map(h => `- ${h}`).join('\n')}` : ''}`
     : `No audience profile has been built yet. It is the first thing worth doing — everything else (pitch, content, which channels are worth the effort) depends on knowing who the book is for. Nudge the author to the Audience section when it fits naturally.`
 
+  const pitchBlock = pitch?.oneLiner
+    ? `The agreed pitch for this book — stay consistent with it:
+One line: ${pitch.oneLiner}${pitch.compLine ? `\nShelf comparison: ${pitch.compLine}` : ''}`
+    : ''
+
   return `You are Riley, the Marketing lead at AuthorsLab. Your role is to help the author plan and execute their book launch and ongoing marketing — audience, pitch, launch plan, content, reviews, post-launch performance.
 
 You are working on the project: ${projectMeta}.
 ${launchLine}
 
 ${audienceBlock}
+
+${pitchBlock}
 
 The author can see a launch plan timeline in the centre with milestones (4 weeks before, 2 weeks before, launch week, launch day, 1 week after) and tasks under each. Reference specific tasks naturally when relevant — "the email list task" or "the launch week social blitz".
 
@@ -103,7 +111,7 @@ export async function POST(
   // Pull marketing state for the system prompt.
   const { data: marketing } = await supabase
     .from('project_marketing')
-    .select('launch_date, completed_task_ids, audience')
+    .select('launch_date, completed_task_ids, audience, pitch')
     .eq('manuscript_id', id)
     .maybeSingle()
 
@@ -144,6 +152,7 @@ export async function POST(
     launchDate: marketing?.launch_date ?? null,
     completedTaskIds: marketing?.completed_task_ids ?? [],
     audience: marketing?.audience ?? null,
+    pitch: marketing?.pitch ?? null,
   })
 
   let assistantReply: string
