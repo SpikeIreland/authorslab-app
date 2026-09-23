@@ -143,7 +143,7 @@ function CompleteProceedScreen({ manuscriptId, manuscriptTitle }: { manuscriptId
                                 </li>
                             </ul>
                             <button
-                                onClick={() => router.push(`/publishing-hub?manuscriptId=${manuscriptId}`)}
+                                onClick={() => router.push(`/projects/${manuscriptId}/publishing`)}
                                 className="w-full bg-taylor text-white px-6 py-4 rounded-xl font-bold text-lg hover:bg-taylor/90 transition-all shadow-md hover:shadow-lg"
                             >
                                 Start Phase 4 with Taylor →
@@ -177,7 +177,7 @@ function CompleteProceedScreen({ manuscriptId, manuscriptTitle }: { manuscriptId
                                 </li>
                             </ul>
                             <button
-                                onClick={() => router.push(`/marketing-hub?manuscriptId=${manuscriptId}`)}
+                                onClick={() => router.push(`/projects/${manuscriptId}/marketing`)}
                                 className="w-full bg-riley text-white px-6 py-4 rounded-xl font-bold text-lg hover:bg-riley/90 transition-all shadow-md hover:shadow-lg"
                             >
                                 Start Phase 5 with Riley →

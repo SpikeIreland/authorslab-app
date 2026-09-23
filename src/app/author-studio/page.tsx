@@ -1401,14 +1401,14 @@ function StudioContent() {
         // and not when we arrived here via the complete-book fallback above.
         if (!phaseParam && !usedCompleteBookFallback) {
           if (phaseToLoad.phase_number === 4) {
-            console.log('📚 Phase 4 active - redirecting to Publishing Hub')
-            router.push(`/publishing-hub?manuscriptId=${manuscriptId}`)
+            console.log('📚 Phase 4 active - redirecting to Publishing tab')
+            router.push(`/projects/${manuscriptId}/publishing`)
             return
           }
 
           if (phaseToLoad.phase_number === 5) {
-            console.log('📢 Phase 5 active - redirecting to Marketing Hub')
-            router.push(`/marketing-hub?manuscriptId=${manuscriptId}`)
+            console.log('📢 Phase 5 active - redirecting to Marketing tab')
+            router.push(`/projects/${manuscriptId}/marketing`)
             return
           }
         }
@@ -2871,7 +2871,8 @@ function StudioContent() {
                     <button
                       onClick={() => {
                         if (isAvailable) {
-                          router.push(`/publishing-hub?manuscriptId=${manuscript?.id}`)
+                          // New shell surface, not the legacy /publishing-hub.
+                          router.push(`/projects/${manuscript?.id}/publishing`)
                         }
                       }}
                       disabled={!isAvailable}
@@ -2881,7 +2882,7 @@ function StudioContent() {
                           ? 'bg-taylor text-white hover:bg-taylor-text cursor-pointer'
                           : 'bg-line-soft text-faint cursor-not-allowed'
                         }`}
-                      title={isAvailable ? 'Go to Publishing Hub' : 'Publishing (Locked)'}
+                      title={isAvailable ? 'Go to Publishing' : 'Publishing (Locked)'}
                     >
                       T
                     </button>
@@ -2898,7 +2899,8 @@ function StudioContent() {
                     <button
                       onClick={() => {
                         if (isAvailable) {
-                          router.push(`/marketing-hub?manuscriptId=${manuscript?.id}`)
+                          // New shell surface, not the legacy /marketing-hub.
+                          router.push(`/projects/${manuscript?.id}/marketing`)
                         }
                       }}
                       disabled={!isAvailable}
@@ -2908,7 +2910,7 @@ function StudioContent() {
                           ? 'bg-riley text-white hover:bg-riley-text cursor-pointer'
                           : 'bg-line-soft text-faint cursor-not-allowed'
                         }`}
-                      title={isAvailable ? 'Go to Marketing Hub' : 'Marketing (Locked)'}
+                      title={isAvailable ? 'Go to Marketing' : 'Marketing (Locked)'}
                     >
                       R
                     </button>
@@ -3468,9 +3470,9 @@ function StudioContent() {
                     )}
 
                     {activePhase?.phase_number === 4 && (
-                      // Phase 4 complete - Go to Marketing Hub with Riley
+                      // Phase 4 complete - Go to Marketing with Riley
                       <button
-                        onClick={() => router.push(`/marketing-hub?manuscriptId=${manuscript?.id}`)}
+                        onClick={() => router.push(`/projects/${manuscript?.id}/marketing`)}
                         className="px-6 py-3 bg-riley hover:bg-riley-text text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse"
                       >
                         Start Marketing with Riley
