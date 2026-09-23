@@ -8,6 +8,18 @@
  * §3), swapping to real rows is a single import change in page.tsx, not a
  * rewrite of the page.
  *
+ * ─── Imprints ────────────────────────────────────────────────────────────────
+ * A publishing studio runs several imprints and its CEO manages the portfolio
+ * ACROSS them — which books sit where, and what is in flight in each. The
+ * shelf sorted and filtered by author alone answers an editor's question, not
+ * a publisher's.
+ *
+ * The imprint names below are INVENTED, like the authors. Swapping them for a
+ * real studio's imprints is one edit to IMPRINTS and the `imprint` field on
+ * each row — deliberately a conscious act, not a default, because a demo
+ * showing a prospect's own imprint names populated with invented books can
+ * read as presumption rather than tailoring. Decide that per room.
+ *
  * ─── The author names are invented, on purpose ───────────────────────────────
  * Every author below except Carl Lyons is a fictional person. A demo list
  * carrying real authors' names, shown to a literary agent, reads as a claim
@@ -19,12 +31,17 @@
 
 export type PhaseNumber = 1 | 2 | 3 | 4 | 5
 
+/** The studio's imprints. Order here is the order they appear on the shelf. */
+export const IMPRINTS = ['Meridian Editions', 'Longshore Books'] as const
+export type Imprint = (typeof IMPRINTS)[number]
+
 export interface StableListing {
   /** Stable key for React. Not a manuscript id. */
   key: string
   title: string
   authorFirst: string
   authorLast: string
+  imprint: Imprint
   genre: string
   wordCount: number
   chapters: number
@@ -77,6 +94,7 @@ export const STABLE: StableListing[] = [
     title: 'The Veil and the Flame',
     authorFirst: 'Carl',
     authorLast: 'Lyons',
+    imprint: 'Meridian Editions',
     genre: 'Science fiction',
     wordCount: 47291,
     chapters: 37,
@@ -89,6 +107,7 @@ export const STABLE: StableListing[] = [
     title: 'Salt and Tinder',
     authorFirst: 'Moira',
     authorLast: 'Vance',
+    imprint: 'Meridian Editions',
     genre: 'Literary fiction',
     wordCount: 82140,
     chapters: 41,
@@ -101,6 +120,7 @@ export const STABLE: StableListing[] = [
     title: 'The Quiet Cartographer',
     authorFirst: 'Emeka',
     authorLast: 'Duru',
+    imprint: 'Meridian Editions',
     genre: 'Historical fiction',
     wordCount: 96430,
     chapters: 52,
@@ -113,6 +133,7 @@ export const STABLE: StableListing[] = [
     title: 'Nightjar Season',
     authorFirst: 'Róisín',
     authorLast: 'Caffrey',
+    imprint: 'Longshore Books',
     genre: 'Crime',
     wordCount: 74880,
     chapters: 44,
@@ -125,6 +146,7 @@ export const STABLE: StableListing[] = [
     title: 'What the Tide Owes',
     authorFirst: 'Priya',
     authorLast: 'Raghunathan',
+    imprint: 'Meridian Editions',
     genre: 'Literary fiction',
     wordCount: 68020,
     chapters: 33,
@@ -137,6 +159,7 @@ export const STABLE: StableListing[] = [
     title: 'The Antikythera Letters',
     authorFirst: 'Tomas',
     authorLast: 'Berg',
+    imprint: 'Longshore Books',
     genre: 'Historical thriller',
     wordCount: 91005,
     chapters: 48,
@@ -149,6 +172,7 @@ export const STABLE: StableListing[] = [
     title: 'Small Mercies at Scale',
     authorFirst: 'Delphine',
     authorLast: 'Okonjo',
+    imprint: 'Longshore Books',
     genre: 'Non-fiction',
     wordCount: 58760,
     chapters: 22,
@@ -161,6 +185,7 @@ export const STABLE: StableListing[] = [
     title: 'The Hollow Orchard',
     authorFirst: 'Aled',
     authorLast: 'Pryce',
+    imprint: 'Meridian Editions',
     genre: 'Speculative fiction',
     wordCount: 39410,
     chapters: 19,
@@ -174,6 +199,11 @@ export const STABLE: StableListing[] = [
 
 export function fullName(l: StableListing): string {
   return `${l.authorFirst} ${l.authorLast}`
+}
+
+/** Books in an imprint, in shelf order. */
+export function inImprint(listings: StableListing[], imprint: Imprint): StableListing[] {
+  return listings.filter((l) => l.imprint === imprint)
 }
 
 /** Unique author names, surname-sorted — drives the filter control. */

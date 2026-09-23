@@ -899,9 +899,9 @@ function MarketingPlanSection() {
     'Sci-fi shelf browsers who read one literary novel a year',
   ]
   const channels = [
-    'Independent bookstore ARC campaign',
+    'Independent bookseller ARC campaign',
     'Sci-fi podcast tour (6 shows lined up)',
-    'Substack essay series by the author',
+    'Author essay series and newsletter',
     'Book club discussion kit',
   ]
   const comps = [
@@ -994,24 +994,34 @@ function MarketingPlanSection() {
 // ─── 5. Publishing route selector ─────────────────────────────────────────────
 
 function PublishingRouteSection() {
+  // Route copy is written for a TRADE publisher reading their own surface.
+  //
+  // The previous third option read "Author publishes independently under an
+  // AuthorsLab imprint carrying your firm's imprimatur" — which tells a
+  // publisher that AuthorsLab has an imprint and their role is to lend it
+  // their name, on the page about who takes the book to market. Removed.
+  // AuthorsLab is infrastructure here, not a competing publisher.
+  //
+  // "Substack rights" was indie-author vocabulary; the subsidiary rights a
+  // trade house actually negotiates are audio, translation, serial and film/TV.
   const routes = [
     {
       id: 'traditional',
       title: 'Traditional',
       body:
-        'AuthorsLab hands the fully-edited manuscript to your acquisitions team. Publisher owns rights, timeline, and route to market.',
+        'The finished manuscript and every production file pass to your team. You hold the rights, the timeline and the route to market.',
     },
     {
       id: 'hybrid',
       title: 'Hybrid',
       body:
-        'Publisher takes rights for print and premium channels; author retains audiobook and Substack rights.',
+        'You take print and the primary trade channels. The author retains the subsidiary rights you agree between you — typically audio, translation, or film and TV.',
     },
     {
       id: 'self',
-      title: 'Self-Publishing (with publisher endorsement)',
+      title: 'Independent, with your endorsement',
       body:
-        'Author publishes independently under an AuthorsLab imprint carrying your firm’s imprimatur.',
+        'The author publishes independently and keeps the rights. Your endorsement travels with the book.',
     },
   ]
 

@@ -21,7 +21,9 @@ import { useRouter } from 'next/navigation'
 import {
   STABLE,
   PHASE_NAMES,
+  IMPRINTS,
   authorsInStable,
+  inImprint,
   fullName,
   type StableListing,
   type PhaseNumber,
@@ -62,15 +64,17 @@ export default function PublisherHomePage() {
 
   const [sortKey, setSortKey] = useState<SortKey>('activity')
   const [authorFilter, setAuthorFilter] = useState<string>('all')
+  const [imprintFilter, setImprintFilter] = useState<string>('all')
   const [sampleNoticeFor, setSampleNoticeFor] = useState<string | null>(null)
 
   const authors = useMemo(() => authorsInStable(STABLE), [])
 
   const visible = useMemo(() => {
-    const filtered =
-      authorFilter === 'all'
-        ? STABLE.slice()
-        : STABLE.filter((l) => fullName(l) === authorFilter)
+    const filtered = STABLE.filter(
+      (l) =>
+        (authorFilter === 'all' || fullName(l) === authorFilter) &&
+        (imprintFilter === 'all' || l.imprint === imprintFilter)
+    )
 
     return filtered.sort((a, b) => {
       if (sortKey === 'title') return a.title.localeCompare(b.title)
@@ -81,7 +85,7 @@ export default function PublisherHomePage() {
       // activity — most recent first
       return b.lastActivity.localeCompare(a.lastActivity)
     })
-  }, [sortKey, authorFilter])
+  }, [sortKey, authorFilter, imprintFilter])
 
   function openListing(listing: StableListing) {
     if (listing.projectId) {
@@ -99,10 +103,17 @@ export default function PublisherHomePage() {
       <main className="max-w-[1200px] mx-auto px-8 py-10">
         <Masthead count={visible.length} total={STABLE.length} />
 
+        <PortfolioStrip
+          activeImprint={imprintFilter}
+          onImprint={setImprintFilter}
+        />
+
         <Controls
           authors={authors}
           authorFilter={authorFilter}
           onAuthorFilter={setAuthorFilter}
+          imprintFilter={imprintFilter}
+          onImprintFilter={setImprintFilter}
           sortKey={sortKey}
           onSort={setSortKey}
         />
@@ -187,23 +198,149 @@ function Masthead({ count, total }: { count: number; total: number }) {
   )
 }
 
+// ─── 4b. Portfolio strip — the view across imprints ───────────────────────────
+//
+// A CEO running several imprints manages the PORTFOLIO, not a list. The
+// question is "what is in flight, where, and how far along" — across both
+// imprints at once. This strip answers it before any row is read, and doubles
+// as the imprint filter.
+//
+// Deliberately counts rather than charts: eight books is not a dataset, and a
+// bar chart over single digits dresses up a number you can simply read.
+
+function PortfolioStrip({
+  activeImprint,
+  onImprint,
+}: {
+  activeImprint: string
+  onImprint: (v: string) => void
+}) {
+  const cards = IMPRINTS.map((im) => {
+    const books = inImprint(STABLE, im)
+    const inProduction = books.filter((b) => b.phase >= 4).length
+    const inEditorial = books.filter((b) => b.phase <= 3).length
+    return { imprint: im, total: books.length, inProduction, inEditorial }
+  })
+
+  const all = STABLE.length
+
+  return (
+    <div className="mb-8">
+      <div className="text-[11px] tracking-[0.14em] uppercase text-[#8A8A8A] mb-3">
+        Across the studio
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <ImprintCard
+          label="All imprints"
+          total={all}
+          lines={[`${STABLE.filter((b) => b.phase <= 3).length} in editorial`, `${STABLE.filter((b) => b.phase >= 4).length} in production`]}
+          active={activeImprint === 'all'}
+          onClick={() => onImprint('all')}
+        />
+        {cards.map((c) => (
+          <ImprintCard
+            key={c.imprint}
+            label={c.imprint}
+            total={c.total}
+            lines={[`${c.inEditorial} in editorial`, `${c.inProduction} in production`]}
+            active={activeImprint === c.imprint}
+            onClick={() => onImprint(c.imprint)}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function ImprintCard({
+  label,
+  total,
+  lines,
+  active,
+  onClick,
+}: {
+  label: string
+  total: number
+  lines: string[]
+  active: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`text-left p-5 rounded-[4px] border transition-colors focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 ${
+        active
+          ? 'bg-white border-[#1E3A5F]'
+          : 'bg-white border-[#E8E5E0] hover:border-[#B8B8B8]'
+      }`}
+      style={{ boxShadow: active ? 'inset 0 0 0 1px #1E3A5F' : '0 1px 0 rgba(0,0,0,0.02)' }}
+    >
+      <div
+        className="text-[16px] text-[#1A1A1A] leading-tight"
+        style={{ fontFamily: 'Iowan Old Style, Palatino, Georgia, serif' }}
+      >
+        {label}
+      </div>
+      <div className="mt-2 flex items-baseline gap-1.5">
+        <span
+          className="text-[28px] leading-none text-[#1A1A1A]"
+          style={{ fontFamily: 'Iowan Old Style, Palatino, Georgia, serif' }}
+        >
+          {total}
+        </span>
+        <span className="text-[12px] text-[#8A8A8A]">
+          {total === 1 ? 'book' : 'books'}
+        </span>
+      </div>
+      <div className="mt-2.5 text-[12px] text-[#8A8A8A] leading-relaxed">
+        {lines.join(' · ')}
+      </div>
+    </button>
+  )
+}
+
 // ─── 5. Controls — sort + filter by author ────────────────────────────────────
 
 function Controls({
   authors,
   authorFilter,
   onAuthorFilter,
+  imprintFilter,
+  onImprintFilter,
   sortKey,
   onSort,
 }: {
   authors: string[]
   authorFilter: string
   onAuthorFilter: (v: string) => void
+  imprintFilter: string
+  onImprintFilter: (v: string) => void
   sortKey: SortKey
   onSort: (k: SortKey) => void
 }) {
   return (
     <div className="flex flex-wrap items-end justify-between gap-6 pb-5">
+      <label className="flex flex-col gap-1.5">
+        <span className="text-[11px] tracking-[0.14em] uppercase text-[#8A8A8A]">
+          Imprint
+        </span>
+        <select
+          value={imprintFilter}
+          onChange={(e) => onImprintFilter(e.target.value)}
+          className="text-[14px] text-[#1A1A1A] bg-white border border-[#E8E5E0] rounded-[3px] px-3.5 py-2 min-w-[200px] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 focus:border-[#1E3A5F]"
+        >
+          <option value="all">All imprints</option>
+          {IMPRINTS.map((im) => (
+            <option key={im} value={im}>
+              {im}
+            </option>
+          ))}
+        </select>
+      </label>
+
       <label className="flex flex-col gap-1.5">
         <span className="text-[11px] tracking-[0.14em] uppercase text-[#8A8A8A]">
           Filter by author
@@ -288,8 +425,8 @@ function ListingRow({
             {fullName(listing)}
           </div>
           <div className="mt-1.5 text-[12px] text-[#8A8A8A]">
-            {listing.genre} · {formatWordCount(listing.wordCount)} words ·{' '}
-            {listing.chapters} chapters
+            {listing.imprint} · {listing.genre} ·{' '}
+            {formatWordCount(listing.wordCount)} words · {listing.chapters} chapters
           </div>
         </div>
 
