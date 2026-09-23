@@ -41,6 +41,13 @@
   --color-riley: #84500E;
   --color-riley-light: #F5EBDE;
   --color-riley-text: #6B400B;
+  /* Morgan (Publishing). Shipped value lifted from the hardcoded #BA7517 in
+     the Publishing tab — recorded, not re-chosen. Flagged to `ux` for the
+     persona registry: this sits close to taylor/riley in hue and may want
+     reallocating in a coordinated pass. */
+  --color-morgan: #BA7517;
+  --color-morgan-light: #FBF0E4;
+  --color-morgan-text: #8A5510;
 
   /* AL-UX-007 · Status trio — reserved for state, never persona identity. */
   --color-status-ok: #5C7A6B;
