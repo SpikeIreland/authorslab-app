@@ -1,0 +1,2 @@
+CANONICAL: handovers/astudio-to-sysadmin+paul-upload-url-root-cause-no-file-was-ever-kept-2026-09-23.md
+CORRECTION — original_upload_url is not an n8n mapping fault: onboarding never stores the file at all (PDF is POSTed to extractPdfText for text and dropped; the only storage upload in onboarding is the profile image). Nothing writes the column anywhere in src. No backfill is possible for the 12 existing manuscripts — the files were never kept.

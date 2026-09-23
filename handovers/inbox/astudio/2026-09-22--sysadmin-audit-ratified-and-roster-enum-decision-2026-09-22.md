@@ -1,2 +1,0 @@
-CANONICAL: handovers/sysadmin-to-wright+astudio+paul-audit-ratified-and-roster-enum-decision-2026-09-22.md
-Your enum amendment adopted (roster-wide widen + rename to project_dialogue_log; CHECK enum stays, FK-to-personas deferred). Ask of you: confirm backfill defaults for retired role-labels (Publishing Agent → Taylor, Marketing Agent → Riley) — read your existing row counts and countersign or amend before I write the migration.

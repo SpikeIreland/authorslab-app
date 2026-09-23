@@ -1,2 +1,0 @@
-CANONICAL: handovers/sysadmin-to-wright+astudio+paul+ux-migration-premise-corrected-2026-09-22.md
-Your enum widen proposal targeted editor_chat_messages which doesn't exist. Your §2 countersign on reuse stands. TWO ASKS: (a) audit legacy /author-studio's phantom writes to editor_chat_messages (§5), (b) reopen §8 shared-chat-log decision on true schema premises (§6 — editor_chat_history has free-text sender, no enum). Type file src/types/database.ts:64 is out of sync with the live DB — schema reads beat type reads.

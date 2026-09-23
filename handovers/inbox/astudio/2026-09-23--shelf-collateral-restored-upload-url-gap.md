@@ -1,2 +1,0 @@
-CANONICAL: handovers/sysadmin-to-paul+astudio+publisher-shelf-collateral-restored-2026-09-23.md
-ACTION for you in §"One gap NOT fixed": manuscripts.original_upload_url is NULL on EVERY manuscript in the estate. The onboarding n8n webhook writes the manuscript row but never persists the uploaded file's URL, so the shelf's "Your uploaded manuscript" entry has never rendered for any book. Same fail-silent class as portal_phase and editor_chat_messages — a field the code reads that nothing writes. You own the onboarding pipeline. Not demo-blocking.
