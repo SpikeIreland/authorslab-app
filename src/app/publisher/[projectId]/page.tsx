@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useMemo } from 'react'
 import { useParams } from 'next/navigation'
+import { EDITOR_CONFIG, type PhaseNumber } from '@/types/database'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -68,18 +69,33 @@ interface ThreadMessage {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const PHASE_NAMES: Record<number, string> = {
-  1: 'Developmental',
-  2: 'Line',
-  3: 'Copy',
-  4: 'Design',
-  5: 'Marketing',
-}
+/**
+ * Phase vocabulary comes from EDITOR_CONFIG in src/types/database.ts — the
+ * shared registry — NOT from a copy kept here.
+ *
+ * This page used to carry its own map reading `4: Design` with Taylor implied
+ * and `5: Marketing`. The 2026-09-22 migration backfilled phase 4 to Morgan
+ * and renamed it Publishing Preparation, so the private copy was silently
+ * wrong the moment it shipped and the portal would have named the wrong
+ * person on camera. A duplicated constant is a divergence with a delay on it.
+ *
+ * Phase 5 currently resolves to Quinn, which the Persona Registry has open
+ * (Riley token-vs-charter). Reading the registry means this page follows that
+ * resolution with no change here — the dispute is not mine to settle or to
+ * hard-code around.
+ *
+ * Phases 1-3 are chapter-level editorial work and carry approval counts.
+ * Phases 4-5 are production stages — ISSUE_CATEGORIES_BY_PHASE is empty for
+ * both — so a chapter count under them would be meaningless even though the
+ * rows carry one.
+ */
 
-const PHASE_EDITORS: Record<number, { name: string; role: string }> = {
-  1: { name: 'Alex', role: 'Developmental Editor' },
-  2: { name: 'Sam', role: 'Line Editor' },
-  3: { name: 'Jordan', role: 'Copy Editor' },
+const EDITORIAL_PHASES: PhaseNumber[] = [1, 2, 3]
+const PRODUCTION_PHASES: PhaseNumber[] = [4, 5]
+const ALL_PHASES: PhaseNumber[] = [...EDITORIAL_PHASES, ...PRODUCTION_PHASES]
+
+function isChapterLevel(phase: PhaseNumber): boolean {
+  return EDITORIAL_PHASES.includes(phase)
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -251,7 +267,7 @@ function PortalBody({ project }: { project: PublisherProject }) {
     'the author'
   const authorFirst = project.author.first_name || 'the author'
   const phaseNum = project.current_phase_number ?? 1
-  const phaseName = PHASE_NAMES[phaseNum] ?? 'Developmental'
+  const phaseName = EDITOR_CONFIG[phaseNum as PhaseNumber]?.phaseName ?? 'Developmental Editing'
 
   return (
     <>
@@ -377,54 +393,59 @@ function MetaField({ label, value }: { label: string; value: string }) {
 // ─── 2. Editorial status ──────────────────────────────────────────────────────
 
 function EditorialStatusSection({ phases }: { phases: PhaseRow[] }) {
-  const stepData = [1, 2, 3].map((n) => {
+  const stepData = ALL_PHASES.map((n) => {
     const p = phases.find((row) => row.phase_number === n)
-    const editor = PHASE_EDITORS[n]
+    const config = EDITOR_CONFIG[n]
 
     // Phase state comes from phase_status — the orchestrator's own field and
-    // the single source of truth per the editing_phases table comment. The
-    // page previously inferred it by counting chapter approval timestamps,
-    // which the publisher-facing route deliberately does not expose.
+    // what the editing_phases table comment calls the single source of truth.
     let status: 'pending' | 'in-progress' | 'complete' = 'pending'
     if (p?.phase_status === 'complete') status = 'complete'
     else if (p?.phase_status === 'active') status = 'in-progress'
 
-    // Counts render ONLY when the route supplies them. Until then the step
-    // shows its state and its editor, and says nothing it cannot support.
-    const analyzed = p?.chapters_analyzed ?? null
-    const approved = p?.chapters_approved ?? null
+    // Counts only where a chapter is the unit of work. The rows carry a count
+    // for phases 4-5 too, but "37 of 37 chapters approved" under Marketing
+    // Strategy would be a number that means nothing.
+    const chapterLevel = isChapterLevel(n)
+    const analyzed = chapterLevel ? p?.chapters_analyzed ?? null : null
+    const approved = chapterLevel ? p?.chapters_approved ?? null : null
 
     return {
       number: n,
-      editor: p?.editor_name || editor.name,
-      role: editor.role,
+      editor: p?.editor_name || config.name,
+      role: config.phaseName,
       analyzed,
       approved,
       status,
     }
   })
 
+  const completed = stepData.filter((s) => s.status === 'complete').length
+
   return (
     <section>
-      <SectionHeading eyebrow="Editorial status" title="Where we are in the process" />
+      <SectionHeading eyebrow="Progress" title="The whole journey" />
       <Card className="p-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {stepData.map((s, i) => (
-            <div key={s.number} className="relative">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-x-5 gap-y-8">
+          {stepData.map((step, i) => (
+            <div key={step.number} className="relative">
               {i < stepData.length - 1 && (
                 <div
-                  className="hidden md:block absolute top-3 left-full w-full h-px bg-[#E8E5E0]"
+                  className="hidden lg:block absolute top-[5px] left-full w-full h-px bg-[#E8E5E0]"
                   aria-hidden
                 />
               )}
-              <StatusStep step={s} />
+              <StatusStep step={step} />
             </div>
           ))}
         </div>
 
-        <div className="mt-8 pt-6 border-t border-[#E8E5E0] flex items-center justify-between">
+        <div className="mt-8 pt-6 border-t border-[#E8E5E0] flex flex-wrap gap-4 items-center justify-between">
           <div className="text-[13px] text-[#8A8A8A]">
-            Editorial state reflects the latest pass by each editor.
+            {completed === stepData.length
+              ? 'Every stage complete. This book is ready.'
+              : `${completed} of ${stepData.length} stages complete.`}{' '}
+            Chapter counts apply to the editorial passes.
           </div>
           <a
             href="#"
@@ -465,26 +486,26 @@ function StatusStep({
         : 'Not yet started'
 
   return (
-    <div className="pr-6">
-      <div className="flex items-center gap-3 mb-3">
-        <span className={`w-3 h-3 rounded-full ${dotClass}`} aria-hidden />
-        <span className="text-[11px] tracking-[0.14em] uppercase text-[#8A8A8A]">
+    <div className="pr-4">
+      <div className="flex items-center gap-2.5 mb-3">
+        <span className={`w-3 h-3 rounded-full flex-shrink-0 ${dotClass}`} aria-hidden />
+        <span className="text-[11px] tracking-[0.12em] uppercase text-[#8A8A8A]">
           Phase {step.number}
         </span>
       </div>
       <div
-        className="text-[18px] text-[#1A1A1A] mb-1"
+        className="text-[17px] text-[#1A1A1A] mb-0.5"
         style={{ fontFamily: 'Iowan Old Style, Palatino, Georgia, serif' }}
       >
         {step.editor}
       </div>
-      <div className="text-[13px] text-[#8A8A8A] mb-3">{step.role}</div>
+      <div className="text-[12px] text-[#8A8A8A] mb-2.5 leading-snug">{step.role}</div>
       {step.approved !== null && step.analyzed !== null && (
-        <div className="text-[13px] text-[#3F3F3F]">
+        <div className="text-[12px] text-[#3F3F3F]">
           {step.approved} of {step.analyzed} chapters approved
         </div>
       )}
-      <div className="text-[12px] text-[#8A8A8A] mt-1">{statusLabel}</div>
+      <div className="text-[12px] text-[#8A8A8A] mt-0.5">{statusLabel}</div>
     </div>
   )
 }
@@ -1121,7 +1142,7 @@ function CommunicationsThreadSection({
   phases: PhaseRow[]
 }) {
   const initial: ThreadMessage[] = useMemo(() => {
-    const editorMessages: ThreadMessage[] = [1, 2, 3].map((n) => {
+    const editorMessages: ThreadMessage[] = EDITORIAL_PHASES.map((n) => {
       const p = phases.find((row) => row.phase_number === n)
       const lines = EDITOR_LINES[n]
       const body =
@@ -1133,8 +1154,8 @@ function CommunicationsThreadSection({
 
       return {
         id: `phase-${n}`,
-        sender: p?.editor_name || PHASE_EDITORS[n].name,
-        role: PHASE_EDITORS[n].role,
+        sender: p?.editor_name || EDITOR_CONFIG[n].name,
+        role: EDITOR_CONFIG[n].phaseName,
         body,
         when: RELATIVE_WHEN[n],
       }
