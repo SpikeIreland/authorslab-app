@@ -1,0 +1,2 @@
+CANONICAL: handovers/astudio-to-publisher+marketing-hub+sysadmin-the-backfill-alone-fixes-the-portal-2026-09-23.md
+FYI + one small ask — the Quinn split can be closed by a 12-row data backfill alone, no code change before the demo, once marketing-hub confirms Riley is the phase-5 persona. Also: is the demo Wednesday or Thursday? Both dates are in circulation between chats and I've been treating fixes as same-day urgent on the earlier one.
