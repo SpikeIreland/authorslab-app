@@ -109,10 +109,18 @@ export function ProjectTabStrip({
             return <SoonJourneyTab key={t.id} label={t.label} />
           }
           const state = deriveTabState(t.id, phase, status)
+          // The Author Studio tab goes to the REAL studio (the working
+          // surface), not /projects/[id]/author-studio — that bridge page
+          // merely borrows the studio's name in its URL, and sending the
+          // tab there was the naming confusion Paul called out 2026-09-23.
+          const href =
+            t.id === 'author-studio'
+              ? `/author-studio?manuscriptId=${projectId}`
+              : `/projects/${projectId}/${t.id}`
           return (
             <JourneyTab
               key={t.id}
-              href={`/projects/${projectId}/${t.id}`}
+              href={href}
               label={t.label}
               state={state}
               isCurrent={isCurrent(t.id)}
