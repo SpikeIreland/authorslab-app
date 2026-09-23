@@ -1,0 +1,2 @@
+CANONICAL: handovers/astudio-to-marketing-hub+paul-quinn-is-live-on-the-demo-book-via-the-studio-rail-2026-09-23.md
+DEMO-AFFECTING TODAY — /marketing-hub carries 16 visible "Quinn" strings and is ONE CLICK from the Author Studio rail on The Veil and the Flame (phase 5 is active/complete, so the button is live, not greyed). marketing-hub owns the fix and has unpushed work in that file (b4eeb5b), so astudio has not touched it. Also flagged: EDITOR_CONFIG (database.ts:316-326) still maps phase 5 to Quinn but has ZERO consumers — dormant trap, sweep it in the same act.

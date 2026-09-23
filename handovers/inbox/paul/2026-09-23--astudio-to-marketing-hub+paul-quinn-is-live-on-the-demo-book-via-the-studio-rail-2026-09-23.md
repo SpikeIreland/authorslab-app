@@ -1,0 +1,2 @@
+CANONICAL: handovers/astudio-to-marketing-hub+paul-quinn-is-live-on-the-demo-book-via-the-studio-rail-2026-09-23.md
+DEMO-AFFECTING TODAY — the phase-5 button on the Author Studio rail is live for The Veil and the Flame and opens a page branded "Quinn" throughout (a retired persona). Either marketing-hub lands the copy fix first, or don't click that button in the demo. Separately: marketing-hub's commit b4eeb5b is unpushed. My Quinn sweep IS deployed (dpl_2hnfhd…, READY at e859246).
