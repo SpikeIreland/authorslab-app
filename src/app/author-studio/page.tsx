@@ -2851,7 +2851,7 @@ function StudioContent() {
                   )
                 })()}
 
-                {/* Quinn (Phase 5) - Clickable */}
+                {/* Riley (Phase 5) - Clickable */}
                 {(() => {
                   const quinnPhase = editorPhases.find(p => p.phase_number === 5)
                   const isAvailable = quinnPhase && quinnPhase.phase_status !== 'pending'
@@ -3431,7 +3431,7 @@ function StudioContent() {
                     )}
 
                     {activePhase?.phase_number === 4 && (
-                      // Phase 4 complete - Go to Marketing Hub with Quinn
+                      // Phase 4 complete - Go to Marketing Hub with Riley
                       <button
                         onClick={() => router.push(`/marketing-hub?manuscriptId=${manuscript?.id}`)}
                         className="px-6 py-3 bg-riley hover:bg-riley-text text-white rounded-lg font-bold text-base transition-all shadow-lg animate-pulse"

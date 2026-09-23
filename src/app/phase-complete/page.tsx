@@ -139,12 +139,12 @@ function CompleteProceedScreen({ manuscriptId, manuscriptTitle }: { manuscriptId
                             </button>
                         </div>
 
-                        {/* Phase 5: Quinn - Marketing */}
+                        {/* Phase 5: Riley - Marketing (Quinn retired, MKT-007) */}
                         <div className="border-4 border-riley/40 rounded-2xl p-8 bg-riley-light">
                             <div className="text-5xl mb-4"></div>
                             <h3 className="text-2xl font-bold text-ink mb-3">Phase 5: Marketing Strategy</h3>
                             <p className="text-ink mb-6">
-                                Work with Quinn to create a comprehensive marketing plan. Get guidance on launch strategy,
+                                Work with Riley to create a comprehensive marketing plan. Get guidance on launch strategy,
                                 audience targeting, and promotion tactics.
                             </p>
                             <ul className="space-y-2 mb-6 text-ink text-sm">
@@ -169,7 +169,7 @@ function CompleteProceedScreen({ manuscriptId, manuscriptTitle }: { manuscriptId
                                 onClick={() => router.push(`/marketing-hub?manuscriptId=${manuscriptId}`)}
                                 className="w-full bg-riley text-white px-6 py-4 rounded-xl font-bold text-lg hover:bg-riley/90 transition-all shadow-md hover:shadow-lg"
                             >
-                                Start Phase 5 with Quinn →
+                                Start Phase 5 with Riley →
                             </button>
                         </div>
                     </div>

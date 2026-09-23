@@ -93,7 +93,7 @@ function TransitionContent() {
         : manuscriptData?.author_profiles
 
       // Get editor name based on fromPhase
-      const editorNames = ['', 'Alex', 'Sam', 'Jordan', 'Taylor', 'Quinn']
+      const editorNames = ['', 'Alex', 'Sam', 'Jordan', 'Morgan', 'Riley']
       const editorName = editorNames[fromPhase] || 'Editor'
 
       // Step 1: Generate manuscript version + send email
@@ -102,7 +102,7 @@ function TransitionContent() {
 
       // DP-AS-02: scan on arrival for the phase_transition journey.
       // Map from-phase editor name to as_journeys editor_name constraint set
-      // (alex/sam/jordan) — Taylor and Quinn phases (4/5) are outside this
+      // (alex/sam/jordan) — Morgan and Riley phases (4/5) are outside this
       // line's journey typing and shouldn't reach this webhook.
       const journeyEditor: 'alex' | 'sam' | 'jordan' | undefined =
         fromPhase === 1 ? 'alex' :
@@ -212,8 +212,8 @@ function TransitionContent() {
       { name: 'Alex', emoji: 'A', color: 'green', role: 'Developmental Editor' },
       { name: 'Sam', emoji: 'S', color: 'purple', role: 'Line Editor' },
       { name: 'Jordan', emoji: 'J', color: 'blue', role: 'Copy Editor' },
-      { name: 'Taylor', emoji: 'T', color: 'teal', role: 'Publishing Editor' },
-      { name: 'Quinn', emoji: 'Q', color: 'orange', role: 'Marketing Strategist' }
+      { name: 'Morgan', emoji: 'M', color: 'teal', role: 'Publishing Editor' },
+      { name: 'Riley', emoji: 'R', color: 'orange', role: 'Marketing Strategist' }
     ]
     return editors[phase] || editors[1]
   }
