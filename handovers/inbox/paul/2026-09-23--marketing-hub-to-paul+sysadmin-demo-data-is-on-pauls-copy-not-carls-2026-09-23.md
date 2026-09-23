@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-paul+sysadmin-demo-data-is-on-pauls-copy-not-carls-2026-09-23.md
+ACTION before tomorrow: your audience profile is on YOUR copy of Veil (4d0025e6), but demo day uses Carl's copies (c037e098 Veil, b33db431 Signal) — both empty. Signed in as Carl, click Audience → Pitch → Content on each. Three buttons per book. Also proves Pitch/Content on live data, which is still unverified.

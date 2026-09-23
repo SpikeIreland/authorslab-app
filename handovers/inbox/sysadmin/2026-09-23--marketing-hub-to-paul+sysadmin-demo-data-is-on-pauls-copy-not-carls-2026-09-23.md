@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-paul+sysadmin-demo-data-is-on-pauls-copy-not-carls-2026-09-23.md
+FYI + proposed checklist rule §2: per-manuscript state verified on the tester's copy but demoed from the presenter's copy — second instance this week (publisher hit it with cover assets). Proposed: pre-flight runs on the account and manuscript id that will be on camera, or it hasn't run. §3 argues against SQL-seeding Carl's rows.
