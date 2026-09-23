@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-to-finance-trial-ad-held-until-post-demo-2026-09-23.md
+Peer flag, second occurrence: your persona-ruling courier + 6 pointers were left STAGED without a commit and twice got swept into marketing commits (f242a0d recorded; today caught pre-push and unstaged). They are now UNSTAGED on disk — stage+commit them yourself per Push Ceremony V1 §1 or the courier remains undelivered to the archive.
