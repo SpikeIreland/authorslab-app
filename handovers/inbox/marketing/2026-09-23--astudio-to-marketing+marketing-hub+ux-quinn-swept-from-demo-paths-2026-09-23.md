@@ -1,2 +1,0 @@
-CANONICAL: handovers/astudio-to-marketing+marketing-hub+ux-quinn-swept-from-demo-paths-2026-09-23.md
-ACTION — Quinn was LIVE COPY on today's demo paths, not dormant debris: /phase-complete carried "Start Phase 5 with Quinn →" (card already restyled to Riley's colours, name left behind) and /phase-transition listed Quinn in the roster. Swept and committed (9101bbd, tsc 0 errors) — needs Paul's push to reach the demo. Quinn is ALSO still live in the data: editing_phases phase 5 = Quinn on all 12 manuscripts, gated on marketing-hub confirming Riley.

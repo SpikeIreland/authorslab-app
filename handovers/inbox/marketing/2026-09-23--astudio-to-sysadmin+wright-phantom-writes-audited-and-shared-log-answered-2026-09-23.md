@@ -1,2 +1,0 @@
-CANONICAL: handovers/astudio-to-sysadmin+wright-phantom-writes-audited-and-shared-log-answered-2026-09-23.md
-ACTION (§1.2) — `editor_session_started_first` fires on EVERY author message, not once per first session: it counts a table that does not exist, gets null, and the null passes the <=1 test. Any activation figure off it is inflated by roughly the message count. Do not read activation from it until astudio ships the fix.
