@@ -783,7 +783,7 @@ function StudioContent() {
           .eq('id', mapping.id)
       }
 
-      // Step 3: Update manuscript_issues and editor_chat_messages
+      // Step 3: Update manuscript_issues and editor_chat_history
       // Only update if the chapter number actually changed
       for (const mapping of chapterMapping) {
         if (mapping.oldNumber !== mapping.newNumber) {
@@ -791,6 +791,18 @@ function StudioContent() {
           const tempIssueNumber = 10000 + mapping.oldNumber
           await supabase
             .from('manuscript_issues')
+            .update({ chapter_number: tempIssueNumber })
+            .eq('manuscript_id', manuscript.id)
+            .eq('chapter_number', mapping.oldNumber)
+
+          // 2026-09-23 (astudio): chat rows get the SAME two-pass treatment.
+          // Previously chat was updated only in the second pass, matched on
+          // oldNumber. On a swap (2->1, 1->2) the first mapping moves rows to
+          // 1, and the second mapping then matches those same rows and moves
+          // them again - the classic swap bug the temp pass exists to prevent.
+          // Issues were already protected this way; chat was not.
+          await supabase
+            .from('editor_chat_history')
             .update({ chapter_number: tempIssueNumber })
             .eq('manuscript_id', manuscript.id)
             .eq('chapter_number', mapping.oldNumber)
@@ -807,12 +819,12 @@ function StudioContent() {
             .eq('manuscript_id', manuscript.id)
             .eq('chapter_number', tempIssueNumber)
 
-          // Update chat messages
+          // Update chat messages (from the temp number set in the pass above)
           await supabase
-            .from('editor_chat_messages')
+            .from('editor_chat_history')
             .update({ chapter_number: mapping.newNumber })
             .eq('manuscript_id', manuscript.id)
-            .eq('chapter_number', mapping.oldNumber)
+            .eq('chapter_number', tempIssueNumber)
         }
       }
 
@@ -1961,9 +1973,11 @@ function StudioContent() {
           .eq('manuscript_id', manuscript.id)
           .eq('chapter_number', oldNumber)
 
-        // Update related chat messages
+        // Update related chat messages. Safe without a temp pass: the loop
+        // walks sortedChaptersToShift in DESCENDING order and shifts +1, so a
+        // target number is always vacated before it is written into.
         await supabase
-          .from('editor_chat_messages')
+          .from('editor_chat_history')
           .update({ chapter_number: newNumber })
           .eq('manuscript_id', manuscript.id)
           .eq('chapter_number', oldNumber)
