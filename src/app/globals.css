@@ -41,13 +41,14 @@
   --color-riley: #84500E;
   --color-riley-light: #F5EBDE;
   --color-riley-text: #6B400B;
-  /* Morgan (Publishing). Shipped value lifted from the hardcoded #BA7517 in
-     the Publishing tab — recorded, not re-chosen. Flagged to `ux` for the
-     persona registry: this sits close to taylor/riley in hue and may want
-     reallocating in a coordinated pass. */
-  --color-morgan: #BA7517;
-  --color-morgan-light: #FBF0E4;
-  --color-morgan-text: #8A5510;
+  /* Morgan (Publishing). Reallocated by `ux` 2026-09-23 (persona registry
+     ruling): the lifted #BA7517 made three warm ambers beside taylor/riley,
+     failing the CVD separation the quintet was validated for. Morgan takes
+     the mulberry family — CVD-validated in July for exactly this slot
+     (then Kai's, never shipped, released to the pool when Kai closed). */
+  --color-morgan: #8E4A72;
+  --color-morgan-light: #F3EAF0;
+  --color-morgan-text: #6E3757;
 
   /* AL-UX-007 · Status trio — reserved for state, never persona identity. */
   --color-status-ok: #5C7A6B;
