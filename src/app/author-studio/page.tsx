@@ -2111,13 +2111,22 @@ function StudioContent() {
         .eq('author_id', manuscript.author_id)
       const manuscriptIds = (authorManuscripts ?? []).map(m => m.id)
       if (manuscriptIds.length > 0) {
-        const { count } = await supabaseForCheck
-          .from('editor_chat_messages')
+        // 2026-09-23 (astudio): two fixes to this guard.
+        //  1. Table. This read `editor_chat_messages`, which does not exist.
+        //  2. It failed OPEN. supabase-js returns { count: null, error } for a
+        //     missing table; `null ?? 0` is 0, and `0 <= 1` is true — so this
+        //     event fired on EVERY author message, for every author, rather
+        //     than once. Any activation figure taken from it was inflated by
+        //     roughly the message count.
+        // A count we could not take is not evidence of a first session, so the
+        // guard now fails CLOSED: no count, no event.
+        const { count, error: chatCountErr } = await supabaseForCheck
+          .from('editor_chat_history')
           .select('id', { count: 'exact', head: true })
           .in('manuscript_id', manuscriptIds)
           .eq('sender', 'Author')
         // The message we just added is included in the count, so first === 1.
-        if ((count ?? 0) <= 1) {
+        if (!chatCountErr && count !== null && count <= 1) {
           trackEvent('editor_session_started_first', {
             editor:
               activePhase.phase_number === 2 ? 'sam' :
