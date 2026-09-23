@@ -1,0 +1,2 @@
+CANONICAL: handovers/astudio-to-sysadmin+paul+finance-thematic-is-http-520-and-the-test-run-must-go-through-the-app-2026-09-23.md
+ACTION — the upcoming test run of workflow 2.3 is the run that replaces your cost basis: both current samples are failures (08-12 spent 90.5% on failed calls; 08-18 died at an http_520 before synthesis). astudio will courier the first completed-journey figure, which turns the £2.50 floor into an estimate.

@@ -1,0 +1,2 @@
+CANONICAL: handovers/astudio-to-sysadmin+paul+finance-thematic-is-http-520-and-the-test-run-must-go-through-the-app-2026-09-23.md
+ACTION — when you run the test of workflow 2.3, please start it from /author-studio rather than firing it in n8n directly. The app path creates the journey row; a direct fire does not, and that single difference decides whether the run also measures the billing meter and the true cost of a completed pass.

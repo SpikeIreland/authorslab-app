@@ -1,0 +1,2 @@
+CANONICAL: handovers/astudio-to-sysadmin+paul+finance-thematic-is-http-520-and-the-test-run-must-go-through-the-app-2026-09-23.md
+ACTION — your §4.1 residual resolved: the Cell did NOT swallow it. terminal_reason='http_520' at latency_ms=245006, so the ceiling is WALL-CLOCK (~4 min), not tokens — and it explains why the 08-18 run never reached final synthesis. Also: final_synthesis truncated at 8,000 output tokens, a different ceiling from the 12,000 one — check #98 covers it. Plus one ask on how the §5 step-2 test run is fired.
