@@ -305,7 +305,7 @@ function MarketingHubContent() {
             <span className="text-xl">🔮</span>
             <span className="font-semibold">Preview Mode</span>
             <span className="text-orange-100 hidden sm:inline">—</span>
-            <span className="hidden sm:inline">Complete Phase 4 (Publishing) to unlock Marketing with Quinn</span>
+            <span className="hidden sm:inline">Complete Phase 4 (Publishing) to unlock Marketing with Riley</span>
             {manuscriptId && (
               <Link
                 href={`/publishing-hub?manuscriptId=${manuscriptId}`}
@@ -440,7 +440,7 @@ function MarketingHubContent() {
             ))}
           </nav>
 
-          {/* Quinn Status */}
+          {/* Riley Status */}
           {!isSidebarCollapsed && (
             <div className="p-4 border-t border-gray-200">
               <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
@@ -448,7 +448,7 @@ function MarketingHubContent() {
                   🚀
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900">Quinn</p>
+                  <p className="font-semibold text-gray-900">Riley</p>
                   <p className="text-xs text-gray-600">
                     {isPreviewMode ? 'Available after Publishing' : 'Ready to strategize'}
                   </p>
@@ -483,13 +483,13 @@ function MarketingHubContent() {
                   Marketing Hub Preview
                 </h3>
                 <p className="text-gray-600 max-w-md mx-auto mb-6">
-                  Complete your publishing journey with Taylor to unlock the Marketing Hub.
-                  Quinn will then help you create compelling marketing materials and launch your book successfully.
+                  Complete your publishing journey with Morgan to unlock the Marketing Hub.
+                  Riley will then help you create compelling marketing materials and launch your book successfully.
                 </p>
 
                 {/* What's included preview */}
                 <div className="max-w-lg mx-auto text-left bg-orange-50 rounded-xl p-6 mb-6">
-                  <p className="text-sm font-semibold text-orange-800 mb-3">What you&apos;ll get with Quinn:</p>
+                  <p className="text-sm font-semibold text-orange-800 mb-3">What you&apos;ll get with Riley:</p>
                   <ul className="space-y-2">
                     <li className="flex items-center gap-2 text-gray-700">
                       <span className="text-orange-500">📝</span> Professional book descriptions & blurbs
@@ -530,7 +530,7 @@ function MarketingHubContent() {
                   {currentSection?.title} - Coming Soon
                 </h3>
                 <p className="text-gray-600 max-w-md mx-auto mb-6">
-                  This section is being built. Quinn will help you with {currentSection?.title.toLowerCase()} once it&apos;s ready.
+                  This section is being built. Riley will help you with {currentSection?.title.toLowerCase()} once it&apos;s ready.
                 </p>
 
                 {/* Section Items Preview */}
@@ -557,9 +557,9 @@ function MarketingHubContent() {
                   💬
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold mb-2">Start with Quinn&apos;s Marketing Assessment</h3>
+                  <h3 className="text-xl font-bold mb-2">Start with Riley&apos;s Marketing Assessment</h3>
                   <p className="text-orange-100 mb-4">
-                    Tell Quinn about your goals, target readers, and timeline. This helps create a personalized marketing strategy for your book.
+                    Tell Riley about your goals, target readers, and timeline. This helps create a personalized marketing strategy for your book.
                   </p>
                   <button className="px-6 py-3 bg-white text-orange-600 font-bold rounded-lg hover:bg-orange-50 transition-colors">
                     Begin Assessment →
@@ -570,7 +570,7 @@ function MarketingHubContent() {
           )}
         </div>
 
-        {/* RIGHT: Quinn Chat Panel */}
+        {/* RIGHT: Riley Chat Panel */}
         <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
           {/* Chat Header */}
           <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-orange-500 to-orange-600">
@@ -579,7 +579,7 @@ function MarketingHubContent() {
                 🚀
               </div>
               <div className="text-white">
-                <h3 className="font-bold">Quinn</h3>
+                <h3 className="font-bold">Riley</h3>
                 <p className="text-sm text-orange-100">
                   {isPreviewMode ? 'Available after Publishing' : 'The Creative Strategist'}
                 </p>
@@ -595,9 +595,9 @@ function MarketingHubContent() {
                 <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center text-4xl mb-4">
                   🔒
                 </div>
-                <h4 className="font-bold text-gray-900 mb-2">Quinn is Waiting</h4>
+                <h4 className="font-bold text-gray-900 mb-2">Riley is Waiting</h4>
                 <p className="text-gray-600 text-sm mb-6 max-w-xs">
-                  Complete your publishing setup with Taylor, then Quinn will be ready to help with marketing.
+                  Complete your publishing setup with Morgan, then Riley will be ready to help with marketing.
                 </p>
                 {manuscriptId && (
                   <Link
@@ -614,9 +614,9 @@ function MarketingHubContent() {
                 <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center text-4xl mb-4">
                   💬
                 </div>
-                <h4 className="font-bold text-gray-900 mb-2">Chat with Quinn</h4>
+                <h4 className="font-bold text-gray-900 mb-2">Chat with Riley</h4>
                 <p className="text-gray-600 text-sm mb-6 max-w-xs">
-                  Quinn will help you create compelling marketing materials and launch strategies.
+                  Riley will help you create compelling marketing materials and launch strategies.
                 </p>
 
                 {/* Example starter prompts */}
@@ -640,7 +640,7 @@ function MarketingHubContent() {
             <div className="flex gap-2">
               <input
                 type="text"
-                placeholder={isPreviewMode ? "Unlock to chat with Quinn..." : "Ask Quinn about marketing..."}
+                placeholder={isPreviewMode ? "Unlock to chat with Riley..." : "Ask Riley about marketing..."}
                 className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:bg-gray-100"
                 disabled={isPreviewMode}
               />
@@ -653,7 +653,7 @@ function MarketingHubContent() {
             </div>
             {isPreviewMode && (
               <p className="text-xs text-gray-500 mt-2 text-center">
-                Complete Publishing to unlock Quinn
+                Complete Publishing to unlock Riley
               </p>
             )}
           </div>
