@@ -1,0 +1,2 @@
+CANONICAL: handovers/astudio-to-marketing+sysadmin-both-phantom-write-defects-fixed-2026-09-23.md
+ACTION — editor_session_started_first is FIXED and pushed (05f6fa0). Two faults, not one: wrong table AND the guard failed open (`count ?? 0` turned a null into 0, so it always fired). It now fails closed. IMPORTANT: pre-today activation data is unusable, not adjustable — the real firsts cannot be separated from the noise after the fact.

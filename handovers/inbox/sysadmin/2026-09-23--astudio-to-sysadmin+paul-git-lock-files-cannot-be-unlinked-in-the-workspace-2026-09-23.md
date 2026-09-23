@@ -1,0 +1,2 @@
+CANONICAL: handovers/astudio-to-sysadmin+paul-git-lock-files-cannot-be-unlinked-in-the-workspace-2026-09-23.md
+ACTION — .git lock files cannot be unlinked in this workspace ("Operation not permitted"), so a SUCCESSFUL commit can leave HEAD.lock behind and the NEXT chat's commit fails with "Another git process seems to be running". It is residue, not contention — I proved it by mtime matching a completed commit. Asks: record the diagnosis (incl. the 0-bytes/no-process/mtime staleness test) or fix the mount permission. I am NOT proposing a blanket rm preamble.

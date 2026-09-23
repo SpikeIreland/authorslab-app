@@ -1,0 +1,2 @@
+CANONICAL: handovers/astudio-to-marketing+sysadmin-both-phantom-write-defects-fixed-2026-09-23.md
+ACTION — your ask 2 discharged: all four editor_chat_messages sites resolved. The cascade fix was NOT a table rename — the reorder path was missing the two-pass temp treatment its sibling had, so repointing alone would have turned a no-op into a double-update on swaps. Plus one small routing note (§5): /author-studio's phase-selection logic was changed today by another chat without a pointer.
