@@ -23,8 +23,18 @@ import { NextResponse } from 'next/server'
 //
 // Excluded, same posture as the sibling routes: no chapter content, no editor
 // notes, no account PII. `source` carries generation prompts and execution
-// ids, so it is NOT returned — that is production detail, not a publisher's
-// business.
+// ids, so it is READ (to get layout) but NOT returned — that is production
+// detail, not a publisher's business.
+//
+// LAYOUT FILTER. `design`'s jacket run (2026-09-23) added a WRAPAROUND asset
+// alongside the three portrait concepts — same manuscript, same `kind`
+// ('generated'), distinguished only by `source.layout`. A jacket spread is
+// roughly 2:1; the portal's cover frames are 2:3 with object-cover, so an
+// unfiltered gallery croppped a full wraparound to a narrow vertical strip
+// and showed it as a fourth "concept". Portrait concepts are what a publisher
+// approves, so wraparounds are excluded here — EXCEPT when one is the
+// author's selection, because dropping the selected asset would be worse than
+// showing it in an imperfect frame.
 
 const SELECTED_PREFIX = 'cover-asset:'
 const SIGNED_URL_TTL_SECONDS = 60 * 60
@@ -35,19 +45,34 @@ const supabaseAdmin = createSupabaseClient(
   { auth: { autoRefreshToken: false, persistSession: false } }
 )
 
+const WRAPAROUND_LAYOUT = 'wraparound'
+
 interface CoverAssetRow {
   id: string
   kind: string | null
   storage_path: string
   created_at: string
+  source: unknown
 }
 
 interface PublisherCover {
   id: string
   url: string | null
   kind: string | null
+  layout: string | null
   createdAt: string
   isSelected: boolean
+}
+
+/**
+ * `source` is free-form jsonb written by the generation workflow. Read only
+ * the one key we need and tolerate any other shape — a missing or oddly typed
+ * source must not break the gallery.
+ */
+function layoutOf(source: unknown): string | null {
+  if (!source || typeof source !== 'object') return null
+  const value = (source as Record<string, unknown>).layout
+  return typeof value === 'string' ? value : null
 }
 
 /**
@@ -72,7 +97,7 @@ export async function GET(
   try {
     const { data: assetRows, error: assetsError } = await supabaseAdmin
       .from('cover_assets')
-      .select('id, kind, storage_path, created_at')
+      .select('id, kind, storage_path, created_at, source')
       .eq('manuscript_id', id)
       .order('created_at', { ascending: true })
 
@@ -90,6 +115,8 @@ export async function GET(
       return NextResponse.json({ covers: [], selectedId: null })
     }
 
+    // Read the selection BEFORE filtering: the layout filter below keeps the
+    // selected asset whatever its layout, so it needs to know which one it is.
     const { data: progressRow } = await supabaseAdmin
       .from('publishing_progress')
       .select('selected_cover_url')
@@ -98,8 +125,16 @@ export async function GET(
 
     const selectedId = selectedAssetIdFrom(progressRow?.selected_cover_url)
 
+    const displayRows = rows.filter(
+      (row) => layoutOf(row.source) !== WRAPAROUND_LAYOUT || row.id === selectedId
+    )
+
+    if (displayRows.length === 0) {
+      return NextResponse.json({ covers: [], selectedId: null })
+    }
+
     const covers: PublisherCover[] = await Promise.all(
-      rows.map(async (row) => {
+      displayRows.map(async (row) => {
         // Best-effort per asset: one unsignable object must not blank the
         // whole gallery, so a failure degrades that card to url: null and the
         // page renders its placeholder in place of the image.
@@ -111,6 +146,7 @@ export async function GET(
           id: row.id,
           url: signed?.signedUrl ?? null,
           kind: row.kind,
+          layout: layoutOf(row.source),
           createdAt: row.created_at,
           isSelected: row.id === selectedId,
         }

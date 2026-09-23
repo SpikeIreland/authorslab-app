@@ -45,7 +45,7 @@ interface PublisherProject {
   cover_url: string | null
   phases: PhaseRow[]
   total_chapters?: number | null
-  created_at?: string
+  created_at?: string | null
 }
 
 interface CoverState {
