@@ -1,0 +1,2 @@
+CANONICAL: handovers/sysadmin-to-paul+astudio+publisher-shelf-collateral-restored-2026-09-23.md
+"On your shelf" showed 1 item because the trilogy clone carried the book but not the report/snapshot pointers. Fixed: both demo Veil copies now match the Yahoo original exactly — 7 shelf items (3 PDFs, 3 drafts, cover). Signal correctly shows 2 (truthful for mid-edit). One gap flagged to astudio: original_upload_url is NULL estate-wide, so "Your uploaded manuscript" has never rendered for anyone.
