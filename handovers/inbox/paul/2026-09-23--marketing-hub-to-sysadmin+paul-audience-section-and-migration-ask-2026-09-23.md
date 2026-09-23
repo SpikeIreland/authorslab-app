@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-sysadmin+paul-audience-section-and-migration-ask-2026-09-23.md
+DECISION/PUSH: two commits ready (demo page retired — still live until you push; Audience section built, SOON labels gone). §3 needs one additive migration applied before tomorrow or Audience can't save. Push early enough to watch Vercel's build go green — no full local build was possible in the sandbox.

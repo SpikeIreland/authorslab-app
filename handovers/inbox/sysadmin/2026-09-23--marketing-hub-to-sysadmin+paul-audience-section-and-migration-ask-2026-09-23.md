@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-sysadmin+paul-audience-section-and-migration-ask-2026-09-23.md
+ACTION §3: apply one additive migration before tomorrow's demo — 'alter table project_marketing add column if not exists audience jsonb' (SQL + commissioning check in docs/sis/marketing-hub/). Gates the new Audience tab. Also §4: marketing_campaigns RLS matches 0 of 11 rows (auth.uid() vs an author_profiles.id) — third dead gate of this shape; recommend a post-demo schema sweep.
