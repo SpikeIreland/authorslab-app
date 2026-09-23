@@ -28,7 +28,7 @@ const SECTIONS: Array<{ id: SectionId; label: string; preview?: boolean }> = [
   { id: 'audience', label: 'Audience' },
   { id: 'pitch', label: 'Pitch' },
   { id: 'launch-plan', label: 'Launch plan' },
-  { id: 'content', label: 'Content', preview: true },
+  { id: 'content', label: 'Content' },
   { id: 'reviews', label: 'Reviews', preview: true },
   { id: 'performance', label: 'Performance', preview: true },
 ]
@@ -231,6 +231,13 @@ export default function MarketingTabPage() {
         {section === 'pitch' && (
           <PitchSection projectId={projectId} onGoToAudience={() => setSection('audience')} />
         )}
+        {section === 'content' && (
+          <ContentSection
+            projectId={projectId}
+            onGoToAudience={() => setSection('audience')}
+            onGoToPitch={() => setSection('pitch')}
+          />
+        )}
         {section === 'launch-plan' && (
           <LaunchPlanSection
             loading={stateLoading}
@@ -240,7 +247,7 @@ export default function MarketingTabPage() {
             onToggleTask={toggleTask}
           />
         )}
-        {section !== 'launch-plan' && section !== 'audience' && section !== 'pitch' && (
+        {section !== 'launch-plan' && section !== 'audience' && section !== 'pitch' && section !== 'content' && (
           <SectionPreview sectionId={section} />
         )}
       </main>
@@ -1009,6 +1016,292 @@ function PitchSection({ projectId, onGoToAudience }: { projectId: string; onGoTo
   )
 }
 
+// ============================================================================
+// Content section — the posts and emails, for the channels the reader uses
+// ============================================================================
+
+interface SocialPost { channel: string; body: string; note: string }
+interface SequenceEmail { label: string; timing: string; subject: string; body: string }
+interface OutreachNote { target: string; subject: string; body: string }
+interface ContentPack {
+  social: SocialPost[]
+  emails: SequenceEmail[]
+  outreach: OutreachNote | null
+  generatedAt: string
+  editedAt?: string
+}
+
+function CopyButton({ value, onError }: { value: string; onError: (m: string) => void }) {
+  const [copied, setCopied] = useState(false)
+  return (
+    <button
+      type="button"
+      onClick={() => navigator.clipboard?.writeText(value).then(
+        () => { setCopied(true); setTimeout(() => setCopied(false), 1600) },
+        () => onError('Couldn\u2019t copy that \u2014 select and copy manually.'),
+      )}
+      className="text-[11px] text-slate-400 hover:text-slate-700 flex-shrink-0"
+    >
+      {copied ? 'Copied' : 'Copy'}
+    </button>
+  )
+}
+
+function ContentSection({
+  projectId, onGoToAudience, onGoToPitch,
+}: {
+  projectId: string
+  onGoToAudience: () => void
+  onGoToPitch: () => void
+}) {
+  const [pack, setPack] = useState<ContentPack | null>(null)
+  const [hasAudience, setHasAudience] = useState(false)
+  const [hasPitch, setHasPitch] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [generating, setGenerating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState<ContentPack | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await fetch(`/api/projects/${projectId}/marketing/content`)
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({})) as { error?: string }
+          throw new Error(body.error || `couldn\u2019t load (${res.status})`)
+        }
+        const json = await res.json() as { content: ContentPack | null; hasAudience: boolean; hasPitch: boolean }
+        if (!cancelled) { setPack(json.content); setHasAudience(json.hasAudience); setHasPitch(json.hasPitch) }
+      } catch (err) {
+        if (!cancelled) setError(err instanceof Error ? err.message : 'Something went wrong.')
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [projectId])
+
+  const generate = useCallback(async () => {
+    setGenerating(true)
+    setError(null)
+    try {
+      const res = await fetch(`/api/projects/${projectId}/marketing/content`, { method: 'POST' })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({})) as { error?: string }
+        if (body.error === 'audience_required') { setHasAudience(false); throw new Error('Riley needs your audience profile first.') }
+        if (body.error === 'pitch_required') { setHasPitch(false); throw new Error('Riley needs your pitch first.') }
+        throw new Error(body.error || `generation failed (${res.status})`)
+      }
+      const json = await res.json() as { content: ContentPack }
+      setPack(json.content)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong.')
+    } finally {
+      setGenerating(false)
+    }
+  }, [projectId])
+
+  const save = useCallback(async (next: ContentPack) => {
+    const previous = pack
+    setPack(next)
+    setEditing(false)
+    try {
+      const res = await fetch(`/api/projects/${projectId}/marketing/content`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: next }),
+      })
+      if (!res.ok) throw new Error()
+    } catch {
+      setPack(previous)
+      setError('Couldn\u2019t save that edit \u2014 your previous version is still here.')
+    }
+  }, [projectId, pack])
+
+  if (loading) return <p className="p-6 text-sm text-slate-500">Loading\u2026</p>
+
+  // Prerequisite gates — name the missing one rather than failing vaguely.
+  if (!pack && (!hasAudience || !hasPitch)) {
+    const missingAudience = !hasAudience
+    return (
+      <div className="p-6 max-w-2xl">
+        <h2 className="text-base font-medium text-slate-900 mb-1">Content</h2>
+        <p className="text-sm text-slate-600 leading-relaxed mb-5 max-w-lg">
+          {missingAudience
+            ? 'Riley writes posts for the specific places your readers gather, so she needs your audience profile before she can write anything worth posting.'
+            : 'Your audience is set. Riley writes every post and email against your agreed pitch, so that comes next \u2014 otherwise each post says something slightly different about the same book.'}
+        </p>
+        <button
+          type="button"
+          onClick={missingAudience ? onGoToAudience : onGoToPitch}
+          className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-sm font-medium"
+        >
+          {missingAudience ? 'Start with Audience' : 'Write the pitch first'}
+        </button>
+      </div>
+    )
+  }
+
+  if (!pack) {
+    return (
+      <div className="p-6 max-w-2xl">
+        <h2 className="text-base font-medium text-slate-900 mb-1">Content</h2>
+        <p className="text-sm text-slate-600 leading-relaxed mb-5 max-w-lg">
+          Riley writes one post for each place in your audience profile \u2014 in that
+          place\u2019s own register, not the same caption five times \u2014 plus a four-email
+          sequence pegged to your launch milestones, and a note you can send a
+          podcast host or blogger.
+        </p>
+        {error && (
+          <div className="mb-4 px-3 py-2 bg-rose-50 border border-rose-200 rounded-md text-xs text-rose-800">{error}</div>
+        )}
+        <button
+          type="button"
+          onClick={generate}
+          disabled={generating}
+          className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white rounded-md text-sm font-medium"
+        >
+          {generating ? 'Riley is writing\u2026' : 'Write my launch content'}
+        </button>
+        {generating && <p className="mt-3 text-xs text-slate-500">This one takes a little longer \u2014 it\u2019s several pieces.</p>}
+      </div>
+    )
+  }
+
+  if (editing && draft) {
+    return (
+      <div className="p-6 max-w-2xl">
+        <h2 className="text-base font-medium text-slate-900 mb-1">Edit content</h2>
+        <p className="text-xs text-slate-500 mb-5">Your voice beats Riley\u2019s every time.</p>
+
+        {draft.social.map((post, i) => (
+          <label key={`s${i}`} className="block mb-4">
+            <span className="text-[11px] uppercase tracking-wider font-medium text-slate-400">{post.channel}</span>
+            <textarea
+              value={post.body}
+              onChange={e => {
+                const social = [...draft.social]
+                social[i] = { ...post, body: e.target.value }
+                setDraft({ ...draft, social })
+              }}
+              rows={5}
+              className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md text-sm resize-none focus:outline-none focus:border-slate-500"
+            />
+          </label>
+        ))}
+
+        {draft.emails.map((mail, i) => (
+          <div key={`e${i}`} className="mb-4">
+            <span className="text-[11px] uppercase tracking-wider font-medium text-slate-400">{mail.label}</span>
+            <input
+              value={mail.subject}
+              onChange={e => {
+                const emails = [...draft.emails]
+                emails[i] = { ...mail, subject: e.target.value }
+                setDraft({ ...draft, emails })
+              }}
+              className="mt-1 mb-1.5 w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:border-slate-500"
+            />
+            <textarea
+              value={mail.body}
+              onChange={e => {
+                const emails = [...draft.emails]
+                emails[i] = { ...mail, body: e.target.value }
+                setDraft({ ...draft, emails })
+              }}
+              rows={6}
+              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm resize-none focus:outline-none focus:border-slate-500"
+            />
+          </div>
+        ))}
+
+        <div className="flex items-center gap-2 mt-5">
+          <button type="button" onClick={() => save(draft)} className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-sm font-medium">Save</button>
+          <button type="button" onClick={() => setEditing(false)} className="px-3 py-2 text-sm text-slate-600 hover:text-slate-900">Cancel</button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="p-6 max-w-2xl">
+      <div className="flex items-baseline justify-between mb-1 gap-4">
+        <h2 className="text-base font-medium text-slate-900">Content</h2>
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <button type="button" onClick={() => { setDraft(pack); setEditing(true) }} className="text-xs text-slate-500 underline hover:text-slate-700">Edit</button>
+          <button
+            type="button"
+            onClick={generate}
+            disabled={generating}
+            className="text-xs text-slate-500 underline hover:text-slate-700 disabled:no-underline disabled:text-slate-300"
+          >
+            {generating ? 'Rewriting\u2026' : 'Rewrite'}
+          </button>
+        </div>
+      </div>
+      <p className="text-xs text-slate-500 mb-6">
+        {pack.editedAt ? 'Edited by you' : 'Written by Riley for your channels and pitch'} \u00b7 yours to change
+      </p>
+
+      {error && <div className="mb-5 px-3 py-2 bg-rose-50 border border-rose-200 rounded-md text-xs text-rose-800">{error}</div>}
+
+      {pack.social.length > 0 && (
+        <section className="mb-8">
+          <h3 className="text-[11px] uppercase tracking-wider font-medium text-slate-400 mb-3">Posts</h3>
+          <div className="space-y-4">
+            {pack.social.map((post, i) => (
+              <article key={i} className="border border-slate-200 rounded-lg p-4">
+                <div className="flex items-baseline justify-between gap-3 mb-2">
+                  <p className="text-sm font-medium text-slate-900">{post.channel}</p>
+                  <CopyButton value={post.body} onError={setError} />
+                </div>
+                <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">{post.body}</p>
+                {post.note && <p className="text-[11px] text-slate-400 mt-2">{post.note}</p>}
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {pack.emails.length > 0 && (
+        <section className="mb-8">
+          <h3 className="text-[11px] uppercase tracking-wider font-medium text-slate-400 mb-3">Email sequence</h3>
+          <div className="space-y-4">
+            {pack.emails.map((mail, i) => (
+              <article key={i} className="border border-slate-200 rounded-lg p-4">
+                <div className="flex items-baseline justify-between gap-3 mb-1">
+                  <p className="text-[11px] uppercase tracking-wider text-slate-400">
+                    {mail.label}{mail.timing ? ` \u00b7 ${mail.timing}` : ''}
+                  </p>
+                  <CopyButton value={`Subject: ${mail.subject}\n\n${mail.body}`} onError={setError} />
+                </div>
+                <p className="text-sm font-medium text-slate-900 mb-2">{mail.subject}</p>
+                <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">{mail.body}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {pack.outreach && (
+        <section>
+          <h3 className="text-[11px] uppercase tracking-wider font-medium text-slate-400 mb-3">Outreach note</h3>
+          <article className="border border-slate-200 rounded-lg p-4">
+            <div className="flex items-baseline justify-between gap-3 mb-1">
+              <p className="text-[11px] uppercase tracking-wider text-slate-400">{pack.outreach.target}</p>
+              <CopyButton value={`Subject: ${pack.outreach.subject}\n\n${pack.outreach.body}`} onError={setError} />
+            </div>
+            <p className="text-sm font-medium text-slate-900 mb-2">{pack.outreach.subject}</p>
+            <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">{pack.outreach.body}</p>
+          </article>
+        </section>
+      )}
+    </div>
+  )
+}
+
 function SectionPreview({ sectionId }: { sectionId: SectionId }) {
   const titles: Record<SectionId, string> = {
     audience: 'Audience',
@@ -1022,7 +1315,7 @@ function SectionPreview({ sectionId }: { sectionId: SectionId }) {
     audience: '',
     pitch: '',
     'launch-plan': '',
-    content: 'Social posts, email sequences, podcast pitches \u2014 drafted from your pitch and aimed at the channels in your audience profile.',
+    content: '',
     reviews: 'ARC strategy, reviewer outreach, and follow-up \u2014 tracked so you know who has your book and who has posted.',
     performance: 'Sales by platform, review count, ad spend, email opens. Fills in once the book is out.',
   }
@@ -1039,7 +1332,6 @@ function SectionPreview({ sectionId }: { sectionId: SectionId }) {
 
       <div className="relative">
         <div aria-hidden className="pointer-events-none select-none space-y-5">
-          {sectionId === 'content' && <ContentPreview />}
           {sectionId === 'reviews' && <ReviewsPreview />}
           {sectionId === 'performance' && <PerformancePreview />}
         </div>
@@ -1066,26 +1358,6 @@ function PreviewBlock({ label, children }: { label: string; children: React.Reac
 
 function GhostLine({ w = 'w-full' }: { w?: string }) {
   return <span className={`block h-2 rounded bg-slate-200 ${w}`} />
-}
-
-function ContentPreview() {
-  return (
-    <>
-      <PreviewBlock label="Announcement post">
-        <div className="space-y-1.5"><GhostLine /><GhostLine w="w-5/6" /></div>
-      </PreviewBlock>
-      <PreviewBlock label="Email sequence">
-        <ul className="space-y-2">
-          {['Cover reveal', 'Two weeks out', 'Launch day', 'One week after'].map(t => (
-            <li key={t} className="flex items-center gap-2.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-slate-300 flex-shrink-0" />
-              <span className="text-sm text-slate-400">{t}</span>
-            </li>
-          ))}
-        </ul>
-      </PreviewBlock>
-    </>
-  )
 }
 
 function ReviewsPreview() {
