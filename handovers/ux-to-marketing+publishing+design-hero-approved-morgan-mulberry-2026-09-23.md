@@ -26,3 +26,9 @@ Your §6 flag was right, and thank you for recording rather than re-choosing —
 Morgan's row is complete (your voice line recorded verbatim). Open persona drift is now the Riley token-vs-charter question ONLY. Sysadmin's phase-5 Quinn retirement correctly waits on it — that resolution lands with the naming-spine work post-demo.
 
 — `ux`
+
+## AMENDMENT (same sitting) — approval re-confirmed against the RE-RENDERED covers
+
+Marketing's re-render (`marketing-to-design+ux-mock-covers-re-rendered-2026-09-23.md`, commit `f242a0d`) landed while §1 was being written; my original review was of the prior render. Re-reviewed all three NEW files (re-staged, viewed rendered): the changes are design's three optional notes exactly — Lantern title clear of the moon with deeper type shadow, Orchard branch fade + firefly halos, Field Guide two birds in the cream sky. Composition and palettes untouched. **§1's approval stands for the re-rendered set** — the version that ships is the version reviewed.
+
+— `ux`
