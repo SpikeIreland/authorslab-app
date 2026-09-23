@@ -24,13 +24,13 @@ interface MarketingMessage {
 
 type SectionId = 'audience' | 'pitch' | 'launch-plan' | 'content' | 'reviews' | 'performance'
 
-const SECTIONS: Array<{ id: SectionId; label: string; available: boolean }> = [
-  { id: 'audience', label: 'Audience', available: false },
-  { id: 'pitch', label: 'Pitch', available: false },
-  { id: 'launch-plan', label: 'Launch plan', available: true },
-  { id: 'content', label: 'Content', available: false },
-  { id: 'reviews', label: 'Reviews', available: false },
-  { id: 'performance', label: 'Performance', available: false },
+const SECTIONS: Array<{ id: SectionId; label: string; preview?: boolean }> = [
+  { id: 'audience', label: 'Audience' },
+  { id: 'pitch', label: 'Pitch', preview: true },
+  { id: 'launch-plan', label: 'Launch plan' },
+  { id: 'content', label: 'Content', preview: true },
+  { id: 'reviews', label: 'Reviews', preview: true },
+  { id: 'performance', label: 'Performance', preview: true },
 ]
 
 // ============================================================================
@@ -41,7 +41,7 @@ export default function MarketingTabPage() {
   const params = useParams<{ id: string }>()
   const projectId = params.id
 
-  const [section, setSection] = useState<SectionId>('launch-plan')
+  const [section, setSection] = useState<SectionId>('audience')
 
   // Marketing state
   const [launchDate, setLaunchDate] = useState<string | null>(null)
@@ -212,8 +212,10 @@ export default function MarketingTabPage() {
                 }`}
               >
                 <span>{s.label}</span>
-                {!s.available && (
-                  <span className="text-[10px] text-slate-400 italic">soon</span>
+                {s.preview && (
+                  <span className="text-[9px] uppercase tracking-wider text-slate-400 border border-slate-200 rounded px-1 py-px">
+                    Preview
+                  </span>
                 )}
               </button>
             )
@@ -223,6 +225,9 @@ export default function MarketingTabPage() {
 
       {/* Center panel */}
       <main className="flex-1 overflow-y-auto min-w-0">
+        {section === 'audience' && (
+          <AudienceSection projectId={projectId} />
+        )}
         {section === 'launch-plan' && (
           <LaunchPlanSection
             loading={stateLoading}
@@ -232,8 +237,8 @@ export default function MarketingTabPage() {
             onToggleTask={toggleTask}
           />
         )}
-        {section !== 'launch-plan' && (
-          <SectionPlaceholder sectionId={section} />
+        {section !== 'launch-plan' && section !== 'audience' && (
+          <SectionPreview sectionId={section} />
         )}
       </main>
 
@@ -475,7 +480,297 @@ function PickLaunchDate({ onSave }: { onSave: (next: string) => void }) {
   )
 }
 
-function SectionPlaceholder({ sectionId }: { sectionId: SectionId }) {
+// ============================================================================
+// Audience section — Riley's reader profile for this book
+// ============================================================================
+
+interface AudienceComp { title: string; author: string; why: string }
+interface AudienceChannel { name: string; kind: string; note: string }
+interface AudienceProfile {
+  primaryReader: string
+  readerDescription: string
+  comps: AudienceComp[]
+  channels: AudienceChannel[]
+  hooks: string[]
+  avoid: string[]
+  generatedAt: string
+  editedAt?: string
+}
+
+function AudienceSection({ projectId }: { projectId: string }) {
+  const [audience, setAudience] = useState<AudienceProfile | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [generating, setGenerating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState<AudienceProfile | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await fetch(`/api/projects/${projectId}/marketing/audience`)
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({})) as { error?: string }
+          throw new Error(body.error || `couldn\u2019t load (${res.status})`)
+        }
+        const json = await res.json() as { audience: AudienceProfile | null }
+        if (!cancelled) setAudience(json.audience)
+      } catch (err) {
+        if (!cancelled) setError(err instanceof Error ? err.message : 'Something went wrong.')
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [projectId])
+
+  const generate = useCallback(async () => {
+    setGenerating(true)
+    setError(null)
+    try {
+      const res = await fetch(`/api/projects/${projectId}/marketing/audience`, { method: 'POST' })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({})) as { error?: string }
+        throw new Error(body.error || `generation failed (${res.status})`)
+      }
+      const json = await res.json() as { audience: AudienceProfile }
+      setAudience(json.audience)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong.')
+    } finally {
+      setGenerating(false)
+    }
+  }, [projectId])
+
+  const save = useCallback(async (next: AudienceProfile) => {
+    const previous = audience
+    setAudience(next)
+    setEditing(false)
+    try {
+      const res = await fetch(`/api/projects/${projectId}/marketing/audience`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ audience: next }),
+      })
+      if (!res.ok) throw new Error()
+    } catch {
+      setAudience(previous)
+      setError('Couldn\u2019t save that edit \u2014 your previous version is still here.')
+    }
+  }, [projectId, audience])
+
+  if (loading) return <p className="p-6 text-sm text-slate-500">Loading\u2026</p>
+
+  // Empty state — Riley offers to build it.
+  if (!audience) {
+    return (
+      <div className="p-6 max-w-2xl">
+        <h2 className="text-base font-medium text-slate-900 mb-1">Audience</h2>
+        <p className="text-sm text-slate-600 leading-relaxed mb-5 max-w-lg">
+          Before anything else in marketing: who is this book for? Riley will read your
+          opening chapters and draft a reader profile \u2014 comparable titles, where those
+          readers gather, and the angles worth leading with. You can edit every word of it.
+        </p>
+        {error && (
+          <div className="mb-4 px-3 py-2 bg-rose-50 border border-rose-200 rounded-md text-xs text-rose-800">
+            {error}
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={generate}
+          disabled={generating}
+          className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white rounded-md text-sm font-medium"
+        >
+          {generating ? 'Riley is reading your book\u2026' : 'Build my audience profile'}
+        </button>
+        {generating && (
+          <p className="mt-3 text-xs text-slate-500">This takes a few seconds.</p>
+        )}
+      </div>
+    )
+  }
+
+  if (editing && draft) {
+    return <AudienceEditor draft={draft} onChange={setDraft} onCancel={() => setEditing(false)} onSave={() => save(draft)} />
+  }
+
+  return (
+    <div className="p-6 max-w-2xl">
+      <div className="flex items-baseline justify-between mb-1 gap-4">
+        <h2 className="text-base font-medium text-slate-900">Audience</h2>
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <button
+            type="button"
+            onClick={() => { setDraft(audience); setEditing(true) }}
+            className="text-xs text-slate-500 underline hover:text-slate-700"
+          >
+            Edit
+          </button>
+          <button
+            type="button"
+            onClick={generate}
+            disabled={generating}
+            className="text-xs text-slate-500 underline hover:text-slate-700 disabled:no-underline disabled:text-slate-300"
+          >
+            {generating ? 'Rebuilding\u2026' : 'Rebuild'}
+          </button>
+        </div>
+      </div>
+      <p className="text-xs text-slate-500 mb-6">
+        {audience.editedAt ? 'Edited by you' : 'Drafted by Riley from your opening chapters'} \u00b7 yours to change
+      </p>
+
+      {error && (
+        <div className="mb-5 px-3 py-2 bg-rose-50 border border-rose-200 rounded-md text-xs text-rose-800">
+          {error}
+        </div>
+      )}
+
+      <section className="mb-7">
+        <p className="text-lg font-medium text-slate-900 leading-snug mb-2">{audience.primaryReader}</p>
+        <p className="text-sm text-slate-700 leading-relaxed">{audience.readerDescription}</p>
+      </section>
+
+      {audience.comps.length > 0 && (
+        <section className="mb-7">
+          <h3 className="text-[11px] uppercase tracking-wider font-medium text-slate-400 mb-2.5">
+            They already own these
+          </h3>
+          <ul className="space-y-2">
+            {audience.comps.map((c, i) => (
+              <li key={i} className="text-sm">
+                <span className="text-slate-900 font-medium">{c.title}</span>
+                {c.author && <span className="text-slate-500"> \u00b7 {c.author}</span>}
+                {c.why && <p className="text-slate-600 text-xs mt-0.5 leading-relaxed">{c.why}</p>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {audience.channels.length > 0 && (
+        <section className="mb-7">
+          <h3 className="text-[11px] uppercase tracking-wider font-medium text-slate-400 mb-2.5">
+            Where to find them
+          </h3>
+          <ul className="space-y-2">
+            {audience.channels.map((c, i) => (
+              <li key={i} className="text-sm">
+                <span className="text-slate-900">{c.name}</span>
+                {c.kind && (
+                  <span className="ml-2 text-[10px] uppercase tracking-wider text-slate-400 border border-slate-200 rounded px-1 py-px">
+                    {c.kind}
+                  </span>
+                )}
+                {c.note && <p className="text-slate-600 text-xs mt-0.5 leading-relaxed">{c.note}</p>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {audience.hooks.length > 0 && (
+        <section className="mb-7">
+          <h3 className="text-[11px] uppercase tracking-wider font-medium text-slate-400 mb-2.5">
+            Angles to lead with
+          </h3>
+          <ul className="space-y-1.5">
+            {audience.hooks.map((h, i) => (
+              <li key={i} className="text-sm text-slate-700 leading-relaxed pl-3 border-l-2 border-slate-200">{h}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {audience.avoid.length > 0 && (
+        <section>
+          <h3 className="text-[11px] uppercase tracking-wider font-medium text-slate-400 mb-2.5">
+            Don\u2019t bother with
+          </h3>
+          <ul className="space-y-1.5">
+            {audience.avoid.map((a, i) => (
+              <li key={i} className="text-sm text-slate-500 leading-relaxed">{a}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </div>
+  )
+}
+
+function AudienceEditor({
+  draft, onChange, onCancel, onSave,
+}: {
+  draft: AudienceProfile
+  onChange: (next: AudienceProfile) => void
+  onCancel: () => void
+  onSave: () => void
+}) {
+  return (
+    <div className="p-6 max-w-2xl">
+      <h2 className="text-base font-medium text-slate-900 mb-1">Edit audience</h2>
+      <p className="text-xs text-slate-500 mb-5">
+        Riley drafted this \u2014 you know your readers better. One item per line where there are lists.
+      </p>
+
+      <label className="block mb-4">
+        <span className="text-[11px] uppercase tracking-wider font-medium text-slate-400">Who it\u2019s for</span>
+        <input
+          value={draft.primaryReader}
+          onChange={e => onChange({ ...draft, primaryReader: e.target.value })}
+          className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:border-slate-500"
+        />
+      </label>
+
+      <label className="block mb-4">
+        <span className="text-[11px] uppercase tracking-wider font-medium text-slate-400">What they want</span>
+        <textarea
+          value={draft.readerDescription}
+          onChange={e => onChange({ ...draft, readerDescription: e.target.value })}
+          rows={3}
+          className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md text-sm resize-none focus:outline-none focus:border-slate-500"
+        />
+      </label>
+
+      <label className="block mb-4">
+        <span className="text-[11px] uppercase tracking-wider font-medium text-slate-400">Angles to lead with</span>
+        <textarea
+          value={draft.hooks.join('\n')}
+          onChange={e => onChange({ ...draft, hooks: e.target.value.split('\n').filter(Boolean) })}
+          rows={5}
+          className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md text-sm resize-none focus:outline-none focus:border-slate-500"
+        />
+      </label>
+
+      <label className="block mb-5">
+        <span className="text-[11px] uppercase tracking-wider font-medium text-slate-400">Don\u2019t bother with</span>
+        <textarea
+          value={draft.avoid.join('\n')}
+          onChange={e => onChange({ ...draft, avoid: e.target.value.split('\n').filter(Boolean) })}
+          rows={3}
+          className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md text-sm resize-none focus:outline-none focus:border-slate-500"
+        />
+      </label>
+
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onSave}
+          className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-sm font-medium"
+        >
+          Save
+        </button>
+        <button type="button" onClick={onCancel} className="px-3 py-2 text-sm text-slate-600 hover:text-slate-900">
+          Cancel
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function SectionPreview({ sectionId }: { sectionId: SectionId }) {
   const titles: Record<SectionId, string> = {
     audience: 'Audience',
     pitch: 'Pitch',
@@ -485,25 +780,118 @@ function SectionPlaceholder({ sectionId }: { sectionId: SectionId }) {
     performance: 'Performance',
   }
   const blurbs: Record<SectionId, string> = {
-    audience: 'Define who this book is for, where they spend time, what else they read. Riley will help you build a sharp picture before the launch plan locks in.',
-    pitch: 'Short pitch, long pitch, social one-liner, podcast intro. Same book, different containers. Riley will draft and refine.',
+    audience: '',
+    pitch: 'Short pitch, long pitch, social one-liner, podcast intro. Same book, different containers \u2014 written against your audience profile.',
     'launch-plan': '',
-    content: 'Drafts of social posts, email sequences, press releases, podcast pitches. Generated against your audience and pitch.',
-    reviews: 'ARC strategy, reviewer outreach, review prompts and follow-up. Pre-launch and ongoing.',
-    performance: 'Sales by platform, review count, ad spend, email opens. Available once the book has launched.',
+    content: 'Social posts, email sequences, podcast pitches \u2014 drafted from your pitch and aimed at the channels in your audience profile.',
+    reviews: 'ARC strategy, reviewer outreach, and follow-up \u2014 tracked so you know who has your book and who has posted.',
+    performance: 'Sales by platform, review count, ad spend, email opens. Fills in once the book is out.',
   }
 
   return (
-    <div className="p-12 text-center">
-      <p className="text-[11px] uppercase tracking-wider font-medium text-slate-400 mb-3">
-        {sectionId === 'performance' ? 'Available post-launch' : 'Coming soon'}
+    <div className="p-6 max-w-2xl">
+      <div className="flex items-baseline justify-between mb-1 gap-4">
+        <h2 className="text-base font-medium text-slate-900">{titles[sectionId]}</h2>
+        <span className="text-[9px] uppercase tracking-wider text-slate-400 border border-slate-200 rounded px-1 py-px flex-shrink-0">
+          Preview
+        </span>
+      </div>
+      <p className="text-sm text-slate-600 leading-relaxed mb-6 max-w-lg">{blurbs[sectionId]}</p>
+
+      <div className="relative">
+        <div aria-hidden className="pointer-events-none select-none space-y-5">
+          {sectionId === 'pitch' && <PitchPreview />}
+          {sectionId === 'content' && <ContentPreview />}
+          {sectionId === 'reviews' && <ReviewsPreview />}
+          {sectionId === 'performance' && <PerformancePreview />}
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/45 to-white" />
+      </div>
+
+      <p className="text-xs text-slate-400 mt-1">
+        {sectionId === 'performance'
+          ? 'Shape shown above \u2014 real numbers arrive with your first sales.'
+          : 'Shape shown above \u2014 Riley fills it in once your audience profile is set.'}
       </p>
-      <h2 className="text-xl font-medium text-slate-900 mb-2">
-        {titles[sectionId]}
-      </h2>
-      <p className="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
-        {blurbs[sectionId]}
-      </p>
+    </div>
+  )
+}
+
+function PreviewBlock({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <section>
+      <h3 className="text-[11px] uppercase tracking-wider font-medium text-slate-400 mb-2">{label}</h3>
+      {children}
+    </section>
+  )
+}
+
+function GhostLine({ w = 'w-full' }: { w?: string }) {
+  return <span className={`block h-2 rounded bg-slate-200 ${w}`} />
+}
+
+function PitchPreview() {
+  return (
+    <>
+      <PreviewBlock label="One line">
+        <div className="space-y-1.5"><GhostLine w="w-4/5" /></div>
+      </PreviewBlock>
+      <PreviewBlock label="Back cover">
+        <div className="space-y-1.5">
+          <GhostLine /><GhostLine /><GhostLine w="w-11/12" /><GhostLine w="w-2/3" />
+        </div>
+      </PreviewBlock>
+      <PreviewBlock label="Podcast intro">
+        <div className="space-y-1.5"><GhostLine /><GhostLine w="w-3/4" /></div>
+      </PreviewBlock>
+    </>
+  )
+}
+
+function ContentPreview() {
+  return (
+    <>
+      <PreviewBlock label="Announcement post">
+        <div className="space-y-1.5"><GhostLine /><GhostLine w="w-5/6" /></div>
+      </PreviewBlock>
+      <PreviewBlock label="Email sequence">
+        <ul className="space-y-2">
+          {['Cover reveal', 'Two weeks out', 'Launch day', 'One week after'].map(t => (
+            <li key={t} className="flex items-center gap-2.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-300 flex-shrink-0" />
+              <span className="text-sm text-slate-400">{t}</span>
+            </li>
+          ))}
+        </ul>
+      </PreviewBlock>
+    </>
+  )
+}
+
+function ReviewsPreview() {
+  return (
+    <PreviewBlock label="ARC readers">
+      <ul className="space-y-2.5">
+        {['Sent \u00b7 awaiting review', 'Sent \u00b7 awaiting review', 'Posted', 'Not yet sent'].map((state, i) => (
+          <li key={i} className="flex items-center justify-between gap-3">
+            <GhostLine w="w-40" />
+            <span className="text-[11px] text-slate-400 flex-shrink-0">{state}</span>
+          </li>
+        ))}
+      </ul>
+    </PreviewBlock>
+  )
+}
+
+function PerformancePreview() {
+  return (
+    <div className="grid grid-cols-3 gap-3">
+      {['Copies sold', 'Reviews', 'Email opens'].map(label => (
+        <div key={label} className="border border-slate-200 rounded-lg p-3">
+          <p className="text-[10px] uppercase tracking-wider text-slate-400 mb-2">{label}</p>
+          <div className="h-5 w-12 rounded bg-slate-200" />
+        </div>
+      ))}
     </div>
   )
 }
