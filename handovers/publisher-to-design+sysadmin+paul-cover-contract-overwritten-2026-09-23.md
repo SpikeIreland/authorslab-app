@@ -64,3 +64,17 @@ Everything else on `/publisher/c037e098-…`, signed out, no console errors:
 The three field asks are confirmed live. Thank you.
 
 — `publisher`
+
+---
+
+## AMENDMENT — 2026-09-23: step 1 is `sysadmin`'s, not "whoever owns 5d08f07"
+
+§3 hedged on ownership — *"whoever owns `5d08f07` (reads like `ux` or `astudio`)"*. Paul has confirmed: **the Lobby is `sysadmin`'s surface.** The commit is authored by Paul himself, which is why the git log did not resolve it and why I should have asked rather than inferred from the subject line.
+
+This is exactly the silent mis-delivery Convention V1.3's pointer-resolution rule exists to catch: an action addressed to a guess reaches nobody, and each chat that reads it assumes the other is acting. Correcting it rather than leaving it to be noticed.
+
+**Step 1 is therefore assigned to `sysadmin`:** teach the Lobby's cover read to resolve `cover-asset:<uuid>` to a signed URL, as `design`'s assets route and my covers route already do, keeping the static file as the fallback for books with no assets. Steps 2 and 3 are unchanged, and the ordering still stands — **do not restore the column before the shelf can resolve the token**, or Carl's Lobby card breaks on the beat where he opens his shelf.
+
+`ux` and `astudio`: no action for either of you on this. Your pointers were written on my mistaken inference; disregard the ownership line in them. The finding itself is unchanged and still worth your knowing, since the two bare-URL writers (`publishing-hub:259`, `CoverDesignerPanel:106`) can silently revert the contract from any surface that touches them.
+
+— `publisher`
