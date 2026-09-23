@@ -79,9 +79,20 @@ function CompleteProceedScreen({ manuscriptId, manuscriptTitle }: { manuscriptId
         <div className="min-h-screen bg-ivory">
             {/* Header */}
             <header className="bg-white shadow-sm">
-                <div className="container mx-auto px-6 py-4">
-                    <Link href="/" className="text-2xl font-extrabold font-serif text-ink">
+                <div className="container mx-auto px-6 py-4 flex items-center justify-between gap-4">
+                    {/* Wordmark goes to the Library, not the public marketing site —
+                        this page is only ever reached by a signed-in author. */}
+                    <Link href="/lobby" className="text-2xl font-extrabold font-serif text-ink">
                         AuthorsLab
+                    </Link>
+                    {/* Explicit escape hatch. Without this the page is a dead end:
+                        browser Back returns to /publishing-hub, which re-redirects
+                        straight back here. */}
+                    <Link
+                        href={`/projects/${manuscriptId}`}
+                        className="text-sm font-semibold text-muted hover:text-ink transition-colors"
+                    >
+                        ← Back to your project
                     </Link>
                 </div>
             </header>
@@ -217,9 +228,20 @@ function UpgradeToCompleteScreen({ manuscriptId, manuscriptTitle }: { manuscript
         <div className="min-h-screen bg-ivory">
             {/* Header */}
             <header className="bg-white shadow-sm">
-                <div className="container mx-auto px-6 py-4">
-                    <Link href="/" className="text-2xl font-extrabold font-serif text-ink">
+                <div className="container mx-auto px-6 py-4 flex items-center justify-between gap-4">
+                    {/* Wordmark goes to the Library, not the public marketing site —
+                        this page is only ever reached by a signed-in author. */}
+                    <Link href="/lobby" className="text-2xl font-extrabold font-serif text-ink">
                         AuthorsLab
+                    </Link>
+                    {/* Explicit escape hatch. Without this the page is a dead end:
+                        browser Back returns to /publishing-hub, which re-redirects
+                        straight back here. */}
+                    <Link
+                        href={`/projects/${manuscriptId}`}
+                        className="text-sm font-semibold text-muted hover:text-ink transition-colors"
+                    >
+                        ← Back to your project
                     </Link>
                 </div>
             </header>

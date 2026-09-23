@@ -168,7 +168,15 @@ function PublishingHubContent() {
         .eq('phase_number', 4)
         .single()
 
-      if (phase4?.phase_status !== 'active') {
+      // The phase strip in the studio offers Taylor whenever phase 4 is not
+      // 'pending', so this gate must agree with it or the button becomes a trap:
+      // strip says "go", hub says "no", and the bounce to /phase-complete lands
+      // the author on an upgrade wall with no way back (browser Back returns
+      // here, which immediately re-redirects forward).
+      //
+      // A 'complete' phase 4 is a FINISHED book, not an unpaid one. Only a
+      // genuinely pending or missing phase should be turned away.
+      if (!phase4 || phase4.phase_status === 'pending') {
         router.push(`/phase-complete?manuscriptId=${manuscriptId}`)
         return
       }
