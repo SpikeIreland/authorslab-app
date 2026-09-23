@@ -77,15 +77,29 @@ function layoutOf(source: unknown): string | null {
 
 /**
  * Resolve the selected asset id from the handoff column.
- * Returns null for a null column, for a bare URL (the legacy shape), and for
- * anything else that does not carry the declared prefix — on the principle
- * that an unrecognised value should read as "nothing selected" rather than be
- * guessed at.
+ *
+ * Three outcomes, and the distinction matters. An empty column means the
+ * author has not chosen. A column carrying something this route cannot parse
+ * — a bare URL in the legacy grammar, say — means the author HAS chosen and
+ * we cannot tell what. Collapsing the second into the first makes the portal
+ * state "once they choose one, it arrives here for your approval" about a book
+ * whose author already chose, which is a confident falsehood rather than a
+ * missing value. Observed in production 2026-09-23 on the demo book.
  */
-function selectedAssetIdFrom(raw: string | null | undefined): string | null {
-  if (!raw || !raw.startsWith(SELECTED_PREFIX)) return null
+function resolveSelection(raw: string | null | undefined): {
+  selectedId: string | null
+  unresolved: boolean
+} {
+  if (!raw || raw.trim().length === 0) {
+    return { selectedId: null, unresolved: false }
+  }
+  if (!raw.startsWith(SELECTED_PREFIX)) {
+    return { selectedId: null, unresolved: true }
+  }
   const id = raw.slice(SELECTED_PREFIX.length).trim()
-  return id.length > 0 ? id : null
+  return id.length > 0
+    ? { selectedId: id, unresolved: false }
+    : { selectedId: null, unresolved: true }
 }
 
 export async function GET(
@@ -112,7 +126,7 @@ export async function GET(
     // not been through cover generation yet. The portal falls back to its own
     // placeholder treatment on an empty array.
     if (rows.length === 0) {
-      return NextResponse.json({ covers: [], selectedId: null })
+      return NextResponse.json({ covers: [], selectedId: null, selectionUnresolved: false })
     }
 
     // Read the selection BEFORE filtering: the layout filter below keeps the
@@ -123,14 +137,14 @@ export async function GET(
       .eq('manuscript_id', id)
       .maybeSingle()
 
-    const selectedId = selectedAssetIdFrom(progressRow?.selected_cover_url)
+    const { selectedId, unresolved } = resolveSelection(progressRow?.selected_cover_url)
 
     const displayRows = rows.filter(
       (row) => layoutOf(row.source) !== WRAPAROUND_LAYOUT || row.id === selectedId
     )
 
     if (displayRows.length === 0) {
-      return NextResponse.json({ covers: [], selectedId: null })
+      return NextResponse.json({ covers: [], selectedId: null, selectionUnresolved: unresolved })
     }
 
     const covers: PublisherCover[] = await Promise.all(
@@ -157,7 +171,7 @@ export async function GET(
     // decision; the rest are context.
     covers.sort((a, b) => Number(b.isSelected) - Number(a.isSelected))
 
-    return NextResponse.json({ covers, selectedId })
+    return NextResponse.json({ covers, selectedId, selectionUnresolved: unresolved })
   } catch (err) {
     console.error(`publisher/projects/${id}/covers: unexpected error:`, err)
     return NextResponse.json({ error: 'internal_error' }, { status: 500 })

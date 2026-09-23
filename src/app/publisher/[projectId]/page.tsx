@@ -523,6 +523,7 @@ interface PublisherCover {
 
 function CoverProposalsSection({ projectId }: { projectId: string }) {
   const [covers, setCovers] = useState<PublisherCover[] | null>(null)
+  const [selectionUnresolved, setSelectionUnresolved] = useState(false)
   const [coversLoaded, setCoversLoaded] = useState(false)
 
   useEffect(() => {
@@ -536,9 +537,13 @@ function CoverProposalsSection({ projectId }: { projectId: string }) {
           setCoversLoaded(true)
           return
         }
-        const json = (await res.json()) as { covers?: PublisherCover[] }
+        const json = (await res.json()) as {
+          covers?: PublisherCover[]
+          selectionUnresolved?: boolean
+        }
         if (cancelled) return
         setCovers(json.covers ?? [])
+        setSelectionUnresolved(Boolean(json.selectionUnresolved))
         setCoversLoaded(true)
       } catch {
         if (cancelled) return
@@ -582,8 +587,9 @@ function CoverProposalsSection({ projectId }: { projectId: string }) {
         {real.length > 0 ? (
           <>
             <p className="text-[14px] text-[#8A8A8A] mb-5 max-w-[640px]">
-              {real.length} concepts are with the author. Once they choose one, it
-              arrives here for your approval.
+              {selectionUnresolved
+                ? `The author has chosen a cover, but it isn't resolving to one of these ${real.length} concepts. Check with the design team before approving.`
+                : `${real.length} concepts are with the author. Once they choose one, it arrives here for your approval.`}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {real.map((c) => (
