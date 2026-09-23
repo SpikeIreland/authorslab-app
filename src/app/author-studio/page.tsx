@@ -1347,23 +1347,35 @@ function StudioContent() {
           phaseToLoad = allPhases.find(p => p.phase_status === 'active')
         }
 
-        // 2026-09-22: defensive fallback for complete books.
-        // If no `active` phase exists (every phase is 'complete'), fall back
-        // to the highest-numbered `complete` phase — this lets a launched
-        // book be opened without the studio crashing with "No phase found".
-        // The phase-5 redirect below then naturally routes the user to
-        // Marketing Hub, which is the correct post-launch destination.
-        // Root cause: /author-studio's initializeStudio requires an active
-        // phase; a launched book has none. Trilogy-reshape left one book in
-        // this state (Veil) — data fix + this code fallback both landed
-        // together to unbreak the demo path.
+        // 2026-09-23: fallback for complete books. CORRECTED — the 2026-09-22
+        // version of this landed two defects, both fixed here.
+        //
+        // Why a fallback exists: initializeStudio requires an `active` phase,
+        // and a launched book has none (every phase reads 'complete'), so the
+        // studio threw "No phase found" and the book could not be opened.
+        //
+        // Defect 1 — it picked the HIGHEST complete phase, i.e. phase 5. Phases
+        // 4 and 5 are Publishing and Marketing, which are not editing phases at
+        // all, so the studio landed on a phase it has no business showing. Now
+        // it prefers the first EDITING phase (1-3), which is where the editorial
+        // record actually starts and where Alex's headline report lives.
+        //
+        // Defect 2 — the phase-4/5 redirect below then fired and bounced the
+        // user to Marketing Hub, making a finished book IMPOSSIBLE to open in
+        // the studio. That redirect is meant for an author whose CURRENT work is
+        // publishing or marketing; a complete book's current work is neither, it
+        // is done. So the redirect is now suppressed on the fallback path.
+        let usedCompleteBookFallback = false
         if (!phaseToLoad) {
-          const lastComplete = [...allPhases]
-            .reverse()
-            .find(p => p.phase_status === 'complete')
-          if (lastComplete) {
-            phaseToLoad = lastComplete
-            console.log(`📖 No active phase — loaded last complete phase ${lastComplete.phase_number} (${lastComplete.editor_name}) as fallback`)
+          const firstEditingPhase = allPhases.find(
+            p => p.phase_number <= 3 && p.phase_status === 'complete'
+          )
+          const anyComplete = [...allPhases].reverse().find(p => p.phase_status === 'complete')
+          const fallback = firstEditingPhase ?? anyComplete
+          if (fallback) {
+            phaseToLoad = fallback
+            usedCompleteBookFallback = true
+            console.log(`📖 No active phase — loaded phase ${fallback.phase_number} (${fallback.editor_name}) as complete-book fallback; hub redirect suppressed`)
           }
         }
 
@@ -1372,8 +1384,10 @@ function StudioContent() {
           throw new Error('No phase found')
         }
 
-        // Only redirect to Publishing/Marketing Hub if user didn't explicitly request a phase
-        if (!phaseParam) {
+        // Redirect to Publishing/Marketing Hub only when that phase is genuinely
+        // the author's live stage — not when the user asked for a specific phase,
+        // and not when we arrived here via the complete-book fallback above.
+        if (!phaseParam && !usedCompleteBookFallback) {
           if (phaseToLoad.phase_number === 4) {
             console.log('📚 Phase 4 active - redirecting to Publishing Hub')
             router.push(`/publishing-hub?manuscriptId=${manuscriptId}`)
