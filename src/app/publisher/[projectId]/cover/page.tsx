@@ -15,17 +15,23 @@ export const dynamic = 'force-dynamic'
  * is clickable and becomes the large view, so a publisher can put two
  * directions side by side in their own eye before committing.
  *
- * ─── Honest about what is real ───────────────────────────────────────────────
- * Artwork and the author's selection are REAL, read through the publisher
- * route. The decision and the note to the designer are session-only — there is
- * no publisher-approval row and no publisher-notes table yet (both couriered).
- * So nothing here claims the designer has been notified, because they haven't.
+ * ─── An affordance is a claim ────────────────────────────────────────────────
+ * Artwork and the author's selection are read through the publisher route.
+ * The decision and the notes are written to the append-only publisher log —
+ * and where that log cannot be written, the decision panel is ABSENT rather
+ * than present-and-apologetic. A disclosure that a button does nothing is a
+ * disclosure, not a deliverable.
  */
 
 import { useState, useEffect, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 
 import { VIEWING_FIRM } from '../../_data/firm'
+import {
+  usePublisherActions,
+  decisionAt,
+  notesAt,
+} from '../../_data/usePublisherActions'
 // ─── 1. Types ─────────────────────────────────────────────────────────────────
 
 interface PublisherCover {
@@ -37,7 +43,7 @@ interface PublisherCover {
   isSelected: boolean
 }
 
-type Decision = 'undecided' | 'approved' | 'revisions'
+import type { PublisherAction as PublisherNote } from '../../_data/usePublisherActions'
 
 // ─── 2. Page ──────────────────────────────────────────────────────────────────
 
@@ -48,8 +54,7 @@ export default function CoverStudioPage() {
 
   const [covers, setCovers] = useState<PublisherCover[] | null>(null)
   const [viewingId, setViewingId] = useState<string | null>(null)
-  const [decision, setDecision] = useState<Decision>('undecided')
-  const [notes, setNotes] = useState<{ id: string; body: string }[]>([])
+  const { actions, available, saving, record } = usePublisherActions(projectId)
   const [draft, setDraft] = useState('')
   const [failed, setFailed] = useState(false)
 
@@ -144,19 +149,18 @@ export default function CoverStudioPage() {
 
             <DecisionPanel
               hasSelection={selected !== null}
-              decision={decision}
-              onDecision={setDecision}
-              notes={notes}
+              decision={decisionAt(actions, 'cover')}
+              onDecision={(kind) => record({ station: 'cover', kind })}
+              notes={notesAt(actions, 'cover')}
               draft={draft}
               onDraft={setDraft}
-              onAddNote={() => {
+              saving={saving}
+              available={available}
+              onAddNote={async () => {
                 const body = draft.trim()
                 if (!body) return
-                setNotes((prev) => [
-                  ...prev,
-                  { id: Math.random().toString(36).slice(2), body },
-                ])
-                setDraft('')
+                const ok = await record({ station: 'cover', kind: 'note', body })
+                if (ok) setDraft('')
               }}
             />
           </div>
@@ -310,15 +314,24 @@ function DecisionPanel({
   draft,
   onDraft,
   onAddNote,
+  saving,
+  available,
 }: {
   hasSelection: boolean
-  decision: Decision
-  onDecision: (d: Decision) => void
-  notes: { id: string; body: string }[]
+  decision: 'approved' | 'revisions_requested' | null
+  onDecision: (kind: 'approved' | 'revisions_requested') => void
+  notes: PublisherNote[]
   draft: string
   onDraft: (v: string) => void
-  onAddNote: () => void
+  onAddNote: () => void | Promise<void>
+  saving: boolean
+  available: boolean | null
 }) {
+  // An affordance is a claim. With no substrate behind them these controls
+  // assert acts that do not happen, so the panel is absent rather than
+  // present-and-apologetic.
+  if (available !== true) return null
+
   return (
     <aside className="bg-white border border-[#E8E5E0] rounded-[4px] p-6">
       <div className="text-[11px] tracking-[0.14em] uppercase text-[#8A8A8A] mb-3">
@@ -333,19 +346,19 @@ function DecisionPanel({
 
       {decision === 'approved' && (
         <div className="mb-4 text-[13px] text-[#2E4A3C] border border-[#2E4A3C]/30 bg-[#2E4A3C]/5 px-3.5 py-2.5 rounded-[3px]">
-          Approved
+          Approved &mdash; recorded against this book
         </div>
       )}
-      {decision === 'revisions' && (
+      {decision === 'revisions_requested' && (
         <div className="mb-4 text-[13px] text-[#8A5A2B] border border-[#8A5A2B]/30 bg-[#8A5A2B]/5 px-3.5 py-2.5 rounded-[3px]">
-          Revisions requested
+          Revisions requested &mdash; recorded against this book
         </div>
       )}
 
       <div className="flex flex-col gap-2.5">
         <button
           type="button"
-          disabled={!hasSelection || decision === 'approved'}
+          disabled={!hasSelection || saving || decision === 'approved'}
           onClick={() => onDecision('approved')}
           className="text-[13px] px-4 py-2.5 rounded-[3px] border border-[#1E3A5F] text-white bg-[#1E3A5F] hover:bg-[#17304F] disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/40"
         >
@@ -353,8 +366,8 @@ function DecisionPanel({
         </button>
         <button
           type="button"
-          disabled={!hasSelection || decision === 'approved'}
-          onClick={() => onDecision('revisions')}
+          disabled={!hasSelection || saving || decision === 'approved'}
+          onClick={() => onDecision('revisions_requested')}
           className="text-[13px] px-4 py-2.5 rounded-[3px] border border-[#E8E5E0] text-[#3F3F3F] hover:bg-[#F7F7F5] disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30"
         >
           Request revisions
@@ -389,7 +402,7 @@ function DecisionPanel({
         <button
           type="button"
           onClick={onAddNote}
-          disabled={!draft.trim()}
+          disabled={!draft.trim() || saving}
           className="mt-2.5 w-full text-[13px] px-4 py-2 rounded-[3px] border border-[#E8E5E0] text-[#3F3F3F] hover:bg-[#F7F7F5] disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30"
         >
           Add note

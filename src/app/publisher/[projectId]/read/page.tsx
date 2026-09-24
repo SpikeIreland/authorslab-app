@@ -25,6 +25,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 
 import { VIEWING_FIRM } from '../../_data/firm'
+import { usePublisherActions, notesAt } from '../../_data/usePublisherActions'
 // ─── 1. Types ─────────────────────────────────────────────────────────────────
 
 interface SpineEntry {
@@ -40,12 +41,7 @@ interface ChapterBody {
   wordCount: number
 }
 
-interface Note {
-  id: string
-  chapterNumber: number
-  body: string
-  when: string
-}
+import type { PublisherAction as PublisherNote } from '../../_data/usePublisherActions'
 
 // ─── 2. Helpers ───────────────────────────────────────────────────────────────
 
@@ -61,8 +57,17 @@ function toParagraphs(content: string): string[] {
     .filter((p) => p.length > 0)
 }
 
-function makeId() {
-  return Math.random().toString(36).slice(2)
+function formatWhen(iso: string): string {
+  try {
+    return new Date(iso).toLocaleString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  } catch {
+    return iso
+  }
 }
 
 // ─── 3. Page ──────────────────────────────────────────────────────────────────
@@ -77,7 +82,7 @@ export default function ReadingRoomPage() {
   const [chapter, setChapter] = useState<ChapterBody | null>(null)
   const [loadingChapter, setLoadingChapter] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [notes, setNotes] = useState<Note[]>([])
+  const { actions, available, saving, record } = usePublisherActions(projectId)
 
   // ── Load the spine, then open the first chapter ──────────────────────────
   useEffect(() => {
@@ -146,26 +151,32 @@ export default function ReadingRoomPage() {
   }, [projectId, current])
 
   const notesForChapter = useMemo(
-    () => notes.filter((n) => n.chapterNumber === current),
-    [notes, current]
+    () => notesAt(actions, 'manuscript', current),
+    [actions, current]
   )
 
   const addNote = useCallback(
-    (body: string) => {
+    async (body: string) => {
       if (current === null) return
-      setNotes((prev) => [
-        ...prev,
-        { id: makeId(), chapterNumber: current, body, when: 'just now' },
-      ])
+      await record({
+        station: 'manuscript',
+        kind: 'note',
+        body,
+        chapterNumber: current,
+      })
     },
-    [current]
+    [current, record]
   )
 
   const noteCountByChapter = useMemo(() => {
     const m = new Map<number, number>()
-    for (const n of notes) m.set(n.chapterNumber, (m.get(n.chapterNumber) ?? 0) + 1)
+    for (const a of actions) {
+      if (a.kind !== 'note' || a.station !== 'manuscript') continue
+      if (a.chapter_number === null) continue
+      m.set(a.chapter_number, (m.get(a.chapter_number) ?? 0) + 1)
+    }
     return m
-  }, [notes])
+  }, [actions])
 
   if (error) {
     return (
@@ -200,7 +211,8 @@ export default function ReadingRoomPage() {
           chapterTitle={chapter?.title ?? ''}
           notes={notesForChapter}
           onAdd={addNote}
-          disabled={current === null}
+          disabled={current === null || saving}
+          available={available}
         />
       </div>
     </div>
@@ -358,20 +370,26 @@ function NotesPane({
   notes,
   onAdd,
   disabled,
+  available,
 }: {
   chapterTitle: string
-  notes: Note[]
-  onAdd: (body: string) => void
+  notes: PublisherNote[]
+  onAdd: (body: string) => void | Promise<void>
   disabled: boolean
+  available: boolean | null
 }) {
   const [draft, setDraft] = useState('')
 
-  function submit() {
+  async function submit() {
     const body = draft.trim()
     if (!body) return
-    onAdd(body)
+    await onAdd(body)
     setDraft('')
   }
+
+  // An affordance is a claim. Where notes cannot be recorded, the column does
+  // not offer to record one — it is not disabled-with-an-apology, it is absent.
+  if (available !== true) return null
 
   return (
     <aside className="border-l border-[#E8E5E0] bg-white/60 lg:max-h-[calc(100vh-61px)] lg:overflow-y-auto">
@@ -397,7 +415,7 @@ function NotesPane({
               >
                 <div className="text-[14px] leading-[1.55] text-[#2A2A2A]">{n.body}</div>
                 <div className="text-[11px] text-[#B8B8B8] mt-2">
-                  {VIEWING_FIRM} &middot; {n.when}
+                  {n.actor_firm} &middot; {formatWhen(n.created_at)}
                 </div>
               </div>
             ))}

@@ -7,6 +7,10 @@ import { useParams } from 'next/navigation'
 import { EDITOR_CONFIG, type PhaseNumber } from '@/types/database'
 
 import { VIEWING_FIRM } from '../_data/firm'
+import {
+  usePublisherActions,
+  decisionAt,
+} from '../_data/usePublisherActions'
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface AuthorRow {
@@ -110,10 +114,6 @@ function formatDate(iso: string): string {
 function formatWordCount(n: number | null | undefined): string {
   if (!n) return '—'
   return n.toLocaleString('en-GB')
-}
-
-function makeId() {
-  return Math.random().toString(36).slice(2)
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -293,8 +293,12 @@ function PortalBody({ project }: { project: PublisherProject }) {
         <ProductionLine projectId={project.id} />
         <CoverProposalsSection projectId={project.id} />
         <MarketingPlanSection />
-        <PublishingRouteSection />
-        <CommunicationsThreadSection authorFirst={authorFirst} phases={project.phases} />
+        <PublishingRouteSection projectId={project.id} />
+        <CommunicationsThreadSection
+          authorFirst={authorFirst}
+          phases={project.phases}
+          projectId={project.id}
+        />
       </main>
     </>
   )
@@ -745,19 +749,19 @@ function CoverProposalsSection({ projectId }: { projectId: string }) {
   )
 }
 
-/** The publisher's decision on the author's selection. */
+/**
+ * The portal shows the author's cover and WHERE IT STANDS. It does not offer
+ * the decision twice: the cover studio is where a publisher approves, requests
+ * revisions and writes to the designer, and duplicating those controls here
+ * would mean two surfaces claiming the same act.
+ *
+ * Any recorded decision is read back from the append-only publisher log, so a
+ * publisher returning to this page sees what they did rather than a reset
+ * button.
+ */
 function CoverDecision({ projectId }: { projectId: string }) {
-  const [state, setState] = useState<CoverState>({
-    status: 'pending',
-    approvedAt: null,
-    revisionsNote: '',
-    messaging: false,
-    messageDraft: '',
-    messageSent: false,
-  })
-
-  const update = (patch: Partial<CoverState>) =>
-    setState((prev) => ({ ...prev, ...patch }))
+  const { actions, available } = usePublisherActions(projectId)
+  const coverDecision = decisionAt(actions, 'cover')
 
   return (
     <div>
@@ -766,81 +770,25 @@ function CoverDecision({ projectId }: { projectId: string }) {
         approve it.
       </div>
 
-      {state.status === 'approved' && (
+      {available === true && coverDecision === 'approved' && (
         <div className="mt-5 text-[13px] text-[#2E4A3C] border border-[#2E4A3C]/30 bg-[#2E4A3C]/5 px-3.5 py-2.5 rounded-[3px] inline-block">
-          Approved on {state.approvedAt}
+          Approved &mdash; recorded against this book
         </div>
       )}
-      {state.status === 'revisions' && (
+      {available === true && coverDecision === 'revisions_requested' && (
         <div className="mt-5 text-[13px] text-[#8A5A2B] border border-[#8A5A2B]/30 bg-[#8A5A2B]/5 px-3.5 py-2.5 rounded-[3px] inline-block">
-          Revisions requested &mdash; the author and Taylor have been notified.
+          Revisions requested &mdash; recorded against this book
         </div>
       )}
 
-      <div className="mt-6 flex flex-wrap gap-2.5">
-        <button
-          type="button"
-          disabled={state.status === 'approved'}
-          onClick={() =>
-            update({
-              status: 'approved',
-              approvedAt: formatDate(new Date().toISOString()),
-            })
-          }
-          className="text-[13px] px-5 py-2.5 rounded-[3px] border border-[#1E3A5F] text-white bg-[#1E3A5F] hover:bg-[#17304F] disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/40"
-        >
-          Approve this cover
-        </button>
-        <button
-          type="button"
-          disabled={state.status === 'approved'}
-          onClick={() => update({ status: 'revisions' })}
-          className="text-[13px] px-4 py-2.5 rounded-[3px] border border-[#E8E5E0] text-[#3F3F3F] hover:bg-[#F7F7F5] disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30"
-        >
-          Request revisions
-        </button>
-        <button
-          type="button"
-          onClick={() => update({ messaging: !state.messaging })}
-          className="text-[13px] px-4 py-2.5 rounded-[3px] border border-[#E8E5E0] text-[#3F3F3F] hover:bg-[#F7F7F5] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30"
-        >
-          Message the designer
-        </button>
-      </div>
-
-      <div className="mt-5">
+      <div className="mt-6">
         <a
           href={`/publisher/${projectId}/cover`}
-          className="text-[13px] text-[#1E3A5F] hover:underline focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 rounded-[3px]"
+          className="text-[13px] text-white bg-[#1E3A5F] border border-[#1E3A5F] px-4 py-2.5 rounded-[3px] hover:bg-[#17304F] transition-colors focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/40 inline-block"
         >
-          Open the cover studio &mdash; compare every concept &rarr;
+          Open the cover studio &rarr;
         </a>
       </div>
-
-      {state.messaging && (
-        <div className="mt-4 max-w-[520px]">
-          <textarea
-            value={state.messageDraft}
-            onChange={(e) => update({ messageDraft: e.target.value, messageSent: false })}
-            rows={3}
-            className="w-full text-[13px] px-3 py-2 border border-[#E8E5E0] rounded-[3px] bg-white focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 focus:border-[#1E3A5F] resize-none"
-            placeholder="A note to Taylor&hellip;"
-          />
-          <div className="mt-2 flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => update({ messageDraft: '', messageSent: true })}
-              disabled={!state.messageDraft.trim()}
-              className="text-[12px] px-3 py-1.5 rounded-[3px] border border-[#1E3A5F] text-white bg-[#1E3A5F] hover:bg-[#17304F] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Send
-            </button>
-            {state.messageSent && (
-              <span className="text-[12px] text-[#8A8A8A]">Message sent</span>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   )
 }
@@ -1061,14 +1009,10 @@ function MarketingPlanSection() {
           </div>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-[#E8E5E0]">
-          <a
-            href="#"
-            className="text-[13px] text-[#1E3A5F] border border-[#E8E5E0] px-4 py-2 rounded-[3px] hover:bg-[#F7F7F5] transition-colors focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 inline-block"
-          >
-            Review the full plan →
-          </a>
-        </div>
+        {/*
+          "Review the full plan" pointed at href="#". There is no full plan to
+          open, so the control is removed rather than left offering the act.
+        */}
       </Card>
     </section>
   )
@@ -1076,7 +1020,7 @@ function MarketingPlanSection() {
 
 // ─── 5. Publishing route selector ─────────────────────────────────────────────
 
-function PublishingRouteSection() {
+function PublishingRouteSection({ projectId }: { projectId: string }) {
   // Route copy is written for a TRADE publisher reading their own surface.
   //
   // The previous third option read "Author publishes independently under an
@@ -1108,8 +1052,12 @@ function PublishingRouteSection() {
     },
   ]
 
+  const { actions, available, saving, record } = usePublisherActions(projectId)
   const [selected, setSelected] = useState<string | null>(null)
-  const [confirmed, setConfirmed] = useState(false)
+
+  const confirmedRoute =
+    [...actions].reverse().find((a) => a.station === 'route' && a.kind === 'route_confirmed')
+      ?.body ?? null
 
   return (
     <section>
@@ -1122,10 +1070,7 @@ function PublishingRouteSection() {
             <button
               key={r.id}
               type="button"
-              onClick={() => {
-                setSelected(r.id)
-                setConfirmed(false)
-              }}
+              onClick={() => setSelected(r.id)}
               className={`text-left p-6 rounded-[4px] border transition-colors focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 ${
                 isSelected
                   ? 'bg-white border-[#1E3A5F]'
@@ -1158,19 +1103,26 @@ function PublishingRouteSection() {
         })}
       </div>
 
-      {selected && (
-        <div className="mt-6 flex items-center gap-4">
+      {/*
+        An affordance is a claim. This control used to say "Route confirmed —
+        the author has been notified", which asserted a notification that never
+        happened: worse than hollow, because it stated an outcome. It now
+        records the choice and says only what is true — and where the record
+        cannot be written, the control is not offered at all.
+      */}
+      {available === true && selected && (
+        <div className="mt-6 flex flex-wrap items-center gap-4">
           <button
             type="button"
-            onClick={() => setConfirmed(true)}
-            disabled={confirmed}
+            onClick={() => record({ station: 'route', kind: 'route_confirmed', body: selected })}
+            disabled={saving || confirmedRoute === selected}
             className="text-[13px] px-5 py-2.5 rounded-[3px] border border-[#1E3A5F] text-white bg-[#1E3A5F] hover:bg-[#17304F] disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/40"
           >
             Confirm route
           </button>
-          {confirmed && (
+          {confirmedRoute === selected && (
             <span className="text-[13px] text-[#8A8A8A]">
-              Route confirmed — the author has been notified.
+              Route recorded against this book.
             </span>
           )}
         </div>
@@ -1230,9 +1182,11 @@ const RELATIVE_WHEN: Record<number, string> = {
 function CommunicationsThreadSection({
   authorFirst,
   phases,
+  projectId,
 }: {
   authorFirst: string
   phases: PhaseRow[]
+  projectId: string
 }) {
   const initial: ThreadMessage[] = useMemo(() => {
     const editorMessages: ThreadMessage[] = EDITORIAL_PHASES.map((n) => {
@@ -1267,28 +1221,33 @@ function CommunicationsThreadSection({
     ]
   }, [authorFirst, phases])
 
-  const [messages, setMessages] = useState<ThreadMessage[]>(initial)
+  const { actions, available, saving, record } = usePublisherActions(projectId)
   const [draft, setDraft] = useState('')
 
-  useEffect(() => {
-    setMessages(initial)
-  }, [initial])
+  // The publisher's own contributions come from the append-only log, so they
+  // survive a reload and read back attributed.
+  const messages = useMemo(() => {
+    const mine: ThreadMessage[] = actions
+      .filter((a) => a.kind === 'note' && a.station === 'manuscript' && a.chapter_number === null)
+      .map((a) => ({
+        id: a.id,
+        sender: a.actor_firm,
+        role: 'Publisher',
+        body: a.body ?? '',
+        when: new Date(a.created_at).toLocaleDateString('en-GB', {
+          day: 'numeric',
+          month: 'short',
+        }),
+        isSelf: true,
+      }))
+    return [...initial, ...mine]
+  }, [initial, actions])
 
-  function send() {
+  async function send() {
     const body = draft.trim()
     if (!body) return
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: makeId(),
-        sender: 'You',
-        role: 'Publisher',
-        body,
-        when: 'just now',
-        isSelf: true,
-      },
-    ])
-    setDraft('')
+    const ok = await record({ station: 'manuscript', kind: 'note', body })
+    if (ok) setDraft('')
   }
 
   return (
@@ -1301,6 +1260,7 @@ function CommunicationsThreadSection({
           ))}
         </div>
 
+        {available === true && (
         <div className="mt-8 pt-6 border-t border-[#E8E5E0]">
           <textarea
             value={draft}
@@ -1313,13 +1273,14 @@ function CommunicationsThreadSection({
             <button
               type="button"
               onClick={send}
-              disabled={!draft.trim()}
+              disabled={!draft.trim() || saving}
               className="text-[13px] px-5 py-2 rounded-[3px] border border-[#1E3A5F] text-white bg-[#1E3A5F] hover:bg-[#17304F] disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/40"
             >
               Send
             </button>
           </div>
         </div>
+        )}
       </Card>
     </section>
   )
