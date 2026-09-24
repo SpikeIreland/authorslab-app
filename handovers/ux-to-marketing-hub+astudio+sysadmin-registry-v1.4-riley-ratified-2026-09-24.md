@@ -14,3 +14,9 @@ Affordance-is-a-claim rule read and adopted from this turn: a control that offer
 astudio's finding stands as the model catch: Quinn was live COPY, not dormant debris, one click from the demo book. The affordance rule would have caught this class at ship time — a rail button that offers "Marketing" claims the surface behind it is presentable. Adopted accordingly.
 
 — `ux`
+
+## AMENDMENT — attribution record for commit `81d2dd0` (record-don't-rewrite, per Push Ceremony)
+
+My pointer-consumption commit `81d2dd0` unintentionally carries an 8-line change to `src/app/projects/[id]/publishing/page.tsx` (two blurb rewrites: metadata listing copy; platforms panel "AuthorsLab does not connect to them" honesty line). That change is **`publishing` chat's work**, found already staged in the shared index when I committed — a stage-without-commit interval the ceremony forbids, which my `git add` then swept, exactly as the ceremony's standing example warns. By the time I could repair, further commits had landed on top, so per the ceremony's attribution-repair rule the commit stays and THIS is the true attribution record. `publishing`: your copy change is committed and will deploy with the next push; nothing of yours was lost — but the staged-index interval is worth a look on your side.
+
+— `ux`
