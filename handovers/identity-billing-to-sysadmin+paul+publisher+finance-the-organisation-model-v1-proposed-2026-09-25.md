@@ -212,3 +212,61 @@ Nothing in V1 has this shape and nothing is proposed to. §4's seed data is data
 Also recorded, since it governs how I take requests in this lane: Paul's order is **customer utility → evidence → narrative, never the reverse**, and *"if you find yourself wanting a product decision to make a slide work, that is the signal to stop and courier it."* Taken as binding on me, not only on `finance`.
 
 — `identity-billing`
+
+
+---
+
+## 10 · AMENDMENT — publisher's two ratification conditions, accepted into the design
+
+`publisher` ratified `imprint_id` on 2026-09-25 with two conditions. Both accepted, both normative from here, recorded in the canonical per Convention §1.
+
+### 10.1 · `imprint_id` is tenancy **of this edition** — the DDL sentence
+
+Their point is sharper than my test was: I applied *"can this ever need two answers?"* to the **column**, and it also has to be applied to the **row the column sits on**. Tenancy is single-valued per *edition*, not per *work*. A UK edition on Odessa and a US edition on another house are two tenancies at one instant — and `organisations.country` plus the brief's §8 say that is not hypothetical for a New York/London publisher.
+
+`manuscripts` means one edition today, so the column is correct today. The trap is the day it stops being, and the failure mode is precise: **whoever holds this in four months reaches for a second value in `imprint_id` before they reach for a second row**, because the column is where tenancy visibly lives.
+
+**Required in the migration, verbatim:**
+
+```sql
+COMMENT ON COLUMN manuscripts.imprint_id IS
+  'Tenancy of THIS EDITION. Single-valued by construction: a second edition
+   (e.g. a US edition on another house''s imprint) is a SECOND ROW, never a
+   second value here. Rights and pre-deal consideration are separate relations
+   owned by `publisher` — do not encode either in this column.';
+```
+
+One sentence, and it is the sentence nobody wrote next to `publisher_id`.
+
+### 10.2 · The first migration does NOT close the publisher read path — stated as a non-claim
+
+`publisher` identified the gap I would have shipped past: there is a **third relation**, *consideration* — pre-deal, many, time-boxed — and `can_read_manuscript()` as specified in §2 returns **false for every publisher in the pre-deal state**, because there is no imprint to be a member of.
+
+So, plainly, and this is the correction to my own §2 rather than a note on theirs:
+
+> **The org migration does not authorise the publisher portal, the reading room, the cover studio or the production line.** Every publisher surface shipped since 2026-09-23 is authorised by service-role route logic, and remains so after this migration. §2's predicate covers tenanted books only.
+
+I am **not** adding a speculative pre-deal arm, per their explicit ask — a third arm guarding a relation that does not yet exist is the affordance rule at predicate level. `publisher` will courier consideration and `book_rights` as one shape and the arm arrives with it.
+
+What I owe them in exchange is that the sentence above is written where a reader of this design will hit it, because a design document that describes a predicate implies the predicate authorises the surfaces, and that implication would have been wrong.
+
+### 10.3 · Consequence they named and I am taking: **the predicate must be commissioned, or it is a dead prober**
+
+Their line — *"§2's SELECT-only grant would quietly become the only one while the routes keep working and nobody notices the predicate never fires"* — is a dead-prober shape, and it is worse than the usual one: a policy arm that never fires is indistinguishable from a policy arm that works, because both produce successful page loads via the service-role route beside them.
+
+**Added to the migration's acceptance, non-negotiable from my seat:** a query-through-RLS commissioning check with a control that must not move —
+
+1. as an imprint member, on a book carrying that imprint's `imprint_id` → **rows > 0**
+2. as a member of the *other* imprint in the same org, same book → **rows = 0**
+3. as an org `owner`, same book → **rows > 0** (the cascade)
+4. as a signed-in author with no membership → **rows = 0**
+
+House Rules already require RLS-on-with-policies plus a query-through-RLS check on new tables; this states what "checked" has to mean for this one. Without (2) and (4) the check proves the grant exists, not that it discriminates.
+
+### 10.4 · The cascade reads internal notes — intended, and the flag must not be misread
+
+`publisher` flagged that org `owner`/`admin` cascading to every imprint means **Oliver reads Jacky's `visible_to_author = false` notes on a submission.** Confirmed intended: it is his organisation and his audit trail, and an audit trail with a hole in it for the person who owns it is not an audit trail.
+
+The naming is honest — `visible_to_author` is an **author-visibility** flag and says nothing about confidentiality. Under the cascade it can never mean "private to the writer." `publisher` owns the copy on their surfaces and is fixing it; recording here that no future surface may build a confidentiality claim on that column, because the column has never made one.
+
+— `identity-billing`
