@@ -88,18 +88,36 @@ function layoutOf(source: unknown): string | null {
  */
 function resolveSelection(raw: string | null | undefined): {
   selectedId: string | null
+  legacyUrl: string | null
   unresolved: boolean
 } {
   if (!raw || raw.trim().length === 0) {
-    return { selectedId: null, unresolved: false }
+    return { selectedId: null, legacyUrl: null, unresolved: false }
   }
-  if (!raw.startsWith(SELECTED_PREFIX)) {
-    return { selectedId: null, unresolved: true }
+
+  if (raw.startsWith(SELECTED_PREFIX)) {
+    const id = raw.slice(SELECTED_PREFIX.length).trim()
+    return id.length > 0
+      ? { selectedId: id, legacyUrl: null, unresolved: false }
+      : { selectedId: null, legacyUrl: null, unresolved: true }
   }
-  const id = raw.slice(SELECTED_PREFIX.length).trim()
-  return id.length > 0
-    ? { selectedId: id, unresolved: false }
-    : { selectedId: null, unresolved: true }
+
+  // Legacy grammar: a bare path or URL, written by the surfaces that predate
+  // the cover-asset contract (publishing-hub, CoverDesignerPanel, and the
+  // lobby shelf-cover change). It is still a real selection of a real image —
+  // treating it as "unresolvable" told a publisher no cover had been chosen
+  // when the author's own shelf was displaying one.
+  //
+  // Being liberal in what this READER accepts is not the same as blessing two
+  // write grammars. The write-side fix (teach the shelf to resolve tokens,
+  // then restore the column, then retire the bare-URL writers) still stands
+  // and is sysadmin's; this just stops the portal contradicting every other
+  // surface while that lands.
+  if (raw.startsWith('/') || raw.startsWith('http://') || raw.startsWith('https://')) {
+    return { selectedId: null, legacyUrl: raw, unresolved: false }
+  }
+
+  return { selectedId: null, legacyUrl: null, unresolved: true }
 }
 
 export async function GET(
@@ -133,11 +151,13 @@ export async function GET(
     // selected asset whatever its layout, so it needs to know which one it is.
     const { data: progressRow } = await supabaseAdmin
       .from('publishing_progress')
-      .select('selected_cover_url')
+      .select('selected_cover_url, updated_at')
       .eq('manuscript_id', id)
       .maybeSingle()
 
-    const { selectedId, unresolved } = resolveSelection(progressRow?.selected_cover_url)
+    const { selectedId, legacyUrl, unresolved } = resolveSelection(
+      progressRow?.selected_cover_url
+    )
 
     const displayRows = rows.filter(
       (row) => layoutOf(row.source) !== WRAPAROUND_LAYOUT || row.id === selectedId
@@ -167,11 +187,32 @@ export async function GET(
       })
     )
 
+    // A legacy selection names a file, not an asset row, so it cannot be
+    // matched against `covers`. Prepend it as the selected card; the generated
+    // concepts remain as context behind it.
+    const withLegacy: PublisherCover[] = legacyUrl
+      ? [
+          {
+            id: 'legacy-selection',
+            url: legacyUrl,
+            kind: 'selected',
+            layout: null,
+            createdAt: progressRow?.updated_at ?? new Date(0).toISOString(),
+            isSelected: true,
+          },
+          ...covers,
+        ]
+      : covers
+
     // Surface the selected one first — it is the subject of the publisher's
     // decision; the rest are context.
-    covers.sort((a, b) => Number(b.isSelected) - Number(a.isSelected))
+    withLegacy.sort((a, b) => Number(b.isSelected) - Number(a.isSelected))
 
-    return NextResponse.json({ covers, selectedId, selectionUnresolved: unresolved })
+    return NextResponse.json({
+      covers: withLegacy,
+      selectedId: selectedId ?? (legacyUrl ? 'legacy-selection' : null),
+      selectionUnresolved: unresolved,
+    })
   } catch (err) {
     console.error(`publisher/projects/${id}/covers: unexpected error:`, err)
     return NextResponse.json({ error: 'internal_error' }, { status: 500 })

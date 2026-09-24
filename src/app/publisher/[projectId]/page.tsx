@@ -295,7 +295,7 @@ function PortalBody({ project }: { project: PublisherProject }) {
           phaseName={phaseName}
           phaseNum={phaseNum}
         />
-        <EditorialStatusSection phases={project.phases} />
+        <EditorialStatusSection phases={project.phases} projectId={project.id} />
         <CoverProposalsSection projectId={project.id} />
         <MarketingPlanSection />
         <PublishingRouteSection />
@@ -392,7 +392,13 @@ function MetaField({ label, value }: { label: string; value: string }) {
 
 // ─── 2. Editorial status ──────────────────────────────────────────────────────
 
-function EditorialStatusSection({ phases }: { phases: PhaseRow[] }) {
+function EditorialStatusSection({
+  phases,
+  projectId,
+}: {
+  phases: PhaseRow[]
+  projectId: string
+}) {
   const stepData = ALL_PHASES.map((n) => {
     const p = phases.find((row) => row.phase_number === n)
     const config = EDITOR_CONFIG[n]
@@ -448,10 +454,10 @@ function EditorialStatusSection({ phases }: { phases: PhaseRow[] }) {
             Chapter counts apply to the editorial passes.
           </div>
           <a
-            href="#"
-            className="text-[13px] text-[#1E3A5F] border border-[#E8E5E0] px-4 py-2 rounded-[3px] hover:bg-[#F7F7F5] transition-colors focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30"
+            href={`/publisher/${projectId}/read`}
+            className="text-[13px] text-white bg-[#1E3A5F] border border-[#1E3A5F] px-4 py-2 rounded-[3px] hover:bg-[#17304F] transition-colors focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/40"
           >
-            Read the current draft &rarr;
+            Read the manuscript &rarr;
           </a>
         </div>
       </Card>
