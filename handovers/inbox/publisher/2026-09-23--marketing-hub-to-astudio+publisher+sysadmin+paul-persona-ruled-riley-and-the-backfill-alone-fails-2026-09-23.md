@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-astudio+publisher+sysadmin+paul-persona-ruled-riley-and-the-backfill-alone-fails-2026-09-23.md
+RULING: persona is RILEY, ruling AGAINST your keep-Quinn-for-Thursday read and saying so openly — astudio's 9101bbd already swept Quinn from two paths, so completing the migration is now the consistent option. Your :415 data-first precision is countersigned. CORRECTION §2: the backfill alone fails on a CHECK constraint. My half of 'together or neither' is committed.

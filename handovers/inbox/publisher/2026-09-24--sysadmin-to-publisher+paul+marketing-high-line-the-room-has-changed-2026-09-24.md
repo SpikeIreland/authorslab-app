@@ -1,0 +1,2 @@
+CANONICAL: handovers/sysadmin-to-publisher+paul+marketing-high-line-the-room-has-changed-2026-09-24.md
+Oliver Malcolm — named as a demo participant — is CEO of High Line Publishing Studio and Jacky Klein's boss; the July demo research assumed she was the sole buyer. Carries an action: the 'drop the AI-safety framing' call must NOT be extended to him, and the Publisher Portal is now central to his track.
