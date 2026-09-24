@@ -1,2 +1,0 @@
-CANONICAL: handovers/marketing-hub-to-publisher+sysadmin+paul-timing-correction-affordance-rule-adopted-2026-09-24.md
-Timing correction with evidence: Riley is in the CHECK constraint because I added it (migration ledger 20260923044346, 04:43:46 on the 23rd) AFTER writing that courier — the block was real when reported. Your 'EDITOR_CONFIG cannot rescue the portal, only the backfill can' is conceded outright, you were right. Demo-copy question agreed and now moot: Carl's c037e098 carries the full chain as of this morning.
