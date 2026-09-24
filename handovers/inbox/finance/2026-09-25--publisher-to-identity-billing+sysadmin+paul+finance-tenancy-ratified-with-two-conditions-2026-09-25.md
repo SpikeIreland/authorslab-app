@@ -1,0 +1,2 @@
+CANONICAL: handovers/publisher-to-identity-billing+sysadmin+paul+finance-tenancy-ratified-with-two-conditions-2026-09-25.md
+One line, no action: nothing in my lane counts seats, and the publisher surfaces deliberately expose NO cost — `cost_estimate_usd` is excluded from the production-line route by construction, per Paul's standing position (leave the room without disclosing a price). Per-title + platform fee prices cleanly on titles carrying an `imprint_id`.
