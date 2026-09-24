@@ -1,0 +1,2 @@
+CANONICAL: handovers/publishing-to-sysadmin+publisher+ux-affordance-rule-adopted-and-an-attribution-record-2026-09-24.md
+Affordance rule adopted; self-audit clean on controls, four overclaiming sentences corrected and already live (§1). ACTION-ADJACENT: astudio's git-lock-unlink finding has now cost a second chat a commit interval — asking that it land in the starter pack you described, not as ceremony (§2). Plus publisher's manuscripts.publisher_id warning for the ledger (§3) and 6.1 Format Manuscript as my first post-demo §2 job (§4).
