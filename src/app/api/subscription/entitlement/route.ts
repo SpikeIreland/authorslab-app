@@ -26,15 +26,57 @@ export interface EntitlementResponse {
 }
 
 /**
- * Station IDs on lmo_ledger that represent a full-manuscript pass
- * (one row per completed pass through Alex / Sam / Jordan full-manuscript
- * analysis). This is the meter for `passes_included`.
+ * EDITORIAL PASS CONTRACT V1 — the meter for `passes_included`.
+ *
+ * Adopted verbatim from `astudio`, 2026-09-22, accepted by `finance`
+ * 2026-09-23. Change-controlled: any change to this definition goes out as a
+ * courier to identity-billing + finance + sysadmin BEFORE it lands, never
+ * after (astudio P4).
+ *
+ *   > One pass = one row in `as_journeys` where
+ *   > `journey_type = 'full_analysis'` AND
+ *   > `editor_name IN ('alex','sam','jordan')` AND
+ *   > `status = 'complete'`.
+ *   > Consumption is timestamped by `completed_at`.
+ *
+ * Why this is NOT an `lmo_ledger` station count, which is what this file did
+ * until 2026-09-24 and why that read zero forever:
+ *
+ *  1. The old constants (`alex|sam|jordan.full-manuscript-analysis`) matched
+ *     NOTHING. The ledger's real ids are `alex.full_analysis.*` — hyphens
+ *     against underscores, and `station_id` is unconstrained `text NOT NULL`
+ *     with no CHECK, enum or FK, so the misspelling could never be caught by
+ *     the database. A vocabulary with no constraint on it cannot be a
+ *     contract. The three columns above are all CHECK-constrained.
+ *  2. `lmo_ledger` is a COST table — every NOT NULL column on it asserts the
+ *     row is a model call. A "pass complete" event is not a model call.
+ *  3. 49.5% of ledger rows carry no `journey_id` at all, and the old query
+ *     reached the ledger through `journey_id`, so those rows were invisible
+ *     to the meter by construction (astudio AS-3).
+ *  4. `alex.full_analysis.final_synthesis` was proposed as the terminal
+ *     event — by finance as a "natural predecessor" and by this chat as
+ *     something that "may already be exactly that". It is not: the single
+ *     instance fired with `success = false` inside a journey whose status is
+ *     `failed` (`max_tokens_truncation`). Had it shipped, the meter's first
+ *     act in production would have been to bill an author for a truncated
+ *     analysis that failed (astudio AS-1). Recorded here because the
+ *     correction is worth more than the code.
+ *
+ * Exactly-once is structural: one journey is one row, so no emitter can
+ * double-fire and no n8n retry can duplicate. Completion consumes, failure
+ * does not (finance rule 2) — hence `status = 'complete'` and NOT
+ * `completed_at IS NOT NULL`, which is set on failures too.
+ *
+ * EXPECTED READING TODAY: zero. `status = 'complete'` is currently unused —
+ * astudio P1 reserves it as the success terminal for full-analysis journeys
+ * (an n8n change; they draft, Paul publishes), and astudio P2 closes the path
+ * that runs a full analysis without creating a journey row at all. Until both
+ * land, no completed journey can exist. That is a TRUE zero we can defend in
+ * writing, which the station-id version was not.
  */
-const PASS_STATION_IDS = [
-  'alex.full-manuscript-analysis',
-  'sam.full-manuscript-analysis',
-  'jordan.full-manuscript-analysis',
-]
+const PASS_JOURNEY_TYPE = 'full_analysis'
+const PASS_EDITORS = ['alex', 'sam', 'jordan'] as const
+const PASS_SUCCESS_STATUS = 'complete'
 
 export async function GET() {
   const supabase = await createClient()
@@ -75,12 +117,10 @@ export async function GET() {
   const sub = subs && subs.length > 0 ? subs[0] : null
 
   // ---------------------------------------------------------------------
-  // 2. Passes used this period — count from lmo_ledger. `lmo_ledger` has
-  //    no author_id column (its FK is `journey_id` → as_journeys), so we
-  //    derive by joining as_journeys → manuscripts. We do that via two
-  //    scoped queries: (a) manuscripts for this author, (b) as_journeys
-  //    for those manuscripts, (c) lmo_ledger for those journeys with the
-  //    right station_id and time window.
+  // 2. Passes used this period — counted from `as_journeys` per Editorial
+  //    Pass Contract V1 (see the constants above). Two scoped queries:
+  //    (a) manuscripts for this author, (b) completed full-analysis journeys
+  //    on those manuscripts within the billing period.
   // ---------------------------------------------------------------------
   let passes_used_this_period = 0
 
@@ -95,22 +135,26 @@ export async function GET() {
   const manuscriptIds = (manuscripts ?? []).map((m) => m.id as string)
 
   if (sub && sub.current_period_start && manuscriptIds.length > 0) {
-    const { data: journeys } = await supabase
+    // Contract V1: manuscripts -> as_journeys. One query shorter than the old
+    // manuscripts -> as_journeys -> lmo_ledger hop, and free of the orphaned-
+    // row fault (AS-3). Period filter reads `completed_at`, not `created_at`:
+    // a journey started in one period and finished in the next consumes in the
+    // period it delivered value.
+    const { count, error: passError } = await supabase
       .from('as_journeys')
-      .select('id')
+      .select('id', { count: 'exact', head: true })
       .in('manuscript_id', manuscriptIds)
-    const journeyIds = (journeys ?? []).map((j) => j.id as string)
+      .eq('journey_type', PASS_JOURNEY_TYPE)
+      .in('editor_name', PASS_EDITORS)
+      .eq('status', PASS_SUCCESS_STATUS)
+      .gte('completed_at', sub.current_period_start)
 
-    if (journeyIds.length > 0) {
-      // `count: 'exact', head: true` returns the count without rows.
-      const { count } = await supabase
-        .from('lmo_ledger')
-        .select('id', { count: 'exact', head: true })
-        .in('journey_id', journeyIds)
-        .in('station_id', PASS_STATION_IDS)
-        .gte('created_at', sub.current_period_start)
-      passes_used_this_period = count ?? 0
+    if (passError) {
+      // Fail visible, never silently green: a meter that cannot read must not
+      // report a comfortable zero (House Rules, Invariants).
+      return NextResponse.json({ error: passError.message }, { status: 500 })
     }
+    passes_used_this_period = count ?? 0
   }
 
   const passes_included = sub?.passes_included ?? null
