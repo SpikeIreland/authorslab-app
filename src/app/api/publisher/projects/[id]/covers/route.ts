@@ -121,10 +121,16 @@ function resolveSelection(raw: string | null | undefined): {
 }
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
+
+  // ?include=all keeps wraparound jackets in the payload. The portal's
+  // approval row wants portraits only (a 2:1 spread cropped into a 2:3 frame
+  // reads as broken), but the cover studio should show the jacket — it is a
+  // real deliverable a publisher will want to see at size.
+  const includeAll = new URL(req.url).searchParams.get('include') === 'all'
 
   try {
     const { data: assetRows, error: assetsError } = await supabaseAdmin
@@ -159,9 +165,11 @@ export async function GET(
       progressRow?.selected_cover_url
     )
 
-    const displayRows = rows.filter(
-      (row) => layoutOf(row.source) !== WRAPAROUND_LAYOUT || row.id === selectedId
-    )
+    const displayRows = includeAll
+      ? rows
+      : rows.filter(
+          (row) => layoutOf(row.source) !== WRAPAROUND_LAYOUT || row.id === selectedId
+        )
 
     if (displayRows.length === 0) {
       return NextResponse.json({ covers: [], selectedId: null, selectionUnresolved: unresolved })

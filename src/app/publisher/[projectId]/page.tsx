@@ -649,7 +649,7 @@ function CoverProposalsSection({ projectId }: { projectId: string }) {
         </Card>
 
         <div className="pt-1">
-          <CoverDecision />
+          <CoverDecision projectId={projectId} />
 
           {alsoConsidered.length > 0 && (
             <div className="mt-8 pt-6 border-t border-[#E8E5E0]">
@@ -678,7 +678,7 @@ function CoverProposalsSection({ projectId }: { projectId: string }) {
 }
 
 /** The publisher's decision on the author's selection. */
-function CoverDecision() {
+function CoverDecision({ projectId }: { projectId: string }) {
   const [state, setState] = useState<CoverState>({
     status: 'pending',
     approvedAt: null,
@@ -738,6 +738,15 @@ function CoverDecision() {
         >
           Message the designer
         </button>
+      </div>
+
+      <div className="mt-5">
+        <a
+          href={`/publisher/${projectId}/cover`}
+          className="text-[13px] text-[#1E3A5F] hover:underline focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 rounded-[3px]"
+        >
+          Open the cover studio &mdash; compare every concept &rarr;
+        </a>
       </div>
 
       {state.messaging && (
