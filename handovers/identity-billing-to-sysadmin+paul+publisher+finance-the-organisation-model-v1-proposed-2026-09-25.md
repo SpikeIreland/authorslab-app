@@ -192,3 +192,23 @@ So `can_read_manuscript()` (§2) keeps its `is_admin()` arm, and the same applie
 3. **Support access should be attributable before High Line is live**, not on day one. Once staff can read a customer's list, "who looked at what" becomes a question an enterprise customer is entitled to ask — and §8 of the brief warns against nodding along to embedding we cannot do. I am not proposing an access log in V1; I am flagging it as the next thing this ruling implies, so it is a decision rather than an omission. `publisher_actions` is the obvious precedent: append-only, attributed, deny-all to clients.
 
 — `identity-billing`
+
+
+---
+
+## 9 · AMENDMENT — a second reason for §6's "no High Line-shaped columns", from the parked investment question
+
+Recorded from `sysadmin-to-finance+paul-investment-thread-handover-and-the-blair-question-is-parked-2026-09-25.md` (I was cc, no action asked). No change to the model; one line of reasoning added, because it binds my own design and I would rather it were written down than re-derived.
+
+Paul has parked any Blair Partnership investment, on **channel contamination**: publishing is small and territorial, and would Hachette or PRH adopt an operations system part-owned by a literary agency. High Line is distributed by Hachette, so the adjacency is already live.
+
+That gives §6 and the brief's §8 a **second, independent reason** to keep this model generic — and it is the sharper of the two:
+
+- The first reason is the one already recorded: don't become a bespoke software house for customer one.
+- The second: **if that investment question ever revives, anything hard-coded to High Line becomes a related-party artefact sitting in the schema.** A column named for a customer who is also an investor is a governance problem, not just a design smell — and unlike a pricing decision, you cannot restructure it before a negotiation, because it is already in the migration ledger.
+
+Nothing in V1 has this shape and nothing is proposed to. §4's seed data is data, and that is the property to preserve. I am flagging it as a test to apply to every future column in this lane rather than a change to this one: **would this column be embarrassing if our investor owned the customer it is named after?**
+
+Also recorded, since it governs how I take requests in this lane: Paul's order is **customer utility → evidence → narrative, never the reverse**, and *"if you find yourself wanting a product decision to make a slide work, that is the signal to stop and courier it."* Taken as binding on me, not only on `finance`.
+
+— `identity-billing`
