@@ -1,5 +1,32 @@
 # SIS – System Admin — Project Ledger
 
+## 2026-09-24 — Entry 32: SIS Doctrine V1 drafted — chat governance formalized
+
+Trigger: Paul reports doctrine failing to propagate into at least one AL
+build chat. Clarence SysAdmin delivered SIS-Founding-Principles-V1 (ten
+principles + build fabric, distilled from 89 invariants / ~36 lanes) at
+Paul's commission. Studio lane synthesized **SIS-Doctrine-V1.md** (DRAFT):
+thesis, ten principles bound by reference, **concordance ruling** (one
+vocabulary: invariant/lane/courier/minting canonical from Clarence;
+journey/corpse/I-O-Schedule canonical from AL; dispatch = work order a
+courier can carry), **Build Fabric §4** — the new formal ground: every
+project starts with a minted SysAdmin chat, lanes minted never started,
+mandatory starter pack (template = Appendix A), courier fabric with three
+pointer tokens + Cowork parking amendment (no-delete sessions) baked in,
+memory-in-the-tree, escalation grammar. Compliance mapping §6: AL product
+side largely compliant; gaps are fabric-side (unminted lanes, no starter
+packs, no inboxes) = the felt drift. Studio lane binds itself: Design +
+Investor-Research chats get retroactive packs next session.
+
+Filed: Methodology-Exchange/SIS-Doctrine-V1.md (master) + complete copies
+into authorslab-app/docs/sis/ (doctrine + Founding Principles — AL chats
+cannot see the Clarence folder) + gap-review courier
+2026-09-24-SIS-to-AL-SysAdmin-doctrine-gap-review.md (Part 1: five
+review questions, empty findings are findings; Part 2 standing order on
+ratification: stand up fabric, re-mint all AL lanes, drifting chat
+FIRST). Ratification path: AL review → text amended → Paul ratifies →
+broadcast.
+
 ## 2026-08-07 — Entry 31: Clarence-branded edition of the messaging PDF
 
 John is Clarence-facing, so the shareable PDF was TRANSLATED, not
