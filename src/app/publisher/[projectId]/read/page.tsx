@@ -24,6 +24,7 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 
+import { VIEWING_FIRM } from '../../_data/firm'
 // ─── 1. Types ─────────────────────────────────────────────────────────────────
 
 interface SpineEntry {
@@ -224,7 +225,7 @@ function ReadHeader({ onBack }: { onBack: () => void }) {
         </div>
         <div className="flex items-center gap-3 px-3.5 py-1.5 border border-[#E8E5E0] rounded-full bg-[#FAFAF8]">
           <span className="w-1.5 h-1.5 rounded-full bg-[#1E3A5F]" aria-hidden />
-          <span className="text-[12px] text-[#1A1A1A]">[Your firm]</span>
+          <span className="text-[12px] text-[#1A1A1A]">{VIEWING_FIRM}</span>
         </div>
       </div>
     </header>
@@ -396,7 +397,7 @@ function NotesPane({
               >
                 <div className="text-[14px] leading-[1.55] text-[#2A2A2A]">{n.body}</div>
                 <div className="text-[11px] text-[#B8B8B8] mt-2">
-                  [Your firm] &middot; {n.when}
+                  {VIEWING_FIRM} &middot; {n.when}
                 </div>
               </div>
             ))}

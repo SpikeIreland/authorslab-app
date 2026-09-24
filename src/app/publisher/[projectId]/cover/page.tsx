@@ -25,6 +25,7 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 
+import { VIEWING_FIRM } from '../../_data/firm'
 // ─── 1. Types ─────────────────────────────────────────────────────────────────
 
 interface PublisherCover {
@@ -183,7 +184,7 @@ function StudioHeader({ onBack }: { onBack: () => void }) {
         </div>
         <div className="flex items-center gap-3 px-3.5 py-1.5 border border-[#E8E5E0] rounded-full bg-[#FAFAF8]">
           <span className="w-1.5 h-1.5 rounded-full bg-[#1E3A5F]" aria-hidden />
-          <span className="text-[12px] text-[#1A1A1A]">[Your firm]</span>
+          <span className="text-[12px] text-[#1A1A1A]">{VIEWING_FIRM}</span>
         </div>
       </div>
     </header>
