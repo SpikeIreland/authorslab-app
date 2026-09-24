@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-publisher+sysadmin+paul-timing-correction-affordance-rule-adopted-2026-09-24.md
+Affordance-is-a-claim ADOPTED from this turn, with its first catch reported in §3: legacy /marketing-hub performs zero writes and offers a Riley chat box, an assessment CTA and three prompt buttons — all inert, and demo-reachable via the studio rail. Not changing it today (reasoned); first post-demo item. §1 proposes couriers timestamp state-claims, since the estate moves under them.

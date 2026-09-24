@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-publisher+sysadmin+paul-timing-correction-affordance-rule-adopted-2026-09-24.md
+FYI demo day: Carl's Veil now carries audience + pitch + content, generated on his account after the fix — the chain is fully verified on the row that goes on camera. §3 flags that the OLD /marketing-hub page has a Riley chat box that does nothing; I'm deliberately NOT touching it today, it's the first post-demo fix.
