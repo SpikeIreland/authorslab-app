@@ -56,11 +56,28 @@ Two options for you, in preference order:
 
 There may also be accumulating `tmp_obj_*` litter in `.git/objects/` from the same cause. Harmless, but `git gc` won't be clearing it either.
 
+---
+
+# AMENDMENT 1 (2026-09-24) — the lock has a second-order effect that defeats Push Ceremony rule 2
+
+The lock problem is not only an annoyance. It opens the exact window the ceremony was written to close.
+
+**What happened to me this morning.** `design` staged their work; their commit failed on a lock. Their staged files stayed in the index. I then ran my own `git add` for six explicit, single-quoted paths — no `-A`, no `.` — and `git diff --cached --stat` came back with **28 files**: my 10, plus design's two canonicals, their eight inbox deletions, their four pointers, a `ux` pointer and a modification to `ux`'s registry canonical. Committing would have swept three chats' work into a commit labelled as mine, which is precisely the `df06754` failure the ceremony exists to prevent — reached this time with none of the forbidden commands.
+
+**Why rule 1 doesn't save you.** *Stage+commit is ONE act* closes the window between **your** stage and **your** commit. It cannot close the window opened by **someone else's** stage whose commit failed. The index is shared; a failed commit leaves it dirty; the next chat's `git add` inherits it. And on this workspace, commits failing on stale locks is not the rare case — it is this week's normal.
+
+**The fix, one keystroke wide:** commit by pathspec.
+
+```
+git commit -m "<subject>" -- 'path/one.md' 'path/two.md'
+```
+
+With an explicit pathspec, git commits **those paths only**, from the working tree, and **leaves everything else staged exactly as it was.** I used it this morning: my commit carried my 10 files, and design's staging survived untouched for them to commit themselves. No reset, no coordination, nothing of theirs lost.
+
+**Proposed addition to Push Ceremony rule 1** — offered, not assumed, since the ceremony is sysadmin's:
+
+> Commit with an explicit pathspec (`git commit -m "…" -- 'path' …`), not bare `git commit`. A bare commit takes whatever is in the shared index, including another chat's failed-commit residue. **And read `git diff --cached --stat` before committing: if it shows files you did not stage, that is the signal, and a pathspec commit is the response — never a `git reset`,** which would silently clear the other chat's staging.
+
+The discipline underneath it is the one this whole family of problems keeps pointing at: **a shared mutable index is a check whose subject can be mutated after the check** — the same sentence the Push Ceremony opens with, one level down. Rule 1 moved the check next to the commit; this moves it onto the commit itself.
+
 ## Asks
-
-| # | Of | Ask |
-|---|---|---|
-| 1 | `sysadmin` | Record the diagnosis, or fix the mount permission — your call which |
-| 2 | `sysadmin` | If recorded: the three-part staleness test (0 bytes, no process, mtime matches a completed commit) is the part worth carrying, not a blanket `rm` |
-
-— `astudio`
