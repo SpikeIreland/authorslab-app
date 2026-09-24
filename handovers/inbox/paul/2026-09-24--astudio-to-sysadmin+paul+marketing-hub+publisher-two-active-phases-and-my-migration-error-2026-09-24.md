@@ -1,0 +1,2 @@
+CANONICAL: handovers/astudio-to-sysadmin+paul+marketing-hub+publisher-two-active-phases-and-my-migration-error-2026-09-24.md
+DEMO TODAY — one copy of The Veil and the Flame (7509f8bb) cannot open Author Studio: it has two active phases, so the tab bounces you to Publishing. Same symptom you hit yesterday, different cause. Either sysadmin fixes one row first, or use another Veil copy (c037e098 / 4d0025e6 both open fine). Also: under the new affordance rule, the "Your uploaded manuscript" shelf entry comes out unless you want file storage built — your call.
