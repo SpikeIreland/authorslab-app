@@ -92,12 +92,6 @@ interface ThreadMessage {
  */
 
 const EDITORIAL_PHASES: PhaseNumber[] = [1, 2, 3]
-const PRODUCTION_PHASES: PhaseNumber[] = [4, 5]
-const ALL_PHASES: PhaseNumber[] = [...EDITORIAL_PHASES, ...PRODUCTION_PHASES]
-
-function isChapterLevel(phase: PhaseNumber): boolean {
-  return EDITORIAL_PHASES.includes(phase)
-}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -296,7 +290,7 @@ function PortalBody({ project }: { project: PublisherProject }) {
           phaseName={phaseName}
           phaseNum={phaseNum}
         />
-        <EditorialStatusSection phases={project.phases} projectId={project.id} />
+        <ProductionLine projectId={project.id} />
         <CoverProposalsSection projectId={project.id} />
         <MarketingPlanSection />
         <PublishingRouteSection />
@@ -393,66 +387,100 @@ function MetaField({ label, value }: { label: string; value: string }) {
 
 // ─── 2. Editorial status ──────────────────────────────────────────────────────
 
-function EditorialStatusSection({
-  phases,
-  projectId,
-}: {
-  phases: PhaseRow[]
-  projectId: string
-}) {
-  const stepData = ALL_PHASES.map((n) => {
-    const p = phases.find((row) => row.phase_number === n)
-    const config = EDITOR_CONFIG[n]
+// ─── The production line ──────────────────────────────────────────────────────
+//
+// This replaced a panel that reported outcomes — Complete, Complete, Complete —
+// and never showed the mechanism that earned the word. A publisher reading it
+// saw a summary of one book; the point of the platform is a repeatable line
+// that many books pass through.
+//
+// Each station says three things and nothing else: what the machine did (its
+// controlled calls, from the ledger), what the gate requires, and who closes
+// it. The publisher's own gates are marked, because "where does the human
+// stay?" is the first question a publishing operator asks about AI and this
+// answers it by pointing at the page rather than at a slide.
+//
+// Cost is deliberately absent — see the route's header for why.
 
-    // Phase state comes from phase_status — the orchestrator's own field and
-    // what the editing_phases table comment calls the single source of truth.
-    let status: 'pending' | 'in-progress' | 'complete' = 'pending'
-    if (p?.phase_status === 'complete') status = 'complete'
-    else if (p?.phase_status === 'active') status = 'in-progress'
+interface LineStation {
+  key: string
+  order: number
+  name: string
+  operator: string | null
+  gate: string
+  gateOwner: 'author' | 'publisher'
+  state: 'complete' | 'in-progress' | 'waiting'
+  controlledCalls: number | null
+}
 
-    // Counts only where a chapter is the unit of work. The rows carry a count
-    // for phases 4-5 too, but "37 of 37 chapters approved" under Marketing
-    // Strategy would be a number that means nothing.
-    const chapterLevel = isChapterLevel(n)
-    const analyzed = chapterLevel ? p?.chapters_analyzed ?? null : null
-    const approved = chapterLevel ? p?.chapters_approved ?? null : null
+function ProductionLine({ projectId }: { projectId: string }) {
+  const [stations, setStations] = useState<LineStation[] | null>(null)
+  const [totalCalls, setTotalCalls] = useState(0)
 
-    return {
-      number: n,
-      editor: p?.editor_name || config.name,
-      role: config.phaseName,
-      analyzed,
-      approved,
-      status,
+  useEffect(() => {
+    let cancelled = false
+    async function load() {
+      if (!projectId) return
+      try {
+        const res = await fetch(`/api/publisher/projects/${projectId}/line`)
+        if (cancelled || !res.ok) return
+        const json = (await res.json()) as {
+          stations?: LineStation[]
+          totalControlledCalls?: number
+        }
+        if (cancelled) return
+        setStations(json.stations ?? [])
+        setTotalCalls(json.totalControlledCalls ?? 0)
+      } catch {
+        /* the section simply does not render */
+      }
     }
-  })
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [projectId])
 
-  const completed = stepData.filter((s) => s.status === 'complete').length
+  if (stations === null || stations.length === 0) return null
+
+  const done = stations.filter((s) => s.state === 'complete').length
+  const publisherGates = stations.filter((s) => s.gateOwner === 'publisher').length
 
   return (
     <section>
-      <SectionHeading eyebrow="Progress" title="The whole journey" />
+      <SectionHeading eyebrow="The line" title="How this book gets made" />
+
       <Card className="p-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-x-5 gap-y-8">
-          {stepData.map((step, i) => (
-            <div key={step.number} className="relative">
-              {i < stepData.length - 1 && (
-                <div
-                  className="hidden lg:block absolute top-[5px] left-full w-full h-px bg-[#E8E5E0]"
-                  aria-hidden
-                />
-              )}
-              <StatusStep step={step} />
-            </div>
-          ))}
+        <div className="text-[14px] text-[#3F3F3F] leading-relaxed max-w-[680px] mb-8">
+          Every book moves through the same seven stations. At each one the
+          machine does the work and a person closes the gate &mdash;{' '}
+          <strong className="text-[#1A1A1A] font-medium">
+            {publisherGates} of the {stations.length} gates are yours
+          </strong>
+          . Nothing advances without someone signing for it.
         </div>
+
+        <ol className="space-y-0">
+          {stations.map((st, i) => (
+            <StationRow
+              key={st.key}
+              station={st}
+              last={i === stations.length - 1}
+              projectId={projectId}
+            />
+          ))}
+        </ol>
 
         <div className="mt-8 pt-6 border-t border-[#E8E5E0] flex flex-wrap gap-4 items-center justify-between">
           <div className="text-[13px] text-[#8A8A8A]">
-            {completed === stepData.length
-              ? 'Every stage complete. This book is ready.'
-              : `${completed} of ${stepData.length} stages complete.`}{' '}
-            Chapter counts apply to the editorial passes.
+            {done} of {stations.length} stations complete
+            {totalCalls > 0 && (
+              <>
+                {' · '}
+                {totalCalls.toLocaleString('en-GB')} controlled calls logged on
+                this book
+              </>
+            )}
           </div>
           <a
             href={`/publisher/${projectId}/read`}
@@ -466,54 +494,93 @@ function EditorialStatusSection({
   )
 }
 
-function StatusStep({
-  step,
+function StationRow({
+  station,
+  last,
+  projectId,
 }: {
-  step: {
-    number: number
-    editor: string
-    role: string
-    analyzed: number | null
-    approved: number | null
-    status: 'pending' | 'in-progress' | 'complete'
-  }
+  station: LineStation
+  last: boolean
+  projectId: string
 }) {
-  const dotClass =
-    step.status === 'complete'
-      ? 'bg-[#1E3A5F]'
-      : step.status === 'in-progress'
-        ? 'bg-white border-2 border-[#1E3A5F]'
-        : 'bg-white border-2 border-[#B8B8B8]'
+  const isPublisher = station.gateOwner === 'publisher'
+  const complete = station.state === 'complete'
+  const active = station.state === 'in-progress'
 
-  const statusLabel =
-    step.status === 'complete'
-      ? 'Complete'
-      : step.status === 'in-progress'
-        ? 'In progress'
-        : 'Not yet started'
+  const dot = complete
+    ? 'bg-[#1E3A5F] border-[#1E3A5F]'
+    : active
+      ? 'bg-white border-[#1E3A5F]'
+      : 'bg-white border-[#C8C8C8]'
+
+  // The cover station is the one a publisher can act on from here.
+  const action =
+    station.key === 'cover' ? `/publisher/${projectId}/cover` : null
 
   return (
-    <div className="pr-4">
-      <div className="flex items-center gap-2.5 mb-3">
-        <span className={`w-3 h-3 rounded-full flex-shrink-0 ${dotClass}`} aria-hidden />
-        <span className="text-[11px] tracking-[0.12em] uppercase text-[#8A8A8A]">
-          Phase {step.number}
+    <li className="relative pl-9 pb-7">
+      {!last && (
+        <span
+          className="absolute left-[7px] top-4 bottom-0 w-px bg-[#E8E5E0]"
+          aria-hidden
+        />
+      )}
+      <span
+        className={`absolute left-0 top-[3px] w-[15px] h-[15px] rounded-full border-2 ${dot}`}
+        aria-hidden
+      />
+
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <span
+          className="text-[17px] text-[#1A1A1A]"
+          style={{ fontFamily: 'Iowan Old Style, Palatino, Georgia, serif' }}
+        >
+          {station.name}
+        </span>
+        {station.operator && (
+          <span className="text-[13px] text-[#8A8A8A]">{station.operator}</span>
+        )}
+        <span
+          className={`text-[11px] tracking-[0.1em] uppercase ml-auto ${
+            complete ? 'text-[#1E3A5F]' : active ? 'text-[#8A5A2B]' : 'text-[#B8B8B8]'
+          }`}
+        >
+          {complete ? 'Passed' : active ? 'On the line' : 'Waiting'}
         </span>
       </div>
-      <div
-        className="text-[17px] text-[#1A1A1A] mb-0.5"
-        style={{ fontFamily: 'Iowan Old Style, Palatino, Georgia, serif' }}
-      >
-        {step.editor}
+
+      <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1.5">
+        <span
+          className={`text-[13px] ${isPublisher ? 'text-[#1A1A1A]' : 'text-[#8A8A8A]'}`}
+        >
+          <span
+            className={`inline-block w-1.5 h-1.5 rounded-full mr-2 align-middle ${
+              isPublisher ? 'bg-[#8A5A2B]' : 'bg-[#C8C8C8]'
+            }`}
+            aria-hidden
+          />
+          Gate: {station.gate}
+          {isPublisher && (
+            <span className="text-[#8A5A2B]"> &mdash; yours</span>
+          )}
+        </span>
+
+        {station.controlledCalls !== null && station.controlledCalls > 0 && (
+          <span className="text-[12px] text-[#8A8A8A]">
+            {station.controlledCalls} controlled calls
+          </span>
+        )}
+
+        {action && (
+          <a
+            href={action}
+            className="text-[12px] text-[#1E3A5F] hover:underline focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 rounded-[3px]"
+          >
+            Open the cover studio &rarr;
+          </a>
+        )}
       </div>
-      <div className="text-[12px] text-[#8A8A8A] mb-2.5 leading-snug">{step.role}</div>
-      {step.approved !== null && step.analyzed !== null && (
-        <div className="text-[12px] text-[#3F3F3F]">
-          {step.approved} of {step.analyzed} chapters approved
-        </div>
-      )}
-      <div className="text-[12px] text-[#8A8A8A] mt-0.5">{statusLabel}</div>
-    </div>
+    </li>
   )
 }
 
