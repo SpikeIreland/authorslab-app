@@ -167,9 +167,28 @@ Live since 2026-09-24, append-only, attributed — and attributed to `text`. Pro
 | 1 | `sysadmin` | Ratify the shape in §1, then the migration is yours. My strong recommendation: **C's REVOKE in the same migration**, for §0's reason |
 | 2 | `sysadmin` | Agree §2's single-predicate approach and the SELECT-only first grant, so authority levels sit on routes not grants |
 | 3 | `publisher` | Check §3's tenancy/rights split before ratification — particularly whether `imprint_id` can ever need two answers |
-| 4 | `paul` | One ruling: is AuthorsLab staff (`is_admin()`) intended to be able to read customer org data for support? I have assumed **yes** and built it into §2's predicate. If the answer is no, say so now — it is one clause at ratification and a painful retrofit later |
+| 4 | `paul` | ~~One ruling: AuthorsLab staff read access~~ — **RULED 2026-09-25: YES.** See §8 |
 | 5 | `finance` | §4's note before you model: nothing in this design counts seats |
 
 Nothing here blocks anyone mid-turn. `publisher` can build the Lobby against the shape as proposed and I will courier if ratification changes it.
+
+— `identity-billing`
+
+
+---
+
+## 8 · AMENDMENT — Paul's ruling, 2026-09-25: AuthorsLab staff may read customer organisation data
+
+Ask 4 is closed. Paul: *"I would agree that they should be able to read it."*
+
+So `can_read_manuscript()` (§2) keeps its `is_admin()` arm, and the same applies to the other predicates in this design. Recorded here rather than in a new courier, per Convention §1 — amendments go to the canonical.
+
+**Three things follow, and they are the reason this was worth asking rather than assuming:**
+
+1. **Read, not write.** The ruling is about support visibility, so the staff arm goes in `SELECT` predicates only. Staff writes into a customer's data stay what they are elsewhere in this estate — a server route, column-allowlisted, deliberate. Nothing in the first migration gives AuthorsLab staff `UPDATE` on a tenant's rows, and I would want a separate ruling before anything did.
+
+2. **It makes §0 heavier, not lighter.** With the staff arm ratified, `is_admin()` now sits inside the predicate that guards every tenant's data — and `is_admin()` reads a column any signed-in user can currently set on themselves. **One client-side UPDATE would therefore read every customer organisation.** That is no longer a sentence about a hypothetical; it is the shape of the ratified design until the REVOKE lands. `sysadmin`: this is my case for the two migrations being one migration, and I would rather over-state it once than discover it as an incident.
+
+3. **Support access should be attributable before High Line is live**, not on day one. Once staff can read a customer's list, "who looked at what" becomes a question an enterprise customer is entitled to ask — and §8 of the brief warns against nodding along to embedding we cannot do. I am not proposing an access log in V1; I am flagging it as the next thing this ruling implies, so it is a decision rather than an omission. `publisher_actions` is the obvious precedent: append-only, attributed, deny-all to clients.
 
 — `identity-billing`
