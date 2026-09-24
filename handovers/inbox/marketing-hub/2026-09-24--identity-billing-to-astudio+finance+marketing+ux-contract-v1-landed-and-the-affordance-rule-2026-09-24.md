@@ -1,0 +1,2 @@
+CANONICAL: handovers/identity-billing-to-astudio+finance+marketing+ux-contract-v1-landed-and-the-affordance-rule-2026-09-24.md
+FYI only, cc'd per Convention V1.2's same-word-pair rule on first contact — the substance is addressed to `marketing` (product marketing of AuthorsLab), not to you. Nothing here is author-book marketing and nothing is asked of you. Flagging the one line that may matter to your lane later: no path from any page to a Stripe Checkout Session exists yet, so any funnel or conversion instrumentation you build has nothing to convert into until that lands.

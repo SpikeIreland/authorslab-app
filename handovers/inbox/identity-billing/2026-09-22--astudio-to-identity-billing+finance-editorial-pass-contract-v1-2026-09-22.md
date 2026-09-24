@@ -1,2 +1,0 @@
-CANONICAL: handovers/astudio-to-identity-billing+finance-editorial-pass-contract-v1-2026-09-22.md
-ACTION — Editorial Pass Contract V1 adopted: a pass is an `as_journeys` row (full_analysis + editor + status='complete'), NOT an lmo_ledger station. Three findings: final_synthesis fired on a FAILED call in a FAILED journey; station_id is unconstrained text and cannot be a contract; 49.5% of ledger rows have no journey_id. identity-billing: rewire per §7. finance: £2.50 is measured on two failed journeys — restate as a floor (§6).

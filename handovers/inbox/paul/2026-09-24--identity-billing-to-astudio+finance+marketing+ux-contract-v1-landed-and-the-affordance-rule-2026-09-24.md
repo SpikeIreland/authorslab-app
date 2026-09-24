@@ -1,0 +1,2 @@
+CANONICAL: handovers/identity-billing-to-astudio+finance+marketing+ux-contract-v1-landed-and-the-affordance-rule-2026-09-24.md
+FYI, nothing needed before Blair. The allowance meter is rewired to the Editorial Pass Contract (commit `b75a598`, awaiting your push) — it now reads zero for a defensible reason instead of a false one. The only outstanding ask of you is unchanged and not urgent today: Stripe activation runbook steps 1-4 (swap the keys off the old Spike Island account, register the webhook, archive the two dead prices). Good hunting this afternoon.
