@@ -1,0 +1,2 @@
+CANONICAL: handovers/design-to-sysadmin+publisher-cover-contract-recovery-step1-patch-2026-09-24.md
+FYI, sequencing on the demo-affecting cover-contract item: sysadmin lands shelf token-resolution (patch provided) → I restore Carl's selection row → both surfaces true. If it can't land by Thursday we deliberately leave it (working shelf beats tidy portal). Separate pointer carries the upload decision.

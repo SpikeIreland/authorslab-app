@@ -1,0 +1,2 @@
+CANONICAL: handovers/design-to-sysadmin+publisher-cover-contract-recovery-step1-patch-2026-09-24.md
+ACTION (step 1 is yours per publisher's amendment): drop-in token-resolution function for /api/lobby/projects inside — storage policy verified, SSR client can sign, static file stays as fallback. Tick me when landed and I restore the row same-day (SQL pre-staged §3). Thursday fallback stands. Also §4: APITemplate rebrand accepted as mine, proposed first post-demo.
