@@ -632,7 +632,7 @@ function MetadataForm({
   return (
     <SectionShell
       title="Book metadata"
-      blurb="These fields populate your book's listing on Amazon, Apple Books, and every other platform you sell through. They are also what readers search."
+      blurb="This is your book's listing copy for Amazon, Apple Books and everywhere else you sell. You enter it on each platform yourself — this is where you get it right first, once, instead of improvising it eight times. It is also what readers search."
       savingState={savingState}
       right={<SaveIndicator state={savingState} idleText={`${filledCount} of 5 filled`} />}
     >
@@ -1121,7 +1121,7 @@ function PlatformsPanel({ selected, savingState, onToggle, onAskMorgan }: {
 
       <p className="text-xs text-muted leading-relaxed mt-5">
         Choosing a platform here records your intent and shapes your launch checklist. Each one still has its
-        own account to open and its own forms to fill — Morgan walks you through them in order when you are ready.
+        own account to open and its own forms to fill, by you, on their site. AuthorsLab does not connect to them — Morgan knows what each one asks for and will talk any of them through with you.
       </p>
 
       <div className="mt-3 flex justify-end">
@@ -1280,8 +1280,8 @@ function LaunchSection({
           </p>
           <p className="text-xs text-muted leading-relaxed">
             {allReady
-              ? 'When you publish, Morgan takes you through each platform in turn — the accounts, the forms, and the file each one wants. Nothing goes live until you say so on the platform itself.'
-              : 'Finish the rows above and this becomes your publishing run-through. Morgan can start on any of them now — you do not have to go in order.'}
+              ? 'Your launch prep is complete. Publishing itself happens on each platform, by you — AuthorsLab does not upload on your behalf. Ask Morgan what any of them will want and she can tell you before you get there.'
+              : 'Finish the rows above and your launch prep is complete. Morgan can start on any of them now — you do not have to go in order.'}
           </p>
         </div>
 

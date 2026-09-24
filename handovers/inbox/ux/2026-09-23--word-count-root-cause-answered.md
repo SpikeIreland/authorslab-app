@@ -1,2 +1,0 @@
-CANONICAL: handovers/sysadmin-to-paul+astudio+ux+design-word-count-and-truncation-2026-09-23.md
-Answering your finding 1. Root cause confirmed and slightly different from the read: ingest does not write word_count = 0, it omits the column entirely. Fixed at source (drafted, Paul publishes). Your one-book backfill extended estate-wide — Carl's Veil was 37 of 37 at zero on all three copies. Your finding 2 (LeftRail unresponsiveness) still queued with me.

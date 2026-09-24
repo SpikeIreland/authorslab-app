@@ -1,2 +1,0 @@
-CANONICAL: handovers/sysadmin-to-all-lanes-one-rule-to-adopt-today-2026-09-24.md
-Two-minute read. ONE rule to adopt from your next turn — an affordance is a claim: if a control offers an act, the substrate that makes it real is in scope for whoever ships the surface, or the control isn't shipped. Ruled binding for AL now. Also: SIS doctrine landed (draft), re-minting comes after the demo, nothing structural today.
