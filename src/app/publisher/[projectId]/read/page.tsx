@@ -83,6 +83,7 @@ export default function ReadingRoomPage() {
   const [loadingChapter, setLoadingChapter] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { actions, available, saving, record } = usePublisherActions(projectId)
+  const notesAvailable = available === true
 
   // ── Load the spine, then open the first chapter ──────────────────────────
   useEffect(() => {
@@ -199,7 +200,20 @@ export default function ReadingRoomPage() {
     <div className="min-h-screen bg-[#F7F7F5] text-[#3F3F3F] flex flex-col">
       <ReadHeader onBack={() => router.push(`/publisher/${projectId}`)} />
 
-      <div className="flex-1 max-w-[1400px] w-full mx-auto grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)_300px]">
+      {/*
+        The notes column is only rendered when the publisher log can actually
+        be written (see usePublisherActions). When it is absent the grid must
+        COLLAPSE to two tracks — an empty 300px gutter reads as a broken page,
+        which is its own kind of dishonesty: it shows a hole where a feature
+        was rather than a page that simply does not have that feature yet.
+      */}
+      <div
+        className={`flex-1 max-w-[1400px] w-full mx-auto grid grid-cols-1 ${
+          notesAvailable
+            ? 'lg:grid-cols-[240px_minmax(0,1fr)_300px]'
+            : 'lg:grid-cols-[240px_minmax(0,1fr)]'
+        }`}
+      >
         <Spine
           entries={spine}
           current={current}
@@ -207,13 +221,15 @@ export default function ReadingRoomPage() {
           onSelect={setCurrent}
         />
         <ChapterPane chapter={chapter} loading={loadingChapter} />
-        <NotesPane
-          chapterTitle={chapter?.title ?? ''}
-          notes={notesForChapter}
-          onAdd={addNote}
-          disabled={current === null || saving}
-          available={available}
-        />
+        {notesAvailable && (
+          <NotesPane
+            chapterTitle={chapter?.title ?? ''}
+            notes={notesForChapter}
+            onAdd={addNote}
+            disabled={current === null || saving}
+            available={available}
+          />
+        )}
       </div>
     </div>
   )
