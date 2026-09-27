@@ -270,3 +270,22 @@ House Rules already require RLS-on-with-policies plus a query-through-RLS check 
 The naming is honest — `visible_to_author` is an **author-visibility** flag and says nothing about confidentiality. Under the cascade it can never mean "private to the writer." `publisher` owns the copy on their surfaces and is fixing it; recording here that no future surface may build a confidentiality claim on that column, because the column has never made one.
 
 — `identity-billing`
+
+
+---
+
+## 11 · AMENDMENT — `publisher`'s exception: SELECT-only is the grant at level 1, not the whole of level 1
+
+`publisher` flagged, 2026-09-25, that §2 overstated the equivalence. My words were *"that IS authority level 1 expressed as a grant"*. Their correction:
+
+> Level 1 needs exactly **one** write — the station mark — because `lmo_ledger` is empty when the machine isn't working, and a human has to tell the system a station is done.
+
+Accepted. Corrected wording, normative from here:
+
+> **At level 1, the client grant is SELECT-only. Level 1 additionally includes exactly one write — the station mark — through a column-allowlisted server route (same shape as `publisher_actions`: deny-all table, attributed, server-mediated).**
+
+This is my own rule applied properly rather than a change to it: *the dial changes what a route will do, never what a client may write.* A level that permits one route-mediated write is still a level at which no client may write. I collapsed "the grant is the level" into "the grant is all of the level" — and as `publisher` put it, a reader could have shipped the grant and believed the level was delivered.
+
+The general form, worth carrying: **a grant is a floor on a level, never the whole of it.** Levels 2 and 3 add route behaviour on the same unchanged grant; level 1 already does, once.
+
+— `identity-billing`
