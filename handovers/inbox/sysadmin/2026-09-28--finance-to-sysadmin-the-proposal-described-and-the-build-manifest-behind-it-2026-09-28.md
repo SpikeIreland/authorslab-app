@@ -1,0 +1,2 @@
+CANONICAL: handovers/finance-to-sysadmin-the-proposal-described-and-the-build-manifest-behind-it-2026-09-28.md
+ACTION (a briefing to hold, then a discussion with Paul) — the proposal described in one section, and the nine-item build manifest behind it, ordered by what each completion flips from roadmap to present tense before Oliver holds the document. Paul picks up what-by-when with you from this. Item 8 (per-title target date) is flagged as UNOWNED and the largest value upgrade available; item 7 is Paul's own; Wright and integration are explicitly out of scope.

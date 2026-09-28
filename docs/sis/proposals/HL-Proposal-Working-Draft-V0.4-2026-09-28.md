@@ -1,7 +1,7 @@
 # AuthorsLab × High Line Publishing — A proposed infrastructure partnership
 
 **WORKING DRAFT V0.4 · 2026-09-28 · INTERNAL — NOT FOR SEND**
-V0.4 = V0.3 + implementation-partnership commitment in §7 (Paul, 2026-09-28). The 'Oliver tries the system' offer lives in the COVER EMAIL, not this document — the proposal's ask stays one small decision. Architecture first, finances as a section, per Carl. Binding: SAY table v2.4; `⟨trace:⟩` annotations stripped after verification. Holes: `[HOLE 2 — I&B: staff & permissions]` · `[HOLE 3 — sysadmin: authority-level mechanics]` · `[HOLE 4 — publishing: formats boundary]`. Lobby paragraphs remain roadmap tense until `publisher` flips them.
+V0.4 = V0.3 + implementation-partnership commitment in §7 (Paul, 2026-09-28). The 'Oliver tries the system' offer lives in the COVER EMAIL, not this document — the proposal's ask stays one small decision. VOICE FLAG (Paul, 2026-09-28): platform-building register in places ("compiled clean", "negative controls") — Carl gives it an authors-view pass; translate the register, never weaken the traced claims. Architecture first, finances as a section, per Carl. Binding: SAY table v2.4; `⟨trace:⟩` annotations stripped after verification. Holes: `[HOLE 2 — I&B: staff & permissions]` · `[HOLE 3 — sysadmin: authority-level mechanics]` · `[HOLE 4 — publishing: formats boundary]`. Lobby paragraphs remain roadmap tense until `publisher` flips them.
 
 ---
 
