@@ -6,7 +6,11 @@ import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { createAuthorProfile, getAuthorProfile } from '@/lib/supabase/queries'
+// createAuthorProfile / getAuthorProfile removed 2026-09-29: both were imported
+// and never called. The profile is created by a SECURITY DEFINER trigger inside
+// the signUp transaction, not from the browser. Leaving the dead import in place
+// cost real time — `sysadmin` read it as a call site and told four lanes the
+// column-allowlist migration would break signup. It would not have.
 import { readUtmCookie } from '@/lib/utm'
 import { trackEvent } from '@/lib/analytics'
 
@@ -21,6 +25,12 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  // Email confirmation is ON in Supabase Auth, so signUp returns a user and
+  // NO session. Until 2026-09-29 nothing checked for that, so the page fell
+  // through to a profile poll it could never satisfy and then redirected to
+  // /checkout, which bounced to /login with no explanation.
+  const [awaitingConfirmation, setAwaitingConfirmation] = useState(false)
+  const [resend, setResend] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
 
   async function handleSignup(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -75,6 +85,32 @@ export default function SignupPage() {
       if (!authData.user) throw new Error('Signup failed - no user returned')
 
       console.log('✅ Auth user created:', authData.user.id)
+
+      // Step 1b: NO SESSION means Supabase requires email confirmation.
+      //
+      // Everything below this point needs a session. The profile poll reads
+      // author_profiles under RLS, and without a session auth.uid() is NULL,
+      // so the policy matches nothing and all five attempts fail — 15 seconds
+      // of sleeps to learn what the missing session already told us. It then
+      // redirected to /checkout, which has no session either and bounces to
+      // /login, leaving the author on a login page with no idea an email is
+      // waiting for them.
+      //
+      // The profile itself is created fine: the SECURITY DEFINER trigger
+      // writes it inside the signUp transaction (verified 2026-09-29 — the
+      // profile row predated its own auth.users row by 2ms). The retry loop
+      // was never a safety net for a slow trigger; it was unreachable code.
+      if (!authData.session) {
+        console.log('📧 Email confirmation required — no session issued')
+        // No trackEvent here: AnalyticsEvent is a closed union owned by
+        // `marketing` (MKT-004) and this state has no event yet. Suggested to
+        // them rather than widening their contract from this lane — the funnel
+        // currently cannot distinguish "signed up and confirmed" from "signed
+        // up and never came back", which is a real hole in their measurement.
+        setAwaitingConfirmation(true)
+        setIsLoading(false)
+        return
+      }
 
       // Step 2: Wait and retry fetching profile (with exponential backoff)
       let profileId = null
@@ -184,6 +220,61 @@ export default function SignupPage() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  async function handleResend() {
+    setResend('sending')
+    const { error: resendError } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: { emailRedirectTo: `${window.location.origin}/api/auth/callback` }
+    })
+    setResend(resendError ? 'error' : 'sent')
+  }
+
+  // The account exists and an email is on its way. Say so, rather than
+  // redirecting to a login that cannot yet work.
+  if (awaitingConfirmation) {
+    return (
+      <div className="min-h-screen bg-ivory flex flex-col items-center justify-center p-6">
+        <Link href="/" className="flex items-center justify-center gap-2 mb-6">
+          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-sage to-sage-deep flex items-center justify-center font-serif text-lg text-white">A</span>
+          <span className="font-serif text-lg text-ink">AuthorsLab</span>
+        </Link>
+        <div className="bg-paper border border-line rounded-2xl shadow-[0_8px_40px_rgba(44,44,42,0.10)] p-10 w-full max-w-md text-center">
+          <h1 className="text-4xl font-medium font-serif text-ink mb-3">Check your email.</h1>
+          <p className="text-muted mb-2">
+            Your account is created. We&apos;ve sent a confirmation link to
+          </p>
+          <p className="text-ink font-medium mb-6 break-all">{email}</p>
+          <p className="text-muted text-sm mb-8">
+            Click the link to confirm your address, and we&apos;ll take you
+            straight in. You won&apos;t be able to sign in until you do.
+          </p>
+
+          <div className="border-t border-line pt-6">
+            <p className="text-muted text-sm mb-3">Didn&apos;t arrive? Check your spam folder first.</p>
+            <button
+              type="button"
+              onClick={handleResend}
+              disabled={resend === 'sending' || resend === 'sent'}
+              className="text-sage-deep font-semibold hover:underline disabled:text-muted disabled:no-underline disabled:cursor-default"
+            >
+              {resend === 'sending' ? 'Sending…'
+                : resend === 'sent' ? 'Sent — have another look'
+                : resend === 'error' ? 'Could not resend — try again'
+                : 'Resend the confirmation email'}
+            </button>
+          </div>
+
+          <div className="mt-6 pt-6 border-t border-line">
+            <Link href="/login" className="text-sage-deep hover:underline font-medium">
+              Already confirmed? Log in →
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
