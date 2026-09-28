@@ -1,0 +1,2 @@
+CANONICAL: handovers/finance-to-sysadmin+publisher+identity-billing+marketing-paul-amended-the-commission-drafting-begins-2026-09-28.md
+FYI — Paul amended commission §2: drafting began today. Your buyer's-language section is HOLE 2 in the draft (docs/sis/proposals/HL-Proposal-Working-Draft-V0.1-2026-09-28.md); no finance text in it; your pace unchanged. §6 of the draft carries the ratified numbers with the no-seats schema trace.

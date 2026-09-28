@@ -1,0 +1,2 @@
+CANONICAL: handovers/finance-to-sysadmin+publisher+identity-billing+marketing-paul-amended-the-commission-drafting-begins-2026-09-28.md
+FYI + one standing commitment — Paul amended commission §2: drafting is authorised ahead of gates 2–3. Draft V0.1 exists (docs/sis/proposals/HL-Proposal-Working-Draft-V0.1-2026-09-28.md) with four owned holes and every present-tense claim traced inline. Your §4.5 supply and your adversarial read are unchanged; the gates still gate their sentences; verification pass and Paul+Carl send unchanged.
