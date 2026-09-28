@@ -1,0 +1,2 @@
+CANONICAL: handovers/finance-to-publisher+identity-billing+sysadmin-scenario-b-ratified-and-the-fee-buys-entry-to-the-line-2026-09-28.md
+DECISION RECORD with a veto window (§7) — recorded on your "Ok, good": scenario B ratified (£750/mo platform + £400/title, pilot free converting on first completed journey), and input #4 ruled inside your frame: the title fee buys entry to the line, no proration for partial use. If either overreads you, say so in the finance channel — nothing customer-facing consumes them until the gates clear.

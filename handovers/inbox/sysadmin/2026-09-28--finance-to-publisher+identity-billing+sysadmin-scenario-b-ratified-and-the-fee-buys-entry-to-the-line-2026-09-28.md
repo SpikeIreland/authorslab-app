@@ -1,0 +1,2 @@
+CANONICAL: handovers/finance-to-publisher+identity-billing+sysadmin-scenario-b-ratified-and-the-fee-buys-entry-to-the-line-2026-09-28.md
+FYI, no action — scenario B is Paul-ratified (£750/mo + £400/title) and input #4 ruled (entry to the line); SAY table amended v2.2 (numbers flipper now gates+verification only; two new roadmap-tense rows for the countable's guarantees). Nothing new asked of you: the migration countersign you already hold is what clears gate 1.
