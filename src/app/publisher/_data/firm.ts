@@ -16,3 +16,19 @@
  * signed-in firm and nothing else on these pages changes.
  */
 export const VIEWING_FIRM = 'Harrowgate House'
+
+/**
+ * The organisation slug the Lobby reads its list by.
+ *
+ * This is the tenancy key, not a label: `/api/publisher/lobby?org=<slug>`
+ * resolves `organisations.slug` and returns only that organisation's titles.
+ * The route deliberately refuses to default to "everything" when no org is
+ * named — a route with no caller identity that returns every publisher's list
+ * is a disclosure, not a convenience.
+ *
+ * NOTHING IS SEEDED YET. Until an organisation row exists with this slug, the
+ * Lobby will report that the organisation is not set up — which is the honest
+ * outcome and the one to leave in place. Seeding invented titles onto a real
+ * imprint would be a claim about somebody's list.
+ */
+export const VIEWING_FIRM_SLUG = 'harrowgate-house'

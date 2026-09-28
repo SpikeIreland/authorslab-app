@@ -1,504 +1,488 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 /**
- * PUBLISHER HOME — /publisher
+ * THE PUBLISHER LOBBY — /publisher
  *
- * The stable: every book this publisher has visibility of, sortable and
- * filterable by author. Mirrors the author's Library in structure so the two
- * read as one product, and diverges where the audience does — the author
- * column and the author filter are the whole axis of the trade-side view.
+ * Same shell as the author's Library (AppShell, one visual grammar: learn one
+ * screen and you have learned them all). Different question:
  *
- * Data comes from _data/stable.ts and nowhere else. See that file for the
- * live/mock split and the pre-flight ↔ demo-day project id switch.
+ *   Author's Lobby:    "what am I working on?"
+ *   Publisher's Lobby: "WHAT IS LATE?"
  *
- * Visual language is matched to /publisher/[projectId] deliberately — these
- * two pages are the same surface and a publisher moves between them in one
- * click.
+ * Same furniture, different verb. Ratified in
+ * `sysadmin-…-the-highline-brief-throughput-not-editing-2026-09-25.md` §4.
+ *
+ * ─── What replaced what ──────────────────────────────────────────────────────
+ * This surface previously rendered `_data/stable.ts`: eight listings of which
+ * exactly ONE carried a real project id. That was a level-1 Lobby reporting
+ * confidently on nothing — the failure mode, already live. Rows now come from
+ * `/api/publisher/lobby`, which reads tenancy (`manuscripts.imprint_id`) and
+ * nothing else.
+ *
+ * ─── The five ratified pieces ────────────────────────────────────────────────
+ * 1. Real rows from tenancy.
+ * 2. TWO REGISTERS — on the list (observed, dated, never nagged) vs on the
+ *    line (gated, risk-sorted, escalated). Hidden entirely when the route
+ *    cannot resolve the split, rather than captioned with an apology.
+ * 3. One-click station mark from the row — the single interaction the whole
+ *    authority model rests on. Shown only where the substrate exists.
+ * 4. The DESIGNED EMPTY STATE. The level-1 failure mode is not emptiness, it
+ *    is FALSE CONFIDENCE. "No titles yet — the line starts when you add one"
+ *    is honest; "0 titles at risk" is a claim about a list we do not have.
+ * 5. The TERMINAL HANDOFF STATE. Our seven stations end where they end.
+ *    A book whose stations are complete is HANDED OFF — not "done", not "to
+ *    market". Formatting and distribution are the last mile, they have no
+ *    station, and Oliver's densest questions were about exactly that. Better
+ *    said by the product than by a caveat.
+ *
+ * ─── The affordance rule ─────────────────────────────────────────────────────
+ * Nothing on this page asserts an act it cannot perform, and nothing states a
+ * judgement it cannot support. Where a value is unresolvable the surface says
+ * so — it never picks the convenient meaning.
  */
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import {
-  STABLE,
-  PHASE_NAMES,
-  IMPRINTS,
-  authorsInStable,
-  inImprint,
-  fullName,
-  type StableListing,
-  type PhaseNumber,
-} from './_data/stable'
+import { AppShell } from '@/components/chrome/AppShell'
+import { VIEWING_FIRM, VIEWING_FIRM_SLUG } from './_data/firm'
 
-import { VIEWING_FIRM } from './_data/firm'
-// ─── 1. Sorting vocabulary ────────────────────────────────────────────────────
+type Register = 'list' | 'line'
+type RiskBasis = 'date' | 'stall' | 'none'
+type Risk = 'overdue' | 'at-risk' | 'stalled' | 'moving' | 'not-started' | 'handed-off'
 
-type SortKey = 'author' | 'title' | 'activity'
-
-const SORT_LABELS: Record<SortKey, string> = {
-  author: 'Author',
-  title: 'Title',
-  activity: 'Last activity',
+interface LobbyTitle {
+  manuscriptId: string
+  title: string
+  authorName: string | null
+  imprintId: string | null
+  imprintName: string | null
+  register: Register | null
+  currentStationName: string | null
+  currentStationOperator: string | null
+  gate: string | null
+  gateOwner: 'author' | 'publisher' | null
+  lastActivityAt: string | null
+  daysSinceActivity: number | null
+  launchDate: string | null
+  risk: Risk
+  riskBasis: RiskBasis
 }
 
-// ─── 2. Helpers ───────────────────────────────────────────────────────────────
+interface LobbyPayload {
+  authorised?: boolean
+  organisation?: { name: string; slug: string }
+  imprints?: { id: string; name: string }[]
+  titles?: LobbyTitle[]
+  registerSplitAvailable?: boolean
+  registerSplitReason?: string | null
+  datesAvailable?: boolean
+  available?: false
+  reason?: string
+}
 
-function formatWordCount(n: number): string {
-  return n.toLocaleString('en-GB')
+// ─── 1. Risk presentation ─────────────────────────────────────────────────────
+// Wording is deliberate. 'moving' never says "on track": on-track is a claim
+// against a date, and most titles have no date. See the route's header.
+
+const RISK_LABEL: Record<Risk, string> = {
+  overdue: 'Past its launch date',
+  'at-risk': 'Launch date close',
+  stalled: 'Nothing has moved',
+  moving: 'Moving',
+  'not-started': 'Not started',
+  'handed-off': 'Handed off',
+}
+
+const RISK_STYLE: Record<Risk, { bg: string; fg: string; border: string }> = {
+  overdue: { bg: '#FEF2F2', fg: '#991B1B', border: '#FECACA' },
+  'at-risk': { bg: '#FFF7ED', fg: '#9A3412', border: '#FED7AA' },
+  stalled: { bg: '#FEFCE8', fg: '#854D0E', border: '#FEF08A' },
+  'not-started': { bg: '#F8F8F7', fg: '#6B6B6B', border: '#E5E5E3' },
+  moving: { bg: '#F0FDF4', fg: '#166534', border: '#BBF7D0' },
+  'handed-off': { bg: '#F5F3FF', fg: '#5B21B6', border: '#DDD6FE' },
+}
+
+function RiskChip({ risk }: { risk: Risk }) {
+  const s = RISK_STYLE[risk]
+  return (
+    <span
+      className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium whitespace-nowrap"
+      style={{ background: s.bg, color: s.fg, border: `1px solid ${s.border}` }}
+    >
+      {RISK_LABEL[risk]}
+    </span>
+  )
 }
 
 function formatDate(iso: string): string {
   try {
     return new Date(iso).toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
+      day: 'numeric', month: 'short', year: 'numeric',
     })
   } catch {
     return iso
   }
 }
 
-// ─── 3. Page ──────────────────────────────────────────────────────────────────
+// ─── 2. A row ─────────────────────────────────────────────────────────────────
 
-export default function PublisherHomePage() {
-  const router = useRouter()
-
-  const [sortKey, setSortKey] = useState<SortKey>('activity')
-  const [authorFilter, setAuthorFilter] = useState<string>('all')
-  const [imprintFilter, setImprintFilter] = useState<string>('all')
-  const [sampleNoticeFor, setSampleNoticeFor] = useState<string | null>(null)
-
-  const authors = useMemo(() => authorsInStable(STABLE), [])
-
-  const visible = useMemo(() => {
-    const filtered = STABLE.filter(
-      (l) =>
-        (authorFilter === 'all' || fullName(l) === authorFilter) &&
-        (imprintFilter === 'all' || l.imprint === imprintFilter)
-    )
-
-    return filtered.sort((a, b) => {
-      if (sortKey === 'title') return a.title.localeCompare(b.title)
-      if (sortKey === 'author') {
-        const byLast = a.authorLast.localeCompare(b.authorLast)
-        return byLast !== 0 ? byLast : a.title.localeCompare(b.title)
-      }
-      // activity — most recent first
-      return b.lastActivity.localeCompare(a.lastActivity)
-    })
-  }, [sortKey, authorFilter, imprintFilter])
-
-  function openListing(listing: StableListing) {
-    if (listing.projectId) {
-      router.push(`/publisher/${listing.projectId}`)
-      return
-    }
-    // A sample row fails HONESTLY rather than routing into a wall.
-    setSampleNoticeFor((prev) => (prev === listing.key ? null : listing.key))
-  }
-
-  return (
-    <div className="min-h-screen bg-[#F7F7F5] text-[#3F3F3F]">
-      <HomeHeader />
-
-      <main className="max-w-[1200px] mx-auto px-8 py-10">
-        <Masthead count={visible.length} total={STABLE.length} />
-
-        <PortfolioStrip
-          activeImprint={imprintFilter}
-          onImprint={setImprintFilter}
-        />
-
-        <Controls
-          authors={authors}
-          authorFilter={authorFilter}
-          onAuthorFilter={setAuthorFilter}
-          imprintFilter={imprintFilter}
-          onImprintFilter={setImprintFilter}
-          sortKey={sortKey}
-          onSort={setSortKey}
-        />
-
-        <div className="mt-6 border-t border-[#E8E5E0]">
-          {visible.map((l) => (
-            <ListingRow
-              key={l.key}
-              listing={l}
-              showingNotice={sampleNoticeFor === l.key}
-              onOpen={() => openListing(l)}
-            />
-          ))}
-        </div>
-
-        {visible.length === 0 && (
-          <div className="py-16 text-center text-[14px] text-[#8A8A8A]">
-            No books match that filter.
-          </div>
-        )}
-      </main>
-
-      <HomeFooter />
-    </div>
-  )
-}
-
-// ─── 4. Chrome ────────────────────────────────────────────────────────────────
-
-function HomeHeader() {
-  return (
-    <header className="border-b border-[#E8E5E0] bg-white">
-      <div className="max-w-[1200px] mx-auto px-8 py-5 flex items-center justify-between">
-        <div>
-          <div
-            className="text-[22px] leading-tight text-[#1A1A1A]"
-            style={{ fontFamily: 'Iowan Old Style, Palatino, Georgia, serif' }}
-          >
-            Publisher Portal
-          </div>
-          <div className="text-[11px] tracking-[0.14em] uppercase text-[#8A8A8A] mt-1">
-            AuthorsLab
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3 px-3.5 py-2 border border-[#E8E5E0] rounded-full bg-[#FAFAF8]">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#1E3A5F]" aria-hidden />
-          <span className="text-[12px] text-[#8A8A8A]">Publisher:</span>
-          <span className="text-[13px] text-[#1A1A1A] font-medium">{VIEWING_FIRM}</span>
-        </div>
-      </div>
-    </header>
-  )
-}
-
-function HomeFooter() {
-  return (
-    <footer className="mt-16 border-t border-[#E8E5E0] bg-white">
-      <div className="max-w-[1200px] mx-auto px-8 py-6 text-[12px] text-[#8A8A8A] flex items-center justify-between">
-        <div>Private preview — do not share.</div>
-        <div>AuthorsLab · Publisher Portal</div>
-      </div>
-    </footer>
-  )
-}
-
-function Masthead({ count, total }: { count: number; total: number }) {
-  return (
-    <div className="mb-8">
-      <h1
-        className="text-[38px] leading-[1.1] text-[#1A1A1A]"
-        style={{ fontFamily: 'Iowan Old Style, Palatino, Georgia, serif' }}
-      >
-        Your authors&rsquo; books
-      </h1>
-      <p className="mt-2 text-[14px] text-[#8A8A8A]">
-        {count === total
-          ? `${total} books in progress across your list`
-          : `Showing ${count} of ${total} books`}
-      </p>
-    </div>
-  )
-}
-
-// ─── 4b. Portfolio strip — the view across imprints ───────────────────────────
-//
-// A CEO running several imprints manages the PORTFOLIO, not a list. The
-// question is "what is in flight, where, and how far along" — across both
-// imprints at once. This strip answers it before any row is read, and doubles
-// as the imprint filter.
-//
-// Deliberately counts rather than charts: eight books is not a dataset, and a
-// bar chart over single digits dresses up a number you can simply read.
-
-function PortfolioStrip({
-  activeImprint,
-  onImprint,
+function TitleRow({
+  t,
+  onOpen,
 }: {
-  activeImprint: string
-  onImprint: (v: string) => void
+  t: LobbyTitle
+  onOpen: (id: string) => void
 }) {
-  const cards = IMPRINTS.map((im) => {
-    const books = inImprint(STABLE, im)
-    const inProduction = books.filter((b) => b.phase >= 4).length
-    const inEditorial = books.filter((b) => b.phase <= 3).length
-    return { imprint: im, total: books.length, inProduction, inEditorial }
-  })
+  // What the row must answer, per the brief: when it ships and what it is
+  // waiting on. Where the first has no answer, the row says so.
+  const waitingOn =
+    t.risk === 'handed-off'
+      ? null
+      : t.gateOwner === 'publisher'
+        ? 'Waiting on you'
+        : t.gateOwner === 'author'
+          ? 'Waiting on the author'
+          : null
 
-  const all = STABLE.length
-
-  return (
-    <div className="mb-8">
-      <div className="text-[11px] tracking-[0.14em] uppercase text-[#8A8A8A] mb-3">
-        Across the studio
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <ImprintCard
-          label="All imprints"
-          total={all}
-          lines={[`${STABLE.filter((b) => b.phase <= 3).length} in editorial`, `${STABLE.filter((b) => b.phase >= 4).length} in production`]}
-          active={activeImprint === 'all'}
-          onClick={() => onImprint('all')}
-        />
-        {cards.map((c) => (
-          <ImprintCard
-            key={c.imprint}
-            label={c.imprint}
-            total={c.total}
-            lines={[`${c.inEditorial} in editorial`, `${c.inProduction} in production`]}
-            active={activeImprint === c.imprint}
-            onClick={() => onImprint(c.imprint)}
-          />
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function ImprintCard({
-  label,
-  total,
-  lines,
-  active,
-  onClick,
-}: {
-  label: string
-  total: number
-  lines: string[]
-  active: boolean
-  onClick: () => void
-}) {
   return (
     <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={`text-left p-5 rounded-[4px] border transition-colors focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 ${
-        active
-          ? 'bg-white border-[#1E3A5F]'
-          : 'bg-white border-[#E8E5E0] hover:border-[#B8B8B8]'
-      }`}
-      style={{ boxShadow: active ? 'inset 0 0 0 1px #1E3A5F' : '0 1px 0 rgba(0,0,0,0.02)' }}
+      onClick={() => onOpen(t.manuscriptId)}
+      className="w-full text-left px-4 py-3.5 rounded-lg transition-colors"
+      style={{ background: 'var(--color-paper, #FFFFFF)', border: '1px solid #E5E5E3' }}
     >
-      <div
-        className="text-[16px] text-[#1A1A1A] leading-tight"
-        style={{ fontFamily: 'Iowan Old Style, Palatino, Georgia, serif' }}
-      >
-        {label}
-      </div>
-      <div className="mt-2 flex items-baseline gap-1.5">
-        <span
-          className="text-[28px] leading-none text-[#1A1A1A]"
-          style={{ fontFamily: 'Iowan Old Style, Palatino, Georgia, serif' }}
-        >
-          {total}
-        </span>
-        <span className="text-[12px] text-[#8A8A8A]">
-          {total === 1 ? 'book' : 'books'}
-        </span>
-      </div>
-      <div className="mt-2.5 text-[12px] text-[#8A8A8A] leading-relaxed">
-        {lines.join(' · ')}
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span
+              className="text-[15px] truncate"
+              style={{ fontFamily: 'var(--font-serif)', color: 'var(--color-ink)' }}
+            >
+              {t.title}
+            </span>
+            <RiskChip risk={t.risk} />
+          </div>
+
+          <div className="mt-1 text-[12.5px]" style={{ color: 'var(--color-muted)' }}>
+            {t.authorName ?? 'Author unnamed'}
+            {t.imprintName ? <> · {t.imprintName}</> : null}
+          </div>
+
+          <div className="mt-1.5 text-[12.5px]" style={{ color: 'var(--color-muted)' }}>
+            {t.risk === 'handed-off' ? (
+              // The boundary, stated by the product.
+              <>Our stations are complete — formatting and distribution sit with you</>
+            ) : t.currentStationName ? (
+              <>
+                {t.currentStationName}
+                {t.currentStationOperator ? <> · {t.currentStationOperator}</> : null}
+                {waitingOn ? <> · {waitingOn}</> : null}
+              </>
+            ) : (
+              <>No station open</>
+            )}
+          </div>
+        </div>
+
+        <div className="text-right shrink-0">
+          {t.launchDate ? (
+            <>
+              <div className="text-[11px] uppercase tracking-wide" style={{ color: 'var(--color-muted)' }}>
+                Launch
+              </div>
+              <div className="text-[13px]" style={{ color: 'var(--color-ink)' }}>
+                {formatDate(t.launchDate)}
+              </div>
+            </>
+          ) : (
+            // Not a blank. The absence of a target date is a fact a publisher
+            // needs, and hiding it is how a surface implies on-track.
+            <div className="text-[11.5px] leading-tight" style={{ color: 'var(--color-muted)' }}>
+              No target date
+              <br />
+              set yet
+            </div>
+          )}
+          {t.daysSinceActivity !== null && t.risk !== 'handed-off' && (
+            <div className="mt-1.5 text-[11.5px]" style={{ color: 'var(--color-muted)' }}>
+              {t.daysSinceActivity === 0
+                ? 'Moved today'
+                : `${t.daysSinceActivity}d since a station moved`}
+            </div>
+          )}
+        </div>
       </div>
     </button>
   )
 }
 
-// ─── 5. Controls — sort + filter by author ────────────────────────────────────
+// ─── 3. The page ──────────────────────────────────────────────────────────────
 
-function Controls({
-  authors,
-  authorFilter,
-  onAuthorFilter,
-  imprintFilter,
-  onImprintFilter,
-  sortKey,
-  onSort,
-}: {
-  authors: string[]
-  authorFilter: string
-  onAuthorFilter: (v: string) => void
-  imprintFilter: string
-  onImprintFilter: (v: string) => void
-  sortKey: SortKey
-  onSort: (k: SortKey) => void
-}) {
-  return (
-    <div className="flex flex-wrap items-end justify-between gap-6 pb-5">
-      <label className="flex flex-col gap-1.5">
-        <span className="text-[11px] tracking-[0.14em] uppercase text-[#8A8A8A]">
-          Imprint
-        </span>
-        <select
-          value={imprintFilter}
-          onChange={(e) => onImprintFilter(e.target.value)}
-          className="text-[14px] text-[#1A1A1A] bg-white border border-[#E8E5E0] rounded-[3px] px-3.5 py-2 min-w-[200px] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 focus:border-[#1E3A5F]"
-        >
-          <option value="all">All imprints</option>
-          {IMPRINTS.map((im) => (
-            <option key={im} value={im}>
-              {im}
-            </option>
-          ))}
-        </select>
-      </label>
+export default function PublisherLobbyPage() {
+  const router = useRouter()
 
-      <label className="flex flex-col gap-1.5">
-        <span className="text-[11px] tracking-[0.14em] uppercase text-[#8A8A8A]">
-          Filter by author
-        </span>
-        <select
-          value={authorFilter}
-          onChange={(e) => onAuthorFilter(e.target.value)}
-          className="text-[14px] text-[#1A1A1A] bg-white border border-[#E8E5E0] rounded-[3px] px-3.5 py-2 min-w-[220px] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 focus:border-[#1E3A5F]"
-        >
-          <option value="all">All authors</option>
-          {authors.map((a) => (
-            <option key={a} value={a}>
-              {a}
-            </option>
-          ))}
-        </select>
-      </label>
+  const [payload, setPayload] = useState<LobbyPayload | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [imprintFilter, setImprintFilter] = useState<string>('all')
 
-      <div className="flex flex-col gap-1.5">
-        <span className="text-[11px] tracking-[0.14em] uppercase text-[#8A8A8A]">
-          Sort by
-        </span>
-        <div className="flex" role="group" aria-label="Sort listings">
-          {(Object.keys(SORT_LABELS) as SortKey[]).map((k, i) => {
-            const active = sortKey === k
-            return (
-              <button
-                key={k}
-                type="button"
-                onClick={() => onSort(k)}
-                aria-pressed={active}
-                className={`text-[13px] px-4 py-2 border border-[#E8E5E0] transition-colors focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 ${
-                  i === 0 ? 'rounded-l-[3px]' : '-ml-px'
-                } ${
-                  i === Object.keys(SORT_LABELS).length - 1 ? 'rounded-r-[3px]' : ''
-                } ${
-                  active
-                    ? 'bg-[#1E3A5F] text-white border-[#1E3A5F] relative z-10'
-                    : 'bg-white text-[#3F3F3F] hover:bg-[#FAFAF8]'
-                }`}
-              >
-                {SORT_LABELS[k]}
-              </button>
+  useEffect(() => {
+    let cancelled = false
+
+    async function load() {
+      try {
+        const res = await fetch(
+          `/api/publisher/lobby?org=${encodeURIComponent(VIEWING_FIRM_SLUG)}`
+        )
+        if (res.status === 404) {
+          if (!cancelled) {
+            setError(
+              'This organisation is not set up yet — no imprints, no titles, nothing to report on.'
             )
-          })}
+          }
+          return
+        }
+        if (!res.ok) throw new Error(`Lobby unavailable (${res.status})`)
+        const json = (await res.json()) as LobbyPayload
+        if (!cancelled) setPayload(json)
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Something went wrong.')
+        }
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const titles = payload?.titles ?? []
+  const imprints = payload?.imprints ?? []
+  const splitAvailable = payload?.registerSplitAvailable === true
+
+  const filtered = useMemo(
+    () =>
+      imprintFilter === 'all'
+        ? titles
+        : titles.filter((t) => t.imprintId === imprintFilter),
+    [titles, imprintFilter]
+  )
+
+  // The two registers. Only split when the route could actually resolve it —
+  // otherwise one list, and a line saying why.
+  const { onTheLine, onTheList } = useMemo(() => {
+    if (!splitAvailable) return { onTheLine: [], onTheList: [] }
+    return {
+      onTheLine: filtered.filter((t) => t.register === 'line'),
+      onTheList: filtered.filter((t) => t.register !== 'line'),
+    }
+  }, [filtered, splitAvailable])
+
+  // The summary line. It reports only what it can compute, and says when it
+  // cannot compute lateness at all — rather than answering "nothing is late".
+  const summary = useMemo(() => {
+    if (loading) return 'Reading the list…'
+    if (titles.length === 0) return 'No titles on your list yet'
+    const pressing = filtered.filter(
+      (t) => t.risk === 'overdue' || t.risk === 'at-risk' || t.risk === 'stalled'
+    ).length
+    const datesKnown = filtered.some((t) => t.launchDate !== null)
+    const head =
+      pressing === 0
+        ? `${filtered.length} ${filtered.length === 1 ? 'title' : 'titles'}, none pressing`
+        : `${pressing} of ${filtered.length} ${filtered.length === 1 ? 'title needs' : 'titles need'} attention`
+    return datesKnown
+      ? head
+      : `${head} · no launch dates set, so this is measured by movement, not by deadline`
+  }, [loading, titles.length, filtered])
+
+  return (
+    <AppShell modeLabel="Publisher" firstName={VIEWING_FIRM}>
+      <div className="flex-1 overflow-y-auto h-[calc(100vh-56px)]">
+        <div className="max-w-3xl mx-auto px-6 py-10">
+
+          {/* Greeting + summary — the author's grammar, the publisher's question */}
+          <div className="mb-7">
+            <h1
+              className="text-[32px] leading-tight mb-1.5"
+              style={{ fontFamily: 'var(--font-serif)', color: 'var(--color-ink)' }}
+            >
+              What is late
+            </h1>
+            <p className="text-[14px]" style={{ color: 'var(--color-muted)' }}>
+              {payload?.organisation?.name ?? VIEWING_FIRM} · {summary}
+            </p>
+          </div>
+
+          {loading && (
+            <p className="text-sm py-8 text-center" style={{ color: 'var(--color-muted)' }}>
+              Reading the list…
+            </p>
+          )}
+
+          {error && (
+            <div
+              className="px-4 py-3 mb-4 rounded-md text-sm"
+              style={{ background: '#FEF2F2', border: '1px solid #FECACA', color: '#991B1B' }}
+            >
+              {error}
+            </div>
+          )}
+
+          {payload?.available === false && (
+            <div
+              className="px-4 py-3 mb-4 rounded-md text-sm"
+              style={{ background: '#FEFCE8', border: '1px solid #FEF08A', color: '#854D0E' }}
+            >
+              The organisation model is not in place on this environment yet, so
+              there is no list to read.
+            </div>
+          )}
+
+          {/* Imprint filter — a publisher runs several lists and manages across
+              them. Shown only when there is more than one to choose between. */}
+          {!loading && !error && imprints.length > 1 && (
+            <div className="flex items-center gap-2 mb-5 flex-wrap">
+              <button
+                onClick={() => setImprintFilter('all')}
+                className="px-2.5 py-1 rounded text-[12px]"
+                style={
+                  imprintFilter === 'all'
+                    ? { background: 'var(--color-ink)', color: 'var(--color-ivory)' }
+                    : { background: 'transparent', color: 'var(--color-muted)', border: '1px solid #E5E5E3' }
+                }
+              >
+                All imprints
+              </button>
+              {imprints.map((i) => (
+                <button
+                  key={i.id}
+                  onClick={() => setImprintFilter(i.id)}
+                  className="px-2.5 py-1 rounded text-[12px]"
+                  style={
+                    imprintFilter === i.id
+                      ? { background: 'var(--color-ink)', color: 'var(--color-ivory)' }
+                      : { background: 'transparent', color: 'var(--color-muted)', border: '1px solid #E5E5E3' }
+                  }
+                >
+                  {i.name}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* ── THE DESIGNED EMPTY STATE ──────────────────────────────────────
+              Not "0 titles at risk". An empty list is shown as an invitation
+              and a description of the mechanism, because the failure mode is
+              false confidence, not emptiness. */}
+          {!loading && !error && titles.length === 0 && payload?.organisation && (
+            <div
+              className="rounded-lg px-6 py-8 text-center"
+              style={{ background: '#FFFFFF', border: '1px dashed #D8D8D4' }}
+            >
+              <p
+                className="text-[18px] mb-2"
+                style={{ fontFamily: 'var(--font-serif)', color: 'var(--color-ink)' }}
+              >
+                No titles yet
+              </p>
+              <p
+                className="text-[13.5px] max-w-md mx-auto mb-5"
+                style={{ color: 'var(--color-muted)' }}
+              >
+                The line starts when a book joins one of your imprints. From
+                then on this page answers one question — which of them is going
+                to slip — and it answers it from what the stations record, not
+                from an estimate.
+              </p>
+              <div
+                className="text-[12px] inline-flex flex-wrap justify-center gap-x-2 gap-y-1 max-w-lg"
+                style={{ color: 'var(--color-muted)' }}
+              >
+                {[
+                  'Manuscript',
+                  'Developmental edit',
+                  'Line edit',
+                  'Copy edit',
+                  'Publishing prep',
+                  'Marketing prep',
+                  'Handed off',
+                ].map((s, idx, arr) => (
+                  <span key={s}>
+                    {s}
+                    {idx < arr.length - 1 ? <span className="opacity-40"> → </span> : null}
+                  </span>
+                ))}
+              </div>
+              {imprints.length > 0 && (
+                <p className="mt-5 text-[12px]" style={{ color: 'var(--color-muted)' }}>
+                  {imprints.length === 1
+                    ? `${imprints[0].name} is ready and empty.`
+                    : `${imprints.map((i) => i.name).join(' and ')} are ready and empty.`}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* ── THE TWO REGISTERS ─────────────────────────────────────────────
+              Split only when it can be resolved. An uncapped floor is right,
+              and an uncapped floor is what breaks a "what is late" Lobby when
+              a whole backlog arrives and the answer is "everything" — so a
+              title on the LIST is observed and never nagged, and only a title
+              on the LINE is escalated. */}
+          {!loading && !error && filtered.length > 0 && !splitAvailable && (
+            <>
+              <div className="space-y-2.5">
+                {filtered.map((t) => (
+                  <TitleRow key={t.manuscriptId} t={t} onOpen={(id) => router.push(`/publisher/${id}`)} />
+                ))}
+              </div>
+              <p className="mt-4 text-[11.5px]" style={{ color: 'var(--color-muted)' }}>
+                Shown as one list. Separating titles in production from titles
+                merely on your list needs the station record to distinguish
+                system work from a human mark, which this environment cannot do
+                yet.
+              </p>
+            </>
+          )}
+
+          {!loading && !error && splitAvailable && (
+            <>
+              {onTheLine.length > 0 && (
+                <>
+                  <p className="kicker mb-3">On the line</p>
+                  <div className="space-y-2.5 mb-8">
+                    {onTheLine.map((t) => (
+                      <TitleRow key={t.manuscriptId} t={t} onOpen={(id) => router.push(`/publisher/${id}`)} />
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {onTheList.length > 0 && (
+                <>
+                  <p className="kicker mb-1.5">On your list</p>
+                  <p className="text-[12px] mb-3" style={{ color: 'var(--color-muted)' }}>
+                    Observed and dated. Nothing here is in production, so nothing
+                    here is chased.
+                  </p>
+                  <div className="space-y-2.5">
+                    {onTheList.map((t) => (
+                      <TitleRow key={t.manuscriptId} t={t} onOpen={(id) => router.push(`/publisher/${id}`)} />
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
+          )}
+
         </div>
       </div>
-    </div>
-  )
-}
-
-// ─── 6. A single listing row ──────────────────────────────────────────────────
-
-function ListingRow({
-  listing,
-  showingNotice,
-  onOpen,
-}: {
-  listing: StableListing
-  showingNotice: boolean
-  onOpen: () => void
-}) {
-  const isLive = listing.projectId !== null
-
-  return (
-    <div className="border-b border-[#E8E5E0]">
-      <button
-        type="button"
-        onClick={onOpen}
-        className="w-full text-left flex items-center gap-6 px-2 py-5 hover:bg-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 rounded-[3px]"
-      >
-        <SpineTile listing={listing} />
-
-        <div className="flex-1 min-w-0">
-          <div
-            className="text-[19px] leading-tight text-[#1A1A1A] truncate"
-            style={{ fontFamily: 'Iowan Old Style, Palatino, Georgia, serif' }}
-          >
-            {listing.title}
-          </div>
-          <div className="mt-1 text-[14px] text-[#3F3F3F]">
-            {fullName(listing)}
-          </div>
-          <div className="mt-1.5 text-[12px] text-[#8A8A8A]">
-            {listing.imprint} · {listing.genre} ·{' '}
-            {formatWordCount(listing.wordCount)} words · {listing.chapters} chapters
-          </div>
-        </div>
-
-        <div className="hidden md:block w-[190px] flex-shrink-0">
-          <PhaseChip phase={listing.phase} />
-          <div className="mt-2 text-[12px] text-[#8A8A8A]">
-            Last activity {formatDate(listing.lastActivity)}
-          </div>
-        </div>
-
-        <span
-          className={`text-[13px] flex-shrink-0 ${
-            isLive ? 'text-[#1E3A5F]' : 'text-[#B8B8B8]'
-          }`}
-          aria-hidden
-        >
-          →
-        </span>
-      </button>
-
-      {showingNotice && (
-        <div className="px-2 pb-5 -mt-1">
-          <div className="text-[12px] text-[#8A5A2B] border border-[#8A5A2B]/30 bg-[#8A5A2B]/5 px-3 py-2 rounded-[3px] inline-block">
-            Sample listing — this book&rsquo;s portal isn&rsquo;t connected yet.
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ─── 7. Spine tile — a typeset stand-in, no image assets ──────────────────────
-
-const SPINE_PALETTE: Record<PhaseNumber, { bg: string; ink: string }> = {
-  1: { bg: 'linear-gradient(170deg, #C9C4BA 0%, #B4AEA2 100%)', ink: '#3B352C' },
-  2: { bg: 'linear-gradient(170deg, #A8B8A0 0%, #7B9078 100%)', ink: '#FAF9F5' },
-  3: { bg: 'linear-gradient(170deg, #B08D7A 0%, #8A6A57 100%)', ink: '#FAF9F5' },
-  4: { bg: 'linear-gradient(170deg, #1B2A44 0%, #0D1930 100%)', ink: '#C6B78E' },
-  5: { bg: 'linear-gradient(170deg, #F0E2C6 0%, #E0CDA6 100%)', ink: '#5A4327' },
-}
-
-function SpineTile({ listing }: { listing: StableListing }) {
-  const pal = SPINE_PALETTE[listing.phase]
-  return (
-    <div
-      className="w-[52px] h-[78px] rounded-[2px] flex-shrink-0 overflow-hidden flex items-end p-2"
-      style={{ background: pal.bg, boxShadow: '0 1px 2px rgba(0,0,0,0.10)' }}
-      aria-hidden
-    >
-      <div
-        className="text-[8px] leading-[1.15]"
-        style={{
-          color: pal.ink,
-          fontFamily: 'Iowan Old Style, Palatino, Georgia, serif',
-        }}
-      >
-        {listing.title}
-      </div>
-    </div>
-  )
-}
-
-// ─── 8. Phase chip ────────────────────────────────────────────────────────────
-
-function PhaseChip({ phase }: { phase: PhaseNumber }) {
-  return (
-    <div className="flex items-center gap-2">
-      <span className="w-2 h-2 rounded-full bg-[#1E3A5F]" aria-hidden />
-      <span className="text-[13px] text-[#1A1A1A]">
-        Phase {phase} — {PHASE_NAMES[phase]}
-      </span>
-    </div>
+    </AppShell>
   )
 }
