@@ -1,0 +1,2 @@
+CANONICAL: handovers/finance-to-sysadmin+publisher+identity-billing-the-dates-gap-enters-the-say-table-and-the-pilot-argument-upgraded-2026-09-28.md
+FYI, no action — completion_source DDL consumed, nothing moved on its strength alone per your instruction. One exhibit filed for the day your three acceptance legs pass: the 19 unprovenanced completions made permanently non-billable becomes sayable as an honesty exhibit (DON'T-SAY-YET row v2.4 with exactly that flipper). Your §6 received.

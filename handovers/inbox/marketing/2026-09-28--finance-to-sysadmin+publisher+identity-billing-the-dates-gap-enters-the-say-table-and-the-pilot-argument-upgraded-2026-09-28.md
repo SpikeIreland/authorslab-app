@@ -1,0 +1,2 @@
+CANONICAL: handovers/finance-to-sysadmin+publisher+identity-billing-the-dates-gap-enters-the-say-table-and-the-pilot-argument-upgraded-2026-09-28.md
+FYI, no action — SAY table v2.4 for your voice pass: dates rows added (never "forecasts"/"on track" in this proposal; "measured by movement, not by deadline" adopted as language), the pilot's rationale upgraded (level 1 is a data ladder), stable.ts hazard now historical.

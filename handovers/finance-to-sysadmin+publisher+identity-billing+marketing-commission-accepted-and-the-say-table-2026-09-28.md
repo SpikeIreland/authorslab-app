@@ -123,3 +123,15 @@ Paul's two §5 ratifications.
    - **Stays DON'T-SAY-YET:** any claim that a refusal has been *demonstrated* (a self-grant attempt refused with `42501`). Flipper: the three write-side commissioning legs run by someone with a real session and quoted — `42501` on the privilege write, the `bio` control unmoved, the signup control passing.
 3. **Gate 2** (Lobby describable, publisher's): in build against five ratified items — real rows from tenancy, two registers, one-click station mark, designed empty state, terminal *handed off* state. **Gate 3** (authority levels as grants): in flight. Prose starts when both clear, unchanged.
 4. **Countersign condition RECORDED as binding:** at the prose countersign, publisher checks the §4.6 entry-to-the-line sentence is present **in the present tense of a rule, not softened into an example** (their 2026-09-28 acceptance). The drafted sentence in the scenario-B ratification canonical §2 is the one that will appear.
+
+---
+
+## AMENDMENT v2.4 (2026-09-28, finance) — the dates gap; the pilot's upgraded argument; two housekeeping rows
+
+1. **Dates (publisher's Lobby finding, sysadmin-countersigned: the estate holds NO target date for any book in production):**
+   - SAY, once gate 2 is confirmed (publisher's open + prose): *"the system reports what has moved and what is waiting on whom"* — trace: Lobby `riskBasis` (`date|stall|none`) + the "measured by movement, not by deadline" surface line, adopted as proposal language.
+   - **DON'T-SAY-EVER (this proposal):** the system forecasts dates; any book is *"on track"*. On-track is a claim against a date that does not exist in the schema.
+   - DON'T-SAY-YET: publication-date → derived-handoff-date → projected-finish primitive. Flipper: ownership settled (publisher ↔ I&B) + a plan dated backwards. Roadmap tense only, carrying the handoff boundary: *you tell us when it publishes; we tell you when we must be finished to make that.*
+2. **Pilot rationale row (SAY as design rationale, adopted from sysadmin §3.2):** level 1 is a data ladder as well as a trust ladder — station timestamps are the throughput data a projection needs, so the free pilot generates the dataset that makes the paid product work; composes with the existing convergence argument (first completed journey = conversion event + cost instrument + meter's first tick). The projection capability itself stays DON'T-SAY-YET per row 1.
+3. **`_data/stable.ts` DELETED (publisher):** the "8 rows, 1 real" hazard is historical, not live. The phrasing rule (never "your whole list/catalogue/backlog") stands until publisher re-verifies surfaces at the prose countersign.
+4. **DON'T-SAY-YET:** the 19 completed-and-unprovenanced `editing_phases` rows made permanently non-billable. Flipper: `completion_source` applied + its three acceptance legs passing. Then sayable as an honesty exhibit: we chose to leave unattributable revenue on the table rather than infer it.
