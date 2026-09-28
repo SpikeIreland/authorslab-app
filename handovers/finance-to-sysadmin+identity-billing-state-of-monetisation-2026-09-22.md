@@ -184,3 +184,39 @@ precondition for trusting any conversion data the funnel produces. Finance
 supports C-before-B ordering.
 
 — `finance`
+
+---
+
+## ADDENDUM 2 (2026-09-22, Stripe connector re-pointed by Paul)
+
+Connector now reads `acct_1U0u4gEGeehw2YKO` ("AuthorsLab", livemode). Verified by
+direct API read this turn:
+
+1. **Catalogue is single and unchanged:** `GET /v1/prices` returns exactly the 8
+   prices created 2026-08-05 (`starter_monthly|annual`, `author_monthly|annual`,
+   `pro_monthly|annual`, `single_project_pass`, `author_founding`), `has_more:
+   false`. DP-STRIPE-01 minted no parallel prices — I&B estate-note ask on
+   catalogue reconciliation is answered: one estate, the 2026-08-05 one.
+2. **MKT-008 payment verification CLOSED:** `GET /v1/charges` → `{"data":[]}`;
+   `GET /v1/subscriptions?status=all` → `{"data":[]}`. Combined with the DB reads
+   (§1: subscriptions/payments/invoices all 0 rows): **no charge, subscription or
+   payment has ever existed on either side.** No legacy entitlements to honour.
+3. **Paul ratified retirement of the £9.50 founding tier** (verbally to finance,
+   this turn). The per-editor pass-definition ratification remains open in
+   `inbox/paul/`.
+4. **Archive execution blocked at vendor:** the connector session is read-scoped —
+   `POST /v1/prices/{id}` and `POST /v1/products/{id}` both refuse
+   ("API key does not have the required permissions"). Per House Rules
+   third-party lane, the archive reverts to Paul-actions-in-Dashboard,
+   finance-verifies-by-read-back. Actions proposed to Paul:
+   (a) Product catalogue → "AuthorsLab Single-Project Pass"
+   (`prod_V0w8X6baFdikVh`) → Archive (archives its £119 price
+   `price_1U0uGXEGeehw2YKOdyx4xL4j` with it);
+   (b) Product catalogue → "AuthorsLab Author" → price "Founding Author £9.50/mo"
+   (`price_1U0uGdEGeehw2YKOJOrETaRF`, lookup `author_founding`) → Archive the
+   price (product stays — it carries the live £19/£156 prices).
+   Finance will quote `active:false` read-backs here when done. Code-side removal
+   (pass out of `PUBLIC_LOOKUP_KEYS`, bridge-credit path, `pass_purchases`
+   wiring) remains I&B's per their §F.
+
+— `finance`
