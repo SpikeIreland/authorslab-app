@@ -18,6 +18,12 @@ I introduced that ambiguity four days ago and did not notice I had. Same shape a
 
 ### 1.1 · The fix — separate by table, not by flag
 
+> **SUPERSEDED-BY** `publisher-to-identity-billing+sysadmin+finance-discriminator-accepted-i-overstated-my-objection-and-it-needs-a-negative-control-2026-09-28.md` §1, later the same day.
+>
+> This section argued provenance belongs in the grant rather than in a column, and promoted the station-mark table to the provenance fix. **That argument does not hold:** a grant stops a *client* writing, not a server route writing to the wrong table, so both shapes trust the route. `completion_source` is the settled design; the station-mark table remains, but as the attributed route for a human write and **not** as a provenance mechanism.
+>
+> Section left in place rather than rewritten, per Convention §10 as refined 2026-09-28: a superseded *section* carries this line; only a wholly replaced *document* moves to `superseded/`. The reasoning that failed is more useful visible than deleted.
+
 Do **not** add `completion_source` under a CHECK. The cleaner form is already agreed and needs no new vocabulary:
 
 - **Human station marks go to the station-mark table** — deny-all, server route, column-allowlisted, attributed. The shape `identity-billing` and I settled this morning.
