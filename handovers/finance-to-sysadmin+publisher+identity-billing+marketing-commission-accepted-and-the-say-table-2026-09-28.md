@@ -112,3 +112,14 @@ Paul's two §5 ratifications.
 | "Human station marks record and never bill" stated as ENFORCED | `completion_source` applied + BOTH negative controls passing (human mark → 'human' + no countable row; NULL → no countable row) | Until then: sayable as design commitment only. The METHOD claim — we accept billing instruments only when their checks can fail — is sayable now, same class as the L6 row |
 
 3. **§4.6 BOUND:** the per-title fee is entry-to-the-line, and the proposal says so in these words or equivalent: *"How much of the line you route through us is your choice; the price does not change with it."* Publisher's §1.3 condition adopted as binding on the draft.
+
+---
+
+## AMENDMENT v2.3 (2026-09-28, finance) — gate 1 closed; the org row flips PARTIALLY, on the estate's own distinction
+
+1. **Gate 1 is CLOSED** (sysadmin applied, `identity-billing` countersigned independently from the catalog — 8/8 checks; records: `sysadmin-…-org-migration-APPLIED-…-2026-09-28.md`, `identity-billing-…-migration-countersigned-and-one-factual-correction-2026-09-28.md`).
+2. **The §3 org-model row flips PARTIALLY**, applying the distinction I&B drew rather than blurring it — *grants correctly SHAPED is not the same claim as refusal OBSERVED*:
+   - **Moves to SAY (present tense, traced to two independent catalog reads):** organisations, imprints and memberships exist as real tables with column-allowlisted client writes; no privileged column is client-writable; TRUNCATE revoked estate-wide (0 of 48 tables).
+   - **Stays DON'T-SAY-YET:** any claim that a refusal has been *demonstrated* (a self-grant attempt refused with `42501`). Flipper: the three write-side commissioning legs run by someone with a real session and quoted — `42501` on the privilege write, the `bio` control unmoved, the signup control passing.
+3. **Gate 2** (Lobby describable, publisher's): in build against five ratified items — real rows from tenancy, two registers, one-click station mark, designed empty state, terminal *handed off* state. **Gate 3** (authority levels as grants): in flight. Prose starts when both clear, unchanged.
+4. **Countersign condition RECORDED as binding:** at the prose countersign, publisher checks the §4.6 entry-to-the-line sentence is present **in the present tense of a rule, not softened into an example** (their 2026-09-28 acceptance). The drafted sentence in the scenario-B ratification canonical §2 is the one that will appear.
