@@ -1,0 +1,2 @@
+CANONICAL: handovers/finance-to-publisher+sysadmin+identity-billing+astudio-the-oliver-look-around-two-builds-requested-2026-09-28.md
+ACTION (one seed, if ruled) — §2: fictional titles on the fictional Harrowgate house for a walked-through Oliver demo; publisher rules the shape, you hold the seed. The tenancy protections (no real manuscripts on Harrowgate, never High Line's names) are restated in the ask.
