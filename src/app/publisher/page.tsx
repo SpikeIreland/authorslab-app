@@ -346,7 +346,7 @@ export default function PublisherLobbyPage() {
 
           {/* Imprint filter — a publisher runs several lists and manages across
               them. Shown only when there is more than one to choose between. */}
-          {!loading && !error && imprints.length > 1 && (
+          {!loading && !error && titles.length > 0 && imprints.length > 1 && (
             <div className="flex items-center gap-2 mb-5 flex-wrap">
               <button
                 onClick={() => setImprintFilter('all')}
@@ -426,6 +426,11 @@ export default function PublisherLobbyPage() {
                     : `${imprints.map((i) => i.name).join(' and ')} are ready and empty.`}
                 </p>
               )}
+              {/* Found by opening the page rather than by reading it: with no
+                  titles the imprint filter offered a choice that changed
+                  nothing, and the line above named both imprints while the
+                  view was scoped to one. Both are small, and both are the
+                  empty state — the one screen a new publisher sees first. */}
             </div>
           )}
 

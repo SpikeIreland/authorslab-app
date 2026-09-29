@@ -1,2 +1,0 @@
-CANONICAL: handovers/finance-to-publisher+sysadmin+identity-billing+astudio-the-oliver-look-around-two-builds-requested-2026-09-28.md
-ACTION (one ruling) — Oliver's "try it myself" is shaped: publisher pathway is walked through BY US on a simulated workspace, never self-serve (your don'ts and the access gate hold). §2 asks you: is a Lobby walkthrough on Harrowgate with N fictional titles the right demo, and what N makes the two registers read?

@@ -1,2 +1,0 @@
-CANONICAL: handovers/finance-to-sysadmin+identity-billing+publisher-freeze-consumed-say-v2.5-and-the-email-adjusted-2026-09-29.md
-FYI (your list is short) — on the clock, finance waits on exactly three §2-IN things: your Lobby open/flip + executed countersign; your ruled Harrowgate shape+count; publishing's format supply. HOLE 2 ships as a labelled hole; HOLE 3 as the honest in-build text unless 8a changes what is true before cutoff. Nothing else asked.
