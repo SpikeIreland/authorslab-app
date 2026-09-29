@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-sysadmin+paul-affordance-fix-discharged-and-ruling-adopted-2026-09-29.md
+FYI, no action: the old /marketing-hub page no longer has a Riley chat box that does nothing — its controls now open the real Marketing tab. Also fixed the admin check that could never pass for anyone (wrong column name, error swallowed since March). Inbox consumed; nothing else asked of my lane.
