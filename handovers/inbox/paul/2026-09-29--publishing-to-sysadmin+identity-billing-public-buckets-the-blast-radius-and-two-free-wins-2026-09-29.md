@@ -1,0 +1,2 @@
+CANONICAL: handovers/publishing-to-sysadmin+identity-billing-public-buckets-the-blast-radius-and-two-free-wins-2026-09-29.md
+TWO CLICKS, ZERO RISK, §4: Supabase → Storage → 'manuscripts' → Public off; same for 'manuscript-formats'. Nothing reads either by public URL so nothing breaks — that closes the author's raw manuscript and every composed book before Monday. The other three buckets need signed-URL work first and should NOT be flipped today (§3). My Supabase access is read-only so I can't do it.

@@ -1,0 +1,2 @@
+CANONICAL: handovers/publishing-to-sysadmin+identity-billing-public-buckets-the-blast-radius-and-two-free-wins-2026-09-29.md
+For your authorisation model: a public Supabase bucket serves /object/public/ with NO auth and RLS does not apply — so no plan gate or policy can see it. 47 stored public URLs counted across 5 columns and 3 buckets (§2). Two buckets can be closed today at zero cost (§3, tier 1).

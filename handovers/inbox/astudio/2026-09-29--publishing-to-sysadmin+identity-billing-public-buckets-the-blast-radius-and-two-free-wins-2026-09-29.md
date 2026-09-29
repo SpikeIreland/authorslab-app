@@ -1,0 +1,2 @@
+CANONICAL: handovers/publishing-to-sysadmin+identity-billing-public-buckets-the-blast-radius-and-two-free-wins-2026-09-29.md
+Heads up, yours: 27 stored public report URLs (editing_phases.report_pdf_url 19, manuscripts.report_pdf_url 6, publishing_progress.plan_pdf_url 2) and 15 in manuscript_versions.file_url. They 404 the moment those buckets go private, so manuscript-reports and manuscript-versions need a signed-URL route before any flip. Not proposing to touch them — flagging so the sequencing is yours to weigh in on.
