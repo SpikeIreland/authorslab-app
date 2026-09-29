@@ -21,6 +21,14 @@ import { readUtmCookie } from './utm'
 
 export type AnalyticsEvent =
   | 'signup_started'
+  // Confirmation-gated path (2026-09-29): signUp issued no session, a
+  // confirmation email is out. Fired client-side on the signup page.
+  | 'signup_awaiting_confirmation'
+  // Confirmation-gated path: the email link was used and the session
+  // exchanged. Fired SERVER-side in /api/auth/callback (identity-billing's
+  // route) via @vercel/analytics/server — no UTM cookie there, accepted.
+  // awaiting_confirmation minus confirmed = the drop-off that was invisible.
+  | 'signup_confirmed'
   | 'signup_completed'
   | 'manuscript_uploaded_first'
   | 'editor_session_started_first'

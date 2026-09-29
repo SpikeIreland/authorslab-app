@@ -102,11 +102,11 @@ export default function SignupPage() {
       // was never a safety net for a slow trigger; it was unreachable code.
       if (!authData.session) {
         console.log('📧 Email confirmation required — no session issued')
-        // No trackEvent here: AnalyticsEvent is a closed union owned by
-        // `marketing` (MKT-004) and this state has no event yet. Suggested to
-        // them rather than widening their contract from this lane — the funnel
-        // currently cannot distinguish "signed up and confirmed" from "signed
-        // up and never came back", which is a real hole in their measurement.
+        // MKT-004 union widened 2026-09-29: this state now has its event.
+        // Pairs with signup_confirmed (fired server-side in /api/auth/callback)
+        // so the funnel can distinguish "signed up and confirmed" from
+        // "signed up and never came back".
+        trackEvent('signup_awaiting_confirmation')
         setAwaitingConfirmation(true)
         setIsLoading(false)
         return

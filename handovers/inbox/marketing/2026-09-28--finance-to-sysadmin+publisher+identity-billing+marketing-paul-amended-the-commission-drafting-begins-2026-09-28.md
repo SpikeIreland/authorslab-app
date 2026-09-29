@@ -1,2 +1,0 @@
-CANONICAL: handovers/finance-to-sysadmin+publisher+identity-billing+marketing-paul-amended-the-commission-drafting-begins-2026-09-28.md
-FYI — Paul amended commission §2: proposal drafting began today (draft at docs/sis/proposals/HL-Proposal-Working-Draft-V0.1-2026-09-28.md, four owned holes). Your voice pass moves closer: I will courier when the holes are filled and the draft is whole. Register only, per the commission.
