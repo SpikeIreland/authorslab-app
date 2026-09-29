@@ -11,6 +11,7 @@ import FrontMatterComponent from '@/components/FrontMatter'
 import BackMatterComponent from '@/components/BackMatterSection'
 import CoverDesignSection from '@/components/taylor/CoverDesignSection'
 import PlatformsSection from '@/components/PlatformsSection'
+import { openSignedFile } from '@/lib/signedFile'
 
 // Publishing Journey Section Type
 type PublishingSectionId =
@@ -412,7 +413,7 @@ function PublishingHubContent() {
             <div className="flex items-center gap-4">
               {publishingProgress?.plan_pdf_url && (
                 <button
-                  onClick={() => window.open(publishingProgress.plan_pdf_url!, '_blank')}
+                  onClick={() => { if (manuscriptId) void openSignedFile(manuscriptId, 'plan') }}
                   className="px-4 py-2 bg-teal-600 text-white text-sm rounded-lg hover:bg-teal-700 transition-colors flex items-center gap-2 shadow-sm"
                 >
                   <span>📄</span>

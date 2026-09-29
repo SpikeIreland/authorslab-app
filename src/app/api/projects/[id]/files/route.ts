@@ -23,14 +23,31 @@ import { createClient } from '@/lib/supabase/server'
  * public URL it parses the path back out of — and signs either. That means a
  * bucket can be made private BEFORE the columns are cleaned up, and the cleanup
  * becomes tidying rather than a blocker.
+ *
+ * ── What this route deliberately does NOT do ─────────────────────────────────
+ * The only entitlement it implements is AUTHOR-OWN: `manuscripts.author_id`
+ * matches the caller's `author_profiles.id`. It does not consult `is_admin()`
+ * and it does not consult `org_memberships`, so staff cannot use it to read an
+ * arbitrary manuscript and a publisher's people cannot read their own list
+ * through it. That is intentional and follows `sysadmin`'s standing ruling of
+ * 2026-09-29: admin is an AuthorsLab STAFF grant and is not how a publisher's
+ * people get access. Widening this to publisher access is `identity-billing`'s
+ * insertion point — one predicate, in one place, at the ownership check below.
  */
 
 const SIGNED_URL_TTL_SECONDS = 60 * 60 // one hour; these are downloads, not embeds
 
 type Location = { bucket: string; path: string }
 
-/** Kinds a caller may ask for, and where each one lives. */
-const KINDS = ['docx', 'pdf', 'report', 'plan'] as const
+/**
+ * Kinds a caller may ask for, and where each one lives:
+ *   docx | pdf  publishing_progress.formatted_files[kind]   (manuscript-formats)
+ *   plan        publishing_progress.plan_pdf_url
+ *   report      editing_phases.report_pdf_url for ?phase=N,  (manuscript-reports)
+ *               falling back to manuscripts.report_pdf_url
+ *   version     manuscript_versions.file_url for ?versionId  (manuscript-versions)
+ */
+const KINDS = ['docx', 'pdf', 'report', 'plan', 'version'] as const
 type Kind = (typeof KINDS)[number]
 
 function isKind(v: string | null): v is Kind {
@@ -66,7 +83,9 @@ export function resolveLocation(value: unknown): Location | null {
   return null
 }
 
-// GET /api/projects/[id]/files?kind=docx|pdf|report|plan
+// GET /api/projects/[id]/files?kind=docx|pdf|plan
+// GET /api/projects/[id]/files?kind=report&phase=1
+// GET /api/projects/[id]/files?kind=version&versionId=<uuid>
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -129,15 +148,51 @@ export async function GET(
   }
 
   if (kind === 'report') {
-    // Phase-1 editorial report. Column still holds a legacy public URL on every
-    // existing row; resolveLocation copes with both shapes.
+    // Editorial report for a phase. Defaults to phase 1 so existing callers that
+    // ask for `kind=report` alone keep working; Alex/Sam/Jordan are phases 1/2/3.
+    const phaseParam = req.nextUrl.searchParams.get('phase')
+    const phaseNumber = phaseParam === null ? 1 : Number(phaseParam)
+    if (!Number.isInteger(phaseNumber) || phaseNumber < 1) {
+      return NextResponse.json({ error: 'invalid_phase' }, { status: 400 })
+    }
+
     const { data: phase } = await supabase
       .from('editing_phases')
       .select('report_pdf_url')
       .eq('manuscript_id', id)
-      .eq('phase_number', 1)
+      .eq('phase_number', phaseNumber)
       .maybeSingle()
     location = resolveLocation(phase?.report_pdf_url)
+
+    // Six rows hold the report on the manuscript instead of the phase, and
+    // `api/projects/[id]/overview` already falls back that way. Match it, so
+    // adopting this route never loses a report a reader can see today.
+    if (!location && phaseNumber === 1) {
+      const { data: ms } = await supabase
+        .from('manuscripts')
+        .select('report_pdf_url')
+        .eq('id', id)
+        .maybeSingle()
+      location = resolveLocation(ms?.report_pdf_url)
+    }
+  }
+
+  if (kind === 'version') {
+    // A specific saved version. The version row is scoped to this manuscript,
+    // which the block above has already proved the caller owns — so a versionId
+    // belonging to somebody else's book resolves to nothing rather than a file.
+    const versionId = req.nextUrl.searchParams.get('versionId')
+    if (!versionId) {
+      return NextResponse.json({ error: 'missing_version_id' }, { status: 400 })
+    }
+
+    const { data: version } = await supabase
+      .from('manuscript_versions')
+      .select('file_url')
+      .eq('id', versionId)
+      .eq('manuscript_id', id)
+      .maybeSingle()
+    location = resolveLocation(version?.file_url)
   }
 
   if (!location) {

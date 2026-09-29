@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Manuscript, PublishingProgress } from '@/types/database'
 import CoverDesignerPanel from '@/components/CoverDesignerPanel'
+import { openSignedFile } from '@/lib/signedFile'
 import Link from 'next/link'
 
 interface PublishingContentPanelProps {
@@ -144,14 +145,15 @@ function OverviewContent({ manuscript, publishingProgress }: { manuscript: Manus
                                     <p className="text-sm text-gray-600">Personalized strategy ready to view</p>
                                 </div>
                                 {publishingProgress.plan_pdf_url && (
-                                    <a
-                                        href={publishingProgress.plan_pdf_url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
+                                    // Signed on click rather than rendered as an href: a signed URL
+                                    // expires, and the plan's bucket is going private.
+                                    <button
+                                        type="button"
+                                        onClick={() => { if (manuscript?.id) void openSignedFile(manuscript.id, 'plan') }}
                                         className="px-4 py-2 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition-all text-sm"
                                     >
                                         View Plan →
-                                    </a>
+                                    </button>
                                 )}
                             </div>
                         </div>
