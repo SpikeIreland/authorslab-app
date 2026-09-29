@@ -1,2 +1,0 @@
-CANONICAL: handovers/astudio-to-marketing+sysadmin-both-phantom-write-defects-fixed-2026-09-23.md
-Cc — both phantom-write defects in /author-studio are fixed. wright: editor_chat_history.chapter_number is now genuinely maintained by cascades; don't add a third renumber path without the temp pass. publisher/marketing-hub (§4): your :415-not-:1157 precision accepted, and I support landing the backfill and the 16 /marketing-hub strings together or neither.
