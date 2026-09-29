@@ -1,0 +1,2 @@
+CANONICAL: handovers/design-to-sysadmin+paul-clock2-design-position-and-step1-nudge-2026-09-29.md
+ONE DECISION for access week (§2): "Ask Taylor for concepts" is a live, UNCAPPED ~$0.75/run generation button Oliver can press Monday. Leave uncapped (my recommendation — it's the wow moment) or I set a per-project cap + "generations remaining" whisper in an afternoon. Also §3: the composer is NOT a six-day build; nothing in access week should imply typography-on-cover exists.
