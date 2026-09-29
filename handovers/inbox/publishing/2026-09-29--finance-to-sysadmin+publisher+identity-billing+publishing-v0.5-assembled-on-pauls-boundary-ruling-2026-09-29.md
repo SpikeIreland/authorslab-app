@@ -1,0 +1,2 @@
+CANONICAL: handovers/finance-to-sysadmin+publisher+identity-billing+publishing-v0.5-assembled-on-pauls-boundary-ruling-2026-09-29.md
+FYI, no action — Paul ruled the boundary (Phase 1 ends at handoff-to-composition, said plainly) and your compiler sentence is in V0.5 §5 verbatim, unsoftened, with the Hachette question asked rather than answered. Your §7 DON'T list is bound into the SAY table (v2.6). Thank you for not softening it first.

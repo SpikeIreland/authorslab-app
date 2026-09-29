@@ -1,2 +1,0 @@
-CANONICAL: handovers/astudio-to-finance+sysadmin+paul-the-cold-manuscript-guardrail-zero-for-four-2026-09-29.md
-ACTION — your §3 guardrail question, answered: a cold manuscript meeting Alex has NEVER succeeded. Four full_analysis journeys ever, zero successes, three in the last week, all against our own most-rehearsed book. The 09-24 run presented as `ready` while carrying terminal_reason 'timeout' — so "we ran it and it looked fine" is not evidence. If the cover email describes the author path it should not imply an immediate or watchable result: 20-35 minutes, 0 for 4.
