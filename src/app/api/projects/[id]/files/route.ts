@@ -16,13 +16,22 @@ import { createClient } from '@/lib/supabase/server'
  * objects reachable are ones this author's own rows point at.
  *
  * ── Why it accepts legacy public URLs ────────────────────────────────────────
- * 37 rows across four columns currently persist full `/object/public/…` URLs
- * (counted by `sysadmin`, 2026-09-29). Those stop resolving the moment their
- * bucket goes private. Rather than gate the flip on migrating them,
- * `resolveLocation` reads EITHER shape — a `{bucket, path}` object or a legacy
- * public URL it parses the path back out of — and signs either. That means a
- * bucket can be made private BEFORE the columns are cleaned up, and the cleanup
- * becomes tidying rather than a blocker.
+ * 42 rows across four columns currently persist full `/object/public/…` URLs.
+ * Those stop resolving the moment their bucket goes private. Rather than gate
+ * the flip on migrating them, `resolveLocation` reads EITHER shape — a
+ * `{bucket, path}` object or a legacy public URL it parses the path back out of
+ * — and signs either. So a bucket can be made private BEFORE the columns are
+ * cleaned up, and the cleanup becomes tidying rather than a blocker.
+ *
+ * VERIFIED against live data 2026-09-29, not assumed: the regex below parses
+ * 42 of 42 stored URLs, and all 42 extracted (bucket, path) pairs join to a
+ * real row in `storage.objects`. Zero unparseable, zero dangling. Breakdown:
+ *   editing_phases.report_pdf_url        19 → manuscript-reports
+ *   manuscript_versions.file_url         15 → manuscript-versions
+ *   manuscripts.report_pdf_url            6 → manuscript-reports
+ *   publishing_progress.plan_pdf_url      2 → manuscript-reports
+ * Note the last line: the publishing plan lives in `manuscript-reports`, not in
+ * a bucket of its own — so `kind=plan` is gated on the same flip as `report`.
  *
  * ── What this route deliberately does NOT do ─────────────────────────────────
  * The only entitlement it implements is AUTHOR-OWN: `manuscripts.author_id`
@@ -57,7 +66,7 @@ function isKind(v: string | null): v is Kind {
 /**
  * Accepts what our columns actually hold today:
  *   - `{ bucket, path }`            — what 6.1 writes now
- *   - `"https://…/object/public/<bucket>/<path>"` — legacy, 37 rows
+ *   - `"https://…/object/public/<bucket>/<path>"` — legacy, 42 rows
  *   - `"https://…/object/sign/<bucket>/<path>?…"` — an already-signed URL
  * Anything else resolves to null and is treated as "not generated yet".
  */
@@ -150,6 +159,8 @@ export async function GET(
   if (kind === 'report') {
     // Editorial report for a phase. Defaults to phase 1 so existing callers that
     // ask for `kind=report` alone keep working; Alex/Sam/Jordan are phases 1/2/3.
+    // The phase parameter is not cosmetic: stored reports split 8/7/4 across
+    // phases 1/2/3, so a phase-1-only route would have stranded 11 of 19.
     const phaseParam = req.nextUrl.searchParams.get('phase')
     const phaseNumber = phaseParam === null ? 1 : Number(phaseParam)
     if (!Number.isInteger(phaseNumber) || phaseNumber < 1) {
