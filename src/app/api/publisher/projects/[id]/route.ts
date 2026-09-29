@@ -49,6 +49,12 @@ interface PublisherProject {
     last_name: string | null
   }
   cover_url: string | null
+  /** Null when this title is on no publisher's list — see the route body. */
+  list: {
+    imprintName: string
+    organisationName: string | null
+    organisationSlug: string | null
+  } | null
   phases: PhaseState[]
 }
 
@@ -88,6 +94,12 @@ export async function GET(
           status,
           created_at,
           updated_at,
+          imprint_id,
+          imprints (
+            id,
+            name,
+            organisations ( slug, name )
+          ),
           author_profiles!inner (
             first_name,
             last_name
@@ -122,6 +134,18 @@ export async function GET(
       .eq('manuscript_id', id)
       .order('phase_number', { ascending: true })
 
+    // Supabase returns an embedded to-one either as an object or as a
+    // single-element array depending on how it infers the relationship, so
+    // normalise rather than assume one shape.
+    const rawImprint = (manuscript as unknown as {
+      imprints?: { id: string; name: string; organisations?: { slug: string; name: string } | { slug: string; name: string }[] } | { id: string; name: string; organisations?: { slug: string; name: string } | { slug: string; name: string }[] }[]
+    }).imprints
+    const imprintRow = Array.isArray(rawImprint) ? rawImprint[0] : rawImprint
+    const rawOrg = imprintRow?.organisations
+    const manuscriptImprint = imprintRow
+      ? { name: imprintRow.name, organisations: Array.isArray(rawOrg) ? rawOrg[0] : rawOrg }
+      : null
+
     const project: PublisherProject = {
       id: manuscript.id,
       title: manuscript.title ?? 'Untitled project',
@@ -137,6 +161,19 @@ export async function GET(
         last_name: manuscript.author_profiles?.last_name ?? null,
       },
       cover_url: progressRow?.selected_cover_url ?? null,
+      // ── TENANCY, so the page can know whether this title is ON A LIST ───
+      // The portal is reachable two ways: from a publisher's Lobby, and from
+      // a bare shared link. Only the first has a list to go back to. A title
+      // with no `imprint_id` sits on nobody's list, so offering "back to the
+      // list" there would name a relationship that does not exist — the
+      // affordance rule pointed at navigation rather than at a control.
+      list: manuscriptImprint
+        ? {
+            imprintName: manuscriptImprint.name,
+            organisationName: manuscriptImprint.organisations?.name ?? null,
+            organisationSlug: manuscriptImprint.organisations?.slug ?? null,
+          }
+        : null,
       phases: (phaseRows ?? []).map(p => ({
         phase_number: p.phase_number,
         phase_status: p.phase_status,

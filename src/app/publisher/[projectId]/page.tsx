@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useMemo } from 'react'
 import { useParams } from 'next/navigation'
+import Link from 'next/link'
 import { EDITOR_CONFIG, type PhaseNumber } from '@/types/database'
 
 import { VIEWING_FIRM } from '../_data/firm'
@@ -49,6 +50,12 @@ interface PublisherProject {
   updated_at: string
   author: AuthorRow
   cover_url: string | null
+  /** Null when this title is on no publisher's list — the route explains why. */
+  list?: {
+    imprintName: string
+    organisationName: string | null
+    organisationSlug: string | null
+  } | null
   phases: PhaseRow[]
   total_chapters?: number | null
   created_at?: string | null
@@ -266,6 +273,35 @@ function PortalBody({ project }: { project: PublisherProject }) {
 
   return (
     <>
+      {/* ── BACK TO THE LIST ────────────────────────────────────────────────
+        * Paul found this page had NO way back: the reading room and the cover
+        * studio each offer "Back to the project", and the project offered
+        * nothing. The journey only ran downhill.
+        *
+        * It was correct when it was written — a shared link was the only way
+        * in and there was no Lobby to return to — and it became wrong the day
+        * the Lobby existed. Same shape as the fallbacks: true when authored,
+        * false once the world moved.
+        *
+        * SHOWN ONLY WHEN THE TITLE IS ACTUALLY ON A LIST. A portal reached by
+        * a bare link for a book with no imprint belongs to no publisher's
+        * list, and offering to take someone "back" to one would name a
+        * relationship that does not exist. */}
+      {project.list && (
+        <div className="border-b border-[#E8E5E0] bg-white/60">
+          <div className="max-w-[1200px] mx-auto px-8 pt-3">
+            <Link
+              href="/publisher"
+              className="text-[13px] text-[#6B6B6B] hover:text-[#1A1A1A] cursor-pointer"
+            >
+              &larr; {project.list.organisationName
+                ? `Back to ${project.list.organisationName}`
+                : 'Back to the list'}
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Sub-header strip */}
       <div className="border-b border-[#E8E5E0] bg-white/60">
         <div className="max-w-[1200px] mx-auto px-8 py-3 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-[13px] text-[#8A8A8A]">
