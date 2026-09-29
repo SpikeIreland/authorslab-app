@@ -147,9 +147,13 @@ function TitleRow({
           : null
 
   return (
+    // `cursor-pointer` is explicit: a <button> renders with the default arrow
+    // in Chrome, so a row that navigates gave no hover signal that it was
+    // clickable at all. Paul found it. An affordance the eye cannot see is
+    // half an affordance.
     <button
       onClick={() => onOpen(t.manuscriptId)}
-      className="w-full text-left px-4 py-3.5 rounded-lg transition-colors"
+      className="w-full text-left px-4 py-3.5 rounded-lg transition-colors cursor-pointer hover:border-[#C9C9C4]"
       style={{ background: 'var(--color-paper, #FFFFFF)', border: '1px solid #E5E5E3' }}
     >
       <div className="flex items-start justify-between gap-4">

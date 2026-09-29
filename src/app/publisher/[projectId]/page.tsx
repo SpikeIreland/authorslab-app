@@ -700,11 +700,40 @@ function CoverProposalsSection({ projectId }: { projectId: string }) {
           </>
         ) : (
           <>
-            <p className="text-[14px] text-[#8A8A8A] mb-5 max-w-[640px]">
-              Cover design hasn&rsquo;t started on this book yet. Taylor&rsquo;s
-              concepts will appear here for the author to choose from.
-            </p>
-            <PlaceholderConcepts />
+            {/* NO ARTWORK — and we do not draw any.
+              *
+              * This used to render three CSS-drawn "concepts" with the words
+              * THE VEIL AND THE FLAME set into them, as a no-artwork fallback.
+              * Paul opened a demo title — "Every Lighthouse on This Coast" —
+              * and was shown another author's book name on its cover section.
+              *
+              * The prose was already honest; the pictures contradicted it.
+              * Three rendered concepts for a book with no cover assets assert
+              * that cover work exists, which is the affordance rule broken in
+              * artwork rather than in a button, and it is the same defect as
+              * the shelf that showed eight books when one was real.
+              *
+              * So: say what is true, and show the station that will produce
+              * them — the mechanism, never a mock of its output. */}
+            <div
+              className="rounded-lg px-6 py-8 text-center"
+              style={{ background: '#FFFFFF', border: '1px dashed #D8D8D4' }}
+            >
+              <p
+                className="text-[17px] mb-2"
+                style={{ fontFamily: 'var(--font-serif)', color: 'var(--color-ink)' }}
+              >
+                No cover concepts yet
+              </p>
+              <p
+                className="text-[13.5px] max-w-md mx-auto"
+                style={{ color: 'var(--color-muted)' }}
+              >
+                This book has not reached the cover station. When it does,
+                Taylor&rsquo;s concepts appear here for the author to choose
+                from, and the selected one comes to you for approval.
+              </p>
+            </div>
           </>
         )}
       </section>
@@ -807,119 +836,10 @@ function RealCoverImage({ url, alt }: { url: string | null; alt: string }) {
   )
 }
 
-/**
- * The original three CSS-drawn concepts, kept as the no-artwork fallback so a
- * manuscript that has not been through cover generation still shows the shape
- * of what is coming.
- */
-function PlaceholderConcepts() {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {(['A', 'B', 'C'] as const).map((id) => (
-        <Card key={id} className="overflow-hidden">
-          <CoverArt
-            id={id}
-            state={{
-              status: 'pending',
-              approvedAt: null,
-              revisionsNote: '',
-              messaging: false,
-              messageDraft: '',
-              messageSent: false,
-            }}
-          />
-        </Card>
-      ))}
-    </div>
-  )
-}
-
-function CoverArt({ id, state }: { id: 'A' | 'B' | 'C'; state: CoverState }) {
-  const approvedOverlay =
-    state.status === 'approved' ? (
-      <div className="absolute inset-0 flex items-center justify-center bg-black/40 pointer-events-none">
-        <div className="w-16 h-16 rounded-full bg-[#2E4A3C] flex items-center justify-center">
-          <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none" aria-hidden>
-            <path d="M5 12.5l4 4 10-10" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </div>
-      </div>
-    ) : null
-
-  if (id === 'A') {
-    return (
-      <div className="relative w-full aspect-[2/3] overflow-hidden" style={{ background: 'linear-gradient(160deg, #A8B8A0 0%, #8FA48A 55%, #7B9078 100%)' }}>
-        <div className="absolute inset-0 flex flex-col justify-end p-6">
-          <div
-            className="text-[24px] leading-[1.1] text-[#FAF9F5]"
-            style={{ fontFamily: 'Iowan Old Style, Palatino, Georgia, serif' }}
-          >
-            The Veil and<br />the Flame
-          </div>
-          <div className="mt-3 text-[10px] tracking-[0.24em] uppercase text-[#FAF9F5]/80">
-            a novel
-          </div>
-        </div>
-        {approvedOverlay}
-      </div>
-    )
-  }
-  if (id === 'B') {
-    return (
-      <div className="relative w-full aspect-[2/3] overflow-hidden" style={{ background: 'linear-gradient(180deg, #1B2A44 0%, #12203A 60%, #0D1930 100%)' }}>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div
-            className="w-32 h-32 rounded-full border border-[#C6B78E]/40"
-            style={{ boxShadow: 'inset 0 0 40px rgba(198,183,142,0.15)' }}
-          />
-        </div>
-        <div className="absolute inset-x-0 top-6 flex justify-center">
-          <div className="text-[10px] tracking-[0.28em] uppercase text-[#C6B78E]/70">
-            a novel
-          </div>
-        </div>
-        <div className="absolute inset-x-0 bottom-6 flex justify-center px-6">
-          <div
-            className="text-[22px] leading-[1.05] text-center text-[#FAF9F5] font-semibold tracking-wide uppercase"
-            style={{ fontFamily: 'system-ui, -apple-system, "Helvetica Neue", sans-serif', letterSpacing: '0.06em' }}
-          >
-            The Veil<br />and the<br />Flame
-          </div>
-        </div>
-        {approvedOverlay}
-      </div>
-    )
-  }
-  // C
-  return (
-    <div className="relative w-full aspect-[2/3] overflow-hidden" style={{ background: 'linear-gradient(180deg, #F5EBD8 0%, #EEDFC2 100%)' }}>
-      <div className="absolute inset-x-0 top-8 flex justify-center">
-        <svg viewBox="0 0 64 96" className="w-16 h-24" aria-hidden>
-          <path
-            d="M32 8 C 22 26, 46 34, 32 56 C 22 44, 20 68, 32 88 C 44 68, 42 44, 32 56 C 18 34, 42 26, 32 8 Z"
-            fill="none"
-            stroke="#B44A2B"
-            strokeWidth="1.4"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </div>
-      <div className="absolute inset-x-0 bottom-6 flex flex-col items-center px-6">
-        <div
-          className="text-[22px] leading-[1.1] text-center text-[#3B2A1E]"
-          style={{ fontFamily: 'Iowan Old Style, Palatino, Georgia, serif' }}
-        >
-          The Veil and<br />the Flame
-        </div>
-        <div className="mt-2 text-[10px] tracking-[0.24em] uppercase text-[#8A6A46]">
-          a novel
-        </div>
-      </div>
-      {approvedOverlay}
-    </div>
-  )
-}
+// The three CSS-drawn placeholder concepts and their CoverArt renderer were
+// DELETED 2026-09-29. They carried a hardcoded book title, so every manuscript
+// without artwork displayed another author's book name. A placeholder that
+// names a real work is not a placeholder.
 
 // ─── 4. Marketing plan preview ────────────────────────────────────────────────
 
