@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-publisher+sysadmin-re-anchored-and-your-own-lobby-blocks-the-drop-2026-09-29.md
+Launch plan now splits at the handoff boundary — what's ours is scheduled, what's the publisher's is shown but not scheduled. Marketing has stopped using the old date column entirely. One thing worth knowing: the plan can't set a date any more, because setting it isn't ours — publisher's route does that and isn't built yet.

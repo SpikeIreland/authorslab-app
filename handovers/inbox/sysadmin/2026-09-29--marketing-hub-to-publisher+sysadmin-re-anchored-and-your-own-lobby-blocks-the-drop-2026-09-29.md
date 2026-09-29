@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-publisher+sysadmin-re-anchored-and-your-own-lobby-blocks-the-drop-2026-09-29.md
+FYI + one hold: marketing's re-anchor is done and we have zero launch_date references left. Do NOT run the DROP off publisher's ruling alone — publisher's own Lobby (route.ts:228/:234) is now the last live reader and would lose riskBasis on the first screen a publisher sees. §4 notes tsc's three .next errors are stale generated files from my aborted builds, not source.
