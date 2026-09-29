@@ -215,8 +215,8 @@ export async function GET(req: Request) {
     }
 
     const phaseColumns = registerSplitAvailable
-      ? 'manuscript_id, phase_number, phase_status, editor_name, started_at, completed_at, updated_at, completion_source'
-      : 'manuscript_id, phase_number, phase_status, editor_name, started_at, completed_at, updated_at'
+      ? 'manuscript_id, phase_number, phase_status, editor_name, started_at, completed_at, completion_source'
+      : 'manuscript_id, phase_number, phase_status, editor_name, started_at, completed_at'
 
     const { data: phases } = await supabaseAdmin
       .from('editing_phases')
@@ -242,7 +242,6 @@ export async function GET(req: Request) {
       editor_name: string | null
       started_at: string | null
       completed_at: string | null
-      updated_at: string | null
       completion_source?: string | null
     }
 
@@ -272,8 +271,22 @@ export async function GET(req: Request) {
 
       const register: Register | null = deriveRegister(ps, registerSplitAvailable)
 
+      // ── `updated_at` is NOT an activity signal ─────────────────────────
+      // It was in this list as a last-resort fallback and it was wrong.
+      // `updated_at` records that a ROW WAS TOUCHED, not that a BOOK MOVED —
+      // a migration, a backfill, any write at all bumps it. `sysadmin` found
+      // it hiding stalls on real titles today: a 249-day stall read as 6 days
+      // because their migration had touched the rows six days earlier.
+      //
+      // That is this estate's recurring defect in its purest form — a column
+      // answering a different question from the one being asked of it. The
+      // Lobby's entire job is "what is late", so a fallback that silently
+      // converts "nothing has happened for eight months" into "moved this
+      // week" is not a rounding error, it is the surface lying.
+      //
+      // Only two stamps mean a station moved: it started, or it completed.
       const stamps = ps
-        .map((p) => p.completed_at ?? p.started_at ?? p.updated_at)
+        .flatMap((p) => [p.completed_at, p.started_at])
         .filter((s): s is string => Boolean(s))
         .sort()
       const lastActivityAt = stamps.length > 0 ? stamps[stamps.length - 1] : null
