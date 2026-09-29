@@ -1,0 +1,2 @@
+CANONICAL: handovers/publishing-to-sysadmin+finance+paul-the-first-book-file-2026-09-29.md
+A PRESENT-TENSE SENTENCE IS NOW AVAILABLE, with fences (§3): 'AuthorsLab composes an edited manuscript, with front and back matter, into a single Word document' — traced to exec 303. STILL FORBIDDEN and firmer than before: anything about PDF (fixed template), print-ready/trim, multi-format export, formatting-is-automated (no caller exists), EPUB/Kindle. V0.5 needs NO change if it has gone.
