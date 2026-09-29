@@ -8,6 +8,7 @@
  */
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { NotificationBell } from '@/components/NotificationBell'
 import { ProfileChip } from './ProfileChip'
 
@@ -22,6 +23,12 @@ interface HeaderProps {
 
 export function Header({ projectTitle, firstName, modeLabel = 'Author' }: HeaderProps) {
   const inProject = Boolean(projectTitle)
+  // Environment delineation (same ruling as LeftRail, Paul 2026-09-29): the
+  // wordmark takes you to the home of the house you are IN — the publisher's
+  // wordmark must never exit into the author's pathway.
+  const pathname = usePathname() || ''
+  const inPublisher = pathname === '/publisher' || pathname.startsWith('/publisher/')
+  const wordmarkHref = inPublisher ? '/publisher' : '/home'
 
   return (
     <header
@@ -30,7 +37,7 @@ export function Header({ projectTitle, firstName, modeLabel = 'Author' }: Header
     >
       {/* Left cluster — wordmark + mode label + optional back link */}
       <div className="flex items-center gap-3 min-w-0">
-        <Link href="/home" className="flex items-baseline gap-2 hover:opacity-90 transition-opacity">
+        <Link href={wordmarkHref} className="flex items-baseline gap-2 hover:opacity-90 transition-opacity">
           <span
             className="text-[18px] leading-none font-normal tracking-tight"
             style={{ fontFamily: 'var(--font-serif)' }}
