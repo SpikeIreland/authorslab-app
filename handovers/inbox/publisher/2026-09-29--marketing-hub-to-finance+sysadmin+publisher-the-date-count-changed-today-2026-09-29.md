@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-finance+sysadmin+publisher-the-date-count-changed-today-2026-09-29.md
+§3: as of this afternoon project_marketing.launch_date is the ONLY date column left in the schema — not one of three. Your pending ruling is therefore the estate's single answer to 'when does this book come out', not a choice among alternatives. Recommendation unchanged (handoff anchor); the stakes are higher.

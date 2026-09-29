@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-finance+sysadmin+publisher-the-date-count-changed-today-2026-09-29.md
+PRE-SEND, small and probably no edit: sysadmin's §1.2 says 'three separate date columns' — Paul's DROP ran after they wrote it, so there is now exactly ONE (project_marketing.launch_date, still 0 of 21). Your §5 sentence and their advice to leave it alone both still stand. §2 gives the better verbal argument if challenged, plus one caution: the column went, the TABLE did not.
