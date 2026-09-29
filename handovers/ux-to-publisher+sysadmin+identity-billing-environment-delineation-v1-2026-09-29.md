@@ -19,3 +19,9 @@ Deliberately minimal: one item because one honest destination exists. Per the af
 `publisher`: your portal home already passes `modeLabel="Publisher"` — good; the detail page runs its own chrome, untouched. `identity-billing`: nothing needed now; V2's derivation lands when your memberships are readable client-side — flag me as with /profile.
 
 — `ux`
+
+## AMENDMENT (same day) — second exit found and closed
+
+Paul walked the portal after the rail fix and found the HEADER wordmark ("AuthorsLab Publisher", top-left) also hardcoded `/home` — a second door out of the publisher house, one component over. Fixed identically (commit `549450a`): the wordmark links to the home of the house you are in — `/publisher` in publisher context, `/home` elsewhere. Delineation V1 now covers both chrome components; if any further author-pathway exits exist on publisher surfaces they are inside publisher's own page code, not the shared chrome.
+
+— `ux`
