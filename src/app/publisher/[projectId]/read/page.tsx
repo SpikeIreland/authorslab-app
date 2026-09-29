@@ -220,7 +220,11 @@ export default function ReadingRoomPage() {
           noteCounts={noteCountByChapter}
           onSelect={setCurrent}
         />
-        <ChapterPane chapter={chapter} loading={loadingChapter} />
+        <ChapterPane
+          chapter={chapter}
+          loading={loadingChapter}
+          hasChapters={spine === null ? null : spine.length > 0}
+        />
         {notesAvailable && (
           <NotesPane
             chapterTitle={chapter?.title ?? ''}
@@ -228,6 +232,7 @@ export default function ReadingRoomPage() {
             onAdd={addNote}
             disabled={current === null || saving}
             available={available}
+            hasChapters={spine === null ? null : spine.length > 0}
           />
         )}
       </div>
@@ -280,6 +285,13 @@ function Spine({
       </div>
       {entries === null ? (
         <div className="p-5 text-[13px] text-[#8A8A8A]">Loading&hellip;</div>
+      ) : entries.length === 0 ? (
+        /* A labelled panel with nothing in it reads as a page that broke.
+         * Say what is true instead: there is no manuscript here yet. */
+        <div className="p-5 text-[13px] leading-relaxed text-[#8A8A8A]">
+          No chapters yet. The manuscript appears here once the author has
+          uploaded it.
+        </div>
       ) : (
         <ul>
           {entries.map((e) => {
@@ -327,9 +339,12 @@ function Spine({
 function ChapterPane({
   chapter,
   loading,
+  hasChapters,
 }: {
   chapter: ChapterBody | null
   loading: boolean
+  /** null while the spine is still loading. */
+  hasChapters: boolean | null
 }) {
   if (loading && !chapter) {
     return (
@@ -339,9 +354,14 @@ function ChapterPane({
     )
   }
   if (!chapter) {
+    // "Choose a chapter to begin reading" was shown on books with NO chapters
+    // — an instruction to do something impossible, with nothing saying the
+    // manuscript was empty. Found on every one of the nine demo titles.
     return (
       <main className="px-8 py-16 text-center text-[14px] text-[#8A8A8A]">
-        Choose a chapter to begin reading.
+        {hasChapters === false
+          ? 'There is no manuscript to read yet.'
+          : 'Choose a chapter to begin reading.'}
       </main>
     )
   }
@@ -386,12 +406,14 @@ function NotesPane({
   notes,
   onAdd,
   disabled,
+  hasChapters,
   available,
 }: {
   chapterTitle: string
   notes: PublisherNote[]
   onAdd: (body: string) => void | Promise<void>
   disabled: boolean
+  hasChapters: boolean | null
   available: boolean | null
 }) {
   const [draft, setDraft] = useState('')
@@ -407,6 +429,14 @@ function NotesPane({
   // not offer to record one — it is not disabled-with-an-apology, it is absent.
   if (available !== true) return null
 
+  // A note attaches to a CHAPTER. With no chapters there is nothing to attach
+  // one to, and with none selected there is nothing chosen — so the composer
+  // is absent rather than present-and-silently-inert. It was the latter: the
+  // textarea accepted text, "Add note" looked live, and `addNote` returned
+  // early on a null chapter, discarding what had been typed with no feedback.
+  // A control that pretends to succeed is worse than one that is missing.
+  const nothingToNoteOn = hasChapters === false || disabled
+
   return (
     <aside className="border-l border-[#E8E5E0] bg-white/60 lg:max-h-[calc(100vh-61px)] lg:overflow-y-auto">
       <div className="px-5 py-4 text-[11px] tracking-[0.14em] uppercase text-[#8A8A8A] border-b border-[#E8E5E0]">
@@ -418,7 +448,13 @@ function NotesPane({
           <div className="text-[12px] text-[#8A8A8A] mb-4">on {chapterTitle}</div>
         )}
 
-        {notes.length === 0 ? (
+        {nothingToNoteOn ? (
+          <p className="text-[13px] text-[#8A8A8A] leading-relaxed">
+            {hasChapters === false
+              ? 'Notes attach to a chapter. There is no manuscript here yet.'
+              : 'Select a chapter to leave a note on it.'}
+          </p>
+        ) : notes.length === 0 ? (
           <p className="text-[13px] text-[#8A8A8A] leading-relaxed mb-5">
             Nothing yet. Notes you leave here sit against this chapter.
           </p>
@@ -438,6 +474,8 @@ function NotesPane({
           </div>
         )}
 
+        {!nothingToNoteOn && (
+        <>
         <textarea
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
@@ -454,6 +492,8 @@ function NotesPane({
         >
           Add note
         </button>
+        </>
+        )}
       </div>
     </aside>
   )
