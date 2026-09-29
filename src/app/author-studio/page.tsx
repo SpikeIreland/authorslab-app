@@ -2749,9 +2749,16 @@ function StudioContent() {
 
               <button
                 onClick={async () => {
+                  // Fail-visible: never a dead button — route regardless,
+                  // log the failure (same fix as ProfileChip, 2026-09-29).
                   const supabase = createClient()
-                  await supabase.auth.signOut()
-                  router.push('/login')
+                  try {
+                    await supabase.auth.signOut()
+                  } catch (err) {
+                    console.error('Sign out failed; routing to /login anyway:', err)
+                  } finally {
+                    router.push('/login')
+                  }
                 }}
                 className="text-sm px-4 py-2 text-ink hover:bg-paper-warm rounded-lg font-medium transition-colors"
               >

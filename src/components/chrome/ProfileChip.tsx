@@ -47,9 +47,17 @@ export function ProfileChip({ firstName }: ProfileChipProps) {
   const initial = (name || '?').slice(0, 1).toUpperCase()
 
   async function signOut() {
+    // Fail-visible: a rejected signOut() must never leave the button looking
+    // dead (Paul hit exactly that 2026-09-29). Whatever happens server-side,
+    // the user always lands on /login; the error is logged, not swallowed.
     const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/login')
+    try {
+      await supabase.auth.signOut()
+    } catch (err) {
+      console.error('Sign out failed; routing to /login anyway:', err)
+    } finally {
+      router.push('/login')
+    }
   }
 
   return (
