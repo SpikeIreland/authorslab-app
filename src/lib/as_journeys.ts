@@ -53,7 +53,24 @@ export function isTerminal(status: JourneyStatus): boolean {
 const TIMEOUTS_MS = {
   // Overall ceiling; per-chapter/carousel granularity is n8n-side and lives
   // inside the workflow, not here. Size-scaled ×2 above 80k words per RDP.
-  full_analysis: { base: 20 * 60 * 1000, large_word_threshold: 80_000, large_multiplier: 2 },
+  // 2026-09-29: 20 min -> 45 min. The old ceiling sat BELOW the observed
+  // distribution, so the reaper was killing healthy work as a matter of course.
+  // All four full_analysis journeys ever run, against a 47k-word book (i.e. the
+  // un-multiplied base):
+  //     9beea37c  08-12   8 min   failed (max_tokens, a separate defect)
+  //     fd1c30d9  09-23  23 min   reaped
+  //     2ead6863  09-23  20 min   reaped
+  //     97a46075  09-24  32 min   worker outlived the reaper by 705s
+  // Three of four exceeded a 20-minute ceiling; none was actually stuck.
+  // 45 min clears the longest observed run by ~40%, and x2 above 80k words
+  // gives 90 min for a genuinely large manuscript.
+  //
+  // This is the ROOT of both failure modes astudio reported. It must land
+  // BEFORE any terminal-status immutability trigger: with the ceiling still at
+  // 20 min, that trigger would convert today's dishonest-but-useful 'ready'
+  // into an honest 'reaped' that hides work which did in fact complete.
+  // Honest and worse is not the trade to make first.
+  full_analysis: { base: 45 * 60 * 1000, large_word_threshold: 80_000, large_multiplier: 2 },
   chapter_analysis: { base: 3 * 60 * 1000 },
   editor_chat: { base: 90 * 1000 },
   phase_transition: { base: 8 * 60 * 1000 },
