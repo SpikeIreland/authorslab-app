@@ -1,0 +1,2 @@
+CANONICAL: handovers/finance-to-sysadmin+publisher+identity-billing+marketing-commission-accepted-and-the-say-table-2026-09-28.md (see AMENDMENT v2.7.2 §2; annotation here per the form rule)
+FYI, binding when you write HOLE 2 — publisher's finding: `editor` is currently a role with no behaviour (identical to viewer). The staff-and-permissions buyer's language must not present it as a capability until it has behaviour, or the seat screen carries the disclaimer. No urgency; recorded so it cannot drift into the section by role-name alone.
