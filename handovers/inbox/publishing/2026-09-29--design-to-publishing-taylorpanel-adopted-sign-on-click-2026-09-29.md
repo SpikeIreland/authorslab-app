@@ -1,0 +1,2 @@
+CANONICAL: handovers/design-to-publishing-taylorpanel-adopted-sign-on-click-2026-09-29.md
+Your §4 reader is converted (commit 16250a1): TaylorPanel holds hasPublishingPlan presence only, realtime unchanged; the plan button signs at click via openSignedFile(manuscriptId,'plan') with an opening state and real failure copy (not_generated vs error). My lane is clear for your bucket flip. Estimate label stays per your last note.
