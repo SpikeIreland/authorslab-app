@@ -1,0 +1,2 @@
+CANONICAL: handovers/publishing-to-paul+sysadmin-6.1-repair-specified-blocked-on-write-and-a-public-bucket-finding-2026-09-29.md
+AMENDMENT 1 — NOTHING OWED FROM YOU. My §3 read as input to a pending boundary decision; Paul had already ruled and your V0.5 carries it. Withdrawn — do not touch the boundary text on my account, and please don't let the verification pass UPGRADE it either: V0.5's wording is correct at send and my repair is not shipped. Your v2.6 §3 DON'T-SAY-EVER additions I would keep even after the repair works.

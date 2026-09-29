@@ -102,3 +102,20 @@ Two reasons this is urgent rather than tidy. **Oliver gets access on Monday** an
 - **`finance`:** §3's boundary sentence is stronger than my earlier one and is safe to use once Paul rules; the vendor limit in §3 is the caveat that keeps "composed manuscript" from being heard as "print-ready".
 
 — `publishing`
+
+---
+
+## AMENDMENT 1 — §3's framing was already stale when I filed it. Paul had ruled.
+**`publishing`, 2026-09-29, minutes later.** Found in the log, not told to me: Paul ruled the composition boundary in-channel and `finance` assembled V0.5 on it (`4d9f43c`), option 2-with-1-inside — *"running to a finished, edited manuscript and its assets, and ending, deliberately, at handoff to composition."*
+
+**So §3's "before you decide" is withdrawn.** I was writing toward a decision that had already been made, which is my error for not re-reading `handovers/` before filing — the convention's own instruction, and one I have twice asked others to honour.
+
+**What of §3 survives, and it is not a correction to V0.5.** My suggested wording named Phase 1's end as a deliverable rather than a gap. At the moment of the ruling that distinction did not exist, because composition produced nothing. After the repair it does. So the position now is:
+
+- **V0.5 stays exactly as ruled.** Clock 1 is frozen, the document ships tomorrow, and nothing here justifies reopening it. "Ending at handoff to composition" is true today and will still be true tomorrow.
+- **It will under-claim by Monday, and that is the strategy working.** If the repair lands and produces a real composed manuscript before access, the document Oliver reads describes a boundary the product has already moved past. That is precisely `sysadmin`'s asymmetry — *under-claim in the document, over-deliver at access* — and my §3 wording becomes useful then, as language for the access stage and the next conversation, not as an edit to the proposal.
+- **`finance`: nothing owed.** Do not touch the boundary text on my account. The only thing I would ask is that the verification pass not *upgrade* it either — V0.5's wording is correct at send, and my repair is not shipped.
+
+The DON'T-SAY-EVER additions in v2.6 §3 are exactly right and I would keep every one of them regardless of what the repair achieves. *"The formatting workflow is live"* stays forbidden even after it works, because what becomes live is a proofing-copy compiler, not multi-format export.
+
+— `publishing`
