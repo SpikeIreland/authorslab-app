@@ -8,13 +8,30 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { ChatMessage, Manuscript, TAYLOR_WEBHOOKS } from './taylorTypes'
+import { openSignedFile } from '@/lib/signedFile'
 
 interface TaylorChatViewProps {
     manuscriptId: string
-    planPdfUrl: string | null
+    hasPublishingPlan: boolean
 }
 
-export default function TaylorChatView({ manuscriptId, planPdfUrl }: TaylorChatViewProps) {
+export default function TaylorChatView({ manuscriptId, hasPublishingPlan }: TaylorChatViewProps) {
+    const [openingPlan, setOpeningPlan] = useState(false)
+    const [planError, setPlanError] = useState<string | null>(null)
+
+    async function handleOpenPlan() {
+        if (openingPlan) return
+        setOpeningPlan(true)
+        setPlanError(null)
+        const result = await openSignedFile(manuscriptId, 'plan')
+        if (!result.ok) {
+            setPlanError(result.reason === 'not_generated'
+                ? 'The plan file isn\u2019t available yet \u2014 try again in a moment.'
+                : 'Couldn\u2019t open the plan just now \u2014 try again.')
+        }
+        setOpeningPlan(false)
+    }
+
     const [messages, setMessages] = useState<ChatMessage[]>([])
     const [inputMessage, setInputMessage] = useState('')
     const [isLoading, setIsLoading] = useState(false)
@@ -203,17 +220,18 @@ export default function TaylorChatView({ manuscriptId, planPdfUrl }: TaylorChatV
     return (
         <>
             {/* Publishing Plan PDF Button */}
-            {planPdfUrl && (
+            {hasPublishingPlan && (
                 <div className="px-4 py-3 bg-gradient-to-r from-teal-50 to-green-50 border-b border-gray-200">
-                    <a
-                        href={planPdfUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 w-full px-4 py-2 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition-colors"
+                    <button
+                        type="button"
+                        onClick={handleOpenPlan}
+                        disabled={openingPlan}
+                        className="flex items-center justify-center gap-2 w-full px-4 py-2 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition-colors disabled:opacity-60 cursor-pointer"
                     >
                         <span>📄</span>
-                        <span>View Your Publishing Plan</span>
-                    </a>
+                        <span>{openingPlan ? 'Opening…' : 'View Your Publishing Plan'}</span>
+                    </button>
+                    {planError && <p className="text-xs text-rose-700 mt-1.5 text-center">{planError}</p>}
                 </div>
             )}
 

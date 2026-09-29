@@ -14,7 +14,10 @@ import { TaylorPanelProps } from './taylorTypes'
 export default function TaylorPanel({ manuscriptId }: TaylorPanelProps) {
     const [assessmentCompleted, setAssessmentCompleted] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
-    const [publishingPlanUrl, setPublishingPlanUrl] = useState<string | null>(null)
+    // Presence only — signed URLs expire, so the plan is signed at click time
+    // (openSignedFile in TaylorChatView), never held in state. Realtime still
+    // works: what it actually tells us is that the plan now exists.
+    const [hasPublishingPlan, setHasPublishingPlan] = useState(false)
 
     useEffect(() => {
         checkAssessmentStatus()
@@ -42,7 +45,7 @@ export default function TaylorPanel({ manuscriptId }: TaylorPanelProps) {
             } else if (data) {
                 console.log('📊 Initial assessment status:', data.assessment_completed)
                 setAssessmentCompleted(data.assessment_completed || false)
-                setPublishingPlanUrl(data.plan_pdf_url)
+                setHasPublishingPlan(!!data.plan_pdf_url)
             } else {
                 console.log('⚠️ No publishing_progress row found for manuscript')
             }
@@ -73,7 +76,7 @@ export default function TaylorPanel({ manuscriptId }: TaylorPanelProps) {
                     console.log('📊 Taylor: Publishing progress updated via realtime')
                     if (payload.new.assessment_completed === true) {
                         setAssessmentCompleted(true)
-                        setPublishingPlanUrl(payload.new.plan_pdf_url)
+                        setHasPublishingPlan(!!payload.new.plan_pdf_url)
                     }
                 }
             )
@@ -129,7 +132,7 @@ export default function TaylorPanel({ manuscriptId }: TaylorPanelProps) {
                 if (data.assessment_completed === true) {
                     console.log('✅ Assessment confirmed complete! Switching to chat view...')
                     setAssessmentCompleted(true)
-                    setPublishingPlanUrl(data.plan_pdf_url)
+                    setHasPublishingPlan(!!data.plan_pdf_url)
                     return // Success - exit the function
                 }
             } catch (err) {
@@ -185,7 +188,7 @@ export default function TaylorPanel({ manuscriptId }: TaylorPanelProps) {
             ) : (
                 <TaylorChatView
                     manuscriptId={manuscriptId}
-                    planPdfUrl={publishingPlanUrl}
+                    hasPublishingPlan={hasPublishingPlan}
                 />
             )}
         </div>
