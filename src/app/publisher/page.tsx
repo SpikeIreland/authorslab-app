@@ -65,7 +65,8 @@ interface LobbyTitle {
   gateOwner: 'author' | 'publisher' | null
   lastActivityAt: string | null
   daysSinceActivity: number | null
-  launchDate: string | null
+  handoffDate: string | null
+  publicationDate: string | null
   risk: Risk
   riskBasis: RiskBasis
 }
@@ -87,8 +88,8 @@ interface LobbyPayload {
 // against a date, and most titles have no date. See the route's header.
 
 const RISK_LABEL: Record<Risk, string> = {
-  overdue: 'Past its launch date',
-  'at-risk': 'Launch date close',
+  overdue: 'Past its handoff date',
+  'at-risk': 'Handoff date close',
   stalled: 'Nothing has moved',
   moving: 'Moving',
   'not-started': 'Not started',
@@ -190,14 +191,23 @@ function TitleRow({
         </div>
 
         <div className="text-right shrink-0">
-          {t.launchDate ? (
+          {t.handoffDate ? (
             <>
+              {/* The HANDOFF date — ours, and the only one we are measured
+                  against. A publication date, where one exists, is shown
+                  beneath it as the publisher's own context: it includes
+                  composition and distribution, which are not our stations. */}
               <div className="text-[11px] uppercase tracking-wide" style={{ color: 'var(--color-muted)' }}>
-                Launch
+                Handoff
               </div>
               <div className="text-[13px]" style={{ color: 'var(--color-ink)' }}>
-                {formatDate(t.launchDate)}
+                {formatDate(t.handoffDate)}
               </div>
+              {t.publicationDate && (
+                <div className="text-[11px] mt-0.5" style={{ color: 'var(--color-muted)' }}>
+                  Publication {formatDate(t.publicationDate)}
+                </div>
+              )}
             </>
           ) : (
             // Not a blank. The absence of a target date is a fact a publisher
@@ -295,14 +305,14 @@ export default function PublisherLobbyPage() {
     const pressing = filtered.filter(
       (t) => t.risk === 'overdue' || t.risk === 'at-risk' || t.risk === 'stalled'
     ).length
-    const datesKnown = filtered.some((t) => t.launchDate !== null)
+    const datesKnown = filtered.some((t) => t.handoffDate !== null)
     const head =
       pressing === 0
         ? `${filtered.length} ${filtered.length === 1 ? 'title' : 'titles'}, none pressing`
         : `${pressing} of ${filtered.length} ${filtered.length === 1 ? 'title needs' : 'titles need'} attention`
     return datesKnown
       ? head
-      : `${head} · no launch dates set, so this is measured by movement, not by deadline`
+      : `${head} · no handoff dates set, so this is measured by movement, not by deadline`
   }, [loading, titles.length, filtered])
 
   return (
