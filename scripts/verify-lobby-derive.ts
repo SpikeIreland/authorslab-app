@@ -150,6 +150,28 @@ check(
   { risk: 'moving', riskBasis: 'none' }
 )
 
+// NEGATIVE CONTROL 6. THE ONE FOUND IN PRODUCTION. A comfortable deadline must
+// not suppress a stall: a book that has not moved in 40 days is stalled even
+// if its handoff date is a year away. Setting a target date must never make a
+// stalled book look healthier than it did without one.
+check(
+  'NEGATIVE: stalled 40d with a distant date -> stalled, NOT moving',
+  deriveRisk({ phases: [active(2)], daysSinceActivity: 40, daysToLaunch: 300 }),
+  { risk: 'stalled', riskBasis: 'stall' }
+)
+
+check(
+  'moving with a comfortable date -> moving on basis date',
+  deriveRisk({ phases: [active(2)], daysSinceActivity: 2, daysToLaunch: 300 }),
+  { risk: 'moving', riskBasis: 'date' }
+)
+
+check(
+  'an overdue date still outranks a stall',
+  deriveRisk({ phases: [active(2)], daysSinceActivity: 40, daysToLaunch: -3 }),
+  { risk: 'overdue', riskBasis: 'date' }
+)
+
 check(
   'handed-off takes precedence over an overdue date',
   deriveRisk({ phases: [doneBy(5, 'system')], daysSinceActivity: 90, daysToLaunch: -200 }),
@@ -158,7 +180,7 @@ check(
 
 console.log(
   `\n${checks - failures}/${checks} passed, ${failures} failed` +
-    (failures === 0 ? ' — including 5 negative controls\n' : '\n')
+    (failures === 0 ? ' — including 8 negative controls\n' : '\n')
 )
 
 process.exit(failures === 0 ? 0 : 1)

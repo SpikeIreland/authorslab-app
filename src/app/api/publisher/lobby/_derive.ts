@@ -87,15 +87,32 @@ export function deriveRisk(input: RiskInput): { risk: Risk; riskBasis: RiskBasis
 
   if (!anyStarted) return { risk: 'not-started', riskBasis: 'none' }
 
+  // ── A COMFORTABLE DEADLINE MUST NOT SUPPRESS A STALL ──────────────────
+  // This block used to return `moving` as soon as a date existed and was more
+  // than 30 days out, BEFORE the stall test ran. Found live: "A Dictionary of
+  // Small Repairs" had not moved in 40 days and read as MOVING, because its
+  // handoff date is Feb 2027. Setting a target date made a stalled book look
+  // healthier, and the attention count fell from 5 of 9 to 4 of 9 — the
+  // surface rewarded us for adding information.
+  //
+  // Backwards, and backwards in the direction that costs most: a stalled book
+  // with a distant deadline is EXACTLY the one that quietly becomes late.
+  // Nobody chases it, because the date still looks fine, right up until it
+  // doesn't.
+  //
+  // Date and movement are independent signals. A title surfaces if EITHER is
+  // bad, and precedence runs by urgency: overdue > at-risk > stalled > moving.
   if (daysToLaunch !== null) {
     if (daysToLaunch < 0) return { risk: 'overdue', riskBasis: 'date' }
     if (daysToLaunch <= 30) return { risk: 'at-risk', riskBasis: 'date' }
-    return { risk: 'moving', riskBasis: 'date' }
   }
 
   if (daysSinceActivity !== null && daysSinceActivity >= STALL_DAYS) {
     return { risk: 'stalled', riskBasis: 'stall' }
   }
+
+  // Moving, with a date we are comfortably inside.
+  if (daysToLaunch !== null) return { risk: 'moving', riskBasis: 'date' }
 
   return {
     risk: 'moving',
