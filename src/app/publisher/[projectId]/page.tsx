@@ -1069,35 +1069,8 @@ function PublishingRouteSection({ projectId }: { projectId: string }) {
  * written here could contradict a number rendered elsewhere on the page.
  */
 
-const EDITOR_LINES: Record<
-  number,
-  { complete: string; active: string; pending: string }
-> = {
-  1: {
-    complete:
-      'Developmental pass complete — every chapter signed off. The Chapter 12 timeline question is resolved.',
-    active:
-      'Structural pass underway. One question outstanding on the Chapter 12 timeline jump — details in the notes doc.',
-    pending: 'Ready to begin the developmental pass on this manuscript.',
-  },
-  2: {
-    complete:
-      'Line edit complete. The voice holds all the way through; nothing structural outstanding.',
-    active: 'Sentence-level pass in progress. Voice profile is strong and consistent.',
-    pending: 'Queued behind the developmental pass.',
-  },
-  3: {
-    complete: 'Copy pass complete and proofed. Clean manuscript, ready for your read.',
-    active: 'Copy pass in progress — consistency and house style.',
-    pending: 'Queued behind the line edit.',
-  },
-}
-
-const RELATIVE_WHEN: Record<number, string> = {
-  1: '3 weeks ago',
-  2: '2 weeks ago',
-  3: '6 days ago',
-}
+// EDITOR_LINES and RELATIVE_WHEN deleted 2026-09-29 with the thread they fed:
+// canned editorial copy and invented relative timestamps. Nothing reads them.
 
 function CommunicationsThreadSection({
   authorFirst,
@@ -1108,38 +1081,27 @@ function CommunicationsThreadSection({
   phases: PhaseRow[]
   projectId: string
 }) {
-  const initial: ThreadMessage[] = useMemo(() => {
-    const editorMessages: ThreadMessage[] = EDITORIAL_PHASES.map((n) => {
-      const p = phases.find((row) => row.phase_number === n)
-      const lines = EDITOR_LINES[n]
-      const body =
-        p?.phase_status === 'complete'
-          ? lines.complete
-          : p?.phase_status === 'active'
-            ? lines.active
-            : lines.pending
-
-      return {
-        id: `phase-${n}`,
-        sender: p?.editor_name || EDITOR_CONFIG[n].name,
-        role: EDITOR_CONFIG[n].phaseName,
-        body,
-        when: RELATIVE_WHEN[n],
-      }
-    })
-
-    return [
-      ...editorMessages,
-      {
-        id: 'seed-author',
-        sender: authorFirst,
-        role: 'Author',
-        body:
-          'Grateful to have your team in the loop. Happy to jump on a call to walk through the cover proposals.',
-        when: 'yesterday',
-      },
-    ]
-  }, [authorFirst, phases])
+  // ── THE FABRICATED THREAD IS GONE ──────────────────────────────────────
+  //
+  // This section used to open with invented messages:
+  //   * one canned line per editorial phase, attributed to the NAMED editor
+  //     (Alex, Sam, Jordan) with invented relative times -- "3 weeks ago",
+  //     "2 weeks ago", "6 days ago" -- that bore no relation to the real
+  //     station timestamps, so a book stalled 31 days showed "6 days ago";
+  //   * and a message attributed to THE AUTHOR BY NAME, which they had never
+  //     written.
+  //
+  // Found while sweeping the publisher paths for fallbacks after Paul caught
+  // the placeholder covers. Same defect, most serious instance: a section
+  // headed "Communications" is a RECORD, and this record was invented. On a
+  // real book it put words in a real author's mouth; on a demo title it
+  // quoted a person who does not exist.
+  //
+  // Nothing replaces them. The production line above already answers station
+  // status truthfully and from the data, so there is no honest version of
+  // this content that is not simply that. What remains is what was always
+  // real: the publisher's own append-only entries.
+  const initial: ThreadMessage[] = useMemo(() => [], [])
 
   const { actions, available, saving, record } = usePublisherActions(projectId)
   const [draft, setDraft] = useState('')
@@ -1174,11 +1136,18 @@ function CommunicationsThreadSection({
     <section>
       <SectionHeading eyebrow="Communications" title="Thread with the editorial team" />
       <Card className="p-8">
-        <div className="space-y-5">
-          {messages.map((m) => (
-            <ThreadBubble key={m.id} m={m} />
-          ))}
-        </div>
+        {messages.length > 0 ? (
+          <div className="space-y-5">
+            {messages.map((m) => (
+              <ThreadBubble key={m.id} m={m} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-[14px] max-w-[640px]" style={{ color: '#8A8A8A' }}>
+            No messages yet. Anything you write here is recorded against this
+            book and attributed to you.
+          </p>
+        )}
 
         {available === true && (
         <div className="mt-8 pt-6 border-t border-[#E8E5E0]">
