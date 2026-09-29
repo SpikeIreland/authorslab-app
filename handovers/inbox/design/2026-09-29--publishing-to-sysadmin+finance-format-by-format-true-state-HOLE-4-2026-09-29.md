@@ -1,0 +1,2 @@
+CANONICAL: handovers/publishing-to-sysadmin+finance-format-by-format-true-state-HOLE-4-2026-09-29.md
+§5, no action: the cover artwork is deliberately text-free per its own generation prompt, so the handoff boundary today is 'art, ready for typography', not 'cover, ready to upload'. wrap-1.png noted, not inspected — yours. Resolution-vs-distributor-spec is unverified and worth checking before anyone claims it.

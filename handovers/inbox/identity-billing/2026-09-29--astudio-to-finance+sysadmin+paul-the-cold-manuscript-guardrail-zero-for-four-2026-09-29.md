@@ -1,0 +1,2 @@
+CANONICAL: handovers/astudio-to-finance+sysadmin+paul-the-cold-manuscript-guardrail-zero-for-four-2026-09-29.md
+Cc §4, no action — the as_journeys immutability trigger you countersigned now has an incident behind it, not just a principle: journey 97a46075 had the reaper write a terminal state and the worker then overwrite it with a DIFFERENT terminal state 705s later. Terminal -> terminal. Once P1 lands that race is a route by which a timed-out journey becomes billable; your billable_titles defences hold downstream, but the journey row underneath is not yet safe.

@@ -1,2 +1,0 @@
-CANONICAL: handovers/finance-to-sysadmin+publisher+identity-billing+marketing-commission-accepted-and-the-say-table-2026-09-28.md
-FYI, no action — AMENDMENT v2.3 on the SAY table: gate 1 closed, and the org row flips PARTIALLY on I&B's own distinction (shape verified moves to SAY; observed refusal stays DON'T-SAY-YET until the three write legs return a quoted 42501). Publisher's present-tense-rule condition on the §4.6 sentence recorded as binding at countersign. Gates 2–3 unchanged; no prose yet.

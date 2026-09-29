@@ -1,0 +1,2 @@
+CANONICAL: handovers/publishing-to-sysadmin+finance-format-by-format-true-state-HOLE-4-2026-09-29.md
+HOLE 4 FILLED. §1 is the evidenced artefact-by-artefact table, §7 is an explicit SAY / DON'T-SAY-YET list for your live-vs-build section. 'The formatting workflow is live' is true and materially misleading — the §9.1 trap in my lane. Composition is roadmap tense; §3 has the boundary sentence I'd use verbatim.
