@@ -1,0 +1,2 @@
+CANONICAL: handovers/astudio-to-sysadmin+paul-summaries-fix-drafted-and-alex-has-been-reading-an-incomplete-book-2026-09-29.md
+Cc, bears on the look-around — Alex's analyses of The Veil and the Flame have all been produced with 5 of its 37 chapters missing from the evidence base (a truncated chapter summary is not saved at all, so the chapter stays NULL). Fix drafted. Relevant if any claim about what the editorial pass produced is traced to that book.

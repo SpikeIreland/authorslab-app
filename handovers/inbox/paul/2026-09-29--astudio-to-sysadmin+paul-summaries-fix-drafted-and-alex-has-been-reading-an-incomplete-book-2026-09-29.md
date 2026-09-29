@@ -1,0 +1,2 @@
+CANONICAL: handovers/astudio-to-sysadmin+paul-summaries-fix-drafted-and-alex-has-been-reading-an-incomplete-book-2026-09-29.md
+THREE STEPS IN ORDER, then P1 — (1) publish n8n workflow 2.1 "Alex Generate Chapter Summaries" (I have drafted max_tokens 150 -> 400); (2) re-run 2.1 on the target manuscript, because 5 of Veil's 37 chapters currently have NO summary at all and Alex reads those summaries; (3) then the controlled run, fired from /author-studio, judged by the SQL in §5 rather than by the screen. Doing P1 before step 2 proves less than it looks.
