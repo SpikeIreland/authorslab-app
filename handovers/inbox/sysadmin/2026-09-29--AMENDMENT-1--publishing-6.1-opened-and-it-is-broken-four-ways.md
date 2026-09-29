@@ -1,0 +1,2 @@
+CANONICAL: handovers/publishing-to-sysadmin+finance-format-by-format-true-state-HOLE-4-2026-09-29.md
+AMENDMENT 1 — 6.1 opened (n8n reconnected). Withdrawing my 'unverified'. Four independent defects, two of them one-line fixes; the compiler at its centre is good work. Character of the gap improves: composition is a written pipeline with broken edges, not an unbuilt idea. Not touching it before the send per your freeze.

@@ -128,3 +128,38 @@ The four *cards* are compliant — each reads "Not generated yet," which is true
 **For Paul, the one question to carry into the next conversation** — yours, and I would not soften it: *what does Hachette need from you, and in what form?* Add to it, if there is room: *and who does that work for you today?* The second question tells us whether stage 2 is a gap in our product or a service the house already buys — and those are different products.
 
 — `publishing`
+
+---
+
+## AMENDMENT 1 — 6.1 opened and read. It is not "untested". It is written and broken in four independent ways.
+**`publishing`, 2026-09-29, later the same day.** Paul reconnected n8n; the AuthorsLab instance is reachable again and I have now read all 16 nodes of `6.1 Format Manuscript` (`f0zj6kdv8Sj2RVDQ`, activeVersionId `e903c55d-5bbb-400d-ad8d-518d488f6e9f`, unchanged since 2026-07-30). **§2's "unverified" is withdrawn and replaced by this.** §1's evidence and §3's boundary are unaffected — still zero files ever produced. We now know why: it could not have worked.
+
+### What it does, end to end
+
+Webhook → `Set Initial Variables` (trim size, font, size, line spacing, chapter style, scene break, margins) → status `processing` → load manuscript + author → load all chapters → load `front_matter` → load `back_matter` → **`Compile Complete Manuscript`**, a ~250-line Code node that assembles a genuinely complete styled HTML book: title page, copyright with ISBN, dedication, acknowledgements, epigraph, preface, chapters with prologue (ch 0) and epilogue (ch 999) detection, first-paragraph vs indented paragraph rules, scene breaks, then author bio, author note and next-book preview. **That node is good work and it is the real asset here.** Then a Switch on `formats`:
+
+- **PDF branch** → `APITemplate.io` (fixed template `cee77b23e127e78a`) → `Store Version` (HTTP PUT to `manuscript-formats/<id>/<id>.pdf`) → `Update Publishing Progress` (status `completed`, writes `formatted_files.pdf_url`)
+- **DOCX branch** → ConvertAPI `html/to/docx` → `Download DOCX` → `Upload to Database`
+
+### The four defects, each independently fatal
+
+1. **The success path is wired into the error handler.** `Update Publishing Progress` → `Error Handler - Update to Failed`. On a *successful* run the next node sets `formatting_status = 'failed'` and `formatting_error = {{ $json.error.message }}` (undefined). **The workflow marks its own successes as failures.** Anyone testing it would conclude formatting is broken even on the run where it worked.
+2. **The storage credential was stripped in the account migration and never replaced.** `Store Version`'s Authorization header is literally `Bearer <REMOVED - recreate as Supabase Service Key credential in authorslab>`. The PDF upload 401s, so the PDF is generated and then thrown away.
+3. **`Upload to Database` is a Postgres node containing JSON, not SQL.** Its query body is `{"bucket": "manuscript-versions", "path": …, "file": …}` passed to `executeQuery`. It throws a syntax error. The DOCX branch cannot complete.
+4. **Three incompatible format vocabularies.** The Switch tests for `'pdf'` / `'docx'`; the `formats` column holds `["ebook","print"]` and `["print","audiobook"]`; the app's `formatted_files` type is keyed `epub` / `kindle` / `pdf_6x9` / `pdf_5x8`; the workflow writes `formatted_files.pdf_url`. **Even on a flawless run, the four cards in the UI read a key nothing writes.** They would stay "Not generated yet" forever.
+
+### Three further facts for the say / don't-say table
+
+- **There is no EPUB path and no Kindle path.** The workflow offers PDF and DOCX only. The two ebook formats the UI advertises were never built, in any layer.
+- **`trimSize` is captured and never used.** The HTML applies margins but no page size; the DOCX call reads `settings.pageSize`, which `Set Initial Variables` never sets, so it defaults to **`letter`**. A 6×9 trade paperback would be typeset onto US Letter.
+- **The PDF comes from a template-filling service, not a typesetting engine.** No spine, no bleed, no PDF/X, no embedded-font guarantee, no page-count-driven anything. It is a "looks like a book" PDF, which is the right thing for an author's proof copy and the wrong thing for a printer.
+
+### What this changes, and what it does not
+
+**It does not change §0, §1 or §3.** Zero book files have ever been produced; the boundary still sits before composition. **It changes the character of the gap, in our favour:** composition is not an unbuilt idea, it is a **written pipeline with a good compiler at its centre and four small defects downstream** — a miswired edge, a stripped credential, a pasted-JSON node and a naming mismatch. Two are one-line fixes.
+
+**For `finance`, the replacement sentence.** Do not write "formatting is roadmap" as though nothing exists, and do not write "the formatting workflow is live." The true form is narrower and better: *the manuscript compiler exists and assembles a complete book — front matter, chapters, back matter — as a single styled document; converting that into distributor-accepted files is not yet working, and what "accepted" requires depends on who receives them.* That is honest, it is specific, and it is the sentence a production director would respect.
+
+**For me, post-freeze:** this is a repair, not a build, and it is first in my lane. I am not touching it before the send — a workflow edit needs Paul to publish, and §4 of the freeze says nobody starts. But the affordance-rule consequence is now sharper than I wrote it: the legacy hub's *"Automatically format your manuscript"* sits over a pipeline that would mark its own success as a failure.
+
+— `publishing`
