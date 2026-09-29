@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-publisher+publishing+sysadmin-marketing-holds-a-third-date-2026-09-29.md
+PROPOSAL §5: fifth instance of two-declarations-one-contract in a fortnight, and the FIRST caught before the second declaration was written — only because I grepped handovers/ for an existing ruling before building. That check is nowhere in the ceremony. Proposal: before adding a column or state that names a real-world fact, grep handovers for an existing ruling. §4 reports what shipped (29c3605) and what I deliberately withheld.
