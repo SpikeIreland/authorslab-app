@@ -19,7 +19,12 @@ interface RailItem {
   icon: React.ReactNode
 }
 
-const ITEMS: RailItem[] = [
+// Environment delineation (Paul's ruling, 2026-09-29): enter the publisher's
+// door, STAY in the publisher's house. The rail derives its context from the
+// path — author surfaces get the author rail, /publisher* gets the publisher
+// rail. When identity-billing's org model reaches the client, this derivation
+// moves from pathname to membership-in-context (never a user_type flag).
+const AUTHOR_ITEMS: RailItem[] = [
   {
     href: '/home',
     label: 'Home',
@@ -44,8 +49,22 @@ const ITEMS: RailItem[] = [
   },
 ]
 
+// Publisher rail V1: one honest destination. The publisher Lobby (the grid —
+// per the grid-before-box ruling) replaces/extends this when it lands.
+const PUBLISHER_ITEMS: RailItem[] = [
+  {
+    href: '/publisher',
+    label: 'Portal',
+    match: (p) => p === '/publisher' || p.startsWith('/publisher/'),
+    icon: <IconBooks />,
+  },
+]
+
 export function LeftRail() {
   const pathname = usePathname() || ''
+  const inPublisher = pathname === '/publisher' || pathname.startsWith('/publisher/')
+  const items = inPublisher ? PUBLISHER_ITEMS : AUTHOR_ITEMS
+  const homeHref = inPublisher ? '/publisher' : '/home'
 
   return (
     <nav
@@ -55,7 +74,7 @@ export function LeftRail() {
     >
       {/* Wordmark mark */}
       <Link
-        href="/home"
+        href={homeHref}
         className="w-9 h-9 rounded-md flex items-center justify-center mb-4 hover:opacity-90 transition-opacity"
         style={{ background: 'var(--color-sage-deep)' }}
         aria-label="AuthorsLab home"
@@ -69,7 +88,7 @@ export function LeftRail() {
       </Link>
 
       <ul className="flex flex-col items-center gap-1 w-full px-2">
-        {ITEMS.map((item) => {
+        {items.map((item) => {
           const active = item.match(pathname)
           return (
             <li key={item.href} className="w-full">
