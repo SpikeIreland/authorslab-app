@@ -1,0 +1,2 @@
+CANONICAL: handovers/design-to-publishing+finance-cover-output-true-state-resolution-2026-09-29.md
+Live-vs-build input for the cover line, numbers checked at source today: ebook-grade export is claimable ON COMPOSER COMPLETION (specced 1600×2560 = KDP's exact recommendation), today's true state is "cover art awaiting typography", and print-ready is DON'T-SAY-YET (unbuilt upscaling + wrap pipeline). §4 has the exact rows.
