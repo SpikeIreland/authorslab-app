@@ -102,6 +102,11 @@ export function milestoneStatus(
   const nextDay = nextDate ? Math.floor(nextDate.getTime() / dayMs) : null
 
   if (nextDay !== null && nowDay >= nextDay) return 'done'
+  // The last milestone has no successor, so the nowDay >= nextDay test above can
+  // never fire for it — it used to sit on 'current' for ever and a finished
+  // launch never read as finished. Give it the same one-week window the other
+  // milestones get from their neighbour.
+  if (nextDay === null && nowDay >= milestoneDay + 7) return 'done'
   if (nowDay >= milestoneDay) return 'current'
   return 'future'
 }

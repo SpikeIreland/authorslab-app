@@ -240,6 +240,7 @@ export default function MarketingTabPage() {
         )}
         {section === 'launch-plan' && (
           <LaunchPlanSection
+            projectId={projectId}
             loading={stateLoading}
             launchDate={launchDate}
             completedSet={completedSet}
@@ -338,12 +339,14 @@ export default function MarketingTabPage() {
 // ============================================================================
 
 function LaunchPlanSection({
+  projectId,
   loading,
   launchDate,
   completedSet,
   onSaveLaunchDate,
   onToggleTask,
 }: {
+  projectId: string
   loading: boolean
   launchDate: string | null
   completedSet: Set<string>
@@ -355,7 +358,7 @@ function LaunchPlanSection({
   }
 
   if (!launchDate) {
-    return <PickLaunchDate onSave={onSaveLaunchDate} />
+    return <PickLaunchDate projectId={projectId} onSave={onSaveLaunchDate} />
   }
 
   const countdown = launchCountdown(launchDate)
@@ -457,20 +460,106 @@ function LaunchPlanSection({
   )
 }
 
-function PickLaunchDate({ onSave }: { onSave: (next: string) => void }) {
-  const [value, setValue] = useState(() => {
-    // Default to 6 weeks out
-    const d = new Date()
-    d.setDate(d.getDate() + 42)
-    return d.toISOString().slice(0, 10)
-  })
+interface ReadinessBlocker { station: number; label: string; who: string; status: string }
+interface LaunchReadiness {
+  basis: 'publisher_target' | 'readiness_estimate' | 'none'
+  suggestedDate: string | null
+  weeksOut: number | null
+  blockers: ReadinessBlocker[]
+  marketingRunupWeeks: number
+  assumptions: string[]
+}
+
+function PickLaunchDate({ projectId, onSave }: { projectId: string; onSave: (next: string) => void }) {
+  const [readiness, setReadiness] = useState<LaunchReadiness | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [value, setValue] = useState('')
+  const [manual, setManual] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await fetch(`/api/projects/${projectId}/marketing/readiness`)
+        if (!res.ok) throw new Error()
+        const json = await res.json() as LaunchReadiness
+        if (!cancelled) {
+          setReadiness(json)
+          if (json.suggestedDate) setValue(json.suggestedDate.slice(0, 10))
+        }
+      } catch {
+        // Readiness is an aid, not a gate — the author can still pick a date.
+        if (!cancelled) {
+          const d = new Date(); d.setDate(d.getDate() + 42)
+          setValue(d.toISOString().slice(0, 10))
+          setManual(true)
+        }
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [projectId])
+
+  if (loading) return <p className="p-6 text-sm text-slate-500">Working out where this book stands…</p>
+
+  const blockers = readiness?.blockers ?? []
 
   return (
-    <div className="p-6 max-w-md">
-      <h2 className="text-base font-medium text-slate-900 mb-1">Pick a launch date</h2>
-      <p className="text-xs text-slate-500 mb-5 leading-relaxed">
-        Set a target date and Riley will lay out a sensible launch plan around it. You can change this later — or push it back if life intervenes.
-      </p>
+    <div className="p-6 max-w-xl">
+      <h2 className="text-base font-medium text-slate-900 mb-1">When does this book launch?</h2>
+
+      {readiness && !manual ? (
+        <>
+          <p className="text-sm text-slate-700 leading-relaxed mb-5 mt-2">
+            {blockers.length === 0 ? (
+              <>Every editing and publishing station is finished, so the only thing left to
+              allow for is the marketing run-up — {readiness.marketingRunupWeeks} weeks. Riley
+              suggests roughly <strong>{readiness.weeksOut} weeks out</strong>.</>
+            ) : (
+              <>This book still has {blockers.length === 1 ? 'one station' : `${blockers.length} stations`} to
+              finish before it can launch, and your launch plan needs {readiness.marketingRunupWeeks} weeks
+              of run-up after that. Riley suggests roughly <strong>{readiness.weeksOut} weeks out</strong>.</>
+            )}
+          </p>
+
+          {blockers.length > 0 && (
+            <div className="mb-5">
+              <h3 className="text-[11px] uppercase tracking-wider font-medium text-slate-400 mb-2">
+                Still to finish
+              </h3>
+              <ul className="space-y-1.5">
+                {blockers.map(b => (
+                  <li key={b.station} className="text-sm text-slate-700 flex items-baseline gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-300 flex-shrink-0" />
+                    <span>{b.label} <span className="text-slate-500">· {b.who}</span></span>
+                    <span className="text-[10px] uppercase tracking-wider text-slate-400 ml-auto flex-shrink-0">
+                      {b.status === 'active' ? 'in progress' : 'not started'}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <ul className="mb-5 space-y-1">
+            {readiness.assumptions.map((a, i) => (
+              <li key={i} className="text-xs text-slate-500 leading-relaxed">— {a}</li>
+            ))}
+          </ul>
+
+          <p className="text-xs text-slate-500 mb-5 leading-relaxed">
+            A suggestion, not a commitment. Your publisher sets the publication date; this
+            is what your launch plan counts down to, and you can move it whenever the book does.
+          </p>
+        </>
+      ) : (
+        <p className="text-sm text-slate-600 leading-relaxed mb-5 mt-2">
+          Set a target date and Riley will lay out a launch plan around it. You can change
+          it later — or push it back if life intervenes.
+        </p>
+      )}
+
       <div className="flex items-center gap-2">
         <input
           type="date"
@@ -480,10 +569,11 @@ function PickLaunchDate({ onSave }: { onSave: (next: string) => void }) {
         />
         <button
           type="button"
+          disabled={!value}
           onClick={() => onSave(new Date(value).toISOString())}
-          className="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-sm font-medium"
+          className="px-3 py-2 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white rounded-md text-sm font-medium"
         >
-          Set date
+          {readiness && !manual ? 'Use this date' : 'Set date'}
         </button>
       </div>
     </div>
