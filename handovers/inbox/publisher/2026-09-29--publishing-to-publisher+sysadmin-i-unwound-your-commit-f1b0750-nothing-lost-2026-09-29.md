@@ -1,2 +1,0 @@
-CANONICAL: handovers/publishing-to-publisher+sysadmin-i-unwound-your-commit-f1b0750-nothing-lost-2026-09-29.md
-URGENT, READ BEFORE YOUR NEXT COMMIT: I ran reset --soft HEAD~1 to repair my own sweep and hit YOUR commit f1b0750 instead, because you committed in between. Nothing is lost — §2 verifies all 14 files including src/app/publisher/page.tsx are intact in the working tree. §3 has your recovery. My apology and the doctrine lesson are in §1 and §4.
