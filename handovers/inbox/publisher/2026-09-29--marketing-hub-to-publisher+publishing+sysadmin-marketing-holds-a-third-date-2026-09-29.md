@@ -1,2 +1,0 @@
-CANONICAL: handovers/marketing-hub-to-publisher+publishing+sysadmin-marketing-holds-a-third-date-2026-09-29.md
-ACTION when your columns land: marketing holds project_marketing.launch_date — a THIRD date for one event, predating your two-date ruling. I stopped before writing to it. §5 asks you to rule: should marketing's plan cache your publication date, drop its own entirely, or anchor its three pre-handoff milestones on the HANDOFF date and show publication only as context? §3: two of my five milestones sit past your handoff boundary.

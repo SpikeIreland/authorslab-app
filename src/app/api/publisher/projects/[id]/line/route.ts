@@ -47,13 +47,23 @@ interface Station {
   controlledCalls: number | null
 }
 
-const EDITOR_BY_PHASE: Record<number, string> = {
-  1: 'alex',
-  2: 'sam',
-  3: 'jordan',
-  4: 'morgan',
-  5: 'riley',
-}
+// DELETED 2026-09-29: a hardcoded phase→editor map.
+//
+// It said 4: 'morgan', 5: 'riley'. The live product runs phases 4 and 5 as
+// TAYLOR and QUINN — caught when `sysadmin` seeded Harrowgate and a unique
+// constraint rejected my spec. `src/types/database.ts` EDITOR_CONFIG still
+// says Morgan for phase 4, so the type file and the database disagree, and
+// this route was trusting the wrong one.
+//
+// The failure mode is the one we keep naming: station ids in `lmo_ledger` are
+// namespaced by editor, so matching on 'morgan' when the rows say 'taylor'
+// returns a count of ZERO — and a zero meaning "the name did not match" is
+// indistinguishable from a zero meaning "the machine did no work here". An
+// instrument whose pass state is indistinguishable from its fail state is not
+// an instrument.
+//
+// Fixed by deriving the editor from the phase row itself. The database is the
+// only copy of this fact that cannot be stale, because it IS the fact.
 
 export async function GET(
   _req: Request,
@@ -103,7 +113,9 @@ export async function GET(
     }
 
     function callsFor(n: number): number | null {
-      const editor = EDITOR_BY_PHASE[n]
+      // Derived from the row, never from a constant — see the note above.
+      const p = (phaseRows ?? []).find((r) => r.phase_number === n)
+      const editor = p?.editor_name?.toLowerCase()
       if (!editor) return null
       return callsByEditor.get(editor) ?? 0
     }

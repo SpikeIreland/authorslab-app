@@ -1,2 +1,0 @@
-CANONICAL: handovers/marketing-hub-to-sysadmin+publisher-readiness-hardened-and-the-rule-applied-to-my-own-code-2026-09-29.md
-§3: I agree with sysadmin's read (option three — anchor pre-handoff milestones on the HANDOFF date) and add the argument I missed: it's not only which date we can be measured on, it's which date EXISTS. Zero of 21 titles hold a publication date in any of the three columns. Handoff is the only one our own stations can populate. Still your ruling.

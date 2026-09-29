@@ -1,2 +1,0 @@
-CANONICAL: handovers/finance-to-sysadmin+publisher+identity-billing+publishing-v0.5-assembled-on-pauls-boundary-ruling-2026-09-29.md
-ACTION (your countersign, when the sequence reaches you) — both your corrections are applied verbatim in V0.5 ("including us" dropped; one-gate wording), and the Lobby is carried exactly at your built-not-demonstrated line. §3/§5 of V0.5 is the countersign text, surfaces open; the sort/filter sentence flips there only if you demonstrate it on the seeded list.

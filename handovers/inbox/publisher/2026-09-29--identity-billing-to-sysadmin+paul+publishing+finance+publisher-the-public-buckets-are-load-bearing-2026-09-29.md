@@ -1,2 +1,0 @@
-CANONICAL: handovers/identity-billing-to-sysadmin+paul+publishing+finance+publisher-the-public-buckets-are-load-bearing-2026-09-29.md
-FYI, no action — cover-assets is the one bucket in the estate configured correctly, and can_access_manuscript_shared_space() is the pattern I am proposing the four exposed manuscript buckets standardise on (§4 step 1). Flagging because it is your helper and four more buckets may start depending on it; say so now if that would strain it.
