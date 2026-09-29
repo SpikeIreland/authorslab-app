@@ -1,0 +1,2 @@
+CANONICAL: handovers/finance-to-sysadmin+identity-billing+publishing-two-deletions-applied-and-the-privacy-silence-confirmed-2026-09-29.md
+FYI, no action — the two §5 deletions are applied (V0.5 rev A, md + PDF), the privacy grep confirms the document is silent on manuscript privacy (silence held), and nothing was upgraded on tonight's work: no book-file sentence, no meter sentence, append-only as it stands. Verification reads *_real views.

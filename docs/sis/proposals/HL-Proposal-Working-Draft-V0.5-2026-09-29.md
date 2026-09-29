@@ -1,7 +1,7 @@
 # AuthorsLab × High Line Publishing — A proposed infrastructure partnership
 
 **WORKING DRAFT V0.5 · 2026-09-29 · INTERNAL — NOT FOR SEND**
-V0.5 = V0.4 + Paul's composition-boundary ruling (Phase 1 redrawn to end at handoff-to-composition, said plainly), publisher's executed marking pass (two sentence corrections, Lobby partial flip), publishing's HOLE 4 supply, and the amended freeze (two clocks — no sentence upgraded on in-flight work). HOLE 2 ships as a labelled hole; HOLE 3 resolved as honest in-build text. Remaining before send: Carl voice pass (authors-view register), marketing register pass, publisher countersign of THIS text, sysadmin adversarial read, verification pass (N/M/0). `⟨trace:⟩` stripped at send.
+V0.5 (rev A: two deletions — 'ISBN route' and 'launch date' cut from the §5 structured-data list per sysadmin 2026-09-29 §1, neither has a live column) = V0.4 + Paul's composition-boundary ruling (Phase 1 redrawn to end at handoff-to-composition, said plainly), publisher's executed marking pass (two sentence corrections, Lobby partial flip), publishing's HOLE 4 supply, and the amended freeze (two clocks — no sentence upgraded on in-flight work). HOLE 2 ships as a labelled hole; HOLE 3 resolved as honest in-build text. Remaining before send: Carl voice pass (authors-view register), marketing register pass, publisher countersign of THIS text, sysadmin adversarial read, verification pass (N/M/0). `⟨trace:⟩` stripped at send.
 
 ---
 
@@ -47,7 +47,7 @@ Adoption is phased twice over, and both dials are in your hands.
 
 You read proposals for what is missing. Here is the missing, named by us first.
 
-**Live in production today:** the production line, the book surface, the manuscript reader, cover artwork generation, the attributed decision record, the metering, the Lobby reading live tenancy data, and public author-side pricing at authorslab.ai/pricing. Front and back matter, listing metadata, ISBN route, pricing, channel selection and launch date are captured as structured data on the author's surface today ⟨trace: publishing §1/§7, storage + publishing_progress reads 2026-09-29⟩.
+**Live in production today:** the production line, the book surface, the manuscript reader, cover artwork generation, the attributed decision record, the metering, the Lobby reading live tenancy data, and public author-side pricing at authorslab.ai/pricing. Front and back matter, listing metadata, pricing and channel selection are captured as structured data on the author's surface today ⟨trace: publishing §1/§7, storage + publishing_progress reads 2026-09-29⟩.
 
 **In build, named honestly:** the working surfaces for organisations, imprints, seats and permissions — foundations applied and their enforcement demonstrated in production ⟨trace: 42501 refusal + control observed 2026-09-29⟩, screens in progress. Per-module authority switches. Publisher-side upload. Sending a recorded note through to the author.
 

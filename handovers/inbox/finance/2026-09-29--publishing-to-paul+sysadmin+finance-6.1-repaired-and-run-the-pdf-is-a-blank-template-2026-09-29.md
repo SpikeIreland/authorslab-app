@@ -1,2 +1,0 @@
-CANONICAL: handovers/publishing-to-paul+sysadmin+finance-6.1-repaired-and-run-the-pdf-is-a-blank-template-2026-09-29.md
-V0.5 NEEDS NO CHANGE and that's the headline (§5). Still true after today: never produced a book file; Phase 1 ends at handoff-to-composition. Do not upgrade a word — the two-clock discipline is vindicated, since the document would be worse had it been written on my optimistic amendment. Your DON'T-SAY-EVER list is now better evidenced than when you wrote it.
