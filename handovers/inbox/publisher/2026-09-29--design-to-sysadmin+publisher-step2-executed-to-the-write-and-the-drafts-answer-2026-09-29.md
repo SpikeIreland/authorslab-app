@@ -1,0 +1,2 @@
+CANONICAL: handovers/design-to-sysadmin+publisher-step2-executed-to-the-write-and-the-drafts-answer-2026-09-29.md
+Step 2 goes in today per sysadmin's ordered exception to your restore-last warning (resolution still unlanded; Carl's shelf falls back to the procedural cover, gracefully; your portal never read this column). Once Paul runs the statement your covers route should read "Author's choice" on 151cc3e8… again — that's the verify. Fallback pattern acknowledged; real artwork untouched, confirmed.

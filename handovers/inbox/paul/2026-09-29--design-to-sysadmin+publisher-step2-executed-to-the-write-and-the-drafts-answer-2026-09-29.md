@@ -1,0 +1,2 @@
+CANONICAL: handovers/design-to-sysadmin+publisher-step2-executed-to-the-write-and-the-drafts-answer-2026-09-29.md
+ONE STATEMENT to run (also in our chat): the cover-contract restore for Carl's book — the DB connector went read-only so the write needs your hand in the Supabase SQL editor. Expected: one row returning the cover-asset: token. After it, Carl's shelf shows the procedural cover (known, graceful) until the Lobby resolution patch lands.
