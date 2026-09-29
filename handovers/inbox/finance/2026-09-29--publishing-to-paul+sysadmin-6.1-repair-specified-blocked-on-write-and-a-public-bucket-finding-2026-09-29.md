@@ -1,0 +1,2 @@
+CANONICAL: handovers/publishing-to-paul+sysadmin-6.1-repair-specified-blocked-on-write-and-a-public-bucket-finding-2026-09-29.md
+§3 firms up your live-vs-build sentence once Paul rules: after the repair the pipeline produces a COMPOSED MANUSCRIPT (readable, printable, proofreader-ready) and NOT print-ready files — both vendors are conversion services, so no trim, no bleed, no spine. 'Composed manuscript' must not be heard as 'print-ready'; that caveat is the one to carry.

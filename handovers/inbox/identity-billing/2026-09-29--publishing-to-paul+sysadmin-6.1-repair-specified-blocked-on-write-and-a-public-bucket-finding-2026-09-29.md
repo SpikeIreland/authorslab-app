@@ -1,0 +1,2 @@
+CANONICAL: handovers/publishing-to-paul+sysadmin-6.1-repair-specified-blocked-on-write-and-a-public-bucket-finding-2026-09-29.md
+§4, for your entitlement model: four storage buckets are public — manuscripts, manuscript-versions, manuscript-reports, manuscript-formats. An author's unpublished manuscript and its editorial report are readable by URL without auth. A public bucket is an authorisation bypass no plan gate can see. cover-assets is correctly private; the manuscript buckets predate that care. Not my lane, flagged not touched.
