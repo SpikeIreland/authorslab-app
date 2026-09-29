@@ -18,7 +18,7 @@ export async function GET(
 
   const { data, error } = await supabase
     .from('project_marketing')
-    .select('launch_date, completed_task_ids')
+    .select('completed_task_ids')
     .eq('manuscript_id', id)
     .maybeSingle()
 
@@ -26,8 +26,9 @@ export async function GET(
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
+  // launch_date is deliberately absent: publisher ruled it dropped, not cached
+  // (2026-09-29). Dates live in title_target_dates and are read from there.
   return NextResponse.json({
-    launchDate: data?.launch_date ?? null,
     completedTaskIds: data?.completed_task_ids ?? [],
   })
 }
@@ -48,7 +49,7 @@ export async function PATCH(
   }
 
   const body = await req.json().catch(() => null) as
-    | { launchDate?: string | null; completedTaskIds?: string[] }
+    | { completedTaskIds?: string[] }
     | null
   if (body === null) {
     return NextResponse.json({ error: 'invalid body' }, { status: 400 })
@@ -77,13 +78,12 @@ export async function PATCH(
   // Read current row (if any) so a partial update preserves the other field.
   const { data: existing } = await supabase
     .from('project_marketing')
-    .select('launch_date, completed_task_ids')
+    .select('completed_task_ids')
     .eq('manuscript_id', id)
     .maybeSingle()
 
   const next = {
     manuscript_id: id,
-    launch_date: body.launchDate !== undefined ? body.launchDate : existing?.launch_date ?? null,
     completed_task_ids: body.completedTaskIds !== undefined
       ? body.completedTaskIds
       : existing?.completed_task_ids ?? [],
@@ -99,7 +99,6 @@ export async function PATCH(
   }
 
   return NextResponse.json({
-    launchDate: next.launch_date,
     completedTaskIds: next.completed_task_ids,
   })
 }

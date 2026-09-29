@@ -5,10 +5,13 @@ export const dynamic = 'force-dynamic'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams } from 'next/navigation'
 import {
-  LAUNCH_TEMPLATE,
-  formatMilestoneDate,
-  launchCountdown,
-  milestoneStatus,
+  HANDOFF_MILESTONES,
+  PUBLICATION_MILESTONES,
+  formatDate,
+  milestoneStatusFrom,
+  resolveMilestoneDate,
+  type LaunchMilestone,
+  type TargetDates,
 } from '@/lib/marketing/launchTemplate'
 
 // ============================================================================
@@ -44,9 +47,7 @@ export default function MarketingTabPage() {
   const [section, setSection] = useState<SectionId>('audience')
 
   // Marketing state
-  const [launchDate, setLaunchDate] = useState<string | null>(null)
   const [completedTaskIds, setCompletedTaskIds] = useState<string[]>([])
-  const [stateLoading, setStateLoading] = useState(true)
 
   // Chat state
   const [messages, setMessages] = useState<MarketingMessage[]>([])
@@ -70,8 +71,9 @@ export default function MarketingTabPage() {
         ])
 
         if (!cancelled && stateRes.ok) {
-          const json = await stateRes.json() as { launchDate: string | null; completedTaskIds: string[] }
-          setLaunchDate(json.launchDate)
+          // launch_date is deliberately not read: publisher ruled it dropped,
+          // not cached, and the plan now anchors on title_target_dates.
+          const json = await stateRes.json() as { completedTaskIds: string[] }
           setCompletedTaskIds(json.completedTaskIds)
         }
         if (!cancelled && msgRes.ok) {
@@ -80,7 +82,6 @@ export default function MarketingTabPage() {
         }
       } finally {
         if (!cancelled) {
-          setStateLoading(false)
           setMessagesLoading(false)
         }
       }
@@ -95,20 +96,6 @@ export default function MarketingTabPage() {
   }, [messages, sending])
 
   // Save launch date.
-  const saveLaunchDate = useCallback(async (next: string | null) => {
-    const previous = launchDate
-    setLaunchDate(next)
-    try {
-      const res = await fetch(`/api/projects/${projectId}/marketing/state`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ launchDate: next }),
-      })
-      if (!res.ok) throw new Error()
-    } catch {
-      setLaunchDate(previous)
-    }
-  }, [projectId, launchDate])
 
   // Toggle a task's completed state.
   const toggleTask = useCallback(async (taskId: string) => {
@@ -241,10 +228,7 @@ export default function MarketingTabPage() {
         {section === 'launch-plan' && (
           <LaunchPlanSection
             projectId={projectId}
-            loading={stateLoading}
-            launchDate={launchDate}
             completedSet={completedSet}
-            onSaveLaunchDate={saveLaunchDate}
             onToggleTask={toggleTask}
           />
         )}
@@ -338,70 +322,154 @@ export default function MarketingTabPage() {
 // Launch plan section
 // ============================================================================
 
+interface ReadinessBlocker { station: number; label: string; who: string; status: string }
+interface LaunchReadiness {
+  basis: 'publisher_target' | 'readiness_estimate' | 'none'
+  suggestedDate: string | null
+  weeksOut: number | null
+  blockers: ReadinessBlocker[]
+  marketingRunupWeeks: number
+  assumptions: string[]
+}
+interface TargetDatesResponse {
+  handoff: string | null
+  publication: string | null
+  handoffSetBy: string | null
+  publicationSetBy: string | null
+  revisions: { handoff: number; publication: number }
+}
+
 function LaunchPlanSection({
   projectId,
-  loading,
-  launchDate,
   completedSet,
-  onSaveLaunchDate,
   onToggleTask,
 }: {
   projectId: string
-  loading: boolean
-  launchDate: string | null
   completedSet: Set<string>
-  onSaveLaunchDate: (next: string | null) => void
   onToggleTask: (taskId: string) => void
 }) {
-  if (loading) {
-    return <p className="p-6 text-sm text-slate-500">Loading…</p>
-  }
+  const [targets, setTargets] = useState<TargetDatesResponse | null>(null)
+  const [readiness, setReadiness] = useState<LaunchReadiness | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  if (!launchDate) {
-    return <PickLaunchDate projectId={projectId} onSave={onSaveLaunchDate} />
-  }
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      const [t, r] = await Promise.allSettled([
+        fetch(`/api/projects/${projectId}/marketing/target-dates`).then(x => x.ok ? x.json() : null),
+        fetch(`/api/projects/${projectId}/marketing/readiness`).then(x => x.ok ? x.json() : null),
+      ])
+      if (cancelled) return
+      if (t.status === 'fulfilled' && t.value) setTargets(t.value as TargetDatesResponse)
+      if (r.status === 'fulfilled' && r.value) setReadiness(r.value as LaunchReadiness)
+      setLoading(false)
+    })()
+    return () => { cancelled = true }
+  }, [projectId])
 
-  const countdown = launchCountdown(launchDate)
+  if (loading) return <p className="p-6 text-sm text-slate-500">Loading…</p>
+
+  const dates: TargetDates = {
+    handoff: targets?.handoff ?? null,
+    publication: targets?.publication ?? null,
+  }
 
   return (
     <div className="p-6 max-w-2xl">
-      <div className="flex items-baseline justify-between mb-1">
-        <h2 className="text-base font-medium text-slate-900">Launch plan</h2>
-        <span className="text-xs text-orange-700 font-medium">
-          {new Date(launchDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} · {countdown}
-        </span>
-      </div>
-      <p className="text-xs text-slate-500 mb-6">
-        Sensible defaults — tick off what you&rsquo;ve done. <button
-          type="button"
-          onClick={() => {
-            const next = prompt('Update launch date (YYYY-MM-DD):',
-              new Date(launchDate).toISOString().slice(0, 10))
-            if (next) onSaveLaunchDate(new Date(next).toISOString())
-          }}
-          className="underline hover:text-slate-700"
-        >
-          Change launch date
-        </button>
+      <h2 className="text-base font-medium text-slate-900 mb-1">Launch plan</h2>
+      <p className="text-xs text-slate-500 mb-6 leading-relaxed max-w-lg">
+        Everything up to handoff is ours and is scheduled against the handoff date.
+        What happens after — printing, distribution, the shop floor — belongs to your
+        publisher, so those dates are shown but not scheduled by us.
       </p>
 
-      <div className="relative">
-        {LAUNCH_TEMPLATE.map((milestone, idx) => {
-          const status = milestoneStatus(launchDate, idx)
-          const isLast = idx === LAUNCH_TEMPLATE.length - 1
-          const isLaunchDay = milestone.daysOffset === 0
+      <MilestoneGroup
+        heading="Before handoff — ours"
+        note={
+          dates.handoff
+            ? `Counted back from ${formatDate(new Date(dates.handoff))}${targets?.handoffSetBy ? ` · set by ${targets.handoffSetBy}` : ''}${(targets?.revisions.handoff ?? 0) > 1 ? ` · moved ${(targets?.revisions.handoff ?? 1) - 1}×` : ''}`
+            : 'No handoff date set yet'
+        }
+        milestones={HANDOFF_MILESTONES}
+        dates={dates}
+        completedSet={completedSet}
+        onToggleTask={onToggleTask}
+      />
+
+      <MilestoneGroup
+        heading="After handoff — your publisher's"
+        note={
+          dates.publication
+            ? `Against ${formatDate(new Date(dates.publication))}${targets?.publicationSetBy ? ` · set by ${targets.publicationSetBy}` : ''} · shown for context`
+            : 'No publication date set yet'
+        }
+        milestones={PUBLICATION_MILESTONES}
+        dates={dates}
+        completedSet={completedSet}
+        onToggleTask={onToggleTask}
+        context
+      />
+
+      {!dates.handoff && readiness && readiness.basis !== 'none' && (
+        <div className="mt-7 pt-5 border-t border-slate-200">
+          <h3 className="text-[11px] uppercase tracking-wider font-medium text-slate-400 mb-2">
+            While you wait for a date
+          </h3>
+          <p className="text-sm text-slate-700 leading-relaxed mb-2">
+            {readiness.blockers.length === 0
+              ? `Every editing and publishing station is finished. Allowing ${readiness.marketingRunupWeeks} weeks of marketing run-up, handoff could realistically be about ${readiness.weeksOut} weeks out.`
+              : `${readiness.blockers.length === 1 ? 'One station' : `${readiness.blockers.length} stations`} still to finish, plus ${readiness.marketingRunupWeeks} weeks of marketing run-up — roughly ${readiness.weeksOut} weeks to handoff.`}
+          </p>
+          {readiness.blockers.length > 0 && (
+            <ul className="space-y-1 mb-2">
+              {readiness.blockers.map(b => (
+                <li key={b.station} className="text-sm text-slate-600">
+                  {b.label} <span className="text-slate-400">· {b.who} · {b.status === 'active' ? 'in progress' : 'not started'}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="text-xs text-slate-500 leading-relaxed">
+            An estimate from where the book stands, not a commitment — and not a date.
+            The handoff date is your publisher&rsquo;s to set.
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function MilestoneGroup({
+  heading, note, milestones, dates, completedSet, onToggleTask, context = false,
+}: {
+  heading: string
+  note: string
+  milestones: LaunchMilestone[]
+  dates: TargetDates
+  completedSet: Set<string>
+  onToggleTask: (taskId: string) => void
+  context?: boolean
+}) {
+  return (
+    <section className={context ? 'mt-7' : ''}>
+      <div className="flex items-baseline justify-between gap-3 mb-3">
+        <h3 className="text-[11px] uppercase tracking-wider font-medium text-slate-400">{heading}</h3>
+        <span className="text-[11px] text-slate-400 text-right">{note}</span>
+      </div>
+
+      <div className={context ? 'opacity-90' : ''}>
+        {milestones.map((milestone, idx) => {
+          const date = resolveMilestoneDate(dates, milestone)
+          const next = milestones[idx + 1]
+          const nextDate = next ? resolveMilestoneDate(dates, next) : null
+          const status = milestoneStatusFrom(date, nextDate)
+          const isLast = idx === milestones.length - 1
 
           return (
             <div key={milestone.id} className={`relative pl-7 ${isLast ? '' : 'pb-5'}`}>
-              {/* Vertical line */}
               {!isLast && (
-                <span
-                  className="absolute left-[5px] top-3.5 bottom-0 w-px bg-slate-200"
-                  aria-hidden
-                />
+                <span className="absolute left-[5px] top-3.5 bottom-0 w-px bg-slate-200" aria-hidden />
               )}
-
-              {/* Marker */}
               <span
                 className={`absolute left-0 top-1 w-3 h-3 rounded-full box-border ${
                   status === 'done'
@@ -412,18 +480,17 @@ function LaunchPlanSection({
                 }`}
                 aria-hidden
               />
-
-              {/* Date label */}
               <p className={`text-sm font-medium mb-1.5 ${
                 status === 'done' ? 'text-slate-500' :
                 status === 'current' ? 'text-blue-700' :
                 'text-slate-900'
               }`}>
-                {milestone.label} · {formatMilestoneDate(launchDate, milestone.daysOffset)}
-                {isLaunchDay && status === 'current' && ' · today'}
+                {milestone.label}
+                {/* No date, no claim — publisher's guard rule. */}
+                <span className="text-slate-400 font-normal">
+                  {date ? ` · ${formatDate(date)}` : ' · no date yet'}
+                </span>
               </p>
-
-              {/* Tasks */}
               <ul className="space-y-1">
                 {milestone.tasks.map(task => {
                   const done = completedSet.has(task.id)
@@ -436,17 +503,13 @@ function LaunchPlanSection({
                       >
                         <span
                           className={`w-3.5 h-3.5 rounded border box-border flex items-center justify-center flex-shrink-0 ${
-                            done
-                              ? 'bg-emerald-600 border-emerald-600 text-white'
-                              : 'border-slate-300 group-hover:border-slate-500'
+                            done ? 'bg-emerald-600 border-emerald-600 text-white' : 'border-slate-300 group-hover:border-slate-500'
                           }`}
                           aria-hidden
                         >
                           {done && <span className="text-[9px] leading-none">✓</span>}
                         </span>
-                        <span className={done ? 'line-through text-slate-500' : ''}>
-                          {task.label}
-                        </span>
+                        <span className={done ? 'line-through text-slate-500' : ''}>{task.label}</span>
                       </button>
                     </li>
                   )
@@ -456,127 +519,7 @@ function LaunchPlanSection({
           )
         })}
       </div>
-    </div>
-  )
-}
-
-interface ReadinessBlocker { station: number; label: string; who: string; status: string }
-interface LaunchReadiness {
-  basis: 'publisher_target' | 'readiness_estimate' | 'none'
-  suggestedDate: string | null
-  weeksOut: number | null
-  blockers: ReadinessBlocker[]
-  marketingRunupWeeks: number
-  assumptions: string[]
-}
-
-function PickLaunchDate({ projectId, onSave }: { projectId: string; onSave: (next: string) => void }) {
-  const [readiness, setReadiness] = useState<LaunchReadiness | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [value, setValue] = useState('')
-  const [manual, setManual] = useState(false)
-
-  useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      try {
-        const res = await fetch(`/api/projects/${projectId}/marketing/readiness`)
-        if (!res.ok) throw new Error()
-        const json = await res.json() as LaunchReadiness
-        if (!cancelled) {
-          setReadiness(json)
-          if (json.suggestedDate) setValue(json.suggestedDate.slice(0, 10))
-        }
-      } catch {
-        // Readiness is an aid, not a gate — the author can still pick a date.
-        if (!cancelled) {
-          const d = new Date(); d.setDate(d.getDate() + 42)
-          setValue(d.toISOString().slice(0, 10))
-          setManual(true)
-        }
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    })()
-    return () => { cancelled = true }
-  }, [projectId])
-
-  if (loading) return <p className="p-6 text-sm text-slate-500">Working out where this book stands…</p>
-
-  const blockers = readiness?.blockers ?? []
-
-  return (
-    <div className="p-6 max-w-xl">
-      <h2 className="text-base font-medium text-slate-900 mb-1">When does this book launch?</h2>
-
-      {readiness && readiness.basis !== 'none' && !manual ? (
-        <>
-          <p className="text-sm text-slate-700 leading-relaxed mb-5 mt-2">
-            {blockers.length === 0 ? (
-              <>Every editing and publishing station is finished, so the only thing left to
-              allow for is the marketing run-up — {readiness.marketingRunupWeeks} weeks. Riley
-              suggests roughly <strong>{readiness.weeksOut} weeks out</strong>.</>
-            ) : (
-              <>This book still has {blockers.length === 1 ? 'one station' : `${blockers.length} stations`} to
-              finish before it can launch, and your launch plan needs {readiness.marketingRunupWeeks} weeks
-              of run-up after that. Riley suggests roughly <strong>{readiness.weeksOut} weeks out</strong>.</>
-            )}
-          </p>
-
-          {blockers.length > 0 && (
-            <div className="mb-5">
-              <h3 className="text-[11px] uppercase tracking-wider font-medium text-slate-400 mb-2">
-                Still to finish
-              </h3>
-              <ul className="space-y-1.5">
-                {blockers.map(b => (
-                  <li key={b.station} className="text-sm text-slate-700 flex items-baseline gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-slate-300 flex-shrink-0" />
-                    <span>{b.label} <span className="text-slate-500">· {b.who}</span></span>
-                    <span className="text-[10px] uppercase tracking-wider text-slate-400 ml-auto flex-shrink-0">
-                      {b.status === 'active' ? 'in progress' : 'not started'}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          <ul className="mb-5 space-y-1">
-            {readiness.assumptions.map((a, i) => (
-              <li key={i} className="text-xs text-slate-500 leading-relaxed">— {a}</li>
-            ))}
-          </ul>
-
-          <p className="text-xs text-slate-500 mb-5 leading-relaxed">
-            A suggestion, not a commitment. Your publisher sets the publication date; this
-            is what your launch plan counts down to, and you can move it whenever the book does.
-          </p>
-        </>
-      ) : (
-        <p className="text-sm text-slate-600 leading-relaxed mb-5 mt-2">
-          Set a target date and Riley will lay out a launch plan around it. You can change
-          it later — or push it back if life intervenes.
-        </p>
-      )}
-
-      <div className="flex items-center gap-2">
-        <input
-          type="date"
-          value={value}
-          onChange={e => setValue(e.target.value)}
-          className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:border-slate-500"
-        />
-        <button
-          type="button"
-          disabled={!value}
-          onClick={() => onSave(new Date(value).toISOString())}
-          className="px-3 py-2 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white rounded-md text-sm font-medium"
-        >
-          {readiness && !manual ? 'Use this date' : 'Set date'}
-        </button>
-      </div>
-    </div>
+    </section>
   )
 }
 

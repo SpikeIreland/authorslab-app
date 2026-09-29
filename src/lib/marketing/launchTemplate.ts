@@ -10,16 +10,32 @@ export interface LaunchTask {
   label: string
 }
 
+// Which date a milestone is scheduled against. publisher ruled this on
+// 2026-09-29 and the distinction is the whole point:
+//
+//   handoff     — work inside OUR seven stations. Scheduled against the date
+//                 we control, because hanging our own schedule on the
+//                 publisher's calendar is the dependency the two-date design
+//                 exists to sever.
+//   publication — past our boundary (composition and distribution are the
+//                 publisher's). DISPLAYED as context, never scheduled by us
+//                 and never measured against us. Showing ourselves scheduling
+//                 work we do not own is the affordance rule broken at the
+//                 level of a plan.
+export type MilestoneAnchor = 'handoff' | 'publication'
+
 export interface LaunchMilestone {
   id: string
   label: string
-  daysOffset: number   // negative = before launch, 0 = launch day, positive = after
+  daysOffset: number   // days relative to this milestone's own anchor
+  anchor: MilestoneAnchor
   tasks: LaunchTask[]
 }
 
 export const LAUNCH_TEMPLATE: LaunchMilestone[] = [
   {
     id: 'before-4w',
+    anchor: 'handoff',
     daysOffset: -28,
     label: '4 weeks before',
     tasks: [
@@ -30,6 +46,7 @@ export const LAUNCH_TEMPLATE: LaunchMilestone[] = [
   },
   {
     id: 'before-2w',
+    anchor: 'handoff',
     daysOffset: -14,
     label: '2 weeks before',
     tasks: [
@@ -40,6 +57,7 @@ export const LAUNCH_TEMPLATE: LaunchMilestone[] = [
   },
   {
     id: 'launch-week',
+    anchor: 'handoff',
     daysOffset: -7,
     label: 'Launch week',
     tasks: [
@@ -51,6 +69,7 @@ export const LAUNCH_TEMPLATE: LaunchMilestone[] = [
   },
   {
     id: 'launch-day',
+    anchor: 'publication',
     daysOffset: 0,
     label: 'Launch day',
     tasks: [
@@ -61,6 +80,7 @@ export const LAUNCH_TEMPLATE: LaunchMilestone[] = [
   },
   {
     id: 'after-1w',
+    anchor: 'publication',
     daysOffset: 7,
     label: '1 week after',
     tasks: [
@@ -130,3 +150,51 @@ export function launchCountdown(launchDateIso: string, now: Date = new Date()): 
   if (diff === -1) return 'Launched yesterday'
   return `Launched ${Math.abs(diff)} days ago`
 }
+
+// ============================================================================
+// Anchor-aware scheduling (publisher's two-date ruling, 2026-09-29)
+// ============================================================================
+
+export interface TargetDates {
+  handoff: string | null       // ISO date — ours, the one we are measured on
+  publication: string | null   // ISO date — the publisher's, context only
+}
+
+// The date a milestone falls on, or null when its anchor has not been set.
+// NULL MUST READ AS MISSING, never as on time — publisher's guard rule. A
+// caller that cannot show a date shows "no date set", not a guess.
+export function resolveMilestoneDate(
+  targets: TargetDates,
+  milestone: LaunchMilestone,
+): Date | null {
+  const anchorIso = milestone.anchor === 'handoff' ? targets.handoff : targets.publication
+  if (!anchorIso) return null
+  return addDays(anchorIso, milestone.daysOffset)
+}
+
+// Status from resolved dates rather than a single launch date. Milestones
+// whose anchor is unset have no status to report.
+export function milestoneStatusFrom(
+  date: Date | null,
+  nextDate: Date | null,
+  now: Date = new Date(),
+): MilestoneStatus | null {
+  if (!date) return null
+  const dayMs = 24 * 60 * 60 * 1000
+  const nowDay = Math.floor(now.getTime() / dayMs)
+  const day = Math.floor(date.getTime() / dayMs)
+  const nextDay = nextDate ? Math.floor(nextDate.getTime() / dayMs) : null
+
+  if (nextDay !== null && nowDay >= nextDay) return 'done'
+  if (nextDay === null && nowDay >= day + 7) return 'done'
+  if (nowDay >= day) return 'current'
+  return 'future'
+}
+
+export function formatDate(d: Date): string {
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })
+}
+
+// Milestones split by side of our boundary, in template order.
+export const HANDOFF_MILESTONES = LAUNCH_TEMPLATE.filter(m => m.anchor === 'handoff')
+export const PUBLICATION_MILESTONES = LAUNCH_TEMPLATE.filter(m => m.anchor === 'publication')

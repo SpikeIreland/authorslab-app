@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
-import { LAUNCH_TEMPLATE, launchCountdown } from '@/lib/marketing/launchTemplate'
+import { LAUNCH_TEMPLATE } from '@/lib/marketing/launchTemplate'
 
 // Riley is the Marketing lead — audience, pitch, launch plan, content,
 // reviews, performance. The system prompt is enriched with the project's
@@ -11,17 +11,21 @@ import { LAUNCH_TEMPLATE, launchCountdown } from '@/lib/marketing/launchTemplate
 function buildRileySystemPrompt(args: {
   title: string
   genre: string
-  launchDate: string | null
+  handoffDate: string | null
+  publicationDate: string | null
   completedTaskIds: string[]
   audience: { primaryReader?: string; readerDescription?: string; hooks?: string[] } | null
   pitch: { oneLiner?: string; compLine?: string } | null
 }): string {
-  const { title, genre, launchDate, completedTaskIds, audience, pitch } = args
+  const { title, genre, handoffDate, publicationDate, completedTaskIds, audience, pitch } = args
   const projectMeta = genre ? `${title} (${genre})` : title
 
-  const launchLine = launchDate
-    ? `Launch date: ${new Date(launchDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} — ${launchCountdown(launchDate)}.`
-    : 'No launch date has been set yet. Encourage the author to pick one when it feels natural — it anchors everything.'
+  // Two dates, per publisher's 2026-09-29 ruling. The handoff date is what our
+  // stations are measured against; publication is the publisher's and is context.
+  // Riley must never invite the author to "pick" a date — neither is ours to set.
+  const launchLine = handoffDate
+    ? `Handoff date (what our work is scheduled against): ${new Date(handoffDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}.${publicationDate ? ` Publication, which is the publisher's and sits past our boundary: ${new Date(publicationDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}.` : ''}`
+    : 'No handoff date has been set for this book yet, and it is not the author\'s to set — their publisher sets it. Do not ask them to pick one. You can still help them get the work ready.'
 
   // List incomplete tasks so Riley knows what's outstanding.
   const completedSet = new Set(completedTaskIds)
@@ -108,10 +112,21 @@ export async function POST(
     return NextResponse.json({ error: 'project_not_found' }, { status: 404 })
   }
 
+  // Current target dates — most recent row of each kind (append-only table).
+  const { data: dateRows } = await supabase
+    .from('title_target_dates')
+    .select('kind, target_date')
+    .eq('manuscript_id', id)
+    .order('created_at', { ascending: false })
+  const targetDates = {
+    handoff: (dateRows?.find(r => r.kind === 'handoff')?.target_date as string) ?? null,
+    publication: (dateRows?.find(r => r.kind === 'publication')?.target_date as string) ?? null,
+  }
+
   // Pull marketing state for the system prompt.
   const { data: marketing } = await supabase
     .from('project_marketing')
-    .select('launch_date, completed_task_ids, audience, pitch')
+    .select('completed_task_ids, audience, pitch')
     .eq('manuscript_id', id)
     .maybeSingle()
 
@@ -149,7 +164,8 @@ export async function POST(
   const systemPrompt = buildRileySystemPrompt({
     title: manuscript.title ?? 'Untitled project',
     genre: manuscript.genre ?? '',
-    launchDate: marketing?.launch_date ?? null,
+    handoffDate: targetDates.handoff,
+    publicationDate: targetDates.publication,
     completedTaskIds: marketing?.completed_task_ids ?? [],
     audience: marketing?.audience ?? null,
     pitch: marketing?.pitch ?? null,
