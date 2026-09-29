@@ -118,12 +118,21 @@ function MarketingHubContent() {
         return
       }
 
-      // ✅ Check if admin or beta tester (full access)
-      const { data: profile } = await supabase
+      // Check if admin or beta tester (full access).
+      // This queried author_profiles.user_id until 2026-09-29 — a column that does
+      // not exist (it is auth_user_id). The error was discarded, so the query
+      // failed silently and profile was always null: hasFullAccess could never be
+      // true for anyone, and the author's name never rendered. A gate that cannot
+      // pass looked exactly like a gate nobody passed. Fail visible, per House Rules.
+      const { data: profile, error: profileError } = await supabase
         .from('author_profiles')
         .select('role, is_beta_tester, first_name')
-        .eq('user_id', user.id)
+        .eq('auth_user_id', user.id)
         .single()
+
+      if (profileError) {
+        console.error('[marketing-hub] profile lookup failed:', profileError.message)
+      }
 
       const hasFullAccess = profile?.role === 'admin' || profile?.is_beta_tester === true
       setAuthorFirstName(profile?.first_name || '')
@@ -169,9 +178,11 @@ function MarketingHubContent() {
         if (progressData) {
           setMarketingProgress(progressData)
         }
-      } catch (error) {
-        // Table may not exist yet - that's ok
-        console.log('Marketing progress table not available yet')
+      } catch {
+        // marketing_progress is not in the schema (verified 2026-09-29) and is not
+        // planned — this legacy read has never returned a row. Left in place rather
+        // than removed because the surrounding page is slated for retirement or
+        // migration; nothing downstream claims anything when it is null.
       }
 
       setIsLoading(false)
@@ -561,9 +572,16 @@ function MarketingHubContent() {
                   <p className="text-orange-100 mb-4">
                     Tell Riley about your goals, target readers, and timeline. This helps create a personalized marketing strategy for your book.
                   </p>
-                  <button className="px-6 py-3 bg-white text-orange-600 font-bold rounded-lg hover:bg-orange-50 transition-colors">
-                    Begin Assessment →
-                  </button>
+                  {manuscriptId ? (
+                    <Link
+                      href={`/projects/${manuscriptId}/marketing`}
+                      className="inline-block px-6 py-3 bg-white text-orange-600 font-bold rounded-lg hover:bg-orange-50 transition-colors"
+                    >
+                      Open Riley&apos;s workspace →
+                    </Link>
+                  ) : (
+                    <p className="text-orange-100 text-sm">Open a book to work with Riley.</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -614,49 +632,24 @@ function MarketingHubContent() {
                 <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center text-4xl mb-4">
                   💬
                 </div>
-                <h4 className="font-bold text-gray-900 mb-2">Chat with Riley</h4>
+                <h4 className="font-bold text-gray-900 mb-2">Riley works in your project</h4>
                 <p className="text-gray-600 text-sm mb-6 max-w-xs">
-                  Riley will help you create compelling marketing materials and launch strategies.
+                  Riley builds your audience profile, writes your pitch and drafts your
+                  launch content in the Marketing tab of this book — and you can talk to
+                  her there.
                 </p>
-
-                {/* Example starter prompts */}
-                <div className="space-y-2 w-full">
-                  <button className="w-full p-3 text-left text-sm bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors border border-orange-200">
-                    📝 &quot;Help me write a compelling book blurb&quot;
-                  </button>
-                  <button className="w-full p-3 text-left text-sm bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors border border-orange-200">
-                    🔍 &quot;What keywords should I target?&quot;
-                  </button>
-                  <button className="w-full p-3 text-left text-sm bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors border border-orange-200">
-                    🚀 &quot;Create a launch timeline for me&quot;
-                  </button>
-                </div>
+                {manuscriptId && (
+                  <Link
+                    href={`/projects/${manuscriptId}/marketing`}
+                    className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-semibold hover:bg-orange-600 transition-colors"
+                  >
+                    Open Marketing →
+                  </Link>
+                )}
               </>
             )}
           </div>
 
-          {/* Chat Input */}
-          <div className="p-4 border-t border-gray-200">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder={isPreviewMode ? "Unlock to chat with Riley..." : "Ask Riley about marketing..."}
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:bg-gray-100"
-                disabled={isPreviewMode}
-              />
-              <button
-                className="px-4 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={isPreviewMode}
-              >
-                Send
-              </button>
-            </div>
-            {isPreviewMode && (
-              <p className="text-xs text-gray-500 mt-2 text-center">
-                Complete Publishing to unlock Riley
-              </p>
-            )}
-          </div>
         </div>
       </div>
     </div>
