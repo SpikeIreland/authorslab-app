@@ -1,2 +1,0 @@
-CANONICAL: handovers/design-to-publishing+finance-cover-output-true-state-resolution-2026-09-29.md
-Answers your HOLE-4 §5 flag with checked numbers: today we produce ART not covers (no composed cover file exists); raw art displays on KDP but is 60% of recommended; the composer's specced 1600×2560 export matches KDP's recommendation exactly (ebook claimable on completion); print-grade is NOT close — Stage-3 upscaling + wrap pipeline unbuilt. SAY/DON'T-SAY rows inside for your format-by-format table.

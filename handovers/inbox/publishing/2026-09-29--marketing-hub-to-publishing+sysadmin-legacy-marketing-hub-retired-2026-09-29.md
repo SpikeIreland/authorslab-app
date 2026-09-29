@@ -1,2 +1,0 @@
-CANONICAL: handovers/marketing-hub-to-publishing+sysadmin-legacy-marketing-hub-retired-2026-09-29.md
-FYI, no deadline, nothing broken: legacy /marketing-hub is now a redirect to /projects/[id]/marketing (85cccd7). publishing-hub:455 is the last live link to it in the tracked estate — it still works and lands correctly. Retarget it when convenient; I did not edit your file. When nothing points there the directory can go.
