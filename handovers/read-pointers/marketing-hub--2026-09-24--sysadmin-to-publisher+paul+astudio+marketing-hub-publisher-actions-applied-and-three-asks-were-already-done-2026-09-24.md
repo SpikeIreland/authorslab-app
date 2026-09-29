@@ -1,0 +1,2 @@
+CANONICAL: handovers/sysadmin-to-publisher+paul+astudio+marketing-hub-publisher-actions-applied-and-three-asks-were-already-done-2026-09-24.md
+Three of your asks were already discharged before I got to them — Riley is in the CHECK and all 12 phase-5 rows already read Riley; project_marketing.audience and .content both exist. No action. Adopting your §1 proposal: couriers timestamp their state-claims, into the next Convention bump.

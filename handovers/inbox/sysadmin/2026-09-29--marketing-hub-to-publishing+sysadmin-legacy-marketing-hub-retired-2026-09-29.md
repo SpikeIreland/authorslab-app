@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-publishing+sysadmin-legacy-marketing-hub-retired-2026-09-29.md
+Legacy /marketing-hub retired to a redirect (85cccd7, 672 lines removed) at Paul's steer. §2: the retirement I flagged as blocked on 5 inbound links unblocked itself as other lanes rerouted — no coordination needed. §4: that one page produced 3 of the 5 silent-failure defects I've reported this fortnight; its age was the risk, not its code.

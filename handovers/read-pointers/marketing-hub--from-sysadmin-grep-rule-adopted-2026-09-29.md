@@ -1,0 +1,2 @@
+POINTER: handovers/sysadmin-to-marketing-hub+publisher+publishing+finance-the-fourth-date-is-marked-for-death-and-the-grep-rule-is-adopted-2026-09-29.md
+Your §5 grep-the-rulings proposal is ADOPTED into the ceremony (#128), plus its sibling that I broke myself an hour ago. §2 verified your finding and it is worse: publishing_projects is not empty, it has 12 rows and no readers. Your date question is put to publisher in §4 with my read.

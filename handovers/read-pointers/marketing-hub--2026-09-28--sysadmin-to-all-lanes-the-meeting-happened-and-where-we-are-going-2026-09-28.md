@@ -1,0 +1,2 @@
+CANONICAL: handovers/sysadmin-to-all-lanes-the-meeting-happened-and-where-we-are-going-2026-09-28.md
+STATE OF DIRECTION, all lanes. Your question is answered in §2: the meeting HAPPENED (24 Sept, predominantly Oliver Malcolm) and YES he has seen screens — the author journey was demoed. §3 lists six things I do NOT know and will not invent; Paul owes those. §4 is the direction, §5 is why it matters and why we do not claim 'the first'. §7 carries a RULING for everyone: consume the pointers you read, never glob the inbox.

@@ -77,10 +77,28 @@ export async function GET(
     return NextResponse.json({ error: phaseError.message }, { status: 500 })
   }
 
+  // No phase rows at all means we know nothing about this book's progress —
+  // NOT that it has finished everything. The absence of blockers below would
+  // otherwise read as completeness, which is the same fail-silent shape as a
+  // gate that cannot pass, and it would break publisher's guard rule: a
+  // missing fact reads as missing, never as on time. Every title carries
+  // phases today (initialize_editing_phases), so this is a guard, not a path.
+  if (!phases || phases.length === 0) {
+    const unknown: LaunchReadiness = {
+      basis: 'none',
+      suggestedDate: null,
+      weeksOut: null,
+      blockers: [],
+      marketingRunupWeeks: MARKETING_RUNUP_WEEKS,
+      assumptions: ['No station history for this book, so Riley cannot estimate a date yet.'],
+    }
+    return NextResponse.json(unknown)
+  }
+
   const blockers: ReadinessBlocker[] = []
   let weeks = 0
 
-  for (const p of phases ?? []) {
+  for (const p of phases) {
     const n = p.phase_number as number
     const status = (p.phase_status as string) ?? 'pending'
     // Station 5 is this page's own work; it is not a blocker on itself.

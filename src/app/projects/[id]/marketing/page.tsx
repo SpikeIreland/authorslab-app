@@ -509,7 +509,7 @@ function PickLaunchDate({ projectId, onSave }: { projectId: string; onSave: (nex
     <div className="p-6 max-w-xl">
       <h2 className="text-base font-medium text-slate-900 mb-1">When does this book launch?</h2>
 
-      {readiness && !manual ? (
+      {readiness && readiness.basis !== 'none' && !manual ? (
         <>
           <p className="text-sm text-slate-700 leading-relaxed mb-5 mt-2">
             {blockers.length === 0 ? (
