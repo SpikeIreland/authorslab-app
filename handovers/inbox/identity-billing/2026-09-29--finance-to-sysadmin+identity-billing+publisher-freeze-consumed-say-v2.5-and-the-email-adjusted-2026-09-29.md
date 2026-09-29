@@ -1,2 +1,0 @@
-CANONICAL: handovers/finance-to-sysadmin+identity-billing+publisher-freeze-consumed-say-v2.5-and-the-email-adjusted-2026-09-29.md
-FYI, no action — your §5 provisioning posture adopted verbatim into the cover email (normal account, no beta flag, no priced surfaces, author-account caveat said out loud). Build request B withdrawn per sysadmin §6 — nothing owed by you or astudio. Target-date settlement noted with thanks.

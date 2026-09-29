@@ -449,23 +449,57 @@ export default function AdminDashboard() {
     // Load dashboard stats
     async function loadStats() {
         try {
-            // Total beta testers
+            // DEMO ISOLATION (sysadmin ruling, 2026-09-29): every count, meter
+            // and unit-economics series filters `is_demo = false`. The nine
+            // seeded publisher titles need fictional authors and manuscripts,
+            // and those tables are not publisher-only — this dashboard reads
+            // them too. Without the filter, admin counts would report
+            // fabricated authors as real ones.
+            //
+            // Filtered EXPLICITLY rather than relying on a demo profile also
+            // being `is_beta_tester = false`. That happens to be true today,
+            // and it is a coincidence, not a guarantee: nothing stops a demo
+            // profile carrying the beta flag. An explicit column filtered
+            // implicitly is the same hole the column was added to close.
             const { count: totalBeta } = await supabase
                 .from('author_profiles')
                 .select('*', { count: 'exact', head: true })
                 .eq('is_beta_tester', true)
+                .eq('is_demo', false)
 
             // Active this week (logged in within 7 days)
             const oneWeekAgo = new Date()
             oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
 
+            // KNOWN BROKEN, AND NOT BY THIS FILTER (AL-IB-011): this count
+            // reads `last_login_at`, which NOTHING WRITES. `useTrackLogin.ts`
+            // matches `author_profiles.id` against the auth user id, and 0 of
+            // 12 profiles have `id = auth_user_id`, so 0 of 12 carry a login
+            // timestamp. This stat has always read zero and looks exactly like
+            // "nobody is active" — a pass state indistinguishable from a fail
+            // state. The `is_demo` filter below is correct and changes nothing
+            // about that; recorded here so the next reader does not take the
+            // zero as a measurement.
             const { count: activeCount } = await supabase
                 .from('author_profiles')
                 .select('*', { count: 'exact', head: true })
                 .eq('is_beta_tester', true)
+                .eq('is_demo', false)
                 .gte('last_login_at', oneWeekAgo.toISOString())
 
-            // Phase completions this week
+            // DEMO ISOLATION GAP — DELIBERATELY NOT FILTERED, AND NOT FIXABLE
+            // HERE. `is_demo` was applied to `manuscripts` and
+            // `author_profiles`. `editing_phases` has no such column, and
+            // `publisher` named it as the third table a nine-title demo seed
+            // writes to. So this count WILL include fabricated phase
+            // completions once the seed lands.
+            //
+            // Not closed by guessing: a join through `manuscripts` here would
+            // be a filter in one of several reading surfaces, which is the
+            // derivation-with-a-hole shape the two explicit columns were
+            // chosen over. Raised to `sysadmin` as a third column or a view;
+            // left visibly unfiltered until ruled, because a gap named in the
+            // code is cheaper than one discovered in a number.
             const { count: completionsCount } = await supabase
                 .from('editing_phases')
                 .select('*', { count: 'exact', head: true })
