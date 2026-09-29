@@ -37,7 +37,7 @@ export async function GET(
       .order('created_at', { ascending: true }),
     supabase
       .from('manuscripts')
-      .select('title, genre, author_profiles ( first_name, last_name )')
+      .select('title, genre, current_word_count, author_profiles ( first_name, last_name )')
       .eq('id', id)
       .maybeSingle(),
   ])
@@ -67,6 +67,7 @@ export async function GET(
   const profile = (manuscript as unknown as {
     title?: string
     genre?: string
+    current_word_count?: number | null
     author_profiles?: { first_name?: string; last_name?: string } | null
   } | null)
   const authorName = [profile?.author_profiles?.first_name, profile?.author_profiles?.last_name]
@@ -78,6 +79,7 @@ export async function GET(
     project: {
       title: profile?.title ?? 'Untitled',
       genre: profile?.genre ?? '',
+      wordCount: profile?.current_word_count ?? null,
       authorName: authorName || 'Author Name',
     },
   })

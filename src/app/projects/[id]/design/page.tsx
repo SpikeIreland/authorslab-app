@@ -299,8 +299,14 @@ export default function DesignTabPage() {
       <main className="flex-1 overflow-y-auto min-w-0">
         {section === 'cover' && (
           <div className="p-6">
-            <div className="flex items-baseline justify-between mb-4">
+            <div className="flex items-baseline justify-between mb-4 gap-3">
               <h2 className="text-base font-medium text-slate-900">Cover concepts</h2>
+              <a
+                href={`/projects/${projectId}/design/studio`}
+                className="text-xs px-3 py-1.5 rounded-md text-white bg-sage-deep hover:opacity-90 font-medium ml-auto"
+              >
+                Open the studio →
+              </a>
               <p className="text-xs text-slate-500">
                 {coverLoading
                   ? 'Loading…'
