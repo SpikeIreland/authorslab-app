@@ -326,8 +326,35 @@ function BackMatterSection({ title, icon }: { title: string, icon: string }) {
 }
 
 function FormattingContent({ manuscript, publishingProgress }: { manuscript: Manuscript | null, publishingProgress: PublishingProgress | null }) {
-    const pdf = publishingProgress?.formatted_files?.pdf
-    const docx = publishingProgress?.formatted_files?.docx
+    const projectId = manuscript?.id
+    const hasPdf = Boolean(publishingProgress?.formatted_files?.pdf)
+    const hasDocx = Boolean(publishingProgress?.formatted_files?.docx)
+
+    // The files themselves live in a private bucket, so a download link has to
+    // be signed at read time rather than stored. Ask only for the kinds the row
+    // says exist, so a 404 here means a real failure rather than "none yet".
+    const [urls, setUrls] = useState<{ pdf?: string; docx?: string }>({})
+
+    useEffect(() => {
+        if (!projectId) return
+        let cancelled = false
+
+        async function sign(kind: 'pdf' | 'docx') {
+            try {
+                const res = await fetch(`/api/projects/${projectId}/files?kind=${kind}`)
+                if (!res.ok) return
+                const json = await res.json() as { url?: string }
+                if (!cancelled && json.url) setUrls(prev => ({ ...prev, [kind]: json.url }))
+            } catch {
+                // Leave the card on "Not generated yet" rather than offering a
+                // link that will not open.
+            }
+        }
+
+        if (hasPdf) sign('pdf')
+        if (hasDocx) sign('docx')
+        return () => { cancelled = true }
+    }, [projectId, hasPdf, hasDocx])
 
     return (
         <div className="p-8">
@@ -339,16 +366,16 @@ function FormattingContent({ manuscript, publishingProgress }: { manuscript: Man
 
                 <div className="grid md:grid-cols-2 gap-4 mb-8">
                     <FormatCard
+                        icon="📝"
+                        title="Word document (DOCX)"
+                        description="The composed manuscript as an editable file, for a proofreader or a typesetter."
+                        url={urls.docx}
+                    />
+                    <FormatCard
                         icon="📄"
                         title="Interior PDF"
                         description="The book laid out as pages — title page, copyright, chapters, back matter."
-                        url={pdf?.url}
-                    />
-                    <FormatCard
-                        icon="📝"
-                        title="Word document (DOCX)"
-                        description="The same composed manuscript as an editable file, for a proofreader or a typesetter."
-                        url={docx?.url}
+                        url={urls.pdf}
                     />
                 </div>
 

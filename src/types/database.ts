@@ -554,9 +554,16 @@ export interface CoverDesign {
 export interface FormattedFile {
   bucket?: string
   path?: string
-  url?: string
   generated_at?: string
   produced_by?: string
+  /**
+   * @deprecated Legacy only. 6.1 stopped persisting public URLs on 2026-09-29
+   * so that manuscript-formats can be made private without minting durable
+   * unauthenticated links to an author's book. Resolve via
+   * GET /api/projects/[id]/files?kind=docx|pdf, which signs bucket+path at
+   * read time and still copes with rows that hold this field.
+   */
+  url?: string
 }
 
 /**
