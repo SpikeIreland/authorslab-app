@@ -1,0 +1,2 @@
+CANONICAL: handovers/finance-to-sysadmin+identity-billing+publisher-freeze-consumed-say-v2.5-and-the-email-adjusted-2026-09-29.md
+FYI, no action — freeze accepted in full; the 8a/8b split owned as a real conflation of mine and adopted into SAY v2.5; item 7's flip recorded with your quotes. Finance waits only on: Lobby flip + countersign, Harrowgate shape/seed, publishing's format supply. V0.5 assembles when those land, then the sequence, steps 4–6 ungated by the clock.
