@@ -81,6 +81,10 @@ export default function JacketStudioPage() {
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [rightsOk, setRightsOk] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [versions, setVersions] = useState<Array<{ id: string; label: string | null; createdAt: string; url: string | null }>>([])
+  const [selectedVersionId, setSelectedVersionId] = useState<string | null>(null)
+  const [exporting, setExporting] = useState<null | 'version' | 'select'>(null)
+  const [exportMsg, setExportMsg] = useState<string | null>(null)
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const sheetRef = useRef<HTMLDivElement>(null)
@@ -92,10 +96,15 @@ export default function JacketStudioPage() {
     let cancelled = false
     async function load() {
       try {
-        const [assetsRes, draftRes] = await Promise.all([
+        const [assetsRes, draftRes, versionsRes] = await Promise.all([
           fetch(`/api/projects/${projectId}/design/assets`),
           fetch(`/api/projects/${projectId}/design/draft`),
+          fetch(`/api/projects/${projectId}/design/versions`),
         ])
+        if (versionsRes.ok) {
+          const j = await versionsRes.json() as { versions: Array<{ id: string; label: string | null; createdAt: string; url: string | null }>; selectedVersionId: string | null }
+          if (!cancelled) { setVersions(j.versions); setSelectedVersionId(j.selectedVersionId) }
+        }
         let meta = { title: 'Untitled', authorName: 'Author Name', wordCount: null as number | null }
         let assetList: CoverAsset[] = []
         if (assetsRes.ok) {
@@ -231,6 +240,116 @@ export default function JacketStudioPage() {
     }
   }, [projectId, rightsOk, update])
 
+  // ---- Export: deterministic front-cover compositor (TDP-DT-03 v0.2) -----
+  // Renders the FRONT trim zone at width 1600 (Amazon's recommended width;
+  // height follows the trim ratio) — artwork crop + text layers, no DOM.
+  const renderFrontExport = useCallback(async (): Promise<Blob> => {
+    if (!doc || !geo) throw new Error('no document')
+    const front = geo.zones.find(z => z.id === 'front')!
+    const visible = geo.zones.filter(z => !z.hidden)
+    const visLeft = visible[0].x
+    const visWidth = visible.reduce((s, z) => s + z.width, 0)
+    const ppi = 1600 / trim.width
+    const W = 1600
+    const H = Math.round(trim.height * ppi)
+    const canvas = document.createElement('canvas')
+    canvas.width = W
+    canvas.height = H
+    const ctx = canvas.getContext('2d')
+    if (!ctx) throw new Error('canvas unavailable')
+
+    ctx.fillStyle = '#2C2C2A'
+    ctx.fillRect(0, 0, W, H)
+
+    if (artwork?.url) {
+      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const el = new Image()
+        el.crossOrigin = 'anonymous'
+        el.onload = () => resolve(el)
+        el.onerror = () => reject(new Error('artwork failed to load'))
+        el.src = artwork.url!
+      })
+      if (artwork.layout === 'wraparound') {
+        // Cover-fit the art onto the full visible sheet, then let the canvas
+        // window (the front zone) crop it — same geometry as the on-screen view.
+        const artW = visWidth * ppi
+        const artH = geo.sheetHeight * ppi
+        const s = Math.max(artW / img.width, artH / img.height)
+        const dx = (front.x - visLeft) * -ppi + (artW - img.width * s) / 2
+        const topOffset = (geo.fold || geo.bleed) * ppi
+        const dy = -topOffset + (artH - img.height * s) / 2
+        ctx.drawImage(img, dx, dy, img.width * s, img.height * s)
+      } else {
+        const s = Math.max(W / img.width, H / img.height)
+        ctx.drawImage(img, (W - img.width * s) / 2, (H - img.height * s) / 2, img.width * s, img.height * s)
+      }
+    }
+
+    // Text layers on the front zone. Display font size l.size ≈ px at 48px/in.
+    const wrapText = (text: string, maxPx: number, font: string): string[] => {
+      ctx.font = font
+      const words = text.split(/\s+/)
+      const lines: string[] = []
+      let line = ''
+      for (const w of words) {
+        const probe = line ? `${line} ${w}` : w
+        if (ctx.measureText(probe).width > maxPx && line) { lines.push(line); line = w } else { line = probe }
+      }
+      if (line) lines.push(line)
+      return lines
+    }
+    for (const l of doc.layers.filter(l => l.zone === 'front' && !l.rotated)) {
+      const sizePx = (l.size / 48) * ppi
+      const font = `${l.weight} ${sizePx}px ${FAMILIES[l.family]}`
+      ctx.font = font
+      ctx.fillStyle = l.color
+      ctx.textAlign = l.align === 'center' ? 'center' : 'left'
+      ctx.textBaseline = 'middle'
+      ctx.shadowColor = 'rgba(0,0,0,0.35)'
+      ctx.shadowBlur = sizePx * 0.25
+      ctx.shadowOffsetY = Math.max(1, sizePx * 0.03)
+      const x = l.dx * ppi
+      const y = l.dy * ppi
+      if (l.maxWidthIn) {
+        const lines = wrapText(l.text, l.maxWidthIn * ppi, font)
+        const lh = sizePx * 1.25
+        const startY = y - ((lines.length - 1) * lh) / 2
+        lines.forEach((ln, i) => ctx.fillText(ln, x, startY + i * lh))
+      } else {
+        ctx.fillText(l.text, x, y)
+      }
+      ctx.shadowColor = 'transparent'
+    }
+
+    return await new Promise<Blob>((resolve, reject) =>
+      canvas.toBlob(b => (b ? resolve(b) : reject(new Error('export failed'))), 'image/jpeg', 0.92)
+    )
+  }, [doc, geo, trim, artwork])
+
+  const saveVersion = useCallback(async (select: boolean) => {
+    if (exporting) return
+    setExporting(select ? 'select' : 'version')
+    setExportMsg(null)
+    try {
+      const blob = await renderFrontExport()
+      const form = new FormData()
+      form.append('export', new File([blob], 'cover.jpg', { type: 'image/jpeg' }))
+      form.append('doc', JSON.stringify(doc))
+      form.append('select', String(select))
+      const res = await fetch(`/api/projects/${projectId}/design/versions`, { method: 'POST', body: form })
+      const j = await res.json().catch(() => ({})) as { version?: { id: string; label: string | null; url: string | null }; error?: string }
+      if (!res.ok || !j.version) throw new Error(j.error || `save failed (${res.status})`)
+      setVersions(prev => [{ id: j.version!.id, label: j.version!.label, createdAt: new Date().toISOString(), url: j.version!.url }, ...prev])
+      if (select) setSelectedVersionId(j.version.id)
+      setExportMsg(select ? 'It’s on the book — version saved and selected.' : 'Version saved.')
+    } catch (err) {
+      const m = err instanceof Error ? err.message : 'export failed'
+      setExportMsg(/taint|cross|security/i.test(m) ? 'The artwork blocked export (image security) — reload the studio and try again.' : `Couldn’t save: ${m}`)
+    } finally {
+      setExporting(null)
+    }
+  }, [exporting, renderFrontExport, doc, projectId])
+
   if (loading || !doc || !geo) {
     return <div className="p-10 text-sm text-slate-500">Opening the studio…</div>
   }
@@ -252,10 +371,23 @@ export default function JacketStudioPage() {
           </button>
           <h1 className="font-serif text-lg text-slate-900">{project.title} — jacket</h1>
         </div>
-        <p className="text-[11px] text-slate-500">
-          {saveState === 'saving' ? 'Saving…' : saveState === 'saved' ? 'Saved just now' : saveState === 'error' ? 'Save failed — retrying on next change' : ''}
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="text-[11px] text-slate-500 mr-1">
+            {saveState === 'saving' ? 'Saving…' : saveState === 'saved' ? 'Saved just now' : saveState === 'error' ? 'Save failed — retrying on next change' : ''}
+          </p>
+          <button type="button" disabled={!!exporting} onClick={() => saveVersion(false)}
+            className="text-xs px-3 py-1.5 rounded-md border border-slate-400 text-slate-700 hover:bg-white disabled:opacity-50">
+            {exporting === 'version' ? 'Saving…' : 'Save version'}
+          </button>
+          <button type="button" disabled={!!exporting} onClick={() => saveVersion(true)}
+            className="text-xs px-3 py-1.5 rounded-md text-white bg-[#5C7A6B] hover:opacity-90 font-medium disabled:opacity-50">
+            {exporting === 'select' ? 'Working…' : 'Use this cover'}
+          </button>
+        </div>
       </div>
+      {exportMsg && (
+        <p className="max-w-[980px] mx-auto text-[11px] text-slate-600 mb-2">{exportMsg}</p>
+      )}
 
       {/* Controls row */}
       <div className="max-w-[980px] mx-auto flex flex-wrap items-end gap-4 mb-4 text-xs">
@@ -462,6 +594,34 @@ export default function JacketStudioPage() {
           </div>
         </div>
       </div>
+
+      {/* Versions */}
+      {versions.length > 0 && (
+        <div className="max-w-[980px] mx-auto mt-5 pb-8">
+          <p className="text-[10px] uppercase tracking-wider font-medium text-slate-500 mb-2">
+            Versions <span className="text-slate-400 normal-case tracking-normal">— newest first</span>
+          </p>
+          <div className="flex flex-wrap gap-3">
+            {versions.map(v => {
+              const isSel = v.id === selectedVersionId
+              return (
+                <figure key={v.id} className="w-[88px]">
+                  <div className={`aspect-[2/3] rounded overflow-hidden bg-slate-200 ${isSel ? 'ring-2 ring-[#5C7A6B] ring-offset-1' : 'border border-slate-300'}`}>
+                    {v.url && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={v.url} alt={v.label ?? 'Saved version'} className="w-full h-full object-cover" />
+                    )}
+                  </div>
+                  <figcaption className="text-[10px] text-slate-500 mt-1 leading-tight">
+                    {isSel && <span className="text-[#5C7A6B] font-medium">✓ Your cover · </span>}
+                    {new Date(v.createdAt).toLocaleDateString()}
+                  </figcaption>
+                </figure>
+              )
+            })}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
