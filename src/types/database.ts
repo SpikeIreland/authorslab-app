@@ -546,12 +546,31 @@ export interface CoverDesign {
   created_at: string
 }
 
+/**
+ * One produced artefact from n8n `6.1 Format Manuscript`. It writes bucket and
+ * path alongside the url so a consumer can sign the path if `manuscript-formats`
+ * is ever flipped to private (it is public today).
+ */
+export interface FormattedFile {
+  bucket?: string
+  path?: string
+  url?: string
+  generated_at?: string
+  produced_by?: string
+}
+
+/**
+ * Keys match what the pipeline actually produces: an interior PDF and a DOCX.
+ *
+ * EPUB and Kindle are deliberately absent. No layer of this product has ever
+ * produced either — 6.1 has a PDF branch and a DOCX branch and nothing else —
+ * and the previous shape (epub/kindle/pdf_6x9/pdf_5x8) was a set of keys no
+ * writer ever wrote, which is how four UI cards came to sit permanently on
+ * "Not generated yet". Add a key here when a producer for it exists.
+ */
 export interface FormattedFiles {
-  epub?: string
-  kindle?: string
-  print_pdf?: string
-  pdf_6x9?: string
-  pdf_5x8?: string
+  pdf?: FormattedFile
+  docx?: FormattedFile
 }
 
 export interface PublishingMetadata {

@@ -326,42 +326,39 @@ function BackMatterSection({ title, icon }: { title: string, icon: string }) {
 }
 
 function FormattingContent({ manuscript, publishingProgress }: { manuscript: Manuscript | null, publishingProgress: PublishingProgress | null }) {
+    const pdf = publishingProgress?.formatted_files?.pdf
+    const docx = publishingProgress?.formatted_files?.docx
+
     return (
         <div className="p-8">
             <div className="max-w-4xl mx-auto bg-white rounded-2xl p-8 shadow-lg">
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">Multi-Platform Formatting</h2>
-                <p className="text-gray-600 mb-8">Automatically format your manuscript for different platforms</p>
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">Manuscript Formatting</h2>
+                <p className="text-gray-600 mb-8">
+                    Your edited manuscript, front matter and back matter composed into one document.
+                </p>
 
                 <div className="grid md:grid-cols-2 gap-4 mb-8">
                     <FormatCard
-                        icon="📱"
-                        title="eBook (EPUB)"
-                        description="Universal eBook format for most retailers"
-                        isAvailable={!!publishingProgress?.formatted_files?.epub}
-                    />
-                    <FormatCard
-                        icon="🔥"
-                        title="Kindle (MOBI/KPF)"
-                        description="Optimized for Amazon Kindle devices"
-                        isAvailable={!!publishingProgress?.formatted_files?.kindle}
-                    />
-                    <FormatCard
                         icon="📄"
-                        title="Print PDF (6x9)"
-                        description="Standard trade paperback format"
-                        isAvailable={!!publishingProgress?.formatted_files?.pdf_6x9}
+                        title="Interior PDF"
+                        description="The book laid out as pages — title page, copyright, chapters, back matter."
+                        url={pdf?.url}
                     />
                     <FormatCard
-                        icon="📄"
-                        title="Print PDF (5x8)"
-                        description="Compact paperback format"
-                        isAvailable={!!publishingProgress?.formatted_files?.pdf_5x8}
+                        icon="📝"
+                        title="Word document (DOCX)"
+                        description="The same composed manuscript as an editable file, for a proofreader or a typesetter."
+                        url={docx?.url}
                     />
                 </div>
 
-                <div className="bg-teal-50 rounded-lg p-6 border-l-4 border-teal-500">
+                <div className="bg-amber-50 rounded-lg p-6 border-l-4 border-amber-500">
                     <p className="text-gray-700">
-                        💬 <strong>Work with Taylor:</strong> Chat with Taylor to generate formatted versions of your manuscript.
+                        <strong>What these are, and are not.</strong> These are reading and proofing copies —
+                        a faithful layout of your book that you can read, print at home, or hand to a proofreader.
+                        They are <strong>not</strong> print-ready files for a printer or a distributor: that needs a
+                        specified trim size, bleed and a spine sized to the page count, and this step does not
+                        produce those yet. EPUB and Kindle files are not produced at all.
                     </p>
                 </div>
             </div>
@@ -369,16 +366,22 @@ function FormattingContent({ manuscript, publishingProgress }: { manuscript: Man
     )
 }
 
-function FormatCard({ icon, title, description, isAvailable }: { icon: string, title: string, description: string, isAvailable: boolean }) {
+function FormatCard({ icon, title, description, url }: { icon: string, title: string, description: string, url?: string }) {
+    const isAvailable = Boolean(url)
     return (
         <div className={`rounded-lg p-6 border-2 ${isAvailable ? 'bg-green-50 border-green-300' : 'bg-gray-50 border-gray-200'}`}>
             <div className="text-3xl mb-3">{icon}</div>
             <h3 className="font-bold text-gray-900 mb-1">{title}</h3>
             <p className="text-sm text-gray-600 mb-3">{description}</p>
             {isAvailable ? (
-                <button className="w-full px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-all text-sm">
+                <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full text-center px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-all text-sm"
+                >
                     Download →
-                </button>
+                </a>
             ) : (
                 <div className="text-sm text-gray-500">Not generated yet</div>
             )}
