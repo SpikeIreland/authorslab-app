@@ -23,6 +23,7 @@
 - **"Project Partner", never "ghostwriter"** — anywhere an author can read.
 - **Identity ≠ state:** persona colour marks WHO; state is marked by the grammar (✓ complete / ● live+halo / pending / "Not needed") — never colour alone, never strikethrough.
 - **Copy asserts observed state, never phase implication** (truthful-state voice; formal audit is ux post-demo item B).
+- **Never ask what the system knows; match on method, never on a person-proxy.** The intake gender-preference question is RETIRED (wright proposed §2.4, Paul's eye + ux ruling 2026-09-29): partners are matched on form + working posture + material state, and OFFERED when signals are mixed.
 
 ## OPEN — name drift, resolution owed (do NOT build new surfaces against these until ruled)
 
@@ -35,6 +36,7 @@
 **Resolution path:** all persona NAMES are now settled. The single open item is Riley's colour reconciliation (#84500E token vs #D85A30 surface), queued post-Blair. `publishing` couriers the full Morgan record; `marketing-hub` + `marketing` state persona needs under the V1.2 split; `ux` drafts the resolved slate; Paul ratifies; ONE sweep implements — that sweep also carries the leftover Taylor-on-publishing references (legacy hub, 5.x workflow naming, `overviewDerivations.ts` phase-4 collapse) riding publishing's hub migration.
 
 ## Changelog
+- V1.5 (2026-09-29): standing language rules gain the retired gender-question ruling and the never-ask-what-the-system-knows principle.
 - V1.4.1 (2026-09-24): Quinn data backfill confirmed done (astudio quote); debris now monolith-only.
 - V1.4 (2026-09-24): Riley RATIFIED for marketing-hub (their 2026-09-23 ruling) — last name-drift item closed; colour reconciliation recorded as the sole open item; Quinn sweep status updated (surfaces swept, data backfill unblocked).
 - V1.3 (2026-09-23): Morgan's full record landed (publishing) and token settled — mulberry family reallocated from the lifted #BA7517 (three-warm-ambers CVD failure); mulberry now claimed.
