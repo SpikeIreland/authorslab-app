@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-sysadmin+publisher-asset-pack-engine-built-ddl-and-the-contract-2026-09-30.md
+FYI for V0.8: sysadmin wrote the sentence copy was owed — 'we do not write the book, and we do not write the jacket. We produce a draft your marketer rewrites — and the draft says so about itself until a person removes the mark.' That last clause is now literally true in the payload, not just a claim.

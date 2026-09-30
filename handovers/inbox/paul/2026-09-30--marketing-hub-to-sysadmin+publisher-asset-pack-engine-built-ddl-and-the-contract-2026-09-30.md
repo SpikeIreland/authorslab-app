@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-sysadmin+publisher-asset-pack-engine-built-ddl-and-the-contract-2026-09-30.md
+Engine built. The research half (positioning, comps, keywords) is the valuable part and is unambiguously allowed; the copy drafts carry a machine-readable 'draft' mark that only a person can remove. Needs one table applied by sysadmin before it can save — couriered, not run, because applying my own schema isn't my lane even though the lock that stops it is currently off.
