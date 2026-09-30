@@ -90,7 +90,7 @@ export async function GET(
   const [progressRes, manuscriptRes] = await Promise.all([
     supabase
       .from('publishing_progress')
-      .select('metadata, platforms, selected_cover_url')
+      .select('metadata, platforms, selected_cover_url, formatted_files')
       .eq('manuscript_id', id)
       .maybeSingle(),
     supabase
@@ -129,7 +129,23 @@ export async function GET(
   // chosen for checklist purposes only.
   const coverChosen = Boolean(progressRes.data?.selected_cover_url)
 
-  return NextResponse.json({ metadata, platforms, coverChosen })
+  // Which generated formats EXIST — presence only, never a URL. The Files
+  // section renders a download control for a format only if it is true here,
+  // and the control then asks `api/projects/[id]/files` to sign at click.
+  // Deliberately not a URL: a control that offers a download must be backed by
+  // a file, and a URL rendered at page load would expire while the page is open.
+  const formattedFiles = (progressRes.data?.formatted_files ?? {}) as Record<string, unknown>
+  function formatEntry(key: 'docx' | 'pdf') {
+    const entry = formattedFiles[key]
+    if (!entry || typeof entry !== 'object') return null
+    const o = entry as Record<string, unknown>
+    const present = (typeof o.bucket === 'string' && typeof o.path === 'string') || typeof o.url === 'string'
+    if (!present) return null
+    return { generatedAt: typeof o.generated_at === 'string' ? o.generated_at : null }
+  }
+  const formats = { docx: formatEntry('docx'), pdf: formatEntry('pdf') }
+
+  return NextResponse.json({ metadata, platforms, coverChosen, formats })
 }
 
 // PATCH /api/projects/[id]/publishing/metadata

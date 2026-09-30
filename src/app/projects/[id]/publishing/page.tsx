@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams } from 'next/navigation'
+import { openSignedFile, type SignedFileResult } from '@/lib/signedFile'
 
 // ============================================================================
 // Types — mirror the API's shape (src/app/api/projects/[id]/publishing/metadata)
@@ -47,15 +48,20 @@ interface PublishingMessage {
   created_at: string
 }
 
-type SectionId = 'metadata' | 'isbn' | 'pricing' | 'platforms' | 'launch'
+type SectionId = 'metadata' | 'isbn' | 'pricing' | 'files' | 'platforms' | 'launch'
 
 const SECTIONS: Array<{ id: SectionId; label: string }> = [
   { id: 'metadata', label: 'Book metadata' },
   { id: 'isbn', label: 'ISBN' },
   { id: 'pricing', label: 'Pricing' },
+  { id: 'files', label: 'Manuscript files' },
   { id: 'platforms', label: 'Platforms' },
   { id: 'launch', label: 'Launch' },
 ]
+
+/** What the metadata GET reports about generated formats — presence, not URLs. */
+interface FormatPresence { generatedAt: string | null }
+interface FormatsState { docx: FormatPresence | null; pdf: FormatPresence | null }
 
 const KEYWORDS_MAX = 7
 
@@ -108,6 +114,7 @@ export default function PublishingTabPage() {
   const [metadata, setMetadata] = useState<BookMetadata>(EMPTY_METADATA)
   const [platforms, setPlatforms] = useState<string[]>([])
   const [coverChosen, setCoverChosen] = useState(false)
+  const [formats, setFormats] = useState<FormatsState>({ docx: null, pdf: null })
   const [metadataLoading, setMetadataLoading] = useState(true)
   const [savingState, setSavingState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
 
@@ -137,10 +144,12 @@ export default function PublishingTabPage() {
             metadata: Partial<BookMetadata>
             platforms?: string[]
             coverChosen?: boolean
+            formats?: FormatsState
           }
           setMetadata({ ...EMPTY_METADATA, ...json.metadata })
           setPlatforms(json.platforms ?? [])
           setCoverChosen(Boolean(json.coverChosen))
+          setFormats(json.formats ?? { docx: null, pdf: null })
         }
         if (!cancelled && msgRes.ok) {
           const json = await msgRes.json() as { messages: PublishingMessage[] }
@@ -300,9 +309,10 @@ export default function PublishingTabPage() {
       { id: 'metadata' as SectionId, label: 'Cover chosen', done: coverChosen, hint: 'Selected on the Design tab', jumpsToDesign: true },
       { id: 'isbn' as SectionId, label: 'ISBN decided', done: isbnDecided, hint: 'Which route you are taking' },
       { id: 'pricing' as SectionId, label: 'Pricing set', done: pricingSet, hint: 'At least one format priced' },
+      { id: 'files' as SectionId, label: 'Manuscript file ready', done: formats.docx !== null, hint: 'The file you upload to a retailer' },
       { id: 'platforms' as SectionId, label: 'Platforms chosen', done: platforms.length > 0, hint: 'Where the book will be sold' },
     ]
-  }, [metadata, platforms, coverChosen])
+  }, [metadata, platforms, coverChosen, formats])
 
   const readyCount = checklist.filter(c => c.done).length
 
@@ -389,6 +399,13 @@ export default function PublishingTabPage() {
                 pricing={metadata.pricing}
                 savingState={savingState}
                 onPatch={patch => patchBlock('pricing', patch)}
+                onAskMorgan={askMorgan}
+              />
+            )}
+            {section === 'files' && (
+              <FilesSection
+                projectId={projectId}
+                formats={formats}
                 onAskMorgan={askMorgan}
               />
             )}
@@ -1031,6 +1048,175 @@ function PriceField({ label, symbol, value, onBlur }: {
 // ============================================================================
 // Platforms
 // ============================================================================
+
+// ============================================================================
+// Manuscript files — the only surface that hands an author their own book file
+// ============================================================================
+//
+// Why this section exists: `6.1 Format Manuscript` produced a real DOCX on
+// 2026-09-29 and `manuscript-formats` was made private the same day, which left
+// the file with no control anywhere in the app that offered it. A generated
+// artefact with no way to reach it is the affordance rule inverted.
+//
+// Two rules this section keeps:
+//  1. A download control is rendered ONLY when the file exists. The parent
+//     learns existence from the metadata GET (presence, never a URL), so an
+//     absent format shows what is missing and why, not a dead button.
+//  2. The URL is minted at CLICK, by `api/projects/[id]/files`, which signs
+//     against the private bucket. Nothing here holds a storage URL, and a signed
+//     URL cannot expire while the page sits open because it is never made early.
+
+const FORMAT_COPY: Record<'docx' | 'pdf', {
+  label: string
+  what: string
+  useFor: string
+  missing: string
+}> = {
+  docx: {
+    label: 'Word document (.docx)',
+    what: 'Your edited manuscript as a Word file — the text, chapter breaks and structure.',
+    useFor: 'This is the file Amazon KDP and Draft2Digital ask for when you upload an ebook.',
+    missing: 'Not generated yet. It is produced once your editorial passes are complete.',
+  },
+  pdf: {
+    label: 'Print PDF',
+    what: 'A typeset interior sized for print, with the trim and margins a printer expects.',
+    useFor: 'Paperback and hardback uploads to KDP, IngramSpark and Lulu.',
+    missing: 'Not available yet. The print branch is still being built — it does not produce a usable interior, so we are not offering one.',
+  },
+}
+
+function FilesSection({ projectId, formats, onAskMorgan }: {
+  projectId: string
+  formats: FormatsState
+  onAskMorgan: (p: string) => void
+}) {
+  const anyReady = Boolean(formats.docx || formats.pdf)
+
+  return (
+    <SectionShell
+      title="Manuscript files"
+      blurb="The files you upload to a retailer. These are generated from your edited manuscript — nothing here is a draft you need to keep in sync by hand."
+      savingState="idle"
+      right={
+        <span className="text-xs whitespace-nowrap" style={{ color: 'var(--color-faint)' }}>
+          {anyReady ? 'Ready to download' : 'Nothing generated yet'}
+        </span>
+      }
+    >
+      <div className="space-y-2">
+        <FormatCard kind="docx" presence={formats.docx} projectId={projectId} />
+        <FormatCard kind="pdf" presence={formats.pdf} projectId={projectId} />
+      </div>
+
+      {/* Under-claim in the text. What the files do NOT yet include, said plainly
+          rather than discovered by an author at upload time. */}
+      <div
+        className="mt-6 rounded-lg p-3 text-[11px] leading-relaxed"
+        style={{ border: '1px solid var(--color-line)', background: 'var(--color-paper-warm)', color: 'var(--color-muted)' }}
+      >
+        <span className="block font-medium text-ink mb-1">What these files do not include yet</span>
+        The interior is the text only — your cover is a separate file from the Design tab, and
+        front matter such as a title page, copyright page and ISBN is not yet inserted for you.
+        Retailers take the cover as its own upload, so a Word file plus a cover image is a
+        complete ebook submission today.
+      </div>
+
+      <div className="mt-4">
+        <AskMorgan
+          label="Which file do I need for KDP?"
+          prompt="Which of my manuscript files do I upload to Amazon KDP, and what do I still need to add myself?"
+          onAskMorgan={onAskMorgan}
+        />
+      </div>
+    </SectionShell>
+  )
+}
+
+function FormatCard({ kind, presence, projectId }: {
+  kind: 'docx' | 'pdf'
+  presence: FormatPresence | null
+  projectId: string
+}) {
+  const [state, setState] = useState<'idle' | 'opening' | 'failed'>('idle')
+  const [failure, setFailure] = useState<string | null>(null)
+  const copy = FORMAT_COPY[kind]
+
+  async function handleOpen() {
+    setState('opening')
+    setFailure(null)
+    const result: SignedFileResult = await openSignedFile(projectId, kind)
+    if (result.ok) {
+      setState('idle')
+      return
+    }
+    // Real failure copy, distinguished — "something went wrong" tells an author
+    // nothing about whether to wait or to ask.
+    setState('failed')
+    setFailure(
+      result.reason === 'not_generated'
+        ? 'That file is no longer where we recorded it. Morgan can look into it.'
+        : result.reason === 'forbidden'
+          ? 'Your session has expired — reload the page and try again.'
+          : 'The download could not be prepared just now. Try again in a moment.'
+    )
+  }
+
+  const ready = presence !== null
+
+  return (
+    <div
+      className="rounded-lg p-4"
+      style={{
+        border: ready ? '1.5px solid var(--color-sage-deep)' : '1px solid var(--color-line)',
+        background: ready ? 'var(--color-sage-bg)' : 'var(--color-paper)',
+      }}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <span className="block text-sm font-medium text-ink">{copy.label}</span>
+          <span className="block text-[11px] text-muted mt-1 leading-relaxed">{copy.what}</span>
+          <span className="block text-[11px] text-muted mt-1 leading-relaxed">{copy.useFor}</span>
+          {ready && presence.generatedAt && (
+            <span className="block text-[11px] mt-2" style={{ color: 'var(--color-faint)' }}>
+              Generated {new Date(presence.generatedAt).toLocaleDateString('en-GB', {
+                day: 'numeric', month: 'short', year: 'numeric',
+              })}
+            </span>
+          )}
+        </div>
+
+        {ready ? (
+          <button
+            type="button"
+            onClick={handleOpen}
+            disabled={state === 'opening'}
+            className="shrink-0 text-xs px-3 py-1.5 rounded-md font-medium transition-colors disabled:opacity-60"
+            style={{ background: 'var(--color-sage-deep)', color: 'white' }}
+          >
+            {state === 'opening' ? 'Preparing…' : 'Download'}
+          </button>
+        ) : (
+          <span className="shrink-0 text-[11px] px-2 py-1 rounded" style={{ color: 'var(--color-faint)', border: '1px solid var(--color-line)' }}>
+            Not ready
+          </span>
+        )}
+      </div>
+
+      {!ready && (
+        <p className="text-[11px] mt-3 leading-relaxed" style={{ color: 'var(--color-muted)' }}>
+          {copy.missing}
+        </p>
+      )}
+
+      {state === 'failed' && failure && (
+        <p className="text-[11px] mt-3 leading-relaxed" style={{ color: 'var(--color-status-high)' }}>
+          {failure}
+        </p>
+      )}
+    </div>
+  )
+}
 
 function PlatformsPanel({ selected, savingState, onToggle, onAskMorgan }: {
   selected: string[]
