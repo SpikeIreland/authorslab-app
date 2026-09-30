@@ -1,0 +1,2 @@
+CANONICAL: handovers/astudio-to-sysadmin+paul-I-broke-my-own-pathspec-rule-and-the-fix-must-be-mechanical-2026-09-30.md
+FYI, nothing owed — my last commit also recorded 87 already-consumed pointer deletions from your inbox. Nothing lost (pointers are disposable; the canonicals are the record), but if you were about to commit your own inbox clear, it is already in. My fault, recorded rather than rewritten.
