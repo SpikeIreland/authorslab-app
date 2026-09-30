@@ -181,7 +181,12 @@ export interface EditorChatMessage {
   chapter_number: number | null
 
   // Message
-  sender: 'Author' | 'Alex' | 'Sam' | 'Jordan' | 'Taylor' | 'system'
+  // The DB column is free text with no CHECK (verified 2026-09-23) — this union
+  // is the app's record of which senders are legitimate, not a schema mirror.
+  // Wright's three added 2026-09-30 per astudio's shared-log ruling: Wright
+  // writes to this table at phase_number 0. Casing follows the live data
+  // ('Alex', 'Author', …); note as_journeys.editor_name uses lowercase.
+  sender: 'Author' | 'Alex' | 'Sam' | 'Jordan' | 'Taylor' | 'system' | 'Eliot' | 'Ivy' | 'Reid'
   message: string
 
   // Metadata
