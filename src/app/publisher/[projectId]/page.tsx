@@ -7,7 +7,7 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { EDITOR_CONFIG, type PhaseNumber } from '@/types/database'
 
-import { VIEWING_FIRM } from '../_data/firm'
+import { FirmChip } from '../_components/FirmChip'
 import {
   usePublisherActions,
   decisionAt,
@@ -216,11 +216,7 @@ function PortalHeader() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 px-3.5 py-2 border border-[#E8E5E0] rounded-full bg-[#FAFAF8]">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#1E3A5F]" aria-hidden />
-          <span className="text-[12px] text-[#8A8A8A]">Publisher:</span>
-          <span className="text-[13px] text-[#1A1A1A] font-medium">{VIEWING_FIRM}</span>
-        </div>
+        <FirmChip label="Publisher:" size="md" />
       </div>
     </header>
   )

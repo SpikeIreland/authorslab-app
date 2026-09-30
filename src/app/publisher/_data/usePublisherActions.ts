@@ -14,7 +14,6 @@
  */
 
 import { useCallback, useEffect, useState } from 'react'
-import { VIEWING_FIRM } from './firm'
 
 export interface PublisherAction {
   id: string
@@ -76,7 +75,10 @@ export function usePublisherActions(projectId: string) {
         const res = await fetch(`/api/publisher/projects/${projectId}/actions`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...input, actorFirm: VIEWING_FIRM }),
+          // NO `actorFirm`. It used to be sent from here, and an attribution
+          // the browser supplies is an attribution the browser chooses. The
+          // route reads the caller's own membership and records that.
+          body: JSON.stringify(input),
         })
         if (!res.ok) {
           // A write that did not land must not look like one that did.

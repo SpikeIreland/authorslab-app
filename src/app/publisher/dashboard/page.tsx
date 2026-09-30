@@ -39,7 +39,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AppShell } from '@/components/chrome/AppShell'
 import { PublisherNav } from '../_components/PublisherNav'
-import { VIEWING_FIRM, VIEWING_FIRM_SLUG } from '../_data/firm'
+
 
 type Risk = 'overdue' | 'at-risk' | 'stalled' | 'moving' | 'not-started' | 'handed-off'
 
@@ -48,6 +48,11 @@ interface StationCell {
   name: string
   state: 'complete' | 'in-progress' | 'not-started'
   completedBy: 'system' | 'human' | null
+  /** Who recorded it, where the estate captured that. Null on every row
+   *  predating 2026-09-30 — the actor columns were applied and deliberately
+   *  NOT backfilled, so a null here means "not recorded" and is shown as
+   *  "by hand" rather than as a name nobody wrote down. */
+  completedByName: string | null
   operator: string | null
 }
 
@@ -112,10 +117,18 @@ function StationMark({ cell }: { cell: StationCell }) {
         }
         title={
           byPerson
-            ? `${cell.name} — recorded by hand`
+            ? cell.completedByName
+              ? `${cell.name} — recorded by ${cell.completedByName}`
+              : `${cell.name} — recorded by hand (no name captured)`
             : `${cell.name} — completed by the system`
         }
       >
+        {/* The mark stays "by hand" even when a name is known: it is 24px of
+            cell and a name does not fit in it. The name is in the title, which
+            is where it can be read without crowding out the distinction the
+            mark exists to make. And where no name was captured the tooltip
+            SAYS so, rather than leaving the reader to wonder whether a person
+            with no name recorded it. */}
         {byPerson ? 'by hand' : 'done'}
       </div>
     )
@@ -166,14 +179,39 @@ export default function PublisherDashboardPage() {
   const [payload, setPayload] = useState<Payload | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [refusal, setRefusal] = useState<{ heading: string; body: string } | null>(null)
 
   useEffect(() => {
     let cancelled = false
     ;(async () => {
       try {
-        const res = await fetch(`/api/publisher/lobby?org=${encodeURIComponent(VIEWING_FIRM_SLUG)}`)
-        if (res.status === 404) {
-          if (!cancelled) setError('This organisation is not set up yet.')
+        const res = await fetch('/api/publisher/lobby')
+        // The caller's own seat decides which house this is, so both of these
+        // are answers rather than failures — see the Lobby's note.
+        if (res.status === 403) {
+          if (!cancelled) {
+            setRefusal({
+              heading: 'You do not hold a seat in a publisher organisation',
+              body:
+                'This page belongs to one house, and which house it is comes from ' +
+                'your own seat. Your account has no active seat, so there is nothing ' +
+                'here to show you — and showing you another house instead would be ' +
+                'the wrong answer rather than a helpful one.',
+            })
+          }
+          return
+        }
+        if (res.status === 409) {
+          const j = await res.json().catch(() => null)
+          if (!cancelled) {
+            setRefusal({
+              heading: 'Which house are you looking at?',
+              body:
+                typeof j?.message === 'string'
+                  ? j.message
+                  : 'You hold a seat in more than one house and there is no way yet to choose between them.',
+            })
+          }
           return
         }
         if (!res.ok) throw new Error(`Dashboard unavailable (${res.status})`)
@@ -205,7 +243,7 @@ export default function PublisherDashboardPage() {
   }, [titles])
 
   return (
-    <AppShell modeLabel="Publisher" firstName={VIEWING_FIRM}>
+    <AppShell modeLabel="Publisher" firstName={payload?.organisation?.name}>
       <PublisherNav />
       <div className="flex-1 overflow-y-auto h-[calc(100vh-100px)]">
         <div className="max-w-[1200px] mx-auto px-6 py-10">
@@ -218,7 +256,7 @@ export default function PublisherDashboardPage() {
               Where everything is
             </h1>
             <p className="text-[14px]" style={{ color: 'var(--color-muted)' }}>
-              {payload?.organisation?.name ?? VIEWING_FIRM}
+              {payload?.organisation?.name ?? '—'}
               {!loading && titles.length > 0 && (
                 <> · {titles.length} {titles.length === 1 ? 'title' : 'titles'} across the seven stations</>
               )}
@@ -239,6 +277,27 @@ export default function PublisherDashboardPage() {
               {error}
             </div>
           )}
+
+          {/* A REFUSAL IS NOT A FAULT, so it is not drawn as one. Red means
+              something is broken; "you hold no seat here" is the estate
+              working. The Lobby carries the long form of this note. */}
+          {refusal && (
+            <div
+              className="rounded-lg px-6 py-8 mb-4"
+              style={{ background: '#FFFFFF', border: '1px dashed #D8D8D4' }}
+            >
+              <p
+                className="text-[17px] mb-2"
+                style={{ fontFamily: 'var(--font-serif)', color: 'var(--color-ink)' }}
+              >
+                {refusal.heading}
+              </p>
+              <p className="text-[13.5px] max-w-xl" style={{ color: 'var(--color-muted)' }}>
+                {refusal.body}
+              </p>
+            </div>
+          )}
+
 
           {/* ── THE EMPTY STATE ──────────────────────────────────────────────
               Written first, deliberately. A dashboard with no titles must not

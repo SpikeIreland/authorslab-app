@@ -43,7 +43,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useState } from 'react'
 import { AppShell } from '@/components/chrome/AppShell'
 import { PublisherNav } from '../_components/PublisherNav'
-import { VIEWING_FIRM } from '../_data/firm'
+
 
 interface SeatImprint {
   id: string
@@ -174,7 +174,7 @@ export default function PublisherPeoplePage() {
   const seats = payload?.seats ?? []
 
   return (
-    <AppShell modeLabel="Publisher" firstName={VIEWING_FIRM}>
+    <AppShell modeLabel="Publisher" firstName={payload?.organisation?.name}>
       <PublisherNav />
       <div className="flex-1 overflow-y-auto h-[calc(100vh-100px)]">
         <div className="max-w-[860px] mx-auto px-6 py-10">
@@ -187,7 +187,7 @@ export default function PublisherPeoplePage() {
               Your people
             </h1>
             <p className="text-[14px]" style={{ color: 'var(--color-muted)' }}>
-              {payload?.organisation?.name ?? VIEWING_FIRM}
+              {payload?.organisation?.name ?? '—'}
               {!loading && !noSeat && seats.length > 0 && (
                 <> · {seats.length} {seats.length === 1 ? 'seat' : 'seats'}</>
               )}

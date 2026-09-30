@@ -24,7 +24,7 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 
-import { VIEWING_FIRM } from '../../_data/firm'
+import { FirmChip } from '../../_components/FirmChip'
 import { usePublisherActions, notesAt } from '../../_data/usePublisherActions'
 // ─── 1. Types ─────────────────────────────────────────────────────────────────
 
@@ -256,10 +256,7 @@ function ReadHeader({ onBack }: { onBack: () => void }) {
         <div className="text-[11px] tracking-[0.14em] uppercase text-[#8A8A8A]">
           Reading room
         </div>
-        <div className="flex items-center gap-3 px-3.5 py-1.5 border border-[#E8E5E0] rounded-full bg-[#FAFAF8]">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#1E3A5F]" aria-hidden />
-          <span className="text-[12px] text-[#1A1A1A]">{VIEWING_FIRM}</span>
-        </div>
+        <FirmChip />
       </div>
     </header>
   )

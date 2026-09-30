@@ -1,34 +1,135 @@
-/**
- * THE VIEWING FIRM
- *
- * Every publisher surface renders the name of the house that is looking. Until
- * there is a publisher identity to read it from (identity-billing), it comes
- * from here — one constant, one edit.
- *
- * HARROWGATE HOUSE IS INVENTED. Like the imprints and the authors on the
- * shelf, it is a stand-in, not a real publisher. Swapping it for a prospect's
- * real name before a meeting is a deliberate act with its own judgement call
- * (a demo wearing someone's name can read as presumption rather than
- * tailoring) — so it lives here, named and obvious, rather than typed into
- * five files.
- *
- * When publisher accounts land, this constant is replaced by a read of the
- * signed-in firm and nothing else on these pages changes.
- */
-export const VIEWING_FIRM = 'Harrowgate House'
+'use client'
 
 /**
- * The organisation slug the Lobby reads its list by.
+ * THE VIEWING FIRM — now a read, not a constant.
  *
- * This is the tenancy key, not a label: `/api/publisher/lobby?org=<slug>`
- * resolves `organisations.slug` and returns only that organisation's titles.
- * The route deliberately refuses to default to "everything" when no org is
- * named — a route with no caller identity that returns every publisher's list
- * is a disclosure, not a convenience.
+ * ─── What was here ──────────────────────────────────────────────────────────
  *
- * NOTHING IS SEEDED YET. Until an organisation row exists with this slug, the
- * Lobby will report that the organisation is not set up — which is the honest
- * outcome and the one to leave in place. Seeding invented titles onto a real
- * imprint would be a claim about somebody's list.
+ *   export const VIEWING_FIRM = 'Harrowgate House'
+ *   export const VIEWING_FIRM_SLUG = 'harrowgate-house'
+ *
+ * with a comment promising: *"when publisher accounts land, this constant is
+ * replaced by a read of the signed-in firm and nothing else on these pages
+ * changes."* `identity-billing` reported on 2026-09-30 that the read returns an
+ * identity for two live seats and commissioned it both directions. So the
+ * promise is kept and the constants are gone.
+ *
+ * The slug is the more important of the two removals. It was not a label — it
+ * was the TENANCY KEY, and the surfaces sent it to the API as `?org=`. A client
+ * that names the house it wants to see is a client that can name a different
+ * one. Both routes now read the caller's own membership and the parameter no
+ * longer exists.
+ *
+ * ─── There is no fallback, and that is the point ─────────────────────────────
+ *
+ * This hook returns `null` for the firm until the read answers. It does NOT
+ * return a placeholder name in the meantime, and nothing in this file knows a
+ * publisher's name.
+ *
+ * A fallback here would be the exact defect this lane keeps finding: a claim
+ * made before anyone can check it. `'Harrowgate House'` rendered while a read
+ * is in flight is a surface telling a publisher which house they are looking
+ * at before it knows — and if the read then fails, the page settles on a
+ * confident wrong answer instead of an honest blank. The header simply has no
+ * house name until there is one.
  */
-export const VIEWING_FIRM_SLUG = 'harrowgate-house'
+
+import { useEffect, useState } from 'react'
+
+export type PublisherFirmState =
+  | { status: 'loading' }
+  /** A resolved publisher identity. */
+  | {
+      status: 'ready'
+      firmName: string
+      firmSlug: string
+      orgRole: 'owner' | 'admin' | 'member'
+      scopeIsWholeOrg: boolean
+      imprints: { id: string; name: string }[]
+    }
+  /** Signed in, but holding no active seat in any publisher organisation. */
+  | { status: 'not-a-publisher' }
+  /** Two active memberships and no org switcher — the resolver refuses to
+   *  guess which house is being viewed, and so does this. */
+  | { status: 'unresolved'; message: string }
+  /** The read itself failed. Distinguished from `not-a-publisher` because
+   *  "you have no seat" and "we could not find out" are different sentences
+   *  and a surface must not print the first when the second is true. */
+  | { status: 'error' }
+
+export function usePublisherFirm(): PublisherFirmState {
+  const [state, setState] = useState<PublisherFirmState>({ status: 'loading' })
+
+  useEffect(() => {
+    let live = true
+
+    ;(async () => {
+      try {
+        const res = await fetch('/api/publisher/identity')
+
+        if (res.status === 403) {
+          if (live) setState({ status: 'not-a-publisher' })
+          return
+        }
+        if (res.status === 409) {
+          const j = await res.json().catch(() => null)
+          if (live) {
+            setState({
+              status: 'unresolved',
+              message:
+                typeof j?.message === 'string'
+                  ? j.message
+                  : 'More than one organisation and no way to choose.',
+            })
+          }
+          return
+        }
+        if (!res.ok) {
+          if (live) setState({ status: 'error' })
+          return
+        }
+
+        const j = await res.json()
+        if (!live) return
+
+        // Validate rather than trust the shape. A missing name must not render
+        // as "undefined" in a header chip.
+        const name = j?.organisation?.name
+        const slug = j?.organisation?.slug
+        if (typeof name !== 'string' || typeof slug !== 'string') {
+          setState({ status: 'error' })
+          return
+        }
+
+        setState({
+          status: 'ready',
+          firmName: name,
+          firmSlug: slug,
+          orgRole: j.viewer?.orgRole ?? 'member',
+          scopeIsWholeOrg: Boolean(j.viewer?.scopeIsWholeOrg),
+          imprints: Array.isArray(j.viewer?.imprints) ? j.viewer.imprints : [],
+        })
+      } catch {
+        if (live) setState({ status: 'error' })
+      }
+    })()
+
+    return () => {
+      live = false
+    }
+  }, [])
+
+  return state
+}
+
+/**
+ * The house name, or `null` while it is unknown or unavailable.
+ *
+ * For the header chip, which has one job and no room to explain itself. A
+ * surface that must DISTINGUISH the reasons — and the Lobby must — reads the
+ * state above instead of this.
+ */
+export function useFirmName(): string | null {
+  const state = usePublisherFirm()
+  return state.status === 'ready' ? state.firmName : null
+}

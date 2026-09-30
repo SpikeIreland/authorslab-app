@@ -1,7 +1,22 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import {
+  resolvePublisherIdentity,
+  type PublisherIdentity,
+} from '@/lib/publisher/identity'
 
-// GET /api/publisher/company?org=<slug>
+// GET /api/publisher/company
+//
+// TENANCY COMES FROM THE CALLER (2026-09-30). This took `?org=<slug>` when it
+// was written, because there was no caller identity to read. There is now, and
+// the Lobby's conversion note carries the full reasoning: a tenancy key that
+// arrives in a request is a tenancy key the client can change.
+//
+// House documents are ORG-WIDE and not imprint-scoped, so unlike the Lobby
+// there is no imprint filter here — every seat in the house reads the same
+// style sheet. That is a property of the documents, not an omission: a house
+// style that differed by imprint would be four style sheets, and the kind
+// vocabulary does not carry an imprint.
 //
 // THE HOUSE DOCUMENTS — a publisher's own standards, held as a record.
 //
@@ -106,31 +121,28 @@ export interface CompanyDocument {
   history: Version[]
 }
 
-export async function GET(req: Request) {
-  const orgSlug = new URL(req.url).searchParams.get('org')
+export async function GET() {
+  let identity: PublisherIdentity | null
 
-  if (!orgSlug) {
+  try {
+    identity = await resolvePublisherIdentity()
+  } catch (err) {
     return NextResponse.json(
-      { error: 'org_required', message: 'Name the organisation explicitly.' },
-      { status: 400 }
+      {
+        error: 'multi_org_unresolved',
+        message: err instanceof Error ? err.message : 'unresolved',
+      },
+      { status: 409 }
     )
   }
 
-  try {
-    const { data: org, error: orgErr } = await supabaseAdmin
-      .from('organisations')
-      .select('id, name, slug')
-      .eq('slug', orgSlug)
-      .is('deleted_at', null)
-      .maybeSingle()
+  if (!identity) {
+    return NextResponse.json({ error: 'not_a_publisher' }, { status: 403 })
+  }
 
-    if (orgErr) {
-      if (orgErr.code === '42P01') {
-        return NextResponse.json({ available: false, reason: 'org_model_not_applied' })
-      }
-      throw orgErr
-    }
-    if (!org) return NextResponse.json({ error: 'org_not_found' }, { status: 404 })
+  const org = identity.organisation
+
+  try {
 
     const { data: rows, error: docErr } = await supabaseAdmin
       .from('house_documents')
@@ -192,9 +204,13 @@ export async function GET(req: Request) {
     })
 
     return NextResponse.json({
-      authorised: false,
-      scope: 'explicit-org-parameter',
+      authorised: true,
+      scope: 'caller-membership',
       organisation: { name: org.name, slug: org.slug },
+      viewer: {
+        orgRole: identity.org_role,
+        scopeIsWholeOrg: identity.scope_is_whole_org,
+      },
       documents,
       /** Stated in the payload, not left to the renderer — a caveat that lives
        *  only in a surface is one refactor from being dropped. */

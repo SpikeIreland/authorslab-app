@@ -47,7 +47,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AppShell } from '@/components/chrome/AppShell'
 import { PublisherNav } from './_components/PublisherNav'
-import { VIEWING_FIRM, VIEWING_FIRM_SLUG } from './_data/firm'
+
 
 type Register = 'list' | 'line'
 type RiskBasis = 'date' | 'stall' | 'none'
@@ -75,6 +75,11 @@ interface LobbyTitle {
 interface LobbyPayload {
   authorised?: boolean
   organisation?: { name: string; slug: string }
+  viewer?: {
+    orgRole?: 'owner' | 'admin' | 'member'
+    scopeIsWholeOrg?: boolean
+    imprintCount?: number
+  }
   imprints?: { id: string; name: string }[]
   titles?: LobbyTitle[]
   registerSplitAvailable?: boolean
@@ -232,6 +237,23 @@ function TitleRow({
   )
 }
 
+/**
+ * WHY THE CALLER IS NOT BEING SHOWN A LIST — and it is not an error.
+ *
+ * The route stopped taking `?org=` on 2026-09-30 and now reads the caller's own
+ * membership, which introduces two refusals that a red box would misdescribe.
+ * Neither is a failure of the page: one is the correct answer for somebody
+ * without a seat, and the other is the identity resolver declining to guess
+ * which of two houses is being viewed.
+ *
+ * They are rendered as SURFACES, for the reason the People tab gives: an empty
+ * list here would read as "nothing is late", which is the one sentence this
+ * page must never say when it does not know.
+ */
+type Refusal =
+  | { kind: 'not-a-publisher' }
+  | { kind: 'unresolved'; message: string }
+
 // ─── 3. The page ──────────────────────────────────────────────────────────────
 
 export default function PublisherLobbyPage() {
@@ -240,6 +262,7 @@ export default function PublisherLobbyPage() {
   const [payload, setPayload] = useState<LobbyPayload | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [refusal, setRefusal] = useState<Refusal | null>(null)
   const [imprintFilter, setImprintFilter] = useState<string>('all')
 
   useEffect(() => {
@@ -248,13 +271,29 @@ export default function PublisherLobbyPage() {
     async function load() {
       try {
         const res = await fetch(
-          `/api/publisher/lobby?org=${encodeURIComponent(VIEWING_FIRM_SLUG)}`
+          '/api/publisher/lobby'
         )
-        if (res.status === 404) {
+        // 403 — the caller holds no active seat. A REAL ANSWER, not a fault,
+        // and deliberately not shown as one. The old 404 branch here said
+        // "this organisation is not set up yet", which was a claim about the
+        // estate made from a fact about the caller.
+        if (res.status === 403) {
+          if (!cancelled) setRefusal({ kind: 'not-a-publisher' })
+          return
+        }
+        // 409 — two active memberships and no org switcher. The resolver
+        // refuses to pick one and the message it raises is the useful thing to
+        // show, because the reader is the person who can fix it.
+        if (res.status === 409) {
+          const j = await res.json().catch(() => null)
           if (!cancelled) {
-            setError(
-              'This organisation is not set up yet — no imprints, no titles, nothing to report on.'
-            )
+            setRefusal({
+              kind: 'unresolved',
+              message:
+                typeof j?.message === 'string'
+                  ? j.message
+                  : 'You hold seats in more than one house and there is no way yet to choose between them.',
+            })
           }
           return
         }
@@ -302,6 +341,8 @@ export default function PublisherLobbyPage() {
   // cannot compute lateness at all — rather than answering "nothing is late".
   const summary = useMemo(() => {
     if (loading) return 'Reading the list…'
+    if (refusal) return ''
+    if (imprints.length === 0) return 'No imprints in view'
     if (titles.length === 0) return 'No titles on your list yet'
     const pressing = filtered.filter(
       (t) => t.risk === 'overdue' || t.risk === 'at-risk' || t.risk === 'stalled'
@@ -314,10 +355,10 @@ export default function PublisherLobbyPage() {
     return datesKnown
       ? head
       : `${head} · no handoff dates set, so this is measured by movement, not by deadline`
-  }, [loading, titles.length, filtered])
+  }, [loading, refusal, imprints.length, titles.length, filtered])
 
   return (
-    <AppShell modeLabel="Publisher" firstName={VIEWING_FIRM}>
+    <AppShell modeLabel="Publisher" firstName={payload?.organisation?.name}>
       <PublisherNav />
       <div className="flex-1 overflow-y-auto h-[calc(100vh-100px)]">
         <div className="max-w-3xl mx-auto px-6 py-10">
@@ -330,8 +371,13 @@ export default function PublisherLobbyPage() {
             >
               What is late
             </h1>
+            {/* The house name and the count, and NEITHER of them invented.
+                Until the read answers there is no name, and on a refusal there
+                is no count — so the line prints what it knows and stops. An
+                em-dash standing in for a publisher's name is the same defect
+                as an em-dash standing in for a completed station. */}
             <p className="text-[14px]" style={{ color: 'var(--color-muted)' }}>
-              {payload?.organisation?.name ?? VIEWING_FIRM} · {summary}
+              {[payload?.organisation?.name, summary].filter(Boolean).join(' · ')}
             </p>
           </div>
 
@@ -350,6 +396,98 @@ export default function PublisherLobbyPage() {
             </div>
           )}
 
+          {refusal?.kind === 'not-a-publisher' && (
+            <div
+              className="rounded-lg px-6 py-8"
+              style={{ background: '#FFFFFF', border: '1px dashed #D8D8D4' }}
+            >
+              <p
+                className="text-[18px] mb-2"
+                style={{ fontFamily: 'var(--font-serif)', color: 'var(--color-ink)' }}
+              >
+                You do not hold a seat in a publisher organisation
+              </p>
+              <p className="text-[13.5px] max-w-xl mb-3" style={{ color: 'var(--color-muted)' }}>
+                This page shows one house&rsquo;s list, and which house it is
+                comes from your own seat rather than from the address bar. Your
+                account has no active seat, so there is no list to show you.
+              </p>
+              <p className="text-[13.5px] max-w-xl" style={{ color: 'var(--color-muted)' }}>
+                Showing you somebody else&rsquo;s list instead would be the
+                wrong answer rather than a helpful one. Someone who owns the
+                organisation can add you from their People tab.
+              </p>
+            </div>
+          )}
+
+          {refusal?.kind === 'unresolved' && (
+            <div
+              className="rounded-lg px-6 py-8"
+              style={{ background: '#FFFFFF', border: '1px dashed #D8D8D4' }}
+            >
+              <p
+                className="text-[18px] mb-2"
+                style={{ fontFamily: 'var(--font-serif)', color: 'var(--color-ink)' }}
+              >
+                Which house are you looking at?
+              </p>
+              <p className="text-[13.5px] max-w-xl mb-3" style={{ color: 'var(--color-muted)' }}>
+                You hold an active seat in more than one publisher organisation,
+                and there is no way yet to choose between them. Rather than pick
+                one for you and print the wrong name at the top of every page,
+                the read stops here.
+              </p>
+              <p className="text-[12.5px] max-w-xl font-mono" style={{ color: 'var(--color-muted)' }}>
+                {refusal.message}
+              </p>
+            </div>
+          )}
+
+          {/* ── NO SCOPE IS NOT AN EMPTY LIST ──────────────────────────────
+              A member with a seat and no imprints assigned may be standing
+              two feet from nine titles and refused all of them. Reporting
+              that as "no titles yet" would be the surface asserting an
+              emptiness that belongs to their permissions, not to the house.
+              An owner with no imprints is the other case, and it gets the
+              other sentence. */}
+          {!loading && !error && !refusal && imprints.length === 0 && payload?.organisation && (
+            <div
+              className="rounded-lg px-6 py-8"
+              style={{ background: '#FFFFFF', border: '1px dashed #D8D8D4' }}
+            >
+              {payload.registerSplitReason === 'no_imprints_assigned_to_you' ? (
+                <>
+                  <p
+                    className="text-[18px] mb-2"
+                    style={{ fontFamily: 'var(--font-serif)', color: 'var(--color-ink)' }}
+                  >
+                    No imprints have been assigned to you yet
+                  </p>
+                  <p className="text-[13.5px] max-w-xl" style={{ color: 'var(--color-muted)' }}>
+                    You hold a seat at {payload.organisation.name}, and your
+                    view of the list is scoped to the imprints named against
+                    it. None are, so there is nothing here yet &mdash; which is
+                    not the same as the house having no books. An owner can
+                    assign your imprints from the People tab.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p
+                    className="text-[18px] mb-2"
+                    style={{ fontFamily: 'var(--font-serif)', color: 'var(--color-ink)' }}
+                  >
+                    No imprints yet
+                  </p>
+                  <p className="text-[13.5px] max-w-xl" style={{ color: 'var(--color-muted)' }}>
+                    A title joins this list by joining one of your imprints, and{' '}
+                    {payload.organisation.name} has none set up yet.
+                  </p>
+                </>
+              )}
+            </div>
+          )}
+
           {payload?.available === false && (
             <div
               className="px-4 py-3 mb-4 rounded-md text-sm"
@@ -362,7 +500,7 @@ export default function PublisherLobbyPage() {
 
           {/* Imprint filter — a publisher runs several lists and manages across
               them. Shown only when there is more than one to choose between. */}
-          {!loading && !error && titles.length > 0 && imprints.length > 1 && (
+          {!loading && !error && !refusal && titles.length > 0 && imprints.length > 1 && (
             <div className="flex items-center gap-2 mb-5 flex-wrap">
               <button
                 onClick={() => setImprintFilter('all')}
@@ -396,7 +534,7 @@ export default function PublisherLobbyPage() {
               Not "0 titles at risk". An empty list is shown as an invitation
               and a description of the mechanism, because the failure mode is
               false confidence, not emptiness. */}
-          {!loading && !error && titles.length === 0 && payload?.organisation && (
+          {!loading && !error && !refusal && titles.length === 0 && imprints.length > 0 && payload?.organisation && (
             <div
               className="rounded-lg px-6 py-8 text-center"
               style={{ background: '#FFFFFF', border: '1px dashed #D8D8D4' }}
@@ -456,7 +594,7 @@ export default function PublisherLobbyPage() {
               a whole backlog arrives and the answer is "everything" — so a
               title on the LIST is observed and never nagged, and only a title
               on the LINE is escalated. */}
-          {!loading && !error && filtered.length > 0 && !splitAvailable && (
+          {!loading && !error && !refusal && filtered.length > 0 && !splitAvailable && (
             <>
               <div className="space-y-2.5">
                 {filtered.map((t) => (
@@ -472,7 +610,7 @@ export default function PublisherLobbyPage() {
             </>
           )}
 
-          {!loading && !error && splitAvailable && (
+          {!loading && !error && !refusal && splitAvailable && (
             <>
               {onTheLine.length > 0 && (
                 <>

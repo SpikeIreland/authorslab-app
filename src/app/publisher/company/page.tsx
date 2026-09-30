@@ -36,7 +36,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useState } from 'react'
 import { AppShell } from '@/components/chrome/AppShell'
 import { PublisherNav } from '../_components/PublisherNav'
-import { VIEWING_FIRM, VIEWING_FIRM_SLUG } from '../_data/firm'
+
 
 interface Version {
   id: string
@@ -193,14 +193,39 @@ export default function PublisherCompanyPage() {
   const [payload, setPayload] = useState<Payload | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [refusal, setRefusal] = useState<{ heading: string; body: string } | null>(null)
 
   useEffect(() => {
     let cancelled = false
     ;(async () => {
       try {
-        const res = await fetch(`/api/publisher/company?org=${encodeURIComponent(VIEWING_FIRM_SLUG)}`)
-        if (res.status === 404) {
-          if (!cancelled) setError('This organisation is not set up yet.')
+        const res = await fetch('/api/publisher/company')
+        // The caller's own seat decides which house this is, so both of these
+        // are answers rather than failures — see the Lobby's note.
+        if (res.status === 403) {
+          if (!cancelled) {
+            setRefusal({
+              heading: 'You do not hold a seat in a publisher organisation',
+              body:
+                'This page belongs to one house, and which house it is comes from ' +
+                'your own seat. Your account has no active seat, so there is nothing ' +
+                'here to show you — and showing you another house instead would be ' +
+                'the wrong answer rather than a helpful one.',
+            })
+          }
+          return
+        }
+        if (res.status === 409) {
+          const j = await res.json().catch(() => null)
+          if (!cancelled) {
+            setRefusal({
+              heading: 'Which house are you looking at?',
+              body:
+                typeof j?.message === 'string'
+                  ? j.message
+                  : 'You hold a seat in more than one house and there is no way yet to choose between them.',
+            })
+          }
           return
         }
         if (!res.ok) throw new Error(`Unavailable (${res.status})`)
@@ -221,7 +246,7 @@ export default function PublisherCompanyPage() {
   const supplied = documents.filter((d) => d.current !== null).length
 
   return (
-    <AppShell modeLabel="Publisher" firstName={VIEWING_FIRM}>
+    <AppShell modeLabel="Publisher" firstName={payload?.organisation?.name}>
       <PublisherNav />
       <div className="flex-1 overflow-y-auto h-[calc(100vh-100px)]">
         <div className="max-w-[860px] mx-auto px-6 py-10">
@@ -234,7 +259,7 @@ export default function PublisherCompanyPage() {
               Your house
             </h1>
             <p className="text-[14px]" style={{ color: 'var(--color-muted)' }}>
-              {payload?.organisation?.name ?? VIEWING_FIRM}
+              {payload?.organisation?.name ?? '—'}
               {!loading && documents.length > 0 && (
                 <> · {supplied} of {documents.length} documents supplied</>
               )}
@@ -255,6 +280,27 @@ export default function PublisherCompanyPage() {
               {error}
             </div>
           )}
+
+          {/* A REFUSAL IS NOT A FAULT, so it is not drawn as one. Red means
+              something is broken; "you hold no seat here" is the estate
+              working. The Lobby carries the long form of this note. */}
+          {refusal && (
+            <div
+              className="rounded-lg px-6 py-8 mb-4"
+              style={{ background: '#FFFFFF', border: '1px dashed #D8D8D4' }}
+            >
+              <p
+                className="text-[17px] mb-2"
+                style={{ fontFamily: 'var(--font-serif)', color: 'var(--color-ink)' }}
+              >
+                {refusal.heading}
+              </p>
+              <p className="text-[13.5px] max-w-xl" style={{ color: 'var(--color-muted)' }}>
+                {refusal.body}
+              </p>
+            </div>
+          )}
+
 
           {payload?.available === false && (
             <div

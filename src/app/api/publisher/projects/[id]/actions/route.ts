@@ -1,5 +1,10 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import {
+  resolvePublisherIdentity,
+  canSeeImprint,
+  type PublisherIdentity,
+} from '@/lib/publisher/identity'
 
 // GET  /api/publisher/projects/[id]/actions   → this book's publisher log
 // POST /api/publisher/projects/[id]/actions   → record one act
@@ -21,6 +26,36 @@ import { NextResponse } from 'next/server'
 // derived by reading the log. "Approved, then revisions requested, then
 // approved again" is a history a publisher can be shown, rather than a field
 // that forgets.
+//
+// ─── THE ACTOR IS NO LONGER THE CLIENT'S TO NAME (2026-09-30) ────────────────
+//
+// This route used to take `actorFirm` FROM THE REQUEST BODY, and when none
+// arrived it wrote the string `'Unnamed firm'`. Both halves were wrong, and
+// the second half is worse than the first:
+//
+//   · A CLIENT-NAMED ACTOR. `actor_firm` is the attribution on an append-only
+//     record — the one column a publisher would point at in a dispute about
+//     who approved what. Taking it from the browser means the record says
+//     whatever the caller typed. It is `identity-billing`'s rule about tenancy
+//     keys, pointed at an audit trail: an attribution that arrives in a
+//     request body is an attribution the client can choose.
+//
+//   · A FALLBACK THAT FABRICATED ONE. `'Unnamed firm'` is a NOT NULL column
+//     satisfied with a placeholder, which is `sysadmin`'s §6 ruling on cover
+//     assets almost word for word: a row marked as a person's act with no
+//     person named is the fabricated-attribution defect with better manners.
+//     The write should have been refused, not decorated.
+//
+// Both are replaced by `resolvePublisherIdentity()`. The actor is the caller's
+// own membership — `actor_membership_id`, which is the id `identity.ts` says
+// attribution joins on — and `actor_firm` is that membership's organisation
+// name, read server-side. A caller with no membership cannot write at all, so
+// there is no case left in which the column needs a placeholder.
+//
+// AND THE LOG IS SCOPED. The manuscript must sit in an imprint this caller can
+// see, checked with `canSeeImprint` on both verbs. Before today any caller
+// could read — and append to — the decision log of any book in the estate by
+// knowing its id.
 
 const supabaseAdmin = createSupabaseClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -52,11 +87,71 @@ function isMissingTable(err: { code?: string } | null): boolean {
   return err?.code === '42P01'
 }
 
+/**
+ * Resolve the caller and check this book is on their list.
+ *
+ * One gate for both verbs, because a read gate and a write gate that are
+ * written separately are two chances to write one of them wrong. Returns the
+ * identity on success or a response to return on refusal — never a boolean,
+ * so a caller cannot forget which way round `true` meant.
+ */
+async function gate(
+  manuscriptId: string
+): Promise<{ identity: PublisherIdentity } | { refusal: NextResponse }> {
+  let identity: PublisherIdentity | null
+  try {
+    identity = await resolvePublisherIdentity()
+  } catch (err) {
+    return {
+      refusal: NextResponse.json(
+        {
+          error: 'multi_org_unresolved',
+          message: err instanceof Error ? err.message : 'unresolved',
+        },
+        { status: 409 }
+      ),
+    }
+  }
+
+  if (!identity) {
+    return { refusal: NextResponse.json({ error: 'not_a_publisher' }, { status: 403 }) }
+  }
+
+  const { data: manuscript } = await supabaseAdmin
+    .from('manuscripts')
+    .select('id, imprint_id')
+    .eq('id', manuscriptId)
+    .maybeSingle()
+
+  if (!manuscript) {
+    return { refusal: NextResponse.json({ error: 'not_found' }, { status: 404 }) }
+  }
+
+  // A manuscript with no imprint is on NOBODY's list. Treating null as "not
+  // yet assigned, so let it through" is the same one-character tenancy breach
+  // `identity.ts` rule 2 refuses for imprint scope: absence of scope is empty
+  // scope, never universal scope.
+  const imprintId = manuscript.imprint_id as string | null
+  if (!imprintId || !canSeeImprint(identity, imprintId)) {
+    // 404 rather than 403, deliberately. A 403 on a specific id confirms that
+    // the book exists and belongs to somebody else, which is a small
+    // disclosure repeated across an id space. The caller is told the same
+    // thing they would be told about an id that does not exist, because from
+    // their side those two facts should be identical.
+    return { refusal: NextResponse.json({ error: 'not_found' }, { status: 404 }) }
+  }
+
+  return { identity }
+}
+
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
+
+  const g = await gate(id)
+  if ('refusal' in g) return g.refusal
 
   try {
     const { data, error } = await supabaseAdmin
@@ -91,13 +186,19 @@ export async function POST(
 ) {
   const { id } = await params
 
+  const g = await gate(id)
+  if ('refusal' in g) return g.refusal
+  const { identity } = g
+
   try {
+    // `actorFirm` is ABSENT from this type on purpose. It was here, the client
+    // sent it, and it is now derived. Leaving it declared would let a future
+    // edit read it again without anyone deciding to.
     const body = (await req.json().catch(() => null)) as {
       station?: string
       kind?: string
       body?: string
       chapterNumber?: number | null
-      actorFirm?: string
       visibleToAuthor?: boolean
     } | null
 
@@ -123,22 +224,12 @@ export async function POST(
       return NextResponse.json({ error: 'note_too_long' }, { status: 400 })
     }
 
-    const actorFirm =
-      typeof body.actorFirm === 'string' && body.actorFirm.trim().length > 0
-        ? body.actorFirm.trim().slice(0, 120)
-        : 'Unnamed firm'
+    // The actor, read from the server's own resolution of who is signed in.
+    // Not trimmed, not defaulted, not length-capped — it is not user input.
+    const actorFirm = identity.organisation.name
 
-    // The manuscript must exist. Without this an arbitrary id would write rows
-    // the FK would reject anyway, but with a worse error and no log line.
-    const { data: manuscript } = await supabaseAdmin
-      .from('manuscripts')
-      .select('id')
-      .eq('id', id)
-      .maybeSingle()
-
-    if (!manuscript) {
-      return NextResponse.json({ error: 'not_found' }, { status: 404 })
-    }
+    // The manuscript's existence and its place on this caller's list were both
+    // established by `gate` above, so there is no second lookup here.
 
     const { data, error } = await supabaseAdmin
       .from('publisher_actions')
@@ -150,6 +241,7 @@ export async function POST(
         kind,
         body: text,
         actor_firm: actorFirm,
+        actor_membership_id: identity.membership_id,
         visible_to_author: Boolean(body.visibleToAuthor),
       })
       .select('id, station, chapter_number, kind, body, actor_firm, visible_to_author, created_at')
