@@ -9,6 +9,12 @@ import type { AuthorProfile } from '@/lib/supabase/queries'
 import { createClient } from '@/lib/supabase/client'
 import { N8N_WEBHOOKS } from '@/lib/n8n-config'
 import { trackEvent } from '@/lib/analytics'
+import {
+    MANUSCRIPT_FILE_ACCEPT,
+    validateManuscriptFile,
+    extractManuscriptText,
+    insufficientTextMessage
+} from '@/lib/manuscript-file'
 
 function OnboardingContent() {
     const router = useRouter()
@@ -250,21 +256,21 @@ function OnboardingContent() {
         return Math.round(file.size / avgBytesPerWord)
     }
 
-    const extractTextFromFile = async (file: File): Promise<string> => {
-        const fileName = file.name.toLowerCase()
-
-        if (!fileName.endsWith('.pdf')) {
-            throw new Error('Only PDF files are supported at this time. Please convert your manuscript to PDF.')
-        }
-
-        // Validation only - actual extraction happens in handleFileSelection
-        return ''
-    }
 
     const handleFileSelection = async (selectedFile: File) => {
+        const validation = validateManuscriptFile(selectedFile)
+
+        if ('error' in validation) {
+            setUploadStatus('error')
+            setStatusMessage(`❌ ${validation.error}`)
+            return
+        }
+
+        const fileKind = validation.kind
+
         setFile(selectedFile)
         setUploadStatus('processing')
-        setStatusMessage('📖 Processing your PDF manuscript...')
+        setStatusMessage('📖 Processing your manuscript...')
         setIsProcessing(true)
 
         const userId = searchParams.get('userId') || localStorage.getItem('currentUserId')
@@ -278,32 +284,26 @@ function OnboardingContent() {
         }
 
         try {
-            // Step 1: Extract text from PDF using a dedicated extraction endpoint
-            setStatusMessage('📄 Extracting text from PDF...')
+            // Step 1: Get the manuscript text. Word documents are read in the
+            // browser; PDFs go to the n8n extraction endpoint.
+            setStatusMessage(
+                fileKind === 'docx'
+                    ? '📄 Reading your Word document...'
+                    : '📄 Extracting text from PDF...'
+            )
 
-            const extractFormData = new FormData()
-            extractFormData.append('file', selectedFile)
-            extractFormData.append('fileName', selectedFile.name)
-
-            // Call a simple PDF text extraction endpoint
-            const extractResponse = await fetch(N8N_WEBHOOKS.extractPdfText, {
-                method: 'POST',
-                body: extractFormData
-            })
-
-            if (!extractResponse.ok) {
-                throw new Error('Failed to extract text from PDF')
-            }
-
-            const extractResult = await extractResponse.json()
-            const extractedText = extractResult.text || extractResult.extractedText || ''
+            const extractedText = await extractManuscriptText(
+                selectedFile,
+                fileKind,
+                N8N_WEBHOOKS.extractPdfText
+            )
 
             if (!extractedText || extractedText.length < 100) {
-                throw new Error('Could not extract sufficient text from PDF. Please ensure the file is not password-protected.')
+                throw new Error(insufficientTextMessage(fileKind))
             }
 
             setExtractedText(extractedText)
-            console.log('✅ Text extracted:', extractedText.length, 'characters')
+            console.log('✅ Text extracted:', extractedText.length, 'characters', `(${fileKind})`)
 
             // Step 2: Send extracted text to word count analysis
             setStatusMessage('🔢 Analyzing word count...')
@@ -765,7 +765,7 @@ function OnboardingContent() {
                                 <div className="text-muted mb-6">
                                     {uploadStatus === 'success' && wordCount > 0
                                         ? `${wordCount.toLocaleString()} words ready for analysis`
-                                        : 'Upload your manuscript as pdf (.pdf))'}
+                                        : 'Upload your manuscript as a PDF (.pdf) or Word document (.docx)'}
                                 </div>
 
                                 {/* Manuscript Preparation Tips */}
@@ -797,7 +797,7 @@ function OnboardingContent() {
                                 <input
                                     type="file"
                                     id="fileInput"
-                                    accept=".pdf"
+                                    accept={MANUSCRIPT_FILE_ACCEPT}
                                     onChange={handleFileChange}
                                     className="hidden"
                                 />

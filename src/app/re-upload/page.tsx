@@ -7,6 +7,12 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { Manuscript } from '@/types/database'
 import { N8N_WEBHOOKS } from '@/lib/n8n-config'
+import {
+    MANUSCRIPT_FILE_ACCEPT,
+    validateManuscriptFile,
+    extractManuscriptText,
+    insufficientTextMessage
+} from '@/lib/manuscript-file'
 
 function ReUploadContent() {
     const router = useRouter()
@@ -103,32 +109,36 @@ function ReUploadContent() {
     }, [searchParams, router])
 
     const handleFileSelection = async (selectedFile: File) => {
+        const validation = validateManuscriptFile(selectedFile)
+
+        if ('error' in validation) {
+            setUploadStatus('error')
+            setStatusMessage(`❌ ${validation.error}`)
+            return
+        }
+
+        const fileKind = validation.kind
+
         setFile(selectedFile)
         setUploadStatus('processing')
-        setStatusMessage('📖 Processing your PDF manuscript...')
+        setStatusMessage('📖 Processing your manuscript...')
         setIsProcessing(true)
 
         try {
-            setStatusMessage('📄 Extracting text from PDF...')
+            setStatusMessage(
+                fileKind === 'docx'
+                    ? '📄 Reading your Word document...'
+                    : '📄 Extracting text from PDF...'
+            )
 
-            const extractFormData = new FormData()
-            extractFormData.append('file', selectedFile)
-            extractFormData.append('fileName', selectedFile.name)
-
-            const extractResponse = await fetch(N8N_WEBHOOKS.extractPdfText, {
-                method: 'POST',
-                body: extractFormData
-            })
-
-            if (!extractResponse.ok) {
-                throw new Error('Failed to extract text from PDF')
-            }
-
-            const extractResult = await extractResponse.json()
-            const text = extractResult.text || extractResult.extractedText || ''
+            const text = await extractManuscriptText(
+                selectedFile,
+                fileKind,
+                N8N_WEBHOOKS.extractPdfText
+            )
 
             if (!text || text.length < 100) {
-                throw new Error('Could not extract sufficient text from PDF.')
+                throw new Error(insufficientTextMessage(fileKind))
             }
 
             setExtractedText(text)
@@ -392,7 +402,7 @@ function ReUploadContent() {
                                 <input
                                     type="file"
                                     id="fileInput"
-                                    accept=".pdf"
+                                    accept={MANUSCRIPT_FILE_ACCEPT}
                                     onChange={handleFileChange}
                                     className="hidden"
                                 />
