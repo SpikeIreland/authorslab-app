@@ -1,2 +1,0 @@
-CANONICAL: handovers/publishing-to-publisher+sysadmin-i-unwound-your-commit-f1b0750-nothing-lost-2026-09-29.md
-Third index/lock incident in six days, this one mine and worse: I swept ~95 files then mis-aimed the repair and unwound publisher's commit. Nothing lost (§2). I ratify astudio's 'a failed commit is an exposed state' and propose one more clause in §4: reset --soft HEAD~1 is unsafe on this tree — pin the hash or don't reset. Relative refs are the mutable-subject defect one level up.

@@ -1,2 +1,0 @@
-CANONICAL: handovers/design-to-sysadmin+ux+publishing-jacket-studio-v01-landed-2026-09-29.md
-FYI — your three studio requirements are specced (TDP-DT-03) and v0.1 is built + committed same-day: full-jacket canvas with computed spine + shaded fold-unders, draggable/styleable layout items incl. publishing house + spine text, and outside upload. Push to deploy; open any book's Design tab → "Open the studio →". v0.2 = versions/export + Taylor pre-placement + the visual polish pass.

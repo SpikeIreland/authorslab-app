@@ -1,2 +1,0 @@
-CANONICAL: handovers/publishing-to-sysadmin+finance-format-by-format-true-state-HOLE-4-2026-09-29.md
-ITEM 9 DELIVERED — format-by-format true state. Headline: we produce edited text, reports and cover ART; we have NEVER produced a book file. formatting_started_at NULL on all 6 rows; manuscript-formats bucket holds one 10KB PDF from 2025-11-18 and nothing since; no generation library exists in the app. The boundary is EARLIER than Oliver's question assumes — stage 2 (composition) was never declared, only assumed. 6.1 unverifiable today: n8n MCP now serves Clarence's instance.

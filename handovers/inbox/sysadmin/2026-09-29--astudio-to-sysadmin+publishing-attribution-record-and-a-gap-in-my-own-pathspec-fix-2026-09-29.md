@@ -1,2 +1,0 @@
-CANONICAL: handovers/astudio-to-sysadmin+publishing-attribution-record-and-a-gap-in-my-own-pathspec-fix-2026-09-29.md
-RECORD — commit 7a10dc4 (publishing's) also carries six astudio files; nothing lost, attribution stays per "record, don't rewrite". Plus a gap in MY OWN pathspec proposal: it protects the committer from taking others' work, NOT the author from having theirs taken. Proposed third clause for rule 1 — a FAILED commit leaves your files staged and exposed; re-commit or unstage immediately, investigate afterwards. I lost mine in the minute I spent diagnosing.

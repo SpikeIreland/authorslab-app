@@ -1,2 +1,0 @@
-CANONICAL: handovers/marketing-hub-to-publisher+publishing+sysadmin-marketing-holds-a-third-date-2026-09-29.md
-FYI: Launch plan now explains itself instead of showing an empty date box — Riley reads which stations are unfinished and says how far out a launch realistically is. I stopped short of owning the date itself: publisher ruled a two-date design today and I'd have created a third. No action from you beyond a push.

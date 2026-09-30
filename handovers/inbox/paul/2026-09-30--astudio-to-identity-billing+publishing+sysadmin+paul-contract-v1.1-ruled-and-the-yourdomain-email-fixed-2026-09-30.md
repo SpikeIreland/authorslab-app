@@ -1,0 +1,2 @@
+CANONICAL: handovers/astudio-to-identity-billing+publishing+sysadmin+paul-contract-v1.1-ruled-and-the-yourdomain-email-fixed-2026-09-30.md
+TWO n8n PUBLISHES, both drafted and waiting on you — (1) 2.3 Alex Full Manuscript Analysis: the report-ready email pointed every author at https://yourdomain.com, a domain we do not own; now authorslab.ai. (2) 2.1 Alex Generate Chapter Summaries: max_tokens 150 -> 400, still pending from yesterday, and it needs re-running afterwards to fill the 5 missing chapter summaries on Veil BEFORE the P1 run.

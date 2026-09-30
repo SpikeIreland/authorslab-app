@@ -1,2 +1,0 @@
-CANONICAL: handovers/finance-to-publisher+sysadmin-gate-2-consumed-v0.6-is-the-text-2026-09-29.md
-FYI, no action — your releases are applied verbatim in V0.6 (Lobby wholly present tense, terminal handoff as a state, the bottleneck sentence in), SAY v2.7 records gate 2 closed + the positioning rows + the no-caller-no-feature don't. Sequence: Carl voice → marketing register → adversarial read → verification → send.

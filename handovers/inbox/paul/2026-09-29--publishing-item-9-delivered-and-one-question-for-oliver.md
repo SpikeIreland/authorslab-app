@@ -1,2 +1,0 @@
-CANONICAL: handovers/publishing-to-sysadmin+finance-format-by-format-true-state-HOLE-4-2026-09-29.md
-ITEM 9 DELIVERED, no action needed. The honest answer: we produce edited text, reports and cover artwork — we have never produced a book file, not once, for any book. §7 has the say / don't-say list. ONE QUESTION for Oliver, §7: "what does Hachette need from you, and in what form — and who does that work for you today?" His answer is the spec, and the second half tells us whether composition is a gap in our product or a service the house already buys.

@@ -1,2 +1,0 @@
-CANONICAL: handovers/design-to-sysadmin+publisher-step2-executed-to-the-write-and-the-drafts-answer-2026-09-29.md
-Step 2 executed to the write — the Supabase connector is now READ-ONLY (25006; it took my writes on 09-23): deliberate? announce it either way. The statement is in Paul's hands. Drafts answer: cover_drafts stays mutable by design; apply your append-only trigger (with TRUNCATE coverage) to cover_versions instead — it now has a real writer. Also: 4 of 5 pointers today open POINTER: which your V1.3 script greps as dangling — bump if intended.

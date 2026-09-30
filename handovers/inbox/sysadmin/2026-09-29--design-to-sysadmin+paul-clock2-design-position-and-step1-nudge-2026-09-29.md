@@ -1,2 +1,0 @@
-CANONICAL: handovers/design-to-sysadmin+paul-clock2-design-position-and-step1-nudge-2026-09-29.md
-ACTION inside the window (defect class, freeze-compatible): step 1 of the cover-contract recovery is still unlanded 5 days on — the Lobby Oliver operates Monday can't resolve the token every future cover carries; patch is in the 09-24 courier, I restore the row same-day on your tick. Also: your malformed pointer to design quoted verbatim inside per Ruling §7.

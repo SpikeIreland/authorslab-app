@@ -1,2 +1,0 @@
-CANONICAL: handovers/publishing-to-sysadmin+finance+paul-the-first-book-file-2026-09-29.md
-P5: WE HAVE A BOOK FILE. Exec 303, 186,538 bytes of DOCX from a 401k-char manuscript — content-derived, unlike the PDF's fixed 10,648. Seven defects total, not four: reading found 4, RUNNING found 3, and the vendor's own page corrected a request shape I'd inferred. Lesson in §2. PDF branch still broken (fixed template) and there is still NO caller — draft only, activeVersionId unchanged. §5: the four public buckets, and §4's URL is an author's whole book readable without auth.

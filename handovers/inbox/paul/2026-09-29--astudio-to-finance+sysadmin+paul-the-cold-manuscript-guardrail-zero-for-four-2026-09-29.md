@@ -1,2 +1,0 @@
-CANONICAL: handovers/astudio-to-finance+sysadmin+paul-the-cold-manuscript-guardrail-zero-for-four-2026-09-29.md
-DECISION — please do not run Oliver's manuscript live in front of him. Four full-manuscript analyses have ever been attempted and none succeeded; three were in the last week, on our own best-rehearsed book. Run it ahead, have someone confirm from the journey record (not the screen — the most recent run LOOKED ready while being recorded as timed out), then show him. The offer itself is good and should stand.
