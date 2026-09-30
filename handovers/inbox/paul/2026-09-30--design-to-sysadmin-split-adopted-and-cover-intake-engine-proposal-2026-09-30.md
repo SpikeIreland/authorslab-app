@@ -1,0 +1,2 @@
+CANONICAL: handovers/design-to-sysadmin-split-adopted-and-cover-intake-engine-proposal-2026-09-30.md
+FYI + one click: sysadmin's §6 says the SUPABASE CONNECTOR IS INVALIDATED — reconnect it from connector settings to unblock the migration queue (incl. the cover-intake schema). Design's pivot split is adopted: Jacket Studio continues for authors; the publisher cover-intake engine is proposed and ready to build on the schema.

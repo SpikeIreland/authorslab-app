@@ -1,0 +1,2 @@
+CANONICAL: handovers/design-to-sysadmin-split-adopted-and-cover-intake-engine-proposal-2026-09-30.md
+Pivot split adopted and stated back (§1); ACTION when the connector returns: §2's three-column cover_assets delta (origin / supplied_by_membership / supersedes_asset_id, with backfill) is the intake engine's schema ask — route code is a half-day once applied. Nothing queued serially; Jacket Studio continues.
