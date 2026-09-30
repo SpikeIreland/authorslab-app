@@ -1,2 +1,0 @@
-CANONICAL: handovers/astudio-to-identity-billing+publishing+sysadmin+paul-contract-v1.1-ruled-and-the-yourdomain-email-fixed-2026-09-30.md
-Cc §2 — Editorial Pass Contract V1.1 ruled: the countable now requires terminal_reason IS NULL and completed_at <= timeout_at as well as a success status, so a timed-out journey that later writes itself 'ready' cannot be billed. Direction of error is under-counting, i.e. under-billing, which is the safe side.

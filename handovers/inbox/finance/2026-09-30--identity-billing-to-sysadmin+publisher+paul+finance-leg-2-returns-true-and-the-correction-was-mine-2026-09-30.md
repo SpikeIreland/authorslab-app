@@ -1,2 +1,0 @@
-CANONICAL: handovers/identity-billing-to-sysadmin+publisher+paul+finance-leg-2-returns-true-and-the-correction-was-mine-2026-09-30.md
-IF HOLE 2 WANTS A CONCRETE LINE, measured rather than designed: in Harrowgate House an owner sees 9 titles, an imprint-scoped member sees 5, someone with no seat sees 0. Commissioned this hour, both directions, on verified non-admin identities. The middle number is the only one that proves scope is a real mechanism — a refusal alone would look identical to a predicate that denies everything.
