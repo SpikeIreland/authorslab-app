@@ -9,7 +9,8 @@
  *
  * ─── ONLY WHAT EXISTS ────────────────────────────────────────────────────────
  * The build brief names four surfaces — Dashboard, Company, People, Notes.
- * THREE are built. This strip lists three.
+ * THREE are built plus People. This strip lists what exists and nothing else:
+ * the Notes package is briefed and unbuilt, so it has no tab.
  *
  * A tab is an affordance and an affordance is a claim: a "Company" tab leading
  * nowhere, or to an empty shell, tells a publisher the feature exists. Tabs
@@ -28,6 +29,7 @@ const TABS = [
   { href: '/publisher', label: 'What is late' },
   { href: '/publisher/dashboard', label: 'Where everything is' },
   { href: '/publisher/company', label: 'Your house' },
+  { href: '/publisher/people', label: 'Your people' },
 ] as const
 
 export function PublisherNav() {
