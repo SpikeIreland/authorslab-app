@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import {
   deriveRegister,
   deriveRisk,
+  LAST_PHASE,
 
   RISK_ORDER,
   type Register,
@@ -92,6 +93,41 @@ export interface LobbyTitle {
   publicationDate: string | null
   risk: Risk
   riskBasis: RiskBasis
+  /** The seven stations, for the dashboard. */
+  stations: StationCell[]
+}
+
+/**
+ * THE SEVEN STATIONS, as the dashboard draws them.
+ *
+ * The same line the portal shows for one book, drawn across the whole list so
+ * progress is legible at a glance to everyone in the house. Station 1 is the
+ * author's submission and station 7 is the boundary — our stations complete,
+ * the book handed off. Neither is an editing phase, which is why they are
+ * named here rather than derived from `editing_phases`.
+ */
+export const STATIONS = [
+  { key: 'manuscript', name: 'Manuscript', phase: null },
+  { key: 'developmental', name: 'Developmental', phase: 1 },
+  { key: 'line', name: 'Line', phase: 2 },
+  { key: 'copy', name: 'Copy', phase: 3 },
+  { key: 'publishing', name: 'Publishing', phase: 4 },
+  { key: 'marketing', name: 'Marketing', phase: 5 },
+  { key: 'handoff', name: 'Handoff', phase: null },
+] as const
+
+export interface StationCell {
+  key: string
+  name: string
+  state: 'complete' | 'in-progress' | 'not-started'
+  /**
+   * WHAT completed it, never a guess. 'system' when the machine ran it,
+   * 'human' when a person recorded it, null when it is not complete or when
+   * `completion_source` is absent — which reads as UNKNOWN, never as system.
+   */
+  completedBy: 'system' | 'human' | null
+  /** The named operator on an editing station, from the row. */
+  operator: string | null
 }
 
 const PHASE_NAME: Record<number, string> = {
@@ -340,7 +376,55 @@ export async function GET(req: Request) {
         daysToLaunch,
       })
 
+      const anyPhaseRow = ps.length > 0
+      const phase5Complete = ps.some(
+        (x) => x.phase_number === LAST_PHASE && x.phase_status === 'complete'
+      )
+
+      const stations: StationCell[] = STATIONS.map((st) => {
+        if (st.key === 'manuscript') {
+          // The author's submission. A book with phase rows has a draft in the
+          // system; one without has not arrived.
+          return {
+            key: st.key,
+            name: st.name,
+            state: anyPhaseRow ? 'complete' : 'not-started',
+            completedBy: null,
+            operator: null,
+          }
+        }
+        if (st.key === 'handoff') {
+          return {
+            key: st.key,
+            name: st.name,
+            state: phase5Complete ? 'complete' : 'not-started',
+            completedBy: null,
+            operator: null,
+          }
+        }
+        const row = ps.find((x) => x.phase_number === st.phase)
+        const state =
+          row?.phase_status === 'complete'
+            ? 'complete'
+            : row?.phase_status === 'active'
+              ? 'in-progress'
+              : 'not-started'
+        return {
+          key: st.key,
+          name: st.name,
+          state,
+          // Only a COMPLETE station can say what completed it, and only when
+          // the discriminator is there to say so.
+          completedBy:
+            state === 'complete' && (row?.completion_source === 'system' || row?.completion_source === 'human')
+              ? row.completion_source
+              : null,
+          operator: row?.editor_name ?? null,
+        }
+      })
+
       return {
+        stations,
         manuscriptId: r.id,
         title: r.title,
         authorName,

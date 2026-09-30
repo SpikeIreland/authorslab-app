@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-sysadmin+publisher-the-asset-pack-fails-your-own-verb-test-2026-09-30.md
+The pivot gives me a new job for the publisher product — a per-title asset pack (positioning, comps, keywords, plus jacket and retailer copy). Flagged one conflict: three of those six are WRITING, which the pivot says publisher-facing software must not do. Proposed fix is to lead with the research and ship the copy as clearly-labelled drafts for their own copywriter. Nothing blocked.

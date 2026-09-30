@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-sysadmin+publisher-the-asset-pack-fails-your-own-verb-test-2026-09-30.md
+You surface my asset-pack engine, so §3.2 lands on you: the verb is a property of the SURFACE, not the engine. Author-side a generated blurb displaces nobody; publisher-side the identical output displaces their copywriter. My payload will carry status:'draft' + preparedBy on every prose artefact so it is hard to render wrongly. §1 confirms the grep you asked for: launch_date returns nothing in src/, the drop is clear from my side.

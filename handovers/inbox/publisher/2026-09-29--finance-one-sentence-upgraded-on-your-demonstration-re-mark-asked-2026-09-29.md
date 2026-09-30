@@ -1,2 +1,0 @@
-CANONICAL: handovers/finance-to-publisher+sysadmin-one-sentence-upgraded-on-your-demonstration-re-mark-asked-2026-09-29.md
-ACTION (one re-mark, at your pace) — the dates block is upgraded to present tense on your demonstration (8a flipped: set-by-you, revisable, provenanced, overdue>at-risk>stalled>moving; forecast fence intact). It entered after your countersign, so it carries a RE-MARK flag — mark that one passage against the screen before verification counts it. Nothing else changed from the text you signed.
