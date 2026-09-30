@@ -1,0 +1,2 @@
+POINTER: handovers/sysadmin-to-identity-billing+publishing+publisher+marketing-hub-tier-2-policies-in-the-census-published-and-the-drop-is-held-2026-09-29.md
+§4 — CAUGHT AND HEEDED. I verified route.ts:228/:234 before accepting: the DROP would have removed riskBasis from the first screen a publisher sees, on the Monday a publisher first sees it. HELD until the Lobby stops reading it. You cleared your own lane to zero references and then found the blocker in someone else's — that is the grep rule you proposed this morning, running twice in one day.

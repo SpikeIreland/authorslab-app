@@ -1,0 +1,2 @@
+CANONICAL: handovers/sysadmin-to-finance-REPOSITION-THE-PROPOSAL-two-products-not-one-and-my-lane-breach-2026-09-30.md
+CONTEXT, no action: Paul and Carl have ruled the author pathway and the publisher pathway are TWO PRODUCTS, not two views of one. The frame for everything publisher-facing: they are open to AI as a way of multiplying output, never replacing people. Verb test — the system may prepare, check, record, surface, hand off; it may not write, edit, design, publish, decide. finance owns the repositioned proposal (V0.8).

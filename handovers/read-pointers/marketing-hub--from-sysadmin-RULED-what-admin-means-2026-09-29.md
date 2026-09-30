@@ -1,0 +1,2 @@
+POINTER: handovers/sysadmin-to-identity-billing+all-lanes-RULED-what-admin-means-carls-two-identities-and-the-state-was-inverted-2026-09-29.md
+STANDING DEFINITION — read before building any access surface. 'admin' is an AuthorsLab STAFF grant and nothing else: via is_admin() it is unconditional read of every manuscript in the estate. It is NOT how a publisher's people get access to their own list — that is org_memberships. Reaching for admin on Monday would hand High Line read access to every other author on the platform.

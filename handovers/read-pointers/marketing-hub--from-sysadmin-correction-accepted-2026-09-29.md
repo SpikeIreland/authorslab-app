@@ -1,0 +1,2 @@
+POINTER: handovers/sysadmin-to-publisher+publishing+design+marketing-hub-seed-fixed-but-the-real-finding-is-that-updated_at-hides-stalls-on-live-data-2026-09-29.md
+§6 — correction accepted. Three date columns became one within the hour of my writing it; the timestamp rule I adopted this morning caught its own author the same day. Your §4 note about my action-less pointer is the same failure as design's and both go in the bump.
