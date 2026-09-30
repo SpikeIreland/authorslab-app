@@ -1,0 +1,101 @@
+# AuthorsLab × High Line Publishing
+
+**WORKING DRAFT V0.9 · 2026-09-30 · INTERNAL**
+V0.9 = the Carl voice pass, executed as Paul + Carl directed: (1) "what we are not claiming" moved from the front to the end, reframed positively as "Where we've drawn the lines"; (2) plain language throughout — shorter sentences, fewer aphorisms, less "the system", written for wordsmiths; (3) this md keeps the ⟨trace:⟩ notation for verification — the companion PDF is the CLEAN PREVIEW, exactly as Oliver would see it (no banner, no traces, no hole box; the staff section simply absent until I&B supplies it). All v3 SAY-table absolutes still bind: verb test, insulation sentence, no forecast, no access claims, no author-product pointers. Not for send until re-mark + adversarial read + verification.
+
+---
+
+## A partnership proposal
+
+High Line is building a new publishing operation. The systems around your list have to be built at the same time as the list itself. That is the problem this document answers.
+
+AuthorsLab is publishing infrastructure: one environment where your editors, designers and marketers do their work with better preparation, better records, and a clear view of every book on the list. You adopt it a piece at a time. It gets shaped around how High Line actually runs, because shaping it together is the point.
+
+One commitment holds throughout. The system multiplies what your professionals produce. It never replaces them. It prepares, checks, records and hands off. It does not write, edit, design, publish or decide. Wherever those words appear in this document, the person doing them is one of yours.
+
+## What it does
+
+**Editorial.** Alex, Sam and Jordan — our three editorial engines — read a full manuscript or a single chapter and produce structured notes, referenced to chapters ⟨trace: analysis engine live; release workflow in build — see "What's built"⟩. One of your editors reviews those notes, keeps what is right, cuts what is wrong, and sends the author a notes package under their own name. Nothing goes to a writer without a named person at High Line releasing it. The point is not cheaper editing. It is shorter queues: the scarce thing in an editorial department is a senior editor's free week, and a manuscript that arrives already read starts that week part-finished. Copy editing follows your house style sheet — not our idea of good style, yours — and you can test that claim in the first chapter it touches.
+
+**Design.** Your designers keep their own tools. AuthorsLab gives their work somewhere to live: finished artwork comes in versioned and attributed, cover concepts go to authors for comment, and a record shows who approved what ⟨trace: intake/versioning live; sysadmin §6 line⟩. A page-layout check flags widows, orphans, single-word pages and bad breaks before anyone else finds them. We are not competing with Photoshop or InDesign, and we are not trying to.
+
+**Production readiness.** High Line finances, the imprints publish, Hachette delivers. Our job ends at the handoff. So the last station is a readiness check: metadata complete, front and back matter in place, formats checked, snags cleared. A title is provably ready, or provably not — with a list of exactly what is missing. Every incomplete handoff costs a cycle, and every cycle is weeks. We do not publish. We make a title ready to be published, and we can prove it.
+
+**Marketing.** For each title, a drafted starting pack for your marketer: positioning, comparable titles, keywords, jacket copy, retailer copy at three lengths, a sales-sheet blurb. The system knows the handoff date, so it knows when the campaign has to start. Your marketer decides what the book is. The pack just saves them the typing.
+
+## The list view
+
+One screen shows the whole list, sorted by what needs attention, filterable by imprint. Each row says where the book is, who it is waiting on, and how long since anything moved ⟨trace: publisher countersign 2026-09-29⟩. When nothing is late, it says so. A finished book shows the boundary plainly: *our stations are complete — the handoff sits with you.*
+
+Behind the screen, every book moves through recorded stations: what was done, who did it, and who closes the gate for the book to move on ⟨trace: L1 live⟩. Decisions are recorded with a name and a time, and cannot be edited afterwards ⟨trace: publisher_actions live⟩. In our own testing, the first book that rose to the top of the list was waiting on the publisher, not on us. That is the kind of thing this screen is for.
+
+Each title can carry a target date — set by you, changeable, with a record of who set it ⟨trace: title_target_dates; RE-MARK⟩. The list measures against it: overdue first, then at risk, then stalled, then moving. A book with no date is never called "on track", because on track is a claim against a date, and we only make it against one you have set.
+
+## How you would adopt it
+
+**Phase one — editorial (this proposal).** Your workspace, your titles, the notes workflow and the list view. It starts with two pilot titles, one from Odessa and one from Antidote, free until the first editorial pass completes.
+
+**Phase two — production.** Turning a finished manuscript into the files your channel accepts: composition, formatting, cover typography. We will build this against your answer to one question — what does your handoff to Hachette actually require? — and we will agree the commercials then, not now.
+
+**Phase three** — whatever the first two prove worth doing, decided together.
+
+Within every phase there are three settings, per module, and your admin holds the switch: **Observe**, where the system changes nothing and simply keeps the record while your people work as they always have; **Assist**; and **Operate**. You move a module up only when you choose to. The switches themselves are still being built; until they ship, settings are changed with us rather than self-served.
+
+## What's built and what isn't
+
+Running in production today: the station-by-station record, the book pages and manuscript reader, cover intake and generation, the decision log, the usage metering, and the list view — checked on screen against live data ⟨traces per v3 table⟩. Target dates and the overdue-to-moving measurement. Title details — front and back matter, metadata, pricing, channels — held as structured data.
+
+Being built now, plainly listed: the screens for organisations, imprints and staff permissions (the foundations are in place and their security has been demonstrated ⟨trace: 42501 observed⟩; the screens are in progress); the three-setting switches; the editor's review-and-release step that puts a High Line name on a notes package; designer upload; the single readiness verdict; the marketing pack.
+
+And one number worth knowing: a pass that fails costs us and bills you nothing ⟨trace: Contract V1⟩.
+
+## What it costs
+
+Two numbers, in pounds, and nothing metered behind either.
+
+**£750 a month** covers the whole platform: your full list, every seat, both imprints, at whatever settings you choose. We deliberately don't charge per seat. Charging per seat punishes a three-person imprint for being small, which is backwards for a house that is growing.
+
+**£400 per title, once,** when a book enters the editorial workflow — charged when the first editorial pass completes. That opens the whole editorial module to the book: all three engines, at your settings, with re-runs within fair use. Use as much or as little of it as you choose; the price does not change. A book loaded but never worked is never billed. A book delayed downstream is not billed again for waiting.
+
+You already account per title, so £400 sits as one line in a cost structure you already run — beside professional editorial at £1,600 to £8,000 for a single pass on the same book ⟨trace: verified 2026-07-28⟩. It is not a replacement for that spend and is not offered as one; the editor still reads the book. A fifteen-title year comes to £15,000. A thirty-title year, £21,000. If your people do everything themselves and use only the list view, a year is £9,000 flat — that floor is deliberate, not a loophole.
+
+No per-seat pricing. No usage meters. No overage charges. Payment tracks title activity, nothing else.
+
+## Working together
+
+We are not selling you a finished thing, and we are not proposing a bespoke build. Either claim would be false. This is an exchange: you get infrastructure shaped around a real publishing house while the shaping still matters, and we get something we cannot buy — sustained access to professionals who know what a publishing operation requires. Carl, our co-founder, will work directly with your team on setup, workflow fit and the first passes. The feedback is the point, not a courtesy.
+
+Four questions we would rather ask than answer, each belonging to someone in your house:
+
+| Question | Whose answer |
+|---|---|
+| What does your handoff to Hachette require, and in what form? | Production |
+| Do your designers hand us finished files, or would they work in our tools? | Your design lead |
+| When you set a target date, does it mean handoff, publication, or both? | You |
+| Where does a notes package sit in your editorial process, and who signs it off? | Your editors |
+
+None of these holds up the pilot. The system runs without the answers and gets better with them.
+
+## Where we've drawn the lines
+
+You should know where the edges are. We would rather you read them here than find them in use.
+
+The system holds no opinion an editor hasn't approved, sends nothing an editor hasn't released, and never claims taste. Where a feature isn't finished, its button does not exist — we removed working-looking controls from these screens for exactly that reason, and the same rule wrote this document: nothing here is in the present tense unless it runs in production today ⟨trace: L6⟩.
+
+The manuscript compiler assembles a complete book — front matter, chapters, back matter — as one styled document. Turning that into files a distributor accepts is not working yet, and what "accepted" means depends on who receives the files ⟨trace: publishing supply⟩. That is phase two's first job, and we would rather build it to Hachette's real requirements than to our guess.
+
+The list view reports what has moved and who is waiting; it does not forecast. It will not tell you a book will miss March until there is a real track record to say so honestly. The pilot is where that record begins.
+
+And nothing here plugs into your existing systems, Hachette's, contracts or royalties. What we propose runs alongside what you have. The record it builds is the argument for whatever comes next.
+
+## Next step
+
+One small decision: agree the two pilot titles, one from Odessa, one from Antidote.
+
+Then, in order: we set up the High Line workspace — your organisation, your imprints, your team's access; the pilot titles enter the line; the first passes run and your editors handle the first notes packages; and we sit down together to review before agreeing anything further.
+
+The objective is not to sell High Line software. It is to help a new publisher build modern publishing infrastructure with as little friction as possible — and to earn each next phase by what the last one measurably did.
+
+---
+
+*Working positions: UK contracting entity, pounds sterling, invoiced net-30 — confirmed at signature. These are opening terms for High Line specifically, not a rate card.*
