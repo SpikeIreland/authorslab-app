@@ -1,7 +1,7 @@
 # AuthorsLab × High Line Publishing
 
 **WORKING DRAFT V0.11 · 2026-09-30 · INTERNAL**
-V0.11 = Carl's edits (docx filed beside this), adopted verbatim. The substantive ones, recorded: (1) "multiplies what your professionals produce" → "**support** your professionals, not replace them" — softer verb, same rule; (2) **the £1,600–£8,000 editorial comparable, its insulation sentence, and the £15k/£21k/£9k year illustrations are REMOVED** — the document now carries only the two prices and the pilot; the anchoring conversation happens in the room (supersedes Paul's earlier keep-but-insulate call, by Paul sending Carl's edit); (3) the L6 removed-controls sentence → "where a feature isn't finished, we will say so rather than imply that it is"; (4) "the usage metering" cut from the running-today list; (5) marketing module softened to "can prepare structured starting material" (aligns with marketing-hub's verb-test courier of this morning); (6) Assist and Operate given plain one-clause definitions. All fences hold: verb test, no presumption, no forecast, "on track" only against their date. Traces re-attached below where claims persist. Sequence: publisher re-mark → marketing register → adversarial read → verification (N/M/0 + verb test + presumption check) → Paul + Carl send.
+V0.11 rev A: pricing paragraphs simplified to Carl's exact lines (relayed by Paul); the entry-to-the-line rule sentence and never-billed protection retained in one compact line — the former is publisher's binding countersign condition. V0.11 = Carl's edits (docx filed beside this), adopted verbatim. The substantive ones, recorded: (1) "multiplies what your professionals produce" → "**support** your professionals, not replace them" — softer verb, same rule; (2) **the £1,600–£8,000 editorial comparable, its insulation sentence, and the £15k/£21k/£9k year illustrations are REMOVED** — the document now carries only the two prices and the pilot; the anchoring conversation happens in the room (supersedes Paul's earlier keep-but-insulate call, by Paul sending Carl's edit); (3) the L6 removed-controls sentence → "where a feature isn't finished, we will say so rather than imply that it is"; (4) "the usage metering" cut from the running-today list; (5) marketing module softened to "can prepare structured starting material" (aligns with marketing-hub's verb-test courier of this morning); (6) Assist and Operate given plain one-clause definitions. All fences hold: verb test, no presumption, no forecast, "on track" only against their date. Traces re-attached below where claims persist. Sequence: publisher re-mark → marketing register → adversarial read → verification (N/M/0 + verb test + presumption check) → Paul + Carl send.
 
 ---
 
@@ -51,9 +51,9 @@ And one number worth knowing: a pass that fails costs us and bills you nothing �
 
 Two numbers, in pounds, and nothing metered behind either.
 
-**£750 a month** covers the whole platform: your full list, every seat, both imprints, at whatever settings you choose. We deliberately don't charge per seat — a small imprint shouldn't pay a penalty for being small.
+**Platform fee — £750 / month** — the whole platform: your full list, every seat, every imprint, at whatever settings you choose.
 
-**£400 per title, once,** when a book enters the editorial workflow — charged when the first editorial pass completes. That opens the whole editorial module to the book: all three engines, at your settings, with re-runs within fair use. Use as much or as little of it as you choose; the price does not change. A book loaded but never worked is never billed. A book delayed downstream is not billed again for waiting.
+**Per title worked — £400, once** — charged when the first editorial pass completes. That opens the whole editorial module to the book. Use as much or as little of it as you choose; the price does not change. A book loaded but never worked is never billed.
 
 No per-seat pricing. No usage meters. No overage charges. Payment tracks title activity, nothing else.
 
