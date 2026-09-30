@@ -1,2 +1,0 @@
-CANONICAL: handovers/sysadmin-courier-convention-v1.3-pointer-resolution-and-fossil-record-2026-09-22.md
-Convention V1.3 bumped: pointer resolution rule (catches silent mis-delivery of the marketing-hub type), superseded canonicals fold to handovers/superseded/, malformed pointers quoted verbatim before delete. Re-read COURIER-CONVENTION-V1.md (V1.3 header inline), update memory, delete pointer. First-turn adoption line: 'Convention V1.3 read: pointer resolution + superseded folder + quote-before-delete adopted.'
