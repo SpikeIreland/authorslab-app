@@ -36,8 +36,12 @@ export interface EntitlementResponse {
  *   > One pass = one row in `as_journeys` where
  *   > `journey_type = 'full_analysis'` AND
  *   > `editor_name IN ('alex','sam','jordan')` AND
- *   > `status = 'complete'`.
+ *   > `status IN ('ready','replied','complete')` AND
+ *   > `terminal_reason IS NULL` AND
+ *   > `completed_at <= timeout_at`.
  *   > Consumption is timestamped by `completed_at`.
+ *   (V1.1, ruled by astudio 2026-09-30 — see the constants below for why each
+ *   clause is there and why the obvious alternative fix was dangerous.)
  *
  * Why this is NOT an `lmo_ledger` station count, which is what this file did
  * until 2026-09-24 and why that read zero forever:
@@ -76,7 +80,52 @@ export interface EntitlementResponse {
  */
 const PASS_JOURNEY_TYPE = 'full_analysis'
 const PASS_EDITORS = ['alex', 'sam', 'jordan'] as const
-const PASS_SUCCESS_STATUS = 'complete'
+
+/**
+ * EDITORIAL PASS CONTRACT V1.1 — ruled by `astudio` 2026-09-30, landed here
+ * the same turn. Change control discharged: couriered BEFORE it landed, never
+ * after.
+ *
+ * V1 counted `status = 'complete'`. NOTHING HAS EVER WRITTEN THAT VALUE — 14
+ * journeys since 12 August, 0 at 'complete'; the worker writes 'ready' for
+ * every journey type. So the meter was structurally incapable of counting a
+ * pass, and because the failure direction is generous (a stuck zero never
+ * blocks anyone) it would never have raised a complaint. P1 succeeding is what
+ * would have turned it into a live billing hole.
+ *
+ * Three clauses, and each one is load-bearing:
+ *
+ *  1 · status IN ('ready','replied','complete')
+ *      This is already the success set the product uses: `terminalUserMessage`
+ *      in src/lib/as_journeys.ts treats exactly these three as success and
+ *      tells the author so. THE METER MUST COUNT WHAT THE PRODUCT TOLD THE
+ *      AUTHOR IT DELIVERED. Narrower, and we give away work we announced as
+ *      done.
+ *
+ *  2 · terminal_reason IS NULL
+ *      `astudio`'s clause and the one that matters most. The n8n node
+ *      "Journey: Ready" writes status and completed_at but NEVER CLEARS
+ *      terminal_reason — that is the whole Mode B mechanism, where a worker
+ *      outlives the reaper and overwrites a terminal verdict. It is also why
+ *      the obvious alternative fix (make the worker write 'complete') is
+ *      ACTIVELY DANGEROUS: it would produce 'complete' + terminal_reason =
+ *      'timeout', which a status-only meter counts.
+ *
+ *  3 · completed_at <= timeout_at
+ *      Refuses a journey that finished after its own deadline. Kept, but NOT
+ *      sufficient alone: the 12 August truncation failure finished inside its
+ *      window. Clause 1 excludes it.
+ *
+ * THE DISCRIMINATOR IS REACHABLE, checked before shipping rather than assumed
+ * — 9 of 14 journeys satisfy all three clauses today (7 chapter_analysis, 2
+ * editor_chat), and every failure, reap and Mode B row carries a non-null
+ * terminal_reason. A predicate that nothing can satisfy is the defect this
+ * amendment exists to repair; it would be absurd to fix it with another one.
+ *
+ * `full_analysis` itself is still 0 for 4, so this meter reads zero — but it
+ * now reads zero because no pass has succeeded, not because it is blind.
+ */
+const PASS_SUCCESS_STATUSES = ['ready', 'replied', 'complete'] as const
 
 export async function GET() {
   const supabase = await createClient()
@@ -140,13 +189,20 @@ export async function GET() {
     // row fault (AS-3). Period filter reads `completed_at`, not `created_at`:
     // a journey started in one period and finished in the next consumes in the
     // period it delivered value.
-    const { count, error: passError } = await supabase
+    // Rows, not a count. PostgREST cannot compare two columns to each other,
+    // so `completed_at <= timeout_at` is not expressible as a filter and the
+    // comparison happens here. That costs the `head: true` optimisation and is
+    // free at these volumes (a handful of journeys per manuscript per period);
+    // an explicit comparison a reader can check beats a clever filter that
+    // cannot express the rule.
+    const { data: candidates, error: passError } = await supabase
       .from('as_journeys')
-      .select('id', { count: 'exact', head: true })
+      .select('id, completed_at, timeout_at')
       .in('manuscript_id', manuscriptIds)
       .eq('journey_type', PASS_JOURNEY_TYPE)
       .in('editor_name', PASS_EDITORS)
-      .eq('status', PASS_SUCCESS_STATUS)
+      .in('status', PASS_SUCCESS_STATUSES)
+      .is('terminal_reason', null)
       .gte('completed_at', sub.current_period_start)
 
     if (passError) {
@@ -154,7 +210,19 @@ export async function GET() {
       // report a comfortable zero (House Rules, Invariants).
       return NextResponse.json({ error: passError.message }, { status: 500 })
     }
-    passes_used_this_period = count ?? 0
+
+    // `completed_at` is NULLABLE while `timeout_at` is NOT NULL. A
+    // success-terminal row with no completion time is a CONTRADICTION, and the
+    // generous failure would be to let it fall out of the comparison silently
+    // and under-count. It cannot reach here — the period filter above already
+    // drops nulls — but the guard is explicit so that removing that filter
+    // later cannot quietly reintroduce an under-count.
+    passes_used_this_period = (candidates ?? []).filter((j) => {
+      const done = j.completed_at as string | null
+      const deadline = j.timeout_at as string | null
+      if (!done || !deadline) return false
+      return new Date(done).getTime() <= new Date(deadline).getTime()
+    }).length
   }
 
   const passes_included = sub?.passes_included ?? null

@@ -1,2 +1,0 @@
-CANONICAL: handovers/design-to-sysadmin-split-adopted-and-cover-intake-engine-proposal-2026-09-30.md
-ONE QUESTION (§2): which authority level uploads cover artwork? Proposed Assist+ (Observe cannot); your seam, your call — answer by courier and the intake route wires to your check the day it exists. supplied_by_membership FKs your memberships table; correct the table name in sysadmin's migration if I have it wrong.
