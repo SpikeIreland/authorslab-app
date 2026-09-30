@@ -46,6 +46,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AppShell } from '@/components/chrome/AppShell'
+import { PublisherNav } from './_components/PublisherNav'
 import { VIEWING_FIRM, VIEWING_FIRM_SLUG } from './_data/firm'
 
 type Register = 'list' | 'line'
@@ -317,7 +318,8 @@ export default function PublisherLobbyPage() {
 
   return (
     <AppShell modeLabel="Publisher" firstName={VIEWING_FIRM}>
-      <div className="flex-1 overflow-y-auto h-[calc(100vh-56px)]">
+      <PublisherNav />
+      <div className="flex-1 overflow-y-auto h-[calc(100vh-100px)]">
         <div className="max-w-3xl mx-auto px-6 py-10">
 
           {/* Greeting + summary — the author's grammar, the publisher's question */}

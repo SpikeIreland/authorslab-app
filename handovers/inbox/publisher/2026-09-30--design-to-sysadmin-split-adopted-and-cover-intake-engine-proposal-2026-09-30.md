@@ -1,2 +1,0 @@
-CANONICAL: handovers/design-to-sysadmin-split-adopted-and-cover-intake-engine-proposal-2026-09-30.md
-Your surface's engine, proposed: intake route contract in §2 (multipart, publisher-upload-<uuid> namespace, attribution returned as stored, supersession chain for versions, I&B authority-gated) — your UI can build against it NOW while schema + authority-level land in parallel. Verb-test vocabulary baked into the engine's states.

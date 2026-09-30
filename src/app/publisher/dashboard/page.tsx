@@ -38,6 +38,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AppShell } from '@/components/chrome/AppShell'
+import { PublisherNav } from '../_components/PublisherNav'
 import { VIEWING_FIRM, VIEWING_FIRM_SLUG } from '../_data/firm'
 
 type Risk = 'overdue' | 'at-risk' | 'stalled' | 'moving' | 'not-started' | 'handed-off'
@@ -81,6 +82,25 @@ function StationMark({ cell }: { cell: StationCell }) {
     'w-full h-8 rounded-[3px] flex items-center justify-center text-[10px] font-medium'
 
   if (cell.state === 'complete') {
+    // THREE kinds of complete, and they must not share a mark.
+    //
+    // Found on the live surface: a structural station (Manuscript, Handoff)
+    // has no `completedBy` — nobody "runs" a submission — so it rendered as a
+    // green box containing an em-dash. Green means "completed by the system"
+    // in this page's own key, so the cell was both claiming the wrong thing
+    // and showing a character that reads as missing data. On the surface that
+    // is meant to be the most finished thing we own.
+    if (cell.completedBy === null) {
+      return (
+        <div
+          className={base}
+          style={{ background: '#F3F4F6', color: '#4B5563', border: '1px solid #E5E7EB' }}
+          title={`${cell.name} — reached`}
+        >
+          reached
+        </div>
+      )
+    }
     const byPerson = cell.completedBy === 'human'
     return (
       <div
@@ -91,16 +111,12 @@ function StationMark({ cell }: { cell: StationCell }) {
             : { background: '#ECFDF5', color: '#065F46', border: '1px solid #A7F3D0' }
         }
         title={
-          cell.completedBy === 'system'
-            ? `${cell.name} — completed by the system`
-            : cell.completedBy === 'human'
-              ? `${cell.name} — recorded by hand`
-              : `${cell.name} — complete`
+          byPerson
+            ? `${cell.name} — recorded by hand`
+            : `${cell.name} — completed by the system`
         }
       >
-        {/* A person's mark and the machine's mark must not look the same.
-          * Where the discriminator is absent we say nothing about who. */}
-        {cell.completedBy === 'human' ? 'by hand' : cell.completedBy === 'system' ? 'done' : '—'}
+        {byPerson ? 'by hand' : 'done'}
       </div>
     )
   }
@@ -190,7 +206,8 @@ export default function PublisherDashboardPage() {
 
   return (
     <AppShell modeLabel="Publisher" firstName={VIEWING_FIRM}>
-      <div className="flex-1 overflow-y-auto h-[calc(100vh-56px)]">
+      <PublisherNav />
+      <div className="flex-1 overflow-y-auto h-[calc(100vh-100px)]">
         <div className="max-w-[1200px] mx-auto px-6 py-10">
 
           <div className="mb-7">
@@ -365,6 +382,10 @@ export default function PublisherDashboardPage() {
                 <span className="inline-flex items-center gap-1.5">
                   <span className="inline-block w-4 h-3 rounded-[2px]" style={{ background: '#EEF2FF', border: '1px solid #C7D2FE' }} />
                   recorded by one of your people
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="inline-block w-4 h-3 rounded-[2px]" style={{ background: '#F3F4F6', border: '1px solid #E5E7EB' }} />
+                  reached — no station runs here
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <span className="inline-block w-4 h-3 rounded-[2px]" style={{ background: '#FFFBEB', border: '1px solid #FDE68A' }} />
