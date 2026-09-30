@@ -1,6 +1,6 @@
-# Cover email to Oliver — DRAFT V4 (post-pivot), for Carl's review
+# Cover email to Oliver — DRAFT V4.1 (post-pivot + walkthrough ruling), for Carl's review
 
-**Status:** internal draft, 2026-09-30. Repositioned with V0.8: publisher product only, multiply-not-replace, no author-product pointers. The look-around is result-oriented (never implies a watchable live pass, per the standing guardrail). Ships only with the verified proposal; Paul + Carl own the send.
+**Status:** internal draft, 2026-09-30. Repositioned with V0.8: publisher product only, multiply-not-replace, no author-product pointers. The look-around is result-oriented (never implies a watchable live pass, per the standing guardrail) and access-free (5 Oct is a WALKTHROUGH, not access — sysadmin all-lanes pivot canonical §3; nothing in this email offers a login before the pilot). Ships only with the verified proposal; Paul + Carl own the send.
 
 ---
 
@@ -19,8 +19,8 @@ Good to talk — the proposal is attached. The short version:
 
 You mentioned wanting to try it yourself — two things worth doing:
 
-- **Give us a manuscript and see what the preliminary pass produces:** structured, chapter-referenced editorial notes — the raw material a High Line editor would review, shape and release under their own name. You can also put questions about the manuscript to Alex, the developmental engine, directly.
-- **The publisher's view — the "which book is going to slip" screen — we'll walk you through live when we next speak,** on a working demonstration workspace. Your own workspace is set up as part of the pilot.
+- **Give us a manuscript and we'll run the preliminary pass on it:** what comes back is structured, chapter-referenced editorial notes — the raw material a High Line editor would review, shape and release under their own name. When we meet, we can put your questions to Alex, the developmental engine, against your own text.
+- **The publisher's view — the "which book is going to slip" screen — we'll walk you through in the same session,** on a working demonstration workspace. Your own workspace, and your team's access to it, are set up as part of the pilot.
 
 The proposal also carries four questions we'd rather ask than answer — about your Hachette handoff, your designers' tools, what a target date means in your house, and where an editorial notes package sits in your process. Your answers shape what we build next; none of them holds up the pilot.
 
