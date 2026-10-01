@@ -11,6 +11,30 @@
  *
  * `available` is false until sysadmin applies the publisher_actions migration
  * (couriered 2026-09-24). Nothing here needs changing when it lands.
+ *
+ * ─── `lastFailure`, and why it belongs HERE rather than in each caller ──────
+ *
+ * Added 2026-10-01, under `sysadmin`'s R5 — *a surface reports state, not
+ * intent* — after checking my own surfaces against it and finding two failures
+ * of exactly that kind:
+ *
+ *   · `Confirm route` called `record()` and DISCARDED the return value. A
+ *     refused write re-enabled the button, said nothing, and left the
+ *     confirmation line absent. The user clicks again.
+ *   · the Communications composer did `if (ok) setDraft('')` — it kept the
+ *     draft, which is right, and told the user nothing, which is not.
+ *
+ * I had already fixed this exact silent swallow once, in the reading room's
+ * note composer, and it survived in two other places. **That is the evidence
+ * that the first fix was local where it needed to be structural.** So the
+ * failure is now held by the hook every control goes through: a caller cannot
+ * write a new control that fails silently without ignoring a value that is
+ * sitting in front of it, and the three refusals the routes now distinguish
+ * (no seat, not your book, could not check) arrive as three sentences rather
+ * than as one absent reaction.
+ *
+ * A control that fails silently is worse than a control with nothing behind
+ * it: the second is honest about itself and the first is not.
  */
 
 import { useCallback, useEffect, useState } from 'react'
@@ -38,6 +62,7 @@ export function usePublisherActions(projectId: string) {
   const [actions, setActions] = useState<PublisherAction[]>([])
   const [available, setAvailable] = useState<boolean | null>(null)
   const [saving, setSaving] = useState(false)
+  const [lastFailure, setLastFailure] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -48,6 +73,15 @@ export function usePublisherActions(projectId: string) {
         if (cancelled) return
         if (!res.ok) {
           setAvailable(false)
+          // A 503 means we could not CHECK the seat. The controls are hidden
+          // either way -- hiding on an unknown is the conservative direction
+          // -- but the surface must be able to say why they are not there
+          // rather than leave a reader to conclude the feature is missing.
+          if (res.status === 503) {
+            setLastFailure(
+              'Could not check your seat just now, so nothing is offered here. This is our end, not yours.'
+            )
+          }
           return
         }
         const json = (await res.json()) as {
@@ -71,6 +105,9 @@ export function usePublisherActions(projectId: string) {
     async (input: RecordInput): Promise<boolean> => {
       if (!projectId || available !== true) return false
       setSaving(true)
+      // Cleared on every attempt, so a stale sentence can never sit under a
+      // control that has since succeeded.
+      setLastFailure(null)
       try {
         const res = await fetch(`/api/publisher/projects/${projectId}/actions`, {
           method: 'POST',
@@ -81,8 +118,22 @@ export function usePublisherActions(projectId: string) {
           body: JSON.stringify(input),
         })
         if (!res.ok) {
-          // A write that did not land must not look like one that did.
+          // A write that did not land must not look like one that did -- and
+          // must not look like nothing happened either. Each status is a
+          // different sentence, and the one that must never be guessed is
+          // 503: it says nothing about this person's access.
           if (res.status === 503) setAvailable(false)
+          setLastFailure(
+            res.status === 403
+              ? 'Your seat no longer allows this. Signing in again should restore it.'
+              : res.status === 404
+                ? 'This book is not on your list, so nothing was recorded against it.'
+                : res.status === 409
+                  ? 'You hold a seat in more than one house and there is no way yet to choose between them, so nothing was recorded.'
+                  : res.status === 503
+                    ? 'Could not check your seat just now, so nothing was recorded. This is our end, not yours.'
+                    : 'That was not recorded. Nothing has changed against this book.'
+          )
           setSaving(false)
           return false
         }
@@ -98,7 +149,7 @@ export function usePublisherActions(projectId: string) {
     [projectId, available]
   )
 
-  return { actions, available, saving, record }
+  return { actions, available, saving, record, lastFailure }
 }
 
 /** Latest decision at a station, derived from the append-only log. */

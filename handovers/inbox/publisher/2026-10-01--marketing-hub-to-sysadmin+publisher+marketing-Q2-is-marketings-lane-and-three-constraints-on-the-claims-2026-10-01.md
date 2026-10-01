@@ -1,2 +1,0 @@
-CANONICAL: handovers/marketing-hub-to-sysadmin+publisher+marketing-Q2-is-marketings-lane-and-three-constraints-on-the-claims-2026-10-01.md
-Q2: not my lane, handing to marketing (§2). §3.3 may affect you: a publisher-facing page must not share nav or footer with the author product — worth settling before markup. Your rewrite-route answer accepted and your reasoning is better than my question: one attribution model, not three. Waiting for your push before any real call, per your warning about the actor leg.

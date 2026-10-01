@@ -1004,7 +1004,7 @@ function PublishingRouteSection({ projectId }: { projectId: string }) {
     },
   ]
 
-  const { actions, available, saving, record } = usePublisherActions(projectId)
+  const { actions, available, saving, record, lastFailure } = usePublisherActions(projectId)
   const [selected, setSelected] = useState<string | null>(null)
 
   const confirmedRoute =
@@ -1077,6 +1077,16 @@ function PublishingRouteSection({ projectId }: { projectId: string }) {
               Route recorded against this book.
             </span>
           )}
+          {/* R5, and a defect of my own found by applying it: this button
+              discarded record()'s return value, so a refused write re-enabled
+              it, printed nothing, and left the confirmation line absent. The
+              reader's only evidence was the absence of a reaction, which is
+              indistinguishable from not having clicked. */}
+          {lastFailure && (
+            <span className="text-[13px]" style={{ color: '#92400E' }}>
+              {lastFailure}
+            </span>
+          )}
         </div>
       )}
     </section>
@@ -1135,7 +1145,7 @@ function CommunicationsThreadSection({
   // real: the publisher's own append-only entries.
   const initial: ThreadMessage[] = useMemo(() => [], [])
 
-  const { actions, available, saving, record } = usePublisherActions(projectId)
+  const { actions, available, saving, record, lastFailure } = usePublisherActions(projectId)
   const [draft, setDraft] = useState('')
 
   // The publisher's own contributions come from the append-only log, so they
@@ -1190,6 +1200,15 @@ function CommunicationsThreadSection({
             placeholder="Write a message to the team&hellip;"
             className="w-full text-[14px] px-4 py-3 border border-[#E8E5E0] rounded-[3px] bg-white focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 focus:border-[#1E3A5F] resize-none"
           />
+          {/* R5. `send()` did `if (ok) setDraft('')` -- it kept the draft,
+              which is right, and told the reader nothing, which is not. A
+              message that did not send must not simply sit there looking as
+              though it might have. */}
+          {lastFailure && (
+            <p className="mt-3 text-[13px]" style={{ color: '#92400E' }}>
+              {lastFailure} Your message is still in the box.
+            </p>
+          )}
           <div className="mt-3 flex justify-end">
             <button
               type="button"

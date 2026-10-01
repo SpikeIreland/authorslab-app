@@ -69,6 +69,14 @@ interface Payload {
   seats?: Seat[]
   imprints?: { id: string; name: string }[]
   role_disclosure?: string
+  /**
+   * The sentence for a seat with no imprints. `identity-billing` serves it
+   * from the engine as of 2026-10-01, for the reason they credit to my
+   * courier and which is the right reason: a blank scope reads as "not
+   * restricted", the exact inversion of the truth, and that must not depend
+   * on a renderer remembering to be careful.
+   */
+  empty_scope_notice?: string
   invitations_are_delivered_by_email?: boolean
 }
 
@@ -87,7 +95,14 @@ function formatWhen(iso: string | null): string {
   }
 }
 
-function SeatRow({ seat }: { seat: Seat }) {
+function SeatRow({
+  seat,
+  emptyScopeNotice,
+}: {
+  seat: Seat
+  /** Served by the engine; see the Payload note. */
+  emptyScopeNotice?: string
+}) {
   const s = STATUS_STYLE[seat.status] ?? {
     bg: '#F8F8F7', fg: '#6B6B6B', border: '#E5E5E3', label: seat.status,
   }
@@ -125,8 +140,17 @@ function SeatRow({ seat }: { seat: Seat }) {
             ) : (
               /* Absence of scope is EMPTY scope, never universal scope —
                  identity-billing's rule, and the surface must not soften it
-                 into something that looks like broad access. */
-              <span style={{ color: '#92400E' }}>no imprints assigned — sees nothing</span>
+                 into something that looks like broad access.
+                 FROM THE PAYLOAD, like role_disclosure and the Company tab's
+                 enforcement caveat. The literal below is kept only as a
+                 floor, and it is a deliberate exception to this lane's
+                 no-fallbacks rule: the dangerous outcome here is a BLANK,
+                 which reads as "not restricted". Where a fallback must exist
+                 it falls to the restrictive reading, never the permissive
+                 one. */
+              <span style={{ color: '#92400E' }}>
+                {emptyScopeNotice ?? 'no imprints assigned — sees nothing'}
+              </span>
             )}
           </div>
 
@@ -144,6 +168,9 @@ export default function PublisherPeoplePage() {
   const [payload, setPayload] = useState<Payload | null>(null)
   const [loading, setLoading] = useState(true)
   const [noSeat, setNoSeat] = useState(false)
+  /** WE COULD NOT CHECK — distinct from `noSeat`, which is a claim about the
+   *  person. See the long note on the Lobby's Refusal type. */
+  const [unavailable, setUnavailable] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -155,6 +182,17 @@ export default function PublisherPeoplePage() {
           // Not an error. The caller holds no seat, which is a fact about them
           // rather than a fault in the page.
           if (!cancelled) setNoSeat(true)
+          return
+        }
+        if (res.status === 503) {
+          const j = await res.json().catch(() => null)
+          if (!cancelled) {
+            setUnavailable(
+              typeof j?.message === 'string'
+                ? j.message
+                : 'Could not check your seat just now. This is our end, not yours.'
+            )
+          }
           return
         }
         if (!res.ok) throw new Error(`Unavailable (${res.status})`)
@@ -188,7 +226,7 @@ export default function PublisherPeoplePage() {
             </h1>
             <p className="text-[14px]" style={{ color: 'var(--color-muted)' }}>
               {payload?.organisation?.name ?? '—'}
-              {!loading && !noSeat && seats.length > 0 && (
+              {!loading && !noSeat && !unavailable && seats.length > 0 && (
                 <> · {seats.length} {seats.length === 1 ? 'seat' : 'seats'}</>
               )}
             </p>
@@ -214,6 +252,28 @@ export default function PublisherPeoplePage() {
               read as one: the page explains what is true and what would change
               it, rather than showing an empty list that implies nobody else
               has access. */}
+          {!loading && unavailable && (
+            <div
+              className="rounded-lg px-6 py-8"
+              style={{ background: '#FFFFFF', border: '1px dashed #D8D8D4' }}
+            >
+              <p
+                className="text-[17px] mb-2"
+                style={{ fontFamily: 'var(--font-serif)', color: 'var(--color-ink)' }}
+              >
+                We could not check your seat just now
+              </p>
+              <p className="text-[13.5px] max-w-xl mb-3" style={{ color: 'var(--color-muted)' }}>
+                {unavailable}
+              </p>
+              <p className="text-[13.5px] max-w-xl" style={{ color: 'var(--color-muted)' }}>
+                This page is NOT telling you that nobody else has access. It is
+                telling you it does not know yet — which on a page about who can
+                see what is the difference that matters. Reload in a moment.
+              </p>
+            </div>
+          )}
+
           {!loading && noSeat && (
             <div
               className="rounded-lg px-6 py-8"
@@ -235,7 +295,7 @@ export default function PublisherPeoplePage() {
             </div>
           )}
 
-          {!loading && !noSeat && !error && payload && (
+          {!loading && !noSeat && !unavailable && !error && payload && (
             <>
               <div className="rounded-lg overflow-hidden" style={{ background: '#FFFFFF', border: '1px solid #E5E5E3' }}>
                 {seats.length === 0 ? (
@@ -245,7 +305,13 @@ export default function PublisherPeoplePage() {
                     </p>
                   </div>
                 ) : (
-                  seats.map((s) => <SeatRow key={s.membership_id} seat={s} />)
+                  seats.map((s) => (
+                    <SeatRow
+                      key={s.membership_id}
+                      seat={s}
+                      emptyScopeNotice={payload?.empty_scope_notice}
+                    />
+                  ))
                 )}
               </div>
 

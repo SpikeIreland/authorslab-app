@@ -215,6 +215,23 @@ export default function PublisherCompanyPage() {
           }
           return
         }
+        if (res.status === 503) {
+          // WE COULD NOT CHECK, which is ours and not theirs. Distinguished
+          // from 403 because the two sentences are opposites and only one of
+          // them is ever true at a time.
+          const j = await res.json().catch(() => null)
+          if (!cancelled) {
+            setRefusal({
+              heading: 'We could not check your seat just now',
+              body:
+                (typeof j?.message === 'string'
+                  ? j.message
+                  : 'Could not check your seat just now. This is our end, not yours.') +
+                ' Nothing is wrong with your access — reload in a moment and it should answer.',
+            })
+          }
+          return
+        }
         if (res.status === 409) {
           const j = await res.json().catch(() => null)
           if (!cancelled) {

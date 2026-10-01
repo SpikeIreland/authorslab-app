@@ -52,6 +52,15 @@ export type PublisherFirmState =
   /** Two active memberships and no org switcher — the resolver refuses to
    *  guess which house is being viewed, and so does this. */
   | { status: 'unresolved'; message: string }
+  /**
+   * WE COULD NOT CHECK. `identity-billing` split this out of `null` on
+   * 2026-10-01 after I reported that my surface printed "you hold no seat"
+   * for a database hiccup — an owner of a house told they have no seat in it,
+   * by a page that sounded certain. Their fix is at the type and mine is
+   * here: a 503 is a statement about us and must never be rendered as a
+   * statement about the person looking.
+   */
+  | { status: 'unavailable'; message: string }
   /** The read itself failed. Distinguished from `not-a-publisher` because
    *  "you have no seat" and "we could not find out" are different sentences
    *  and a surface must not print the first when the second is true. */
@@ -80,6 +89,19 @@ export function usePublisherFirm(): PublisherFirmState {
                 typeof j?.message === 'string'
                   ? j.message
                   : 'More than one organisation and no way to choose.',
+            })
+          }
+          return
+        }
+        if (res.status === 503) {
+          const j = await res.json().catch(() => null)
+          if (live) {
+            setState({
+              status: 'unavailable',
+              message:
+                typeof j?.message === 'string'
+                  ? j.message
+                  : 'Could not check your seat just now. This is our end, not yours.',
             })
           }
           return

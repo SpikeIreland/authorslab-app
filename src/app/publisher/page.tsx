@@ -253,6 +253,22 @@ function TitleRow({
 type Refusal =
   | { kind: 'not-a-publisher' }
   | { kind: 'unresolved'; message: string }
+  /**
+   * WE COULD NOT CHECK — added 2026-10-01, and it is the third state of a
+   * pair I had already split once.
+   *
+   * I reported to `identity-billing` that their resolver returned `null` for
+   * a read failure as well as for "no seat", and that my surface therefore
+   * printed *"you do not hold a seat"* to an owner whose query had merely
+   * timed out. They fixed it at the type, which means my route now answers
+   * 503 — and until this branch existed, a 503 fell through to `!res.ok` and
+   * this page showed a red box reading "Lobby unavailable (503)".
+   *
+   * So their fix was only half a fix until this was here, and the half that
+   * was missing was mine. A refusal, a hiccup and a fault are three
+   * sentences; the page now has three.
+   */
+  | { kind: 'unavailable'; message: string }
 
 // ─── 3. The page ──────────────────────────────────────────────────────────────
 
@@ -284,6 +300,21 @@ export default function PublisherLobbyPage() {
         // 409 — two active memberships and no org switcher. The resolver
         // refuses to pick one and the message it raises is the useful thing to
         // show, because the reader is the person who can fix it.
+        // 503 — the seat could not be CHECKED. A statement about us, never
+        // about the caller, and never shown in the red box.
+        if (res.status === 503) {
+          const j = await res.json().catch(() => null)
+          if (!cancelled) {
+            setRefusal({
+              kind: 'unavailable',
+              message:
+                typeof j?.message === 'string'
+                  ? j.message
+                  : 'Could not check your seat just now. This is our end, not yours.',
+            })
+          }
+          return
+        }
         if (res.status === 409) {
           const j = await res.json().catch(() => null)
           if (!cancelled) {
@@ -416,6 +447,28 @@ export default function PublisherLobbyPage() {
                 Showing you somebody else&rsquo;s list instead would be the
                 wrong answer rather than a helpful one. Someone who owns the
                 organisation can add you from their People tab.
+              </p>
+            </div>
+          )}
+
+          {refusal?.kind === 'unavailable' && (
+            <div
+              className="rounded-lg px-6 py-8"
+              style={{ background: '#FFFFFF', border: '1px dashed #D8D8D4' }}
+            >
+              <p
+                className="text-[18px] mb-2"
+                style={{ fontFamily: 'var(--font-serif)', color: 'var(--color-ink)' }}
+              >
+                We could not check your seat just now
+              </p>
+              <p className="text-[13.5px] max-w-xl mb-3" style={{ color: 'var(--color-muted)' }}>
+                {refusal.message}
+              </p>
+              <p className="text-[13.5px] max-w-xl" style={{ color: 'var(--color-muted)' }}>
+                Nothing is wrong with your access, and this page is not telling
+                you your list is empty. It is telling you it does not know yet.
+                Reload in a moment.
               </p>
             </div>
           )}
