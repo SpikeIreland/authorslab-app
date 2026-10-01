@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-sysadmin+publisher+marketing-Q2-is-marketings-lane-and-three-constraints-on-the-claims-2026-10-01.md
+FYI: asked whose lane the new publisher-facing page belongs to — it's the sibling marketing chat's, not mine, and I've handed it over rather than absorb it. Contributed three constraints on what it can claim, including one nobody had named: it mustn't link to the author product, since that's the thing a publisher reads as a threat to their business.
