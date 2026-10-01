@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic'
 import { Suspense, useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { estimateFullReadTime } from '@/lib/analysis-estimate'
 import Link from 'next/link'
 import { BookOpen, RefreshCw } from 'lucide-react'
 import { VersionsDropdown } from '@/components/VersionsDropdown'
@@ -622,7 +623,8 @@ function StudioContent() {
     await addChatMessage(
       editorName,
       `🔄 Running a fresh analysis to update my notes based on your changes...\n\n` +
-      `This usually takes about 5 minutes. I'll let you know when it's done!`
+      `This usually takes ${estimateFullReadTime(manuscript.current_word_count).label}. ` +
+      `You can close this tab — I'll email you and leave a notification here when it's done.`
     )
 
     try {
@@ -905,13 +907,14 @@ function StudioContent() {
     // Add immediate message BEFORE triggering the workflow
     await addChatMessage(
       editorName,
-      `Perfect! I'm diving into your manuscript now. This will take about 5 minutes.\n\n` +
+      `Perfect! I'm diving into your manuscript now. This takes ${estimateFullReadTime(manuscript.current_word_count).label} — ` +
+      `I read the whole book, not a sample, which is why it isn't instant.\n\n` +
       `I'm analyzing:\n` +
       `• Story structure and plot\n` +
       `• Character development\n` +
       `• Pacing and flow\n` +
       `• Themes and motifs\n\n` +
-      `You'll receive a comprehensive report by email when I'm done.\n\n` +
+      `**You can close this tab.** I'll email you a comprehensive report when I'm done, and leave a notification here either way.\n\n` +
       `**While I read:** Check that your text and chapters loaded correctly, and save any edits you make. 📚`
     )
 
@@ -1049,7 +1052,7 @@ function StudioContent() {
         await addChatMessage(
           editorName,
           `✅ I've finished reading your manuscript! I'm genuinely excited about what you've created.\n\n` +
-          `📧 Your comprehensive PDF report will arrive by email shortly (it takes about 15 minutes to generate).\n\n` +
+          `📧 Your comprehensive PDF report is on its way by email.\n\n` +
           `**Ready to start editing?**\n` +
           `Click on any chapter and hit "Start Editing" to see my specific notes. We'll work through them together, one chapter at a time.`
         )
@@ -1566,7 +1569,7 @@ function StudioContent() {
         // First time - Alex hasn't read yet
         addChatMessage('Alex',
           `Hi ${firstName}! I'm Alex. I can see you've uploaded "${manuscript.title}" with ${chapterCount} chapters—I'm excited to dig in.\n\n` +
-          `I'll need about 5 minutes to read through everything and identify the key story patterns. Once I'm done, we can explore what's working and where the real opportunities are.\n\n` +
+          `I'll need ${estimateFullReadTime(manuscript.current_word_count).label} to read through everything and identify the key story patterns. Once I'm done, we can explore what's working and where the real opportunities are.\n\n` +
           `Hit "Read My Manuscript" when you're ready! 📖`
         )
       }
@@ -3694,7 +3697,7 @@ function StudioContent() {
                 </button>
 
                 <p className="text-xs text-muted mt-3 text-center">
-                  Takes about 5 minutes • You&apos;ll get a comprehensive report by email
+                  Takes {estimateFullReadTime(manuscript?.current_word_count).label} • You can close this tab — we&apos;ll email you and leave a notification here
                 </p>
               </div>
             ) : (
