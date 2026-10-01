@@ -117,6 +117,16 @@ export async function extractManuscriptText(
     }
 
     const extractResult = await extractResponse.json()
+
+    // n8n "1.1 Extract PDF" refuses an extraction it knows is corrupted — most
+    // often a font whose fi/fl ligature glyphs decode to the wrong character, so
+    // "office" arrives as "of8ice". The text looks legible, which is exactly why
+    // it must be refused rather than loaded. Surface its message verbatim: it
+    // names the .docx route, which is the fix.
+    if (extractResult.success === false && extractResult.message) {
+        throw new Error(extractResult.message)
+    }
+
     return sanitiseManuscriptText(
         extractResult.text || extractResult.extractedText || ''
     )

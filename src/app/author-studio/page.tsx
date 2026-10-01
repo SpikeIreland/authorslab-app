@@ -959,51 +959,60 @@ function StudioContent() {
         size_hint: { word_count: manuscript.current_word_count },
       })
 
-      // Trigger all THREE workflows simultaneously, carrying the journey_id.
-      // No silent .catch here — errors bubble to the outer try/catch and
-      // surface as an honest failure state (corpse on every path).
-      await Promise.all([
-        // 1. Full analysis (PDF report) — primary; owns journey_id writeback
-        fetch(WEBHOOKS.alexFullAnalysis, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            manuscriptId: manuscript.id,
-            userId: manuscript.author_id,
-            journey_id,
-          })
-        }),
-
-        // 2. Generate summary + key points — sub-workflow of the same journey
-        fetch(WEBHOOKS.alexGenerateSummary, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            manuscriptId: manuscript.id,
-            userId: manuscript.author_id,
-            journey_id,
-          })
-        }),
-
-        // 3. Chapter summaries — sub-workflow of the same journey
-        fetch(WEBHOOKS.alexGenerateChapterSummaries, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            manuscriptId: manuscript.id,
-            userId: manuscript.author_id,
-            journey_id,
-          })
-        })
-      ])
-
-      console.log('✅ All analysis workflows triggered — polling journey', journey_id)
-
-      // Poll the journey row (pure read); domain content read once at ready.
+      // 2026-10-01: these three webhooks are SYNCHRONOUS — n8n holds the HTTP
+      // response open until the workflow finishes, which on a 64k-word
+      // manuscript is 7, 25 and 32 minutes. The previous code did
+      // `await Promise.all([...])` on them.
+      //
+      // That await could never succeed. The browser abandons the request long
+      // before n8n answers, the rejection hit the outer catch, and the author
+      // was told "There was an issue starting the analysis. Please try again."
+      // — while all three workflows ran to completion server-side. Observed on
+      // manuscript b391c0bf: three successful n8n executions, a failure message
+      // on screen, and "Read My Manuscript" live again, inviting a duplicate run.
+      //
+      // The premise of the old comment was the error: a fetch rejection here is
+      // not evidence that the workflow failed. It is evidence that an HTTP
+      // response did not arrive. Those are different claims, and only the
+      // journey row can answer the first one.
+      //
+      // So: start the poll FIRST — the journey row is the single authority on
+      // state — then fire the triggers without awaiting them. A transport
+      // failure is logged, never rendered as a verdict about the analysis.
       pollForAnalysisCompletion(journey_id)
 
+      const triggerPayload = JSON.stringify({
+        manuscriptId: manuscript.id,
+        userId: manuscript.author_id,
+        journey_id,
+      })
+
+      const fireTrigger = (url: string, label: string) =>
+        fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: triggerPayload,
+          keepalive: true
+        }).catch((err) => {
+          // Transport-level only. The workflow may well be running; the journey
+          // poll decides, and a stalled journey surfaces through its own
+          // terminal path rather than this one.
+          console.warn(`[${label}] trigger response not received (workflow may still be running):`, err)
+        })
+
+      // 1. Full analysis (PDF report) — primary; owns journey_id writeback
+      fireTrigger(WEBHOOKS.alexFullAnalysis, 'alexFullAnalysis')
+      // 2. Generate summary + key points — sub-workflow of the same journey
+      fireTrigger(WEBHOOKS.alexGenerateSummary, 'alexGenerateSummary')
+      // 3. Chapter summaries — sub-workflow of the same journey
+      fireTrigger(WEBHOOKS.alexGenerateChapterSummaries, 'alexGenerateChapterSummaries')
+
+      console.log('✅ All analysis workflows dispatched — polling journey', journey_id)
+
     } catch (error) {
-      console.error('Error triggering analysis:', error)
+      // Reached only for pre-flight failures (status writes, startJourney).
+      // By this point no workflow has been dispatched, so "try again" is true.
+      console.error('Error starting analysis:', error)
       setFullAnalysisInProgress(false)
       await addChatMessage(editorName, 'There was an issue starting the analysis. Please try again.')
     }
