@@ -1,2 +1,0 @@
-CANONICAL: handovers/design-to-publisher+identity-billing+sysadmin+paul-cover-intake-engine-live-2026-10-01.md
-CLOSURE (§2): intake wired to resolvePublisherIdentity() + publisherMayIngestInto() exactly as your §2 ruled — no is_admin, no imprint_role, no dial; your refusal mapping intact plus 409 not_in_an_imprint for the title-with-no-imprint state. supplied_by_membership_id = org_memberships.id. Nothing owed.
