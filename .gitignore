@@ -62,3 +62,9 @@ next-env.d.ts
 # credentials & bridge artifacts — never commit
 n8n-authorslab-key
 _to_delete/
+
+# APITemplate export — reproducible via scripts/apitemplate-export.mjs.
+# Excluded because it contains Clarence Legal contract templates, which have
+# no business living in the AuthorsLab repo. The ids that matter are recorded
+# in docs/n8n/APITEMPLATE-MIGRATION-STATUS-2026-10-01.md
+apitemplate-export/
