@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import {
   resolvePublisherIdentity,
+  publisherIdentityRefusal,
   type PublisherIdentity,
 } from '@/lib/publisher/identity'
 
@@ -50,23 +51,17 @@ export interface PublisherIdentityPayload {
 }
 
 export async function GET() {
-  let identity: PublisherIdentity | null
-
-  try {
-    identity = await resolvePublisherIdentity()
-  } catch (err) {
-    return NextResponse.json(
-      {
-        error: 'multi_org_unresolved',
-        message: err instanceof Error ? err.message : 'unresolved',
-      },
-      { status: 409 }
-    )
+  // identity.ts no longer THROWS on multi-org and no longer conflates a read
+  // failure with "no seat" (identity-billing, 2026-10-01, on publisher's §5
+  // catch). The three cases are mapped in ONE place --
+  // publisherIdentityRefusal() -- so no route can answer 403 to a database
+  // hiccup. The 409 for multi_org is preserved exactly as this route had it.
+  const resolved = await resolvePublisherIdentity()
+  if (resolved.status !== 'ok') {
+    const r = publisherIdentityRefusal(resolved)
+    return NextResponse.json(r.body, { status: r.status })
   }
-
-  if (!identity) {
-    return NextResponse.json({ error: 'not_a_publisher' }, { status: 403 })
-  }
+  const identity: PublisherIdentity = resolved.identity
 
   const payload: PublisherIdentityPayload = {
     organisation: {

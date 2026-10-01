@@ -5,6 +5,7 @@ import {
   resolvePublisherIdentity,
   ORG_ROLES,
   IMPRINT_ROLES,
+  EMPTY_SCOPE_NOTICE,
   type OrgRole,
 } from '@/lib/publisher/identity'
 
@@ -108,13 +109,20 @@ interface Seat {
 // ────────────────────────────────────────────────────────────────────────────
 
 export async function GET() {
-  const identity = await resolvePublisherIdentity()
-  if (!identity) {
-    // One bit, deliberately. Not-a-publisher covers no session, no membership,
-    // an unaccepted invitation and a suspended seat, and distinguishing them
-    // here would leak whether an organisation exists.
+  const resolved = await resolvePublisherIdentity()
+  // 503, never 403: a read failure is a statement about US, not about the
+  // caller. Telling an owner they have no seat because a query timed out is the
+  // defect `publisher` caught in this module on 2026-09-30.
+  if (resolved.status === 'unavailable') {
+    return NextResponse.json(
+      { error: 'Could not check your seat just now. This is our end, not yours.', detail: resolved.reason },
+      { status: 503 }
+    )
+  }
+  if (resolved.status === 'no_seat') {
     return NextResponse.json({ error: 'Not a publisher' }, { status: 403 })
   }
+  const identity = resolved.identity
 
   const supabase = await createClient()
 
@@ -187,6 +195,12 @@ export async function GET() {
      */
     role_disclosure: ROLE_DISCLOSURE,
     /**
+     * REQUIRED on any seat showing an empty scope. `publisher` asked whether
+     * this sentence was mine; it is, so it ships from here. A blank scope reads
+     * as "not restricted", which is the exact inversion of the truth.
+     */
+    empty_scope_notice: EMPTY_SCOPE_NOTICE,
+    /**
      * NO EMAIL IS SENT BY THIS ENGINE. An invite writes a row and nothing
      * else. Saying "invitation sent" on the strength of a row is the
      * fabricated-record family this estate has spent the week removing --
@@ -202,10 +216,20 @@ export async function GET() {
 // ────────────────────────────────────────────────────────────────────────────
 
 export async function POST(request: Request) {
-  const identity = await resolvePublisherIdentity()
-  if (!identity) {
+  const resolved = await resolvePublisherIdentity()
+  // 503, never 403: a read failure is a statement about US, not about the
+  // caller. Telling an owner they have no seat because a query timed out is the
+  // defect `publisher` caught in this module on 2026-09-30.
+  if (resolved.status === 'unavailable') {
+    return NextResponse.json(
+      { error: 'Could not check your seat just now. This is our end, not yours.', detail: resolved.reason },
+      { status: 503 }
+    )
+  }
+  if (resolved.status === 'no_seat') {
     return NextResponse.json({ error: 'Not a publisher' }, { status: 403 })
   }
+  const identity = resolved.identity
   if (identity.org_role !== 'owner' && identity.org_role !== 'admin') {
     return NextResponse.json(
       { error: 'Only an owner or admin can invite people' },

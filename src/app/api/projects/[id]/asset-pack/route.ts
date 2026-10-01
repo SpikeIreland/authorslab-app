@@ -90,9 +90,24 @@ export async function GET(
     .maybeSingle()
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    // Name the state rather than forwarding a Postgres string. A surface told
+    // 'relation does not exist' goes looking in its own code; a surface told
+    // `store_not_deployed` knows the migration is the answer and whose lane
+    // it sits in.
+    const missing = error.code === '42P01'
+    return NextResponse.json(
+      {
+        error: missing ? 'store_not_deployed' : 'store_unavailable',
+        detail: error.message,
+        code: error.code ?? null,
+      },
+      { status: 503 },
+    )
   }
 
+  // `pack: null` means THIS TITLE HAS NO PACK YET — never 'no packs exist'
+  // and never 'the store is missing'. Those two now arrive as 503s above,
+  // because a dead store must not read as an empty one.
   return NextResponse.json({
     pack: (data?.pack as AssetPack) ?? null,
     generatedAt: (data?.generated_at as string) ?? null,
@@ -149,6 +164,35 @@ export async function POST(
   if (!opening) {
     // No prose, no pack. Saying so beats generating from a title.
     return NextResponse.json({ error: 'no_manuscript_text' }, { status: 409 })
+  }
+
+  // PREFLIGHT THE STORE BEFORE SPENDING THE GENERATION.
+  //
+  // The pack costs a long model call. Discovering afterwards that there is
+  // nowhere to put it means the caller waits a minute to be told a Postgres
+  // relation does not exist — the cost paid, the cause illegible. This probe
+  // costs one round-trip and fails in milliseconds.
+  //
+  // It must distinguish THREE states, because conflating them is the defect
+  // shape I have now found five times in this estate: no table (we are not
+  // deployed), no permission (the caller may not read packs), and no rows
+  // (normal — this title has no pack yet). Only the first two are faults.
+  const { error: storeProbe } = await supabase
+    .from('title_asset_packs')
+    .select('manuscript_id')
+    .limit(1)
+
+  if (storeProbe) {
+    // 42P01 = undefined_table. The migration is couriered but not applied.
+    const missing = storeProbe.code === '42P01'
+    return NextResponse.json(
+      {
+        error: missing ? 'store_not_deployed' : 'store_unavailable',
+        detail: storeProbe.message,
+        code: storeProbe.code ?? null,
+      },
+      { status: 503 },
+    )
   }
 
   const prompt = `You are preparing a per-title marketing asset pack for a PUBLISHER's marketing team. They are professionals. You are not replacing them — you are doing the slow research and handing them a first draft they will rewrite.
@@ -280,8 +324,21 @@ Return through the save_asset_pack tool.`
       { onConflict: 'manuscript_id' },
     )
   if (saveError) {
-    return NextResponse.json({ error: saveError.message }, { status: 500 })
+    // The generation SUCCEEDED and the store did not. Reporting a bare 500
+    // would claim the engine failed, which is false; returning 200 with the
+    // pack would let a surface render unstored work as stored. So: a non-2xx
+    // (the call did not do what it claims — it did not record anything) with
+    // the work returned under a key no surface can mistake for a saved pack.
+    return NextResponse.json(
+      {
+        error: 'pack_generated_not_saved',
+        detail: saveError.message,
+        code: saveError.code ?? null,
+        unsavedPack: pack,
+      },
+      { status: 502 },
+    )
   }
 
-  return NextResponse.json({ pack })
+  return NextResponse.json({ pack, saved: true })
 }

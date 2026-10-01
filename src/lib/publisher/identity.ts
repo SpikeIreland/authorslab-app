@@ -105,28 +105,80 @@ export interface PublisherIdentity {
 }
 
 /**
- * Resolve the signed-in user to a publisher identity, or `null`.
+ * THE RESULT TYPE — and the defect it exists to repair.
  *
- * `null` covers every not-a-publisher case and they are deliberately not
- * distinguished in the return value: no session, no membership, an invitation
- * not yet accepted, a suspended seat. A caller deciding whether to render a
- * publisher surface needs one bit, and a caller that needs the reason (the
- * invitation-acceptance path) should read the membership row directly rather
- * than have this function widen into a status oracle.
+ * This function used to return `PublisherIdentity | null`, with `null` covering
+ * every not-a-publisher case: no session, no membership, an unaccepted
+ * invitation, a suspended seat — AND a database read error.
+ *
+ * `publisher` caught that and declined to work around it in their own route,
+ * which was the right call twice over:
+ *
+ *   > "resolvePublisherIdentity() returns null for a read error AND for
+ *   >  no-membership, and my surface prints 'you do not hold a seat' for null —
+ *   >  which would tell an owner they have no seat if the database hiccupped."
+ *
+ * That is this lane's own rule turned on this lane's own code: a value whose
+ * success state is indistinguishable from its failure state is not an answer.
+ * And the direction of the failure is the bad one — an owner of a house is told
+ * they have no seat in it, by a surface that sounds certain, because a query
+ * timed out.
+ *
+ * So the three cases are now distinct and the caller must handle each:
+ *
+ *   ok           we checked, and here is the seat
+ *   no_seat      WE CHECKED, and there is no seat          -> 403
+ *   unavailable  WE COULD NOT CHECK                        -> 503, never 403
+ *
+ * A 403 is a statement about the person. A 503 is a statement about us. The
+ * whole point of the split is that a surface can say "could not check" instead
+ * of making a claim about a customer it has no evidence for.
  */
-export async function resolvePublisherIdentity(): Promise<PublisherIdentity | null> {
+export type UnavailableKind =
+  /** Two active memberships and no org switcher. We know they have seats. */
+  | 'multi_org'
+  /** A database or auth read failed. Transient, ours, says nothing about them. */
+  | 'read_failed'
+  /** A role the CHECK constraint should have prevented. A fault at our end. */
+  | 'config'
+
+export type PublisherIdentityResult =
+  | { status: 'ok'; identity: PublisherIdentity }
+  | { status: 'no_seat' }
+  | { status: 'unavailable'; kind: UnavailableKind; reason: string }
+
+/**
+ * Resolve the signed-in user to a publisher identity.
+ *
+ * `no_seat` deliberately does NOT distinguish no session, no membership, an
+ * unaccepted invitation or a suspended seat. A caller rendering a surface needs
+ * one bit, and separating them here would leak whether a given organisation or
+ * invitation exists. A caller that genuinely needs the reason — the invitation
+ * acceptance path — reads the membership row directly rather than making this
+ * function into a status oracle.
+ *
+ * `unavailable` is never a judgement about the caller. It carries a reason for
+ * logs and for the surface to show, and it must never be rendered as a refusal.
+ */
+export async function resolvePublisherIdentity(): Promise<PublisherIdentityResult> {
   const supabase = await createClient()
 
   const {
     data: { user },
     error: userError,
   } = await supabase.auth.getUser()
-  if (userError || !user) return null
 
-  // One membership per user per org is guaranteed by
-  // UNIQUE (organisation_id, auth_user_id). Multi-org membership is therefore
-  // representable and this query would return more than one row — see the
-  // note below `rows.length > 1`.
+  // An auth transport failure is NOT "no session". Distinguished, because this
+  // is the same conflation one layer up.
+  if (userError) {
+    return {
+      status: 'unavailable',
+      kind: 'read_failed',
+      reason: `auth check failed: ${userError.message}`,
+    }
+  }
+  if (!user) return { status: 'no_seat' }
+
   const { data: rows, error: mErr } = await supabase
     .from('org_memberships')
     .select(
@@ -135,9 +187,14 @@ export async function resolvePublisherIdentity(): Promise<PublisherIdentity | nu
     .eq('auth_user_id', user.id)
     .eq('status', 'active')
 
-  // Fail closed, and fail visible to the caller as "not a publisher" rather
-  // than throwing into a page render. A read error is not a membership.
-  if (mErr || !rows || rows.length === 0) return null
+  if (mErr) {
+    return {
+      status: 'unavailable',
+      kind: 'read_failed',
+      reason: `membership read failed: ${mErr.message}`,
+    }
+  }
+  if (!rows || rows.length === 0) return { status: 'no_seat' }
 
   type Row = {
     id: string
@@ -147,40 +204,40 @@ export async function resolvePublisherIdentity(): Promise<PublisherIdentity | nu
     organisations: { id: string; name: string; slug: string; deleted_at: string | null } | null
   }
 
-  // A soft-deleted organisation is not a workspace. Filtered here because
-  // `organisations.deleted_at` is nullable and nothing enforces that a
-  // membership is torn down with its org.
+  // A soft-deleted organisation is not a workspace.
   const live = (rows as unknown as Row[]).filter(
     (r) => r.organisations && r.organisations.deleted_at === null,
   )
-  if (live.length === 0) return null
+  if (live.length === 0) return { status: 'no_seat' }
 
-  // MULTI-ORG IS UNRESOLVED, ON PURPOSE.
-  // Nobody in the estate holds two memberships today (org_memberships: 0 rows
-  // as of 2026-09-29), and "which house am I looking at" is a UI decision with
-  // an org switcher attached to it, not something this function should settle
-  // by picking the first row. Until that surface exists, more than one active
-  // membership is an unhandled state and says so out loud rather than choosing.
+  // MULTI-ORG IS UNRESOLVED, ON PURPOSE -- and it is `unavailable`, not
+  // `no_seat`. We know perfectly well they have seats; what we cannot do is
+  // choose which house they are looking at, and that needs an org switcher
+  // rather than a `[0]`. Telling someone with two seats that they have none
+  // would be the same lie this type was created to prevent.
   if (live.length > 1) {
-    throw new Error(
-      `resolvePublisherIdentity: user holds ${live.length} active org memberships ` +
-        `and no org switcher exists yet. Refusing to guess which house is being ` +
-        `viewed. Add the switcher (P3) before creating multi-org members.`,
-    )
+    return {
+      status: 'unavailable',
+      kind: 'multi_org',
+      reason:
+        `user holds ${live.length} active org memberships and no org switcher exists yet; ` +
+        `refusing to guess which house is being viewed`,
+    }
   }
 
   const m = live[0]
   const org = m.organisations!
 
   if (!(ORG_ROLES as readonly string[]).includes(m.org_role)) {
-    // The CHECK constraint should make this unreachable. It is here because
-    // the constraint could be relaxed by a migration that does not visit this
-    // file, and an unrecognised role must not fall through to a permissive
-    // default.
-    throw new Error(
-      `resolvePublisherIdentity: unrecognised org_role '${m.org_role}'. ` +
-        `Expected one of ${ORG_ROLES.join(', ')}.`,
-    )
+    // The CHECK constraint should make this unreachable. If a migration ever
+    // relaxes it, an unrecognised role must not fall through to a permissive
+    // default -- and must not read as "no seat" either, because it is a fault
+    // at our end.
+    return {
+      status: 'unavailable',
+      kind: 'config',
+      reason: `unrecognised org_role '${m.org_role}'; expected one of ${ORG_ROLES.join(', ')}`,
+    }
   }
   const org_role = m.org_role as OrgRole
   const scope_is_whole_org = org_role === 'owner' || org_role === 'admin'
@@ -188,15 +245,19 @@ export async function resolvePublisherIdentity(): Promise<PublisherIdentity | nu
   let imprints: ImprintScope[] = []
 
   if (scope_is_whole_org) {
-    // Owner and admin see every live imprint in their own organisation. RLS
-    // independently restricts this to orgs they belong to.
     const { data: imps, error: iErr } = await supabase
       .from('imprints')
       .select('id, name, slug')
       .eq('organisation_id', org.id)
       .is('deleted_at', null)
       .order('name')
-    if (iErr) return null
+    if (iErr) {
+      return {
+        status: 'unavailable',
+        kind: 'read_failed',
+        reason: `imprint read failed: ${iErr.message}`,
+      }
+    }
     imprints = (imps ?? []).map((i) => ({
       id: i.id as string,
       name: i.name as string,
@@ -204,13 +265,17 @@ export async function resolvePublisherIdentity(): Promise<PublisherIdentity | nu
       imprint_role: null,
     }))
   } else {
-    // A plain member sees exactly the imprints named against their membership.
-    // Zero rows means zero imprints (rule 2).
     const { data: links, error: lErr } = await supabase
       .from('imprint_memberships')
       .select('imprint_role, imprints!inner ( id, name, slug, organisation_id, deleted_at )')
       .eq('membership_id', m.id)
-    if (lErr) return null
+    if (lErr) {
+      return {
+        status: 'unavailable',
+        kind: 'read_failed',
+        reason: `imprint scope read failed: ${lErr.message}`,
+      }
+    }
 
     type Link = {
       imprint_role: string
@@ -223,12 +288,8 @@ export async function resolvePublisherIdentity(): Promise<PublisherIdentity | nu
       } | null
     }
 
-    imprints = (links as unknown as Link[] | null ?? [])
+    imprints = ((links as unknown as Link[] | null) ?? [])
       .filter((l) => l.imprints && l.imprints.deleted_at === null)
-      // Belt and braces against a cross-org imprint membership. UNIQUE
-      // (imprint_id, membership_id) prevents duplicates but nothing prevents
-      // a membership being linked to an imprint of a DIFFERENT organisation,
-      // which would be a tenancy leak written as a data-entry mistake.
       .filter((l) => l.imprints!.organisation_id === org.id)
       .map((l) => ({
         id: l.imprints!.id,
@@ -242,14 +303,32 @@ export async function resolvePublisherIdentity(): Promise<PublisherIdentity | nu
   }
 
   return {
-    membership_id: m.id,
-    organisation: { id: org.id, name: org.name, slug: org.slug },
-    org_role,
-    status: 'active',
-    imprints,
-    scope_is_whole_org,
+    status: 'ok',
+    identity: {
+      membership_id: m.id,
+      organisation: { id: org.id, name: org.name, slug: org.slug },
+      org_role,
+      status: 'active',
+      imprints,
+      scope_is_whole_org,
+    },
   }
 }
+
+/**
+ * THE EMPTY-SCOPE SENTENCE, owned here rather than in a surface.
+ *
+ * `publisher` asked whether the amber "no imprints assigned — sees nothing" on
+ * a scopeless seat was my wording, and would rather I owned it or served it
+ * from the payload. Served from the payload, same as `role_disclosure` and the
+ * no-email fact, and for the same reason: it is a statement about what the
+ * ENGINE does, and a blank there reads as "not restricted" — the exact
+ * inversion of the truth, and the most dangerous single misreading on that
+ * screen.
+ */
+export const EMPTY_SCOPE_NOTICE =
+  'No imprints assigned — this person sees no titles. Scope is granted, never ' +
+  'assumed: an empty scope is empty, not unrestricted.'
 
 /**
  * Whether this identity may see a given imprint id.
@@ -260,4 +339,120 @@ export async function resolvePublisherIdentity(): Promise<PublisherIdentity | nu
  */
 export function canSeeImprint(identity: PublisherIdentity, imprintId: string): boolean {
   return identity.imprints.some((i) => i.id === imprintId)
+}
+
+/**
+ * The HTTP shape of a non-`ok` result, in one place.
+ *
+ * Six routes consume this resolver. If each maps the cases itself, one of them
+ * eventually answers 403 to a read failure and we are back where we started —
+ * `publisher` keeps its existing 409 for multi-org because their surfaces
+ * already handle that state by name, and it is a real distinction: we know the
+ * person has seats, we just cannot choose which house.
+ */
+export function publisherIdentityRefusal(
+  result: Extract<PublisherIdentityResult, { status: 'no_seat' | 'unavailable' }>
+): { body: Record<string, unknown>; status: number } {
+  if (result.status === 'no_seat') {
+    return { body: { error: 'not_a_publisher' }, status: 403 }
+  }
+  if (result.kind === 'multi_org') {
+    return { body: { error: 'multi_org_unresolved', message: result.reason }, status: 409 }
+  }
+  return {
+    body: {
+      error: 'identity_unavailable',
+      message: 'Could not check your seat just now. This is our end, not yours.',
+      detail: result.reason,
+    },
+    status: 503,
+  }
+}
+
+/**
+ * ─── Q1 / R3 — THE PUBLISHER ENTITLEMENT PREDICATE ──────────────────────────
+ *
+ * `sysadmin`'s R3, 2026-10-01: *"Entitlement for the publisher path keys off
+ * organisation membership, not Stripe. identity-billing owns the predicate."*
+ * And the second half of the question: is it the same predicate that answers
+ * the Company tab's 403?
+ *
+ * **It is the same predicate, and there is nothing new to build.** That is the
+ * whole answer:
+ *
+ *     may this person put a book in the line
+ *       = resolvePublisherIdentity().status === 'ok'          (an active seat)
+ *       + canSeeImprint(identity, targetImprintId)            (in their scope)
+ *
+ * The first clause is exactly what gates the Company tab and the People tab.
+ * The second is exactly what gates the Lobby's list. A publisher seat is a
+ * seat for everything a seat is for; inventing a separate "ingestion
+ * entitlement" would be a second vocabulary for one fact, which is how
+ * `editor` came to name a capability nothing honours.
+ *
+ * ─── WHAT MUST NOT APPEAR ON THIS PATH ──────────────────────────────────────
+ *
+ * **No subscription check. No `pass_purchases`. No call to
+ * `/api/subscription/entitlement`.** That route is the AUTHOR meter — it reads
+ * `subscriptions`, counts editorial passes against a billing period and answers
+ * "how many passes are left". An Odessa editor loading a pilot title holds no
+ * consumer subscription and never will, so a subscription check on this path
+ * does not restrict them, it refuses them outright. That is the contradiction
+ * `sysadmin` named: the product disagreeing with the proposal we have already
+ * sent Oliver.
+ *
+ * **And no `is_admin()`.** Staff privilege must not be the thing that makes a
+ * publisher's ingest work, or the first real customer finds it does not.
+ *
+ * ─── ENTITLEMENT IS NOT METERING, AND THE DIFFERENCE IS LOAD-BEARING ────────
+ *
+ * This predicate answers *may this person act*. It does not answer *what do we
+ * invoice* — the £400 per worked title (`finance`'s Q4). Those are different
+ * questions with different evidence and different failure directions: a wrong
+ * entitlement blocks a customer, a wrong meter bills one.
+ *
+ * Keeping them apart is the lesson from the pass meter, which counted a status
+ * nothing wrote for two months and read as a comfortable zero. **A gate must
+ * fail closed and visibly; a meter must fail loudly rather than generously.**
+ * Do not make ingestion depend on the billable countable, and do not let the
+ * countable be derived from "they were allowed in".
+ */
+export type IngestVerdict =
+  | { ok: true; organisation_id: string; imprint_id: string; actor_membership_id: string }
+  | { ok: false; reason: string }
+
+/**
+ * May this caller put a title into this imprint?
+ *
+ * Takes a RESOLVED identity rather than resolving internally, so the caller has
+ * already had to handle `unavailable` separately and cannot accidentally turn a
+ * read failure into "not entitled".
+ */
+export function publisherMayIngestInto(
+  identity: PublisherIdentity,
+  imprintId: string
+): IngestVerdict {
+  if (!imprintId) {
+    return { ok: false, reason: 'No imprint was named. A title enters the line in an imprint.' }
+  }
+  if (!canSeeImprint(identity, imprintId)) {
+    // Covers both "not your house" and "not in your scope", deliberately
+    // undistinguished: telling a caller that an imprint exists but is not
+    // theirs is a disclosure about somebody else's house.
+    return {
+      ok: false,
+      reason:
+        identity.imprints.length === 0
+          ? 'This seat has no imprints assigned, so there is nowhere for a title to go yet.'
+          : 'That imprint is not in this seat’s scope.',
+    }
+  }
+  return {
+    ok: true,
+    organisation_id: identity.organisation.id,
+    imprint_id: imprintId,
+    // The actor for attribution -- the same id `publisher_actions` and the
+    // cover intake record, so one person is one id across every surface.
+    actor_membership_id: identity.membership_id,
+  }
 }

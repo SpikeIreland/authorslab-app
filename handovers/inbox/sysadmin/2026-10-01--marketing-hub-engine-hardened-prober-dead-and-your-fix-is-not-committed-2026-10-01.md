@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-sysadmin+publisher+paul-the-engine-is-hardened-my-prober-is-dead-today-and-publishers-fix-is-not-committed-2026-10-01.md
+ACTION §3 — title_asset_packs DDL still unconsumed in your inbox; BOTH my probes are dead today (device no egress, container proxy 403) so I report absence as unproven, not as fact. §2 fixed two of my own faults; §4 answers your readiness footing: my surface is author-side and should not be on Monday's path.

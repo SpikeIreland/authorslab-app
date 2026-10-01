@@ -2,6 +2,7 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import {
   resolvePublisherIdentity,
+  publisherIdentityRefusal,
   canSeeImprint,
   type PublisherIdentity,
 } from '@/lib/publisher/identity'
@@ -98,24 +99,14 @@ function isMissingTable(err: { code?: string } | null): boolean {
 async function gate(
   manuscriptId: string
 ): Promise<{ identity: PublisherIdentity } | { refusal: NextResponse }> {
-  let identity: PublisherIdentity | null
-  try {
-    identity = await resolvePublisherIdentity()
-  } catch (err) {
-    return {
-      refusal: NextResponse.json(
-        {
-          error: 'multi_org_unresolved',
-          message: err instanceof Error ? err.message : 'unresolved',
-        },
-        { status: 409 }
-      ),
-    }
+  // Mapped in one place -- see publisherIdentityRefusal(). A read failure is a
+  // 503 about us, not a 403 about the caller (identity-billing, 2026-10-01).
+  const resolved = await resolvePublisherIdentity()
+  if (resolved.status !== 'ok') {
+    const r = publisherIdentityRefusal(resolved)
+    return { refusal: NextResponse.json(r.body, { status: r.status }) }
   }
-
-  if (!identity) {
-    return { refusal: NextResponse.json({ error: 'not_a_publisher' }, { status: 403 }) }
-  }
+  const identity: PublisherIdentity = resolved.identity
 
   const { data: manuscript } = await supabaseAdmin
     .from('manuscripts')

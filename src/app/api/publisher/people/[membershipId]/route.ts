@@ -39,10 +39,20 @@ export async function PATCH(
 ) {
   const { membershipId } = await params
 
-  const identity = await resolvePublisherIdentity()
-  if (!identity) {
+  const resolved = await resolvePublisherIdentity()
+  // 503, never 403: a read failure is a statement about US, not about the
+  // caller. Telling an owner they have no seat because a query timed out is the
+  // defect `publisher` caught in this module on 2026-09-30.
+  if (resolved.status === 'unavailable') {
+    return NextResponse.json(
+      { error: 'Could not check your seat just now. This is our end, not yours.', detail: resolved.reason },
+      { status: 503 }
+    )
+  }
+  if (resolved.status === 'no_seat') {
     return NextResponse.json({ error: 'Not a publisher' }, { status: 403 })
   }
+  const identity = resolved.identity
   if (identity.org_role !== 'owner' && identity.org_role !== 'admin') {
     return NextResponse.json(
       { error: 'Only an owner or admin can manage people' },

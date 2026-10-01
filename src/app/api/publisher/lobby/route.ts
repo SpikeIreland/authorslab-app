@@ -2,6 +2,7 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import {
   resolvePublisherIdentity,
+  publisherIdentityRefusal,
   type PublisherIdentity,
 } from '@/lib/publisher/identity'
 import {
@@ -197,34 +198,27 @@ function daysBetween(then: string, now: number): number {
 }
 
 export async function GET() {
-  let identity: PublisherIdentity | null
-
-  try {
-    identity = await resolvePublisherIdentity()
-  } catch (err) {
-    // `identity.ts` THROWS rather than guess when a user holds two active
-    // memberships and no org switcher exists. That refusal is right and I am
-    // not softening it — but a throw falling into this route's catch would
-    // reach the page as `lobby_failed`, and "something went wrong" is the
-    // wrong report for a state the estate understands perfectly well. Caught
-    // and named here; the engine's behaviour is unchanged.
-    return NextResponse.json(
-      {
-        error: 'multi_org_unresolved',
-        message: err instanceof Error ? err.message : 'unresolved',
-      },
-      { status: 409 }
-    )
+  // identity.ts no longer THROWS on multi-org and no longer conflates a read
+  // failure with "no seat" (identity-billing, 2026-10-01, on publisher's §5
+  // catch). The three cases are mapped in ONE place --
+  // publisherIdentityRefusal() -- so no route can answer 403 to a database
+  // hiccup. The 409 for multi_org is preserved exactly as this route had it.
+  const resolved = await resolvePublisherIdentity()
+  if (resolved.status !== 'ok') {
+    const r = publisherIdentityRefusal(resolved)
+    return NextResponse.json(r.body, { status: r.status })
   }
-
-  if (!identity) {
-    // No session, no membership, an invitation not accepted, or a suspended
-    // seat — the resolver deliberately does not distinguish them, and neither
-    // does this route. What the PAGE must not do is render an empty list:
-    // "you hold no seat" and "your house has no books" are different
-    // sentences and only one of them is true here.
-    return NextResponse.json({ error: 'not_a_publisher' }, { status: 403 })
-  }
+  //
+  // `publisher`'s note on the no-seat case is kept because it is still the
+  // governing reason, it has simply moved into the shared mapper above:
+  //   "No session, no membership, an invitation not accepted, or a suspended
+  //    seat — the resolver deliberately does not distinguish them, and neither
+  //    does this route. What the PAGE must not do is render an empty list:
+  //    'you hold no seat' and 'your house has no books' are different
+  //    sentences and only one of them is true here."
+  // To which 2026-10-01 adds a third sentence that must not be confused with
+  // either: "we could not check" — now a 503, never a 403.
+  const identity: PublisherIdentity = resolved.identity
 
   const org = identity.organisation
 
