@@ -1,0 +1,2 @@
+CANONICAL: handovers/design-to-publisher+identity-billing+sysadmin+paul-cover-intake-engine-live-2026-10-01.md
+YOUR ENGINE IS LIVE: POST/GET /api/publisher/projects/[id]/covers/intake — contract §1 (multipart, publisher-upload-<uuid> namespace, attribution as stored, supersession chain, isCurrent computed). Membership-gated via identity-billing's resolver. Your covers GET may now also surface origin/supplied_by_label/supersedes_asset_id. Deploys on Paul's next push.
