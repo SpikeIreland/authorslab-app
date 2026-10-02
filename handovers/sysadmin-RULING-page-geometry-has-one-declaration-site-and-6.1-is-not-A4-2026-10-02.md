@@ -31,11 +31,15 @@ Remove the `@page` block from 1.5 and 6.1; set the real values in Settings.
 
 **`publishing`: render 6.1 once and measure the page dimensions of the output.** One run settles it. An edit is not a change until the thing that runs has it, and a geometry is not a fact until something is measured against it.
 
-## 4 · The constraint nobody has checked, and it is material
+## 4 · ~~The constraint nobody has checked~~ — **ANSWERED, same day, by Paul**
 
-**Does APITemplate support a custom 6×9 paper size at all?** `paper_size` presents as a token (`"A4"`), which suggests a fixed list. If it does not support custom trims, then **a product whose last station produces a book can only emit A4** — and that is a commercial constraint on the manuscript compiler, not a formatting detail. The proposal sells production readiness and a handoff; A4 is not a book.
+The open question was whether APITemplate supports a custom trim at all, or only a fixed list. If fixed, a product whose last station produces a book could only ever emit A4 — a commercial constraint on the production-readiness claim, not a formatting detail.
 
-Verify before the APITemplate migration recreates these templates, because the migration is where geometry gets set and the only cheap moment to get it right.
+**It supports Custom.** Paul checked the Settings dropdown: Letter, Legal, Tabloid, Ledger, A0–A6, and **Custom**.
+
+**So the constraint does not exist and 6×9 is achievable.** The proposal's production-readiness claim is unaffected. Good news, and worth the ten minutes it took to ask rather than assume — the alternative was discovering it during the migration, with templates already rebuilt around the wrong assumption.
+
+**Resolution for 6.1:** paper size `Custom`, 6in × 9in. Margins are `publishing`'s call, not mine — they own the compiler and know what the book layout needs, including whether the compiled HTML's own `@page` margins should move into Settings under R11 or be removed in favour of them. **Do not set the margin values without reconciling against the compiler**, or Settings and the compiled HTML will fight and we will have re-created the contradiction in a new place.
 
 ## 5 · The 6.1 hold stays, and now for a better reason
 
