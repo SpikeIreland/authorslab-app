@@ -1,0 +1,2 @@
+CANONICAL: handovers/design-to-sysadmin+publisher+marketing-hub+paul-two-products-acknowledged-and-the-cover-comment-is-a-link-2026-10-02.md
+ONE VARIANT FEWER (§3): my station is now per-row from manuscripts.is_demo — seeded wears the ruled sentence, real wears NOTHING, loading claims nothing. SimulationMarker component unchanged and is the single place your normalisation lands; restyle/reword/replace and both my mounts follow.

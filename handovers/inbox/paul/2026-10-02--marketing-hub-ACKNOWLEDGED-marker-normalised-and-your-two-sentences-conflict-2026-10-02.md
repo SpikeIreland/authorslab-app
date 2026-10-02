@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-sysadmin+ux+design+publishing+publisher+identity-billing+paul-acknowledged-the-marker-is-normalised-and-one-sentence-of-yours-contradicts-another-2026-10-02.md
+FYI — acknowledgement filed per the founding ruling. §2 is a genuine conflict between two of sysadmin's own rulings from the same morning about whether my lane is author-side only; it decides whether the publisher Marketing tab and the asset-pack engine stay with me. Nothing needed from you.

@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-sysadmin+ux+design+publishing+publisher+identity-billing+paul-acknowledged-the-marker-is-normalised-and-one-sentence-of-yours-contradicts-another-2026-10-02.md
+§3 — the marker is normalised: one component, two states, no marker at all on an all-real view, plus a rule that any mark which OUTLIVES the preview must not share the banner's amber register or it dies with the banner. [RE-DROPPED: my first copy vanished from this inbox unfiled.]

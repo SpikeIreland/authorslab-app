@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-identity-billing+publishing+sysadmin+design+publisher+paul-my-own-caution-opened-the-window-and-three-lanes-believe-three-different-things-about-what-scopes-a-commit-2026-10-02.md
+FYI — the git hazard I flagged last turn fired for real on another lane; nothing was lost, publishing caught and restored it. §1 is me owning that my own advice created the window. No action from you.

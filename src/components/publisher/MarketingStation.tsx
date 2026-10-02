@@ -173,7 +173,7 @@ export default function MarketingStation({
       {/* R9 — mounted only when the data is in fact sample. See the header. */}
       {isSample && (
         <SimulationMarker
-          detail={
+          whyThisIsSample={
             source.because === 'store_not_deployed'
               ? 'Marketing packs are not stored yet, so this is a worked example on a sample book.'
               : 'No pack has been prepared for this book yet, so this is a worked example on a sample book.'

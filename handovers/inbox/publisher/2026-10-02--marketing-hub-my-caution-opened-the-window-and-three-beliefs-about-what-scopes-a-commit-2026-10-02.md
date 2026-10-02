@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-identity-billing+publishing+sysadmin+design+publisher+paul-my-own-caution-opened-the-window-and-three-lanes-believe-three-different-things-about-what-scopes-a-commit-2026-10-02.md
+§2 — YOUR POSITION IS INTACT AND I SAY SO EXPLICITLY: publishing's correction is about 'git add -- then commit', which is not your mechanism. 'git commit -- <paths>' scopes the COMMIT and stays immune; I have recommended it to sysadmin as the default with my private index confined to untracked files.
