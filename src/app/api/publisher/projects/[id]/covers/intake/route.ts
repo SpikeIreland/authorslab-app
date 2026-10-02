@@ -102,7 +102,7 @@ async function gate(manuscriptId: string): Promise<
       ok: true
       actorMembershipId: string
       authUserId: string
-      manuscript: { id: string; title: string | null; isDemo: boolean }
+      manuscript: { id: string; title: string | null }
     }
   | { ok: false; response: NextResponse }
 > {
@@ -130,7 +130,7 @@ async function gate(manuscriptId: string): Promise<
 
   const { data: manuscript, error: mErr } = await supabaseAdmin
     .from('manuscripts')
-    .select('id, title, imprint_id, is_demo')
+    .select('id, title, imprint_id')
     .eq('id', manuscriptId)
     .maybeSingle()
   if (mErr) {
@@ -179,14 +179,7 @@ async function gate(manuscriptId: string): Promise<
     ok: true,
     actorMembershipId: verdict.actor_membership_id,
     authUserId: user.id,
-    manuscript: {
-      id: manuscript.id,
-      title: manuscript.title ?? null,
-      // R9 as amended (2026-10-02): marking is PER ROW, from the estate's one
-      // isolation key. The surface computes its sentence from this; the
-      // engine only reports the fact.
-      isDemo: manuscript.is_demo === true,
-    },
+    manuscript: { id: manuscript.id, title: manuscript.title ?? null },
   }
 }
 
@@ -232,7 +225,7 @@ export async function GET(
     })
   )
 
-  return NextResponse.json({ assets, isDemo: gated.manuscript.isDemo })
+  return NextResponse.json({ assets })
 }
 
 /**
