@@ -162,6 +162,40 @@ export interface LobbyTitle {
   publicationDate: string | null
   risk: Risk
   riskBasis: RiskBasis
+  /**
+   * THE COVER, AND WHAT THIS FIELD IS NOT.
+   *
+   * Paul, 2026-10-02: *"my preference is for the page to display the books in
+   * the same way as it does in the Author's view where the book cover design
+   * is visible where the design has been completed."*
+   *
+   * This carries `publishing_progress.selected_cover_url` VERBATIM — the
+   * selection pointer, not a resolved image. `ux`'s PublisherBookCover
+   * renders it only when it is actually fetchable (`/` or `http`) and
+   * otherwise shows an honestly empty slot, so a `cover-asset:` pointer or a
+   * dead URL can never reach the page as a broken glyph.
+   *
+   * NOT the `cover_assets` bucket. Those objects are private and need a
+   * SIGNED url each, which on a forty-title list is forty storage round trips
+   * per page load. The book's own page signs them one at a time, which is
+   * where that cost belongs.
+   */
+  coverUrl: string | null
+  /**
+   * Whether this book HAS cover artwork, independently of whether this list
+   * can show it. The two are different facts and the list needs both.
+   *
+   * A selection pointing at an asset row is unrenderable here (see above) and
+   * would fall to an empty slot reading "No cover yet" — which would be FALSE
+   * on a book whose cover exists. That is the inverted-affordance shape: a
+   * disclaimer denying a capability we have.
+   *
+   * MEASURED 2026-10-02: 0 of the 9 titles on any publisher list have a cover
+   * asset or a selection, so that third state is unreachable today. It is
+   * carried here, and couriered to `ux`, so it is settled BEFORE the first
+   * cover exists rather than discovered by it.
+   */
+  hasCoverAsset: boolean
   /** The seven stations, for the dashboard. */
   stations: StationCell[]
 }
@@ -374,6 +408,33 @@ export async function GET() {
     // TRANSACTION time, so two revisions in one transaction tie and "the
     // latest row" stops being a single row. That was a defect in my own DDL;
     // commissioning caught what two readings of it had not.
+    // ── COVERS ────────────────────────────────────────────────────────────
+    // Two reads, both batched across the whole list rather than per row.
+    // Neither signs anything: see the `coverUrl` note on LobbyTitle.
+    const { data: coverSelections } = await supabaseAdmin
+      .from('publishing_progress')
+      .select('manuscript_id, selected_cover_url')
+      .in('manuscript_id', ids)
+
+    const coverUrlByManuscript = new Map<string, string>()
+    for (const row of (coverSelections ?? []) as {
+      manuscript_id: string
+      selected_cover_url: string | null
+    }[]) {
+      if (row.selected_cover_url) coverUrlByManuscript.set(row.manuscript_id, row.selected_cover_url)
+    }
+
+    // Existence only — no storage_path, no signing. This answers "does a
+    // cover exist" and deliberately not "what does it look like".
+    const { data: coverAssetRows } = await supabaseAdmin
+      .from('cover_assets')
+      .select('manuscript_id')
+      .in('manuscript_id', ids)
+
+    const hasAsset = new Set(
+      ((coverAssetRows ?? []) as { manuscript_id: string }[]).map((r) => r.manuscript_id)
+    )
+
     const { data: targetDates } = await supabaseAdmin
       .from('title_target_dates')
       .select('manuscript_id, kind, target_date, seq')
@@ -539,6 +600,8 @@ export async function GET() {
         // than left to truthiness, because the direction that matters is
         // never silently marking a publisher's real book as a sample.
         isSample: (r as unknown as { is_demo?: boolean | null }).is_demo === true,
+        coverUrl: coverUrlByManuscript.get(r.id) ?? null,
+        hasCoverAsset: hasAsset.has(r.id),
         register,
         currentStationName: currentPhase !== null ? PHASE_NAME[currentPhase] ?? null : null,
         currentStationOperator: active?.editor_name ?? null,

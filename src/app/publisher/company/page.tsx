@@ -34,7 +34,6 @@ export const dynamic = 'force-dynamic'
  */
 
 import { useEffect, useState } from 'react'
-import { AppShell } from '@/components/chrome/AppShell'
 
 
 interface Version {
@@ -262,8 +261,18 @@ export default function PublisherCompanyPage() {
   const supplied = documents.filter((d) => d.current !== null).length
 
   return (
-    <AppShell modeLabel="Publisher" firstName={payload?.organisation?.name}>
-      <div className="flex-1 overflow-y-auto h-[calc(100vh-100px)]">
+    <>
+      {/* THE SHELL OWNS THE SCROLL, AND IT DID NOT WHEN THIS WAS WRITTEN.
+          This div carried `flex-1 overflow-y-auto h-[calc(100vh-100px)]`,
+          sized against AppShell's header back when these pages supplied their
+          own chrome. `ux`'s PublisherShell now wraps the whole tree from the
+          layout, its header is h-14 (56px, not 100), and its <main> is already
+          `flex-1 min-w-0 overflow-y-auto` inside `h-screen flex flex-col`.
+          So all three classes were wrong at once: the arithmetic, a second
+          scroll container nested in the first, and a `flex-1` with no flex
+          parent. The right height is the one <main> computes, so this element
+          states none. */}
+      <div>
         <div className="max-w-[860px] mx-auto px-6 py-10">
 
           <div className="mb-7">
@@ -360,6 +369,6 @@ export default function PublisherCompanyPage() {
           )}
         </div>
       </div>
-    </AppShell>
+    </>
   )
 }

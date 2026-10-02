@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 /**
  * THE PUBLISHER LOBBY — /publisher
  *
- * Same shell as the author's Library (AppShell, one visual grammar: learn one
+ * Same visual grammar as the author's Library — one grammar, learn one
  * screen and you have learned them all). Different question:
  *
  *   Author's Lobby:    "what am I working on?"
@@ -45,8 +45,10 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { AppShell } from '@/components/chrome/AppShell'
 import { PublisherNav } from './_components/PublisherNav'
+import { PublisherBookCover } from '@/components/publisher-chrome/PublisherBookCover'
+import { PublisherJourneyStrip } from '@/components/publisher-chrome/PublisherJourneyStrip'
+import type { StationCell } from './_components/StationMark'
 
 
 type Register = 'list' | 'line'
@@ -61,6 +63,15 @@ interface LobbyTitle {
   imprintName: string | null
   /** R9, per row — a seeded sample title. See the route's header note 3. */
   isSample: boolean
+  /** The selection pointer, passed through. PublisherBookCover decides
+   *  whether it is renderable; this page does not guess. */
+  coverUrl: string | null
+  /** Whether a cover EXISTS, which is a different fact from whether this list
+   *  can show it. See the route's note. */
+  hasCoverAsset: boolean
+  /** The seven stations in journey order, as the route builds them. The strip
+   *  and the wall chart read the same cells from the same component. */
+  stations: StationCell[]
   register: Register | null
   currentStationName: string | null
   currentStationOperator: string | null
@@ -175,7 +186,19 @@ function TitleRow({
       style={{ background: 'var(--color-paper, #FFFFFF)', border: '1px solid #E5E5E3' }}
     >
       <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
+        {/* ─── THE COVER SLOT ────────────────────────────────────────────
+            Paul's ask, and `ux`'s component. Artwork where a cover is
+            fetchable; an honestly empty slot otherwise — NEVER a procedural
+            stand-in, because on a publisher's list an object that looks like
+            a cover claims the design station has run.
+
+            MEASURED 2026-10-02: 0 of the 9 titles on any publisher list have
+            a cover asset or a selection, so this ships as nine empty slots
+            and the first real cover is what will prove it. Said plainly here
+            rather than reported as "covers are on the list now". */}
+        <PublisherBookCover coverUrl={t.coverUrl} title={t.title} size="sm" />
+
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <span
               className="text-[15px] truncate"
@@ -210,6 +233,18 @@ function TitleRow({
             {t.authorName ?? 'Author unnamed'}
             {t.imprintName ? <> · {t.imprintName}</> : null}
           </div>
+
+          {/* `ux`'s strip, built on the StationMark I lifted for them — so
+              the row, the wall chart and the book header all draw the three
+              marks from one component. A STATE DISPLAY, never navigation:
+              it answers "where is this book" before anything is clicked,
+              which is the property the demo-build ruling said to preserve.
+              Cells arrive from the route already in journey order. */}
+          {t.stations.length > 0 && (
+            <div className="mt-2">
+              <PublisherJourneyStrip cells={t.stations} compact />
+            </div>
+          )}
 
           <div className="mt-1.5 text-[12.5px]" style={{ color: 'var(--color-muted)' }}>
             {t.risk === 'handed-off' ? (
@@ -427,9 +462,19 @@ export default function PublisherLobbyPage() {
   }, [loading, refusal, imprints.length, titles.length, filtered])
 
   return (
-    <AppShell modeLabel="Publisher" firstName={payload?.organisation?.name}>
+    <>
       <PublisherNav />
-      <div className="flex-1 overflow-y-auto h-[calc(100vh-100px)]">
+      {/* THE SHELL OWNS THE SCROLL, AND IT DID NOT WHEN THIS WAS WRITTEN.
+          This div carried `flex-1 overflow-y-auto h-[calc(100vh-100px)]`,
+          sized against AppShell's header back when these pages supplied their
+          own chrome. `ux`'s PublisherShell now wraps the whole tree from the
+          layout, its header is h-14 (56px, not 100), and its <main> is already
+          `flex-1 min-w-0 overflow-y-auto` inside `h-screen flex flex-col`.
+          So all three classes were wrong at once: the arithmetic, a second
+          scroll container nested in the first, and a `flex-1` with no flex
+          parent. The right height is the one <main> computes, so this element
+          states none. */}
+      <div>
         <div className="max-w-3xl mx-auto px-6 py-10">
 
           {/* Greeting + summary — the author's grammar, the publisher's question */}
@@ -753,6 +798,6 @@ export default function PublisherLobbyPage() {
 
         </div>
       </div>
-    </AppShell>
+    </>
   )
 }
