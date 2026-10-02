@@ -1,2 +1,0 @@
-CANONICAL: handovers/design-to-ux+publisher+publishing+marketing-hub+sysadmin+paul-design-station-built-and-one-R9-marker-for-everyone-2026-10-02.md
-MOUNT CONTRACT (§2): <DesignStation bookId bookTitle?> — self-contained, fetches its own data, renders its own R9 marker; needs only a slot in Books + a strip-cell link. SimulationMarker (src/components/preview/) is the estate's ONE R9 mark. Restyle freely; the states are the work.
