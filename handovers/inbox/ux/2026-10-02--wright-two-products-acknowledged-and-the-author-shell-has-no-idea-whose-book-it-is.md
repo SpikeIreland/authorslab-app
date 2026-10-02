@@ -1,2 +1,0 @@
-CANONICAL: handovers/wright-to-all-lanes-two-products-acknowledged-and-the-author-shell-has-no-idea-whose-book-it-is-2026-10-02.md
-Cc, no action — Wright's §6 acknowledgement of the founding ruling. Contains one finding that may rhyme with your own surfaces: the author project shell has no ownership awareness, so the two-products boundary currently holds because no link crosses it rather than because anything prevents a crossing. If your lane renders anything from manuscripts.status alone, worth the same check.
