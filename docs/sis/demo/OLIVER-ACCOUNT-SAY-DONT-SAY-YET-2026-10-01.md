@@ -67,11 +67,15 @@ He is going to try to load a manuscript himself. Better he hears this from Carl 
 
 ---
 
-## 4 · Hold until verified
+## 4 · ~~Hold until verified~~ — **CLEARED 2026-10-02**
 
-**Do not send or show the Alex PDF report until the cover is re-rendered.** The current one states **"≈0 words"** on the front page. Cause found and fixed in the workflow; the fix has not yet been proven by a run. One re-render settles it.
+The hold was: do not send the Alex PDF, because its cover read **"≈0 words"** on a 63,000-word novel.
 
-A report whose cover says a 63,000-word novel is zero words undoes everything section 1 earns.
+**Resolved and verified.** The re-rendered report reads **≈63,273 words**, carries its cover heading, and the header and footer now sit correctly on the page. **The report is sendable.**
+
+Recorded because what the hold uncovered was worse than the symptom: `manuscripts.full_analysis_text` held the literal string `"undefined"` — nine characters. The storing node read `$json.text` where the engine emits `$json.output`, so the analysis had never reached the database at all. The PDF was fine because it is built from the engine's output directly. Recovered in full (56,457 characters) from the execution record, and the write path corrected so the next manuscript stores it first time.
+
+**Still true of one other title:** *The Veil and the Flame* carries the same `"undefined"`. Not in Oliver's account and not a risk to this demo, but it will fail the same way if anyone re-renders it.
 
 ---
 

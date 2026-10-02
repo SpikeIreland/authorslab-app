@@ -56,6 +56,34 @@ Shared credential across all eight call sites: **`jN6l6Wo4p2GFD0qF`**.
 
 **The trap, restated because it is the whole risk:** repointing the shared credential before the template ids change breaks all seven simultaneously, including the path that emails every paying author — silently.
 
+## Do this while recreating each template — the header/footer table pattern
+
+Found 2026-10-02 on `79877b23e3adb572` (Alex) and fixed there. **The other six almost certainly carry it.**
+
+Chrome's PDF header/footer renders in a constrained context where it **ignores `padding`, `display:flex` and `text-align` on a bare `<div>`**. The Alex template's header was a flex div with `padding: 0 18mm` — the padding was dropped, the flex collapsed, and "AuthorsLab" ran straight into "Developmental Roadmap" against the page edge. Its footer had the same fault and sat flush left despite `text-align:center`.
+
+**A `<table>` is honoured where a `<div>` is not.** `cee77b23e127e78a` (6.1) already used that workaround in its footer, which is why that one always rendered correctly — the pattern was in the house and undocumented.
+
+The shape that works:
+
+```html
+<style>#header{padding:0 !important;margin:0 !important;}</style>
+<table style="width:100%;border-collapse:collapse;...">
+  <tr>
+    <td style="padding:14px 0 5px 50px;text-align:left;">…</td>
+    <td style="padding:14px 50px 5px 0;text-align:right;">…</td>
+  </tr>
+</table>
+```
+
+Side padding should match the body's `margin_left`/`margin_right` so header, body and footer align.
+
+**Also check the margins, not just the markup.** A two-row footer did not fit `margin_bottom: 40` and the body panel overlapped the page number. `margin_bottom` went to `65` against `margin_top: 80`. Reserve vertical space in proportion to the number of rows.
+
+Recreating all seven is the only cheap moment to normalise this. Do it as each template is rebuilt rather than as a later sweep.
+
+---
+
 ## Not migrated, deliberately
 
 Clarence's 12 templates stay where they are. Nothing in this plan touches them, and the import script refuses to run if the new key equals the old one.
