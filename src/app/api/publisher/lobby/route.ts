@@ -8,6 +8,7 @@ import {
 import {
   deriveRegister,
   deriveRisk,
+  sampleDisclosure,
   LAST_PHASE,
 
   RISK_ORDER,
@@ -75,7 +76,32 @@ import {
 //    stays: the column exists today and the split must report UNAVAILABLE,
 //    never guess, if it ever stops existing.
 //
-// 3. COST. `lmo_ledger.cost_estimate_usd` is never read here. Paul's standing
+// 3. THAT EVERY ROW IS THE PUBLISHER'S OWN WORK. `sysadmin`'s R9
+//    (2026-10-02): *a simulation must announce itself* — every simulated
+//    surface carries a persistent, non-dismissible marker reading "Preview —
+//    sample data, not your titles."
+//
+//    THAT MARKER IS FALSE ON THIS SURFACE, in the other direction, and the
+//    Books list is the one place where it would be. Oliver's account carries
+//    `CS The List` — his own 82-chapter manuscript, really parsed, really
+//    analysed — seeded alongside sample titles that exist to give the later
+//    stations something to show. A banner saying "not your titles" over a
+//    list whose first row IS his title is the same class of defect as a green
+//    cell containing an em-dash: a surface asserting something its evidence
+//    contradicts.
+//
+//    So R9 is honoured PER ROW here, from `manuscripts.is_demo` — a column
+//    that already exists and is already the estate's isolation key, rather
+//    than a flag invented for a banner. `isSample` rides on every title, and
+//    the view-level sentence is computed from the MIX (§ sampleDisclosure
+//    below) so it can never claim a list is wholly sample when it is not.
+//
+//    R9's purpose is §8 of that ruling: *the editorial studio is real and
+//    everything around it is not yet, and the marker keeps that asymmetry
+//    legible.* A marker that mislabels the real book as sample destroys the
+//    asymmetry it was written to protect.
+//
+// 4. COST. `lmo_ledger.cost_estimate_usd` is never read here. Paul's standing
 //    position: leave the room without disclosing a price.
 //
 // ─── Dates: what we are measured against, and what we are not ───────────────
@@ -111,6 +137,17 @@ export interface LobbyTitle {
   authorName: string | null
   imprintId: string | null
   imprintName: string | null
+  /**
+   * R9, per row. True when `manuscripts.is_demo` is set — a seeded sample
+   * title, present so the later stations have something to show.
+   *
+   * Read from the estate's existing isolation column, NOT from a new flag:
+   * `is_demo` is what already keeps seeded books out of author surfaces, so a
+   * row marked sample here is the same row the rest of the platform already
+   * treats as seeded. A second flag would be a second vocabulary for one
+   * fact, and the two would eventually disagree about the same book.
+   */
+  isSample: boolean
   /** null when the register split cannot be resolved — see header note 2. */
   register: Register | null
   currentStationName: string | null
@@ -266,7 +303,7 @@ export async function GET() {
 
     const { data: manuscripts } = await supabaseAdmin
       .from('manuscripts')
-      .select('id, title, imprint_id, author_profiles!inner (first_name, last_name)')
+      .select('id, title, imprint_id, is_demo, author_profiles!inner (first_name, last_name)')
       .in('imprint_id', imprintIds)
 
     const rows = manuscripts ?? []
@@ -497,6 +534,11 @@ export async function GET() {
         imprintName: r.imprint_id
           ? imprintNameById.get(r.imprint_id as string) ?? null
           : null,
+        // `is_demo` is nullable. NULL means "not marked", which for a seeded
+        // flag is the same as false -- but it is coerced explicitly rather
+        // than left to truthiness, because the direction that matters is
+        // never silently marking a publisher's real book as a sample.
+        isSample: (r as unknown as { is_demo?: boolean | null }).is_demo === true,
         register,
         currentStationName: currentPhase !== null ? PHASE_NAME[currentPhase] ?? null : null,
         currentStationOperator: active?.editor_name ?? null,
@@ -530,6 +572,7 @@ export async function GET() {
       /** No title in this estate has a target date before phase 5. Stated so
        *  the page can say it rather than imply on-track. */
       datesAvailable: titles.some((t) => t.handoffDate !== null),
+      ...sampleDisclosure(titles),
     })
   } catch (err) {
     console.error('[publisher/lobby] failed:', err)

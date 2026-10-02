@@ -39,22 +39,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AppShell } from '@/components/chrome/AppShell'
 import { PublisherNav } from '../_components/PublisherNav'
+import { StationMark, type StationCell } from '../_components/StationMark'
 
 
 type Risk = 'overdue' | 'at-risk' | 'stalled' | 'moving' | 'not-started' | 'handed-off'
 
-interface StationCell {
-  key: string
-  name: string
-  state: 'complete' | 'in-progress' | 'not-started'
-  completedBy: 'system' | 'human' | null
-  /** Who recorded it, where the estate captured that. Null on every row
-   *  predating 2026-09-30 — the actor columns were applied and deliberately
-   *  NOT backfilled, so a null here means "not recorded" and is shown as
-   *  "by hand" rather than as a name nobody wrote down. */
-  completedByName: string | null
-  operator: string | null
-}
 
 interface LobbyTitle {
   manuscriptId: string
@@ -62,6 +51,8 @@ interface LobbyTitle {
   authorName: string | null
   imprintName: string | null
   currentStationName: string | null
+  /** R9, per row — a seeded sample title. */
+  isSample: boolean
   gateOwner: 'author' | 'publisher' | null
   daysSinceActivity: number | null
   handoffDate: string | null
@@ -74,87 +65,15 @@ interface Payload {
   organisation?: { name: string }
   imprints?: { id: string; name: string }[]
   titles?: LobbyTitle[]
+  /** R9 — served by the route, computed from the mix. See the Lobby route's
+   *  header note 3 for why this surface must not carry a flat
+   *  "not your titles" banner. */
+  sampleDisclosure?: string | null
 }
 
-// ─── 1. Station marks ─────────────────────────────────────────────────────────
-// Three states, and a complete station additionally says WHO. The distinction
-// between "the machine ran this" and "a person recorded it" is the authority
-// model made visible, and it is the whole argument for level 1 being a real
-// product rather than a crippled one.
-
-function StationMark({ cell }: { cell: StationCell }) {
-  const base =
-    'w-full h-8 rounded-[3px] flex items-center justify-center text-[10px] font-medium'
-
-  if (cell.state === 'complete') {
-    // THREE kinds of complete, and they must not share a mark.
-    //
-    // Found on the live surface: a structural station (Manuscript, Handoff)
-    // has no `completedBy` — nobody "runs" a submission — so it rendered as a
-    // green box containing an em-dash. Green means "completed by the system"
-    // in this page's own key, so the cell was both claiming the wrong thing
-    // and showing a character that reads as missing data. On the surface that
-    // is meant to be the most finished thing we own.
-    if (cell.completedBy === null) {
-      return (
-        <div
-          className={base}
-          style={{ background: '#F3F4F6', color: '#4B5563', border: '1px solid #E5E7EB' }}
-          title={`${cell.name} — reached`}
-        >
-          reached
-        </div>
-      )
-    }
-    const byPerson = cell.completedBy === 'human'
-    return (
-      <div
-        className={base}
-        style={
-          byPerson
-            ? { background: '#EEF2FF', color: '#3730A3', border: '1px solid #C7D2FE' }
-            : { background: '#ECFDF5', color: '#065F46', border: '1px solid #A7F3D0' }
-        }
-        title={
-          byPerson
-            ? cell.completedByName
-              ? `${cell.name} — recorded by ${cell.completedByName}`
-              : `${cell.name} — recorded by hand (no name captured)`
-            : `${cell.name} — completed by the system`
-        }
-      >
-        {/* The mark stays "by hand" even when a name is known: it is 24px of
-            cell and a name does not fit in it. The name is in the title, which
-            is where it can be read without crowding out the distinction the
-            mark exists to make. And where no name was captured the tooltip
-            SAYS so, rather than leaving the reader to wonder whether a person
-            with no name recorded it. */}
-        {byPerson ? 'by hand' : 'done'}
-      </div>
-    )
-  }
-
-  if (cell.state === 'in-progress') {
-    return (
-      <div
-        className={base}
-        style={{ background: '#FFFBEB', color: '#92400E', border: '1px solid #FDE68A' }}
-        title={`${cell.name}${cell.operator ? ` — ${cell.operator}` : ''}`}
-      >
-        {cell.operator ?? 'running'}
-      </div>
-    )
-  }
-
-  return (
-    <div
-      className={base}
-      style={{ background: '#FAFAF9', color: '#C4C4C0', border: '1px solid #EFEFEC' }}
-      title={`${cell.name} — not started`}
-    />
-  )
-}
-
+// Risk dots stay HERE: they are the wall chart's own vocabulary, not part of
+// the station marks, and shipping them inside the shared component would hand
+// `ux` a second colour scale they did not ask for.
 const RISK_DOT: Record<Risk, string> = {
   overdue: '#B91C1C',
   'at-risk': '#C2410C',
@@ -286,6 +205,19 @@ export default function PublisherDashboardPage() {
             </p>
           )}
 
+          {/* R9 — persistent, non-dismissible, above the fold. Wording from
+              the payload; see the Lobby for the full note. */}
+          {payload?.sampleDisclosure && (
+            <div
+              className="px-4 py-3 mb-5 rounded-md text-[13px] flex items-start gap-2.5"
+              style={{ background: '#FEFCE8', border: '1px solid #FEF08A', color: '#854D0E' }}
+              role="note"
+            >
+              <span aria-hidden className="mt-[1px]">&#9432;</span>
+              <span>{payload.sampleDisclosure}</span>
+            </div>
+          )}
+
           {error && (
             <div
               className="px-4 py-3 mb-4 rounded-md text-sm"
@@ -402,6 +334,19 @@ export default function PublisherDashboardPage() {
                             <span className="text-[13.5px]" style={{ fontFamily: 'var(--font-serif)', color: 'var(--color-ink)' }}>
                               {t.title}
                             </span>
+                            {/* R9 per row. The wall chart is where a reader
+                                scans station marks rather than names, so a
+                                seeded row that is NOT marked here would be
+                                read as the house's own progress. */}
+                            {t.isSample && (
+                              <span
+                                className="text-[9.5px] tracking-[0.1em] uppercase px-1.5 py-[2px] rounded-full shrink-0"
+                                style={{ background: '#F7F7F5', color: '#6B6B6B', border: '1px dashed #C9C9C4' }}
+                                title="A seeded sample title. Not one of your books."
+                              >
+                                sample
+                              </span>
+                            )}
                           </div>
                           <div className="text-[11.5px] mt-0.5 pl-3.5" style={{ color: 'var(--color-muted)' }}>
                             {t.authorName ?? 'Author unnamed'}

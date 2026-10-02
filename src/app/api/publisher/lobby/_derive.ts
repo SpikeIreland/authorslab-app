@@ -129,3 +129,61 @@ export const RISK_ORDER: Record<Risk, number> = {
   moving: 4,
   'handed-off': 5,
 }
+
+/**
+ * The only two things the disclosure reads. A narrow input, so this function
+ * cannot come to depend on the rest of a LobbyTitle and so the verify script
+ * can construct a case in one line.
+ */
+export interface SampleFact {
+  isSample: boolean
+}
+
+/**
+ * R9's sentence, computed from the mix rather than asserted by a renderer.
+ *
+ * THREE STATES, and the middle one is the whole reason this is a function.
+ * `sysadmin`'s R9 gives one marker — "Preview — sample data, not your titles"
+ * — which is correct for a wholly simulated surface and WRONG for this one,
+ * because the Books list is where a publisher's own title sits beside seeded
+ * samples. So:
+ *
+ *   all sample   -> R9's words, unchanged. Nothing here is theirs.
+ *   some sample  -> says it mixes, and points at the row marks. NEVER
+ *                   "not your titles", which would be a false claim about
+ *                   the one row that matters most.
+ *   none sample  -> NO MARKER AT ALL. A marker on a list of a publisher's
+ *                   real books would teach them to ignore it, and then it
+ *                   would not work on the surfaces that need it.
+ *
+ * Served from here and not written in the page, for `identity-billing`'s
+ * reason about `empty_scope_notice`: a caveat that lives only in a renderer
+ * is one refactor from being dropped, and this one is a ruling.
+ */
+export function sampleDisclosure(titles: readonly SampleFact[]): {
+  sampleCount: number
+  realCount: number
+  sampleDisclosure: string | null
+} {
+  const sampleCount = titles.filter((t) => t.isSample).length
+  const realCount = titles.length - sampleCount
+
+  if (sampleCount === 0) {
+    return { sampleCount, realCount, sampleDisclosure: null }
+  }
+  if (realCount === 0) {
+    return {
+      sampleCount,
+      realCount,
+      sampleDisclosure: 'Preview — sample data, not your titles.',
+    }
+  }
+  return {
+    sampleCount,
+    realCount,
+    sampleDisclosure:
+      `This list holds ${realCount} of your own ` +
+      `${realCount === 1 ? 'title' : 'titles'} and ${sampleCount} seeded ` +
+      `${sampleCount === 1 ? 'sample' : 'samples'}. Every sample is marked on its own row.`,
+  }
+}

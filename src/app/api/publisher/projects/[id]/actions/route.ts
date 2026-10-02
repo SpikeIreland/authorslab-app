@@ -67,7 +67,42 @@ const supabaseAdmin = createSupabaseClient(
 const KINDS = ['approved', 'revisions_requested', 'note', 'route_confirmed'] as const
 type Kind = (typeof KINDS)[number]
 
-const STATIONS = ['cover', 'route', 'manuscript', 'marketing'] as const
+/**
+ * ─── THE STATION VOCABULARY, AND WHY IT IS NOT YET A CONTRACT ───────────────
+ *
+ * `'channel'` added 2026-10-02 at `publishing`'s ask, and the ask came with a
+ * collision they caught before shipping — which would have been MY bug:
+ *
+ *   their Publishing Hub needed to record "this title is routed to a channel".
+ *   There was no `'channel'` station, and `'route'` was already taken by MY
+ *   RIGHTS MODEL (traditional / hybrid / independent). My book page derives
+ *   `confirmedRoute` from the latest `station='route'` + `kind='route_confirmed'`
+ *   — so a channel string written under `'route'` would have SILENTLY REPLACED
+ *   the publisher's rights decision on my surface.
+ *
+ * They did not widen it; they asked. One value, my route, and it does not
+ * touch the rights path because a channel record now carries its own station.
+ *
+ * THE REAL FINDING IS UNDERNEATH, AND IT IS MINE. `publisher_actions` has TWO
+ * vocabularies and only ONE of them is constrained:
+ *
+ *   publisher_actions_kind_check   CHECK (kind IN ('approved',
+ *                                   'revisions_requested','note',
+ *                                   'route_confirmed'))        <- a contract
+ *   station                        plain text, no constraint   <- a convention
+ *
+ * Read from `pg_constraint` this turn, not recalled. So the list below is
+ * ADVISORY: the database would have accepted `publishing`'s channel string
+ * under `'route'` without complaint, and the only thing standing between that
+ * write and a silently overwritten rights decision was a person reading my
+ * page's code. `identity-billing`'s rule, which I have quoted at other lanes:
+ * A VOCABULARY WITH NO CONSTRAINT ON IT CANNOT BE A CONTRACT.
+ *
+ * A CHECK on `station` is couriered to `sysadmin` (migrations are theirs). With
+ * it, the next lane needing a new station gets a loud refusal instead of a
+ * silent collision — which is what `kind` already gives them one column over.
+ */
+const STATIONS = ['cover', 'route', 'manuscript', 'marketing', 'channel'] as const
 type Station = (typeof STATIONS)[number]
 
 const MAX_BODY = 4000

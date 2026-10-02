@@ -59,6 +59,8 @@ interface LobbyTitle {
   authorName: string | null
   imprintId: string | null
   imprintName: string | null
+  /** R9, per row — a seeded sample title. See the route's header note 3. */
+  isSample: boolean
   register: Register | null
   currentStationName: string | null
   currentStationOperator: string | null
@@ -84,6 +86,15 @@ interface LobbyPayload {
   titles?: LobbyTitle[]
   registerSplitAvailable?: boolean
   registerSplitReason?: string | null
+  /**
+   * R9. SERVED, not composed here — and null means "say nothing", which is a
+   * real instruction and not a missing value: a marker over a list of a
+   * publisher's own books would teach them to ignore markers, and then the
+   * marker would not work on the surfaces that need it.
+   */
+  sampleDisclosure?: string | null
+  sampleCount?: number
+  realCount?: number
   datesAvailable?: boolean
   available?: false
   reason?: string
@@ -173,6 +184,26 @@ function TitleRow({
               {t.title}
             </span>
             <RiskChip risk={t.risk} />
+            {/* R9 per row. A seeded title says so on its own line, because
+                this is the one surface where a publisher's real book and a
+                sample sit in the same list — so a view-level "not your
+                titles" would be false about the row that matters most.
+                Deliberately plain and unstyled-as-a-status: it is a
+                provenance label, not a state, and it must not be mistaken
+                for one of the risk chips beside it. */}
+            {t.isSample && (
+              <span
+                className="text-[10.5px] tracking-[0.1em] uppercase px-2 py-[3px] rounded-full"
+                style={{
+                  background: '#F7F7F5',
+                  color: '#6B6B6B',
+                  border: '1px dashed #C9C9C4',
+                }}
+                title="A seeded sample title, here so the later stations have something to show. Not one of your books."
+              >
+                sample
+              </span>
+            )}
           </div>
 
           <div className="mt-1 text-[12.5px]" style={{ color: 'var(--color-muted)' }}>
@@ -383,9 +414,16 @@ export default function PublisherLobbyPage() {
       pressing === 0
         ? `${filtered.length} ${filtered.length === 1 ? 'title' : 'titles'}, none pressing`
         : `${pressing} of ${filtered.length} ${filtered.length === 1 ? 'title needs' : 'titles need'} attention`
-    return datesKnown
+    // R9/R10 touch the same nerve here: a count is a claim about a
+    // publisher's workload, and a seeded row inside it inflates that claim.
+    // The samples are not removed from the count -- they are on the list and
+    // pretending otherwise would make the number disagree with the rows
+    // underneath it -- but the line says how many of them there are.
+    const samples = filtered.filter((t) => t.isSample).length
+    const sampleTail = samples > 0 ? ` · ${samples} seeded ${samples === 1 ? 'sample' : 'samples'}` : ''
+    return (datesKnown
       ? head
-      : `${head} · no handoff dates set, so this is measured by movement, not by deadline`
+      : `${head} · no handoff dates set, so this is measured by movement, not by deadline`) + sampleTail
   }, [loading, refusal, imprints.length, titles.length, filtered])
 
   return (
@@ -416,6 +454,26 @@ export default function PublisherLobbyPage() {
             <p className="text-sm py-8 text-center" style={{ color: 'var(--color-muted)' }}>
               Reading the list…
             </p>
+          )}
+
+          {/* R9 — PERSISTENT AND NON-DISMISSIBLE, and above everything else
+              on the page so it cannot be scrolled past. There is no close
+              button and no state that hides it; the only thing that removes
+              it is the route returning null, which happens when no row on the
+              list is seeded. The wording comes from the payload rather than
+              from here (identity-billing's rule: a caveat that lives only in
+              a renderer is one refactor from being dropped) and it is
+              computed from the MIX, so it can never tell a publisher that
+              their own title is sample data. */}
+          {payload?.sampleDisclosure && (
+            <div
+              className="px-4 py-3 mb-5 rounded-md text-[13px] flex items-start gap-2.5"
+              style={{ background: '#FEFCE8', border: '1px solid #FEF08A', color: '#854D0E' }}
+              role="note"
+            >
+              <span aria-hidden className="mt-[1px]">&#9432;</span>
+              <span>{payload.sampleDisclosure}</span>
+            </div>
           )}
 
           {error && (

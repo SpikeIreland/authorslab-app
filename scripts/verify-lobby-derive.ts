@@ -20,6 +20,7 @@
 import {
   deriveRegister,
   deriveRisk,
+  sampleDisclosure,
   STALL_DAYS,
   type PhaseFact,
 } from '../src/app/api/publisher/lobby/_derive'
@@ -178,9 +179,69 @@ check(
   { risk: 'handed-off', riskBasis: 'none' }
 )
 
+// ─── R9 · THE SAMPLE DISCLOSURE ───────────────────────────────────────────
+//
+// This block exists because my implementation of R9 DOES NOT MATCH ITS
+// LITERAL WORDING. The ruling gives one marker — "Preview — sample data, not
+// your titles" — and on the Books list that sentence would be false about the
+// one row that matters most, because Oliver's own 82-chapter manuscript sits
+// in the same list as the seeded samples.
+//
+// A lane departing from a ruling owes more evidence than a lane following
+// one, so the departure is the thing under test: the mixed case must NEVER
+// produce the "not your titles" claim, and the wholly-sample case must
+// reproduce the ruling's words EXACTLY.
+
+const sample = { isSample: true }
+const own = { isSample: false }
+
+check('R9: no rows at all -> no marker', sampleDisclosure([]).sampleDisclosure, null)
+
+check(
+  'R9: NEGATIVE — a list of only the publisher\'s own books carries NO marker',
+  sampleDisclosure([own, own, own]).sampleDisclosure,
+  null
+)
+
+check(
+  "R9: wholly seeded -> the ruling's words, exactly",
+  sampleDisclosure([sample, sample]).sampleDisclosure,
+  'Preview — sample data, not your titles.'
+)
+
+check(
+  'R9: NEGATIVE — a MIXED list must not claim "not your titles"',
+  sampleDisclosure([own, sample, sample]).sampleDisclosure?.includes('not your titles'),
+  false
+)
+
+check(
+  'R9: a mixed list reports both counts',
+  sampleDisclosure([own, sample, sample]).sampleDisclosure,
+  'This list holds 1 of your own title and 2 seeded samples. Every sample is marked on its own row.'
+)
+
+check(
+  'R9: NEGATIVE — one own title among samples is counted as 1, not rounded away',
+  sampleDisclosure([own, sample, sample, sample]).realCount,
+  1
+)
+
+check(
+  'R9: counts are of rows, not of flags',
+  [sampleDisclosure([own, own, sample]).realCount, sampleDisclosure([own, own, sample]).sampleCount],
+  [2, 1]
+)
+
+check(
+  'R9: singular sample reads as a sample, not samples',
+  sampleDisclosure([own, sample]).sampleDisclosure,
+  'This list holds 1 of your own title and 1 seeded sample. Every sample is marked on its own row.'
+)
+
 console.log(
   `\n${checks - failures}/${checks} passed, ${failures} failed` +
-    (failures === 0 ? ' — including 8 negative controls\n' : '\n')
+    (failures === 0 ? ' — including 11 negative controls\n' : '\n')
 )
 
 process.exit(failures === 0 ? 0 : 1)

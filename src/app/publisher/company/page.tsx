@@ -35,7 +35,6 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useState } from 'react'
 import { AppShell } from '@/components/chrome/AppShell'
-import { PublisherNav } from '../_components/PublisherNav'
 
 
 interface Version {
@@ -264,7 +263,6 @@ export default function PublisherCompanyPage() {
 
   return (
     <AppShell modeLabel="Publisher" firstName={payload?.organisation?.name}>
-      <PublisherNav />
       <div className="flex-1 overflow-y-auto h-[calc(100vh-100px)]">
         <div className="max-w-[860px] mx-auto px-6 py-10">
 

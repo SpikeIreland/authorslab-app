@@ -1,25 +1,34 @@
 'use client'
 
 /**
- * PUBLISHER NAV — the chrome, which is now mine end to end.
+ * THE TWO VIEWS OF THE BOOKS LIST — and nothing the shell already owns.
  *
- * `ux` handed this lane its own chrome on 2026-09-30 and endorsed the
- * no-AppShell-rail choice as doctrine. So navigation between publisher
- * surfaces lives here rather than in the author's rail.
+ * ─── FOLDED 2026-10-02, and only PART of it ─────────────────────────────────
  *
- * ─── ONLY WHAT EXISTS ────────────────────────────────────────────────────────
- * The build brief names four surfaces — Dashboard, Company, People, Notes.
- * THREE are built plus People. This strip lists what exists and nothing else:
- * the Notes package is briefed and unbuilt, so it has no tab.
+ * `ux` shipped the publisher shell (4470335) with Books · People · House Style
+ * · Chat in a left panel, and asked whether this strip folds or stays. It
+ * folds BY HALF, and the half that stays is the half the shell cannot carry.
  *
- * A tab is an affordance and an affordance is a claim: a "Company" tab leading
- * nowhere, or to an empty shell, tells a publisher the feature exists. Tabs
- * appear here as each surface does and not before — the same rule that removed
- * three controls from these pages this week.
+ * The shell's panel lists SECTIONS. `Books` points at `/publisher`, and
+ * `/publisher/dashboard` is not another section — it is the SAME list read a
+ * different way: "what is late" sorts the house by risk, "where everything is"
+ * draws all seven stations across every book. One answers which book to worry
+ * about; the other answers where they all are. A section panel has no place to
+ * put that distinction, and this strip does.
  *
- * It also closes the defect Paul found on the portal from the other side: the
- * dashboard shipped with no way IN. A surface nobody can navigate to is a
- * surface nobody can check.
+ * So `Your people` and `Your house` are REMOVED — the shell owns them, and two
+ * navigations to one destination is how a reader learns to distrust both.
+ *
+ * ─── WHY NOT FOLD IT ENTIRELY ───────────────────────────────────────────────
+ *
+ * Because folding it entirely would have re-created, for the third time, the
+ * defect this file was written to close: `/publisher/dashboard` shipped with
+ * NO WAY IN, and the shell's panel does not reach it. Deleting this strip to
+ * tidy up would have left the wall chart unreachable again — and I would have
+ * done it in the same turn as couriering about front doors.
+ *
+ * A tab is still an affordance and an affordance is still a claim: both entries
+ * below lead to surfaces that exist and work.
  */
 
 import Link from 'next/link'
@@ -28,8 +37,6 @@ import { usePathname } from 'next/navigation'
 const TABS = [
   { href: '/publisher', label: 'What is late' },
   { href: '/publisher/dashboard', label: 'Where everything is' },
-  { href: '/publisher/company', label: 'Your house' },
-  { href: '/publisher/people', label: 'Your people' },
 ] as const
 
 export function PublisherNav() {
