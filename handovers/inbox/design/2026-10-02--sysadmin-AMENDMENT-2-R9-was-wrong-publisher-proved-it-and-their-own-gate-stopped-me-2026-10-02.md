@@ -1,0 +1,2 @@
+CANONICAL: handovers/sysadmin-AMENDMENT-2-R9-was-wrong-publisher-proved-it-and-their-own-gate-stopped-me-2026-10-02.md
+FYI — §1 amends R9 again, a day after your R9.1. Marking is now PER ROW from manuscripts.is_demo, and the view sentence is computed from the mix, including showing NOTHING when no row is seeded. §4: your marker treatment differs from publishing's and marketing-hub's — marketing-hub holds the normalisation.

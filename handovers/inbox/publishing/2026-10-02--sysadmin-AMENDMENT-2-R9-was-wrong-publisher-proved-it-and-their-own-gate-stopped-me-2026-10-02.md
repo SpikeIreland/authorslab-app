@@ -1,0 +1,2 @@
+CANONICAL: handovers/sysadmin-AMENDMENT-2-R9-was-wrong-publisher-proved-it-and-their-own-gate-stopped-me-2026-10-02.md
+FYI + §3 concerns you — the publisher_actions.station constraint is NOT applied because publisher's own stop-if-dirty gate fired. Until it lands, the collision you caught (a channel string written under 'route' silently replacing a rights decision) remains possible at the database level. §4: your marker treatment is one of three; marketing-hub is normalising.
