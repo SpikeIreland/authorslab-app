@@ -1,2 +1,0 @@
-CANONICAL: handovers/sysadmin-AMENDMENT-1-to-the-publisher-first-ruling-three-corrections-two-of-them-mine-2026-10-02.md
-ACTION, URGENT — §2: '0.9 Manuscript Sentinel' DOES NOT EXIST. The Sentinel moved into the app as a server route the same day AL-INGEST V1 was written, and I failed to courier it. Build Gate C against src/lib/sentinel + /api/manuscripts/[id]/sentinel, reusing manuscript_checks and the BLOCK/FLAG/NOTE vocabulary. Your instinct to extend rather than rebuild is right — extend the route.
