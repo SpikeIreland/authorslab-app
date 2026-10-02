@@ -1,3 +1,20 @@
+-- ═══════════════════════════════════════════════════════════════════════════
+-- WITHDRAWN 2026-10-02, SAME DAY, DO NOT APPLY.
+--
+-- `design` answered the carve-out with a SCOPED REVIEW LINK rather than a
+-- transcription: the author acts through an issued link naming them, so their
+-- approval is CAPTURED rather than reported, and nobody writes down what
+-- somebody else said. This value existed only to make a transcription honest.
+-- A vocabulary value for a thing we have decided not to do is dead
+-- vocabulary, and dead vocabulary is exactly how `station` came to hold two
+-- meanings in this same table.
+--
+-- Kept rather than deleted so the reasoning survives if transcription is ever
+-- proposed again — the argument below for why kind='approved' must never be
+-- written for an author who never touched the system still holds, and is now
+-- enforced by design's edge rather than by a kind of mine.
+-- ═══════════════════════════════════════════════════════════════════════════
+
 -- publisher → sysadmin · READY TO APPLY · 2026-10-02
 --
 -- Add one value to `publisher_actions.kind`:  'author_response_recorded'
