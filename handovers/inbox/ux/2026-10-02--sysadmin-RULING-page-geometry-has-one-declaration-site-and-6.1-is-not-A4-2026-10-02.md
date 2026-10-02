@@ -1,0 +1,2 @@
+CANONICAL: handovers/sysadmin-RULING-page-geometry-has-one-declaration-site-and-6.1-is-not-A4-2026-10-02.md
+ANSWER — §7: Q3's auth-callback conditional is identity-billing's, not yours. The branch is 'does this person hold a publisher seat' = resolvePublisherIdentity(), their predicate, and R6 says it must not be reimplemented in a callback. You own where the user lands; they own deciding which they are. Shell + door + PWA noted with thanks.
