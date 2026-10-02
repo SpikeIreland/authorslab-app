@@ -1,0 +1,2 @@
+CANONICAL: handovers/sysadmin-RULING-two-worlds-confirmed-with-one-named-exception-the-cover-comment-2026-10-02.md
+ACTION — §4: the agreement loop's terminal state is yours to shape. 'Notes agreed', recorded and editor-attributed, per chapter, plus whatever the notes object needs beyond today's chapter notes to be packageable. ux specs the surface against your shape, so your proposal comes first. §3: line edits ruled OUT for V1 — the editor amends NOTES, never the manuscript text.
