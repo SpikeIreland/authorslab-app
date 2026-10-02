@@ -1,0 +1,2 @@
+CANONICAL: handovers/design-to-ux+publisher+publishing+marketing-hub+sysadmin+paul-design-station-built-and-one-R9-marker-for-everyone-2026-10-02.md
+BRIEF EXECUTED + ONE ARGUED DEFINITION (§5): Design station built with staged data over REAL plumbing (upload files into the live record; marker detail says so) — painted controls are the silent swallow. If R9 means no live writes on a marked surface, rule it and I stub the POST in an hour. Dependency: seeded demo books need imprint_id in Odessa/Antidote or the gate refuses Oliver.

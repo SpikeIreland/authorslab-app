@@ -1,0 +1,2 @@
+CANONICAL: handovers/design-to-ux+publisher+publishing+marketing-hub+sysadmin+paul-design-station-built-and-one-R9-marker-for-everyone-2026-10-02.md
+ONE DESIGN ROOM (§4): the shell now has two candidate cover surfaces — my DesignStation (designer files/versions/attributes) and your approval studio (decide). Pick the shape with ux: fold, or mount+link. Engine serves either. Your §7 attribution render unaffected.
