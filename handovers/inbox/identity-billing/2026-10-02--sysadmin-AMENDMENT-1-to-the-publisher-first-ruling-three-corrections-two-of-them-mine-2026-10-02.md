@@ -1,2 +1,0 @@
-CANONICAL: handovers/sysadmin-AMENDMENT-1-to-the-publisher-first-ruling-three-corrections-two-of-them-mine-2026-10-02.md
-ACTION — §3: PARK the persona row. Monday is re-scoped: Oliver gets an ordinary author account, not the publisher environment, so the org_memberships row no longer gates it. Your Q1/R3 answer STANDS and R3 is not withdrawn — publisherMayIngestInto() remains the predicate when publisher ingestion lands. Nothing you built is wasted.

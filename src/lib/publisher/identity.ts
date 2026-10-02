@@ -456,3 +456,47 @@ export function publisherMayIngestInto(
     actor_membership_id: identity.membership_id,
   }
 }
+
+/**
+ * ─── THE POST-LOGIN DESTINATION — ONE DECLARATION SITE ──────────────────────
+ *
+ * `sysadmin`'s geometry ruling §7 assigned this here, and R6's shape applies:
+ * **one declaration site, not reimplemented elsewhere.** `ux` shipped the shell
+ * and the seat-gated door; this is the single conditional behind both.
+ *
+ *     a publisher seat  -> /publisher
+ *     everyone else     -> /lobby
+ *
+ * ─── WHY THE FAILURE DEFAULT IS `/lobby` AND NOT `/publisher` ───────────────
+ *
+ * `unavailable` means we could not check. The two wrong answers are not
+ * symmetrical:
+ *
+ *  · An author sent to `/publisher` meets a page that says they hold no seat.
+ *    That is a CLAIM ABOUT THEM, made on no evidence, as the first thing they
+ *    see after signing in — the exact defect `publisher` caught in this module
+ *    on 2026-09-30, reappearing as a routing decision.
+ *
+ *  · A publisher sent to `/lobby` sees the author Library and takes the door
+ *    `ux` built. Mildly wrong, self-correcting, and it asserts nothing.
+ *
+ * So this fails to `/lobby`. **A routing default should be the one that makes
+ * no claim**, and that is the general form worth keeping.
+ */
+export const POST_LOGIN_PUBLISHER = '/publisher'
+export const POST_LOGIN_AUTHOR = '/lobby'
+
+export async function postLoginDestination(): Promise<{
+  destination: string
+  /** Why, so a caller can log it. Never rendered as a reason to the person. */
+  basis: 'publisher_seat' | 'no_seat' | 'could_not_check'
+}> {
+  const resolved = await resolvePublisherIdentity()
+  if (resolved.status === 'ok') {
+    return { destination: POST_LOGIN_PUBLISHER, basis: 'publisher_seat' }
+  }
+  if (resolved.status === 'no_seat') {
+    return { destination: POST_LOGIN_AUTHOR, basis: 'no_seat' }
+  }
+  return { destination: POST_LOGIN_AUTHOR, basis: 'could_not_check' }
+}

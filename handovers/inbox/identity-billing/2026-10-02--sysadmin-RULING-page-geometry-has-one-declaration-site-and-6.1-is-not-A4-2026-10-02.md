@@ -1,2 +1,0 @@
-CANONICAL: handovers/sysadmin-RULING-page-geometry-has-one-declaration-site-and-6.1-is-not-A4-2026-10-02.md
-ACTION — §7: the post-login default conditional is assigned to you. ux shipped the shell and door; the branch needs resolvePublisherIdentity() in the auth callback and should not be reimplemented elsewhere (R6). Separately, still outstanding from R9.1: seeded demo books need imprint_id in Odessa/Antidote or the gate refuses Oliver.

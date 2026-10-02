@@ -57,8 +57,32 @@ function LoginContent() {
       // Was: legacy /onboarding?userId=… flow for first-time authors, which
       // is the pre-pivot uploader and inconsistent with the new architecture
       // where all new-project starts flow from the dashboard.
-      console.log('✅ Redirecting to /lobby')
-      router.push('/lobby')
+      // Step 4: ask the server where this person belongs.
+      //
+      // Was an unconditional push to /lobby. A publisher seat now lands on
+      // /publisher instead (sysadmin's geometry ruling §7, ux's Q3 spec). The
+      // conditional itself is NOT here -- it lives once, in
+      // postLoginDestination(), because a membership question has to be
+      // answered server-side where RLS can check the answer, and because R6's
+      // one-declaration-site rule applies to a branch as much as to a route.
+      //
+      // Falls back to /lobby if the lookup fails for any reason: a routing
+      // default should be the one that makes no claim about the person. An
+      // author landed on /publisher is told they hold no seat before they have
+      // done anything; a publisher landed on /lobby simply takes the door.
+      let destination = '/lobby'
+      try {
+        const res = await fetch('/api/auth/destination', { cache: 'no-store' })
+        if (res.ok) {
+          const body = await res.json()
+          if (typeof body?.destination === 'string') destination = body.destination
+        }
+      } catch {
+        // Swallowed on purpose -- see above. Sign-in has already succeeded and
+        // must not fail on a routing hint.
+      }
+      console.log('✅ Redirecting to', destination)
+      router.push(destination)
 
     } catch (error: unknown) {
       console.error('Login error:', error)
