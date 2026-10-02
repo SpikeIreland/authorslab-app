@@ -17,6 +17,7 @@
  *       && node /tmp/lobby-verify/scripts/verify-lobby-derive.js
  */
 
+import { coverVerdictFor } from '../src/app/api/publisher/lobby/_approval'
 import {
   deriveRegister,
   deriveRisk,
@@ -239,9 +240,97 @@ check(
   'This list holds 1 of your own title and 1 seeded sample. Every sample is marked on its own row.'
 )
 
+// ─── COVER APPROVAL IS ABOUT A VERSION, NOT A STATION ─────────────────────
+//
+// The negative controls are the point. `design`'s socket stops an approval
+// being RENDERED against a stale version; these stop one being REPORTED
+// against a version it was never about. A suite that only proves "approved
+// comes back as approved" would pass against the station-wide read that is
+// the actual defect.
+
+const A1 = 'asset-1111'
+const A2 = 'asset-2222'
+const dec = (kind: string, body: string | null, created_at: string, station = 'cover') => ({
+  station,
+  kind,
+  body,
+  created_at,
+})
+
+check('approval: an empty log is no verdict', coverVerdictFor([], A1), null)
+
+check(
+  'approval: a verdict on THIS asset is reported',
+  coverVerdictFor([dec('approved', A1, '2026-10-01T10:00:00Z')], A1),
+  'approved'
+)
+
+check(
+  'approval: NEGATIVE — a verdict on ANOTHER asset is not this asset\'s verdict',
+  coverVerdictFor([dec('approved', A2, '2026-10-01T10:00:00Z')], A1),
+  null
+)
+
+check(
+  'approval: NEGATIVE — approving v1 then superseding it leaves v2 undecided',
+  coverVerdictFor(
+    [dec('approved', A1, '2026-10-01T10:00:00Z'), dec('note', A2, '2026-10-02T10:00:00Z')],
+    A2
+  ),
+  null
+)
+
+check(
+  'approval: the LATEST verdict on this asset wins, by timestamp not array order',
+  coverVerdictFor(
+    [
+      dec('approved', A1, '2026-10-02T09:00:00Z'),
+      dec('revisions_requested', A1, '2026-10-02T11:00:00Z'),
+    ],
+    A1
+  ),
+  'revisions_requested'
+)
+
+check(
+  'approval: out-of-order rows do not change the answer',
+  coverVerdictFor(
+    [
+      dec('revisions_requested', A1, '2026-10-02T11:00:00Z'),
+      dec('approved', A1, '2026-10-02T09:00:00Z'),
+    ],
+    A1
+  ),
+  'revisions_requested'
+)
+
+check(
+  'approval: NEGATIVE — a decision with NO subject recorded is not a verdict',
+  coverVerdictFor([dec('approved', null, '2026-10-01T10:00:00Z')], A1),
+  null
+)
+
+check(
+  'approval: NEGATIVE — a decision at another STATION is not a cover verdict',
+  coverVerdictFor([dec('approved', A1, '2026-10-01T10:00:00Z', 'route')], A1),
+  null
+)
+
+check(
+  'approval: NEGATIVE — no asset on screen means no verdict to report',
+  coverVerdictFor([dec('approved', A1, '2026-10-01T10:00:00Z')], null),
+  null
+)
+
+check(
+  'approval: a note on this asset is not a verdict',
+  coverVerdictFor([dec('note', A1, '2026-10-01T10:00:00Z')], A1),
+  null
+)
+
 console.log(
   `\n${checks - failures}/${checks} passed, ${failures} failed` +
-    (failures === 0 ? ' — including 11 negative controls\n' : '\n')
+    (failures === 0 ? ' — including 17 negative controls\n' : '\n')
 )
 
 process.exit(failures === 0 ? 0 : 1)

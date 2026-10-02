@@ -196,7 +196,17 @@ function TitleRow({
             a cover asset or a selection, so this ships as nine empty slots
             and the first real cover is what will prove it. Said plainly here
             rather than reported as "covers are on the list now". */}
-        <PublisherBookCover coverUrl={t.coverUrl} title={t.title} size="sm" />
+        <PublisherBookCover
+          coverUrl={t.coverUrl}
+          title={t.title}
+          size="sm"
+          /* The third state, shipped by `ux` the same afternoon it was
+             raised: a cover that EXISTS but cannot be shown on a list reads
+             "Cover chosen", never "No cover yet". The payload carries
+             existence only — no storage_path, no signing — so this list
+             still makes no storage call per row. */
+          hasCover={t.hasCoverAsset}
+        />
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
