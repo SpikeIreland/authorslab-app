@@ -102,7 +102,62 @@ type Kind = (typeof KINDS)[number]
  * it, the next lane needing a new station gets a loud refusal instead of a
  * silent collision — which is what `kind` already gives them one column over.
  */
-const STATIONS = ['cover', 'route', 'manuscript', 'marketing', 'channel'] as const
+/**
+ * ─── THE VOCABULARY, NOW TAKEN FROM THE DATA RATHER THAN FROM THIS FILE ─────
+ *
+ * Revised 2026-10-02 because MY OWN GATE FIRED. The ready-to-apply CHECK I
+ * couriered this morning carried a stop-if-dirty query first — list any row
+ * whose station is outside the list, and STOP rather than coerce. `sysadmin`
+ * ran it and it returned rows:
+ *
+ *     station='developmental', kind='note', 2 rows, 29 Sept
+ *     — AND THEY ARE THE ONLY TWO ROWS IN THE TABLE.
+ *
+ * So the constraint I proposed would have rejected the entire contents of the
+ * table it was meant to protect, and the list below was wrong rather than the
+ * rows. I wrote a vocabulary from my own route code and never checked it
+ * against what had been written. The gate is the only reason that is a
+ * paragraph instead of an incident.
+ *
+ * TWO THINGS CAME OUT OF LOOKING PROPERLY.
+ *
+ * 1 · The editorial stations were missing entirely. `editing_phases.phase_name`
+ *     holds `developmental`, `line_editing`, `copy_editing`, `publishing`,
+ *     `marketing` (22 rows each, read this turn) — and the two existing
+ *     action rows use THAT vocabulary, not mine. `sysadmin` put it sharply:
+ *     the list had no editorial station while the proposal's central promise
+ *     is an editor releasing a notes package — an action, at an editorial
+ *     station, by a named person.
+ *
+ * 2 · `marketing` WAS ALREADY A SHARED SLOT READ BY TWO MEANINGS. Mine meant
+ *     the portal's marketing-plan section; `editing_phases` means phase 5.
+ *     That is `publishing`'s `route` collision a second time, in the same
+ *     column — except this one was already live rather than caught on the way
+ *     in. Mine is renamed `marketing_plan`, which costs nothing because no
+ *     caller passed it and the table holds no row with it; `marketing` is
+ *     left to the editing phase that has 22.
+ *
+ * Every value below is evidenced: five from `editing_phases.phase_name`, two
+ * with live rows, `channel` from `publishing`'s ask, `marketing_plan` as the
+ * disambiguated rename.
+ */
+const STATIONS = [
+  // Editorial stations — where an editor acts on the work itself. The
+  // vocabulary is `editing_phases.phase_name`'s, deliberately identical so
+  // the two tables can be joined on it rather than mapped between.
+  'developmental',
+  'line_editing',
+  'copy_editing',
+  'publishing',
+  'marketing',
+  // Publisher decisions — where the house decides something about the book
+  // rather than about the text.
+  'cover',
+  'route',
+  'manuscript',
+  'marketing_plan',
+  'channel',
+] as const
 type Station = (typeof STATIONS)[number]
 
 const MAX_BODY = 4000

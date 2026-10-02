@@ -51,7 +51,19 @@ export interface PublisherAction {
 }
 
 export interface RecordInput {
-  station: 'cover' | 'route' | 'manuscript' | 'marketing'
+  /** The ten evidenced stations — see the route's note. `marketing` is the
+   *  EDITING PHASE; the portal's marketing section is `marketing_plan`. */
+  station:
+    | 'developmental'
+    | 'line_editing'
+    | 'copy_editing'
+    | 'publishing'
+    | 'marketing'
+    | 'cover'
+    | 'route'
+    | 'manuscript'
+    | 'marketing_plan'
+    | 'channel'
   kind: PublisherAction['kind']
   body?: string
   chapterNumber?: number | null

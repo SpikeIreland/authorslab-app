@@ -19,7 +19,23 @@
 -- They asked rather than widened, and a person reading my page's code was the
 -- only thing standing in the way. That is a convention, not a mechanism.
 --
--- 'channel' is included because it is now a real station in my route code.
+-- REVISED 2026-10-02, SECOND VERSION. The first list was ('cover','route',
+-- 'manuscript','marketing','channel') and step 1 below FOUND ROWS: two
+-- station='developmental' notes from 29 Sept, which are the only two rows in
+-- the table. The constraint would have rejected the entire contents of the
+-- table it was meant to protect. The gate worked; the list was wrong.
+--
+-- Two things that fixes:
+--   · the EDITORIAL stations were missing entirely, while the product's
+--     central promise is an editor releasing notes AT an editorial station.
+--     The five below are editing_phases.phase_name's own values (22 rows
+--     each, read 2026-10-02) and the two existing action rows already use
+--     that vocabulary rather than mine.
+--   · 'marketing' was already a slot read by two meanings — my portal's
+--     marketing-plan section, and editing_phases' phase 5. Mine is renamed
+--     'marketing_plan' (no caller passed it, no row holds it) and 'marketing'
+--     is left to the phase with 22 rows. That is publishing's 'route'
+--     collision a second time in the same column, already live.
 --
 -- SAFETY. Validated against existing rows first; the ALTER is written to fail
 -- rather than to coerce anything, and there is no backfill because there is
@@ -30,7 +46,10 @@
 --     value outside the list is a fact about the estate and not a typo to fix.
 select station, count(*)
 from public.publisher_actions
-where station not in ('cover', 'route', 'manuscript', 'marketing', 'channel')
+where station not in (
+  'developmental', 'line_editing', 'copy_editing', 'publishing', 'marketing',
+  'cover', 'route', 'manuscript', 'marketing_plan', 'channel'
+)
 group by station;
 
 -- 2 · The constraint. NOT VALID is deliberately NOT used: if step 1 is empty
@@ -38,7 +57,10 @@ group by station;
 --     the dead-gate shape this estate keeps finding.
 alter table public.publisher_actions
   add constraint publisher_actions_station_check
-  check (station in ('cover', 'route', 'manuscript', 'marketing', 'channel'));
+  check (station in (
+    'developmental', 'line_editing', 'copy_editing', 'publishing', 'marketing',
+    'cover', 'route', 'manuscript', 'marketing_plan', 'channel'
+  ));
 
 -- 3 · Confirm it exists and reads as intended.
 select conname, pg_get_constraintdef(oid)
