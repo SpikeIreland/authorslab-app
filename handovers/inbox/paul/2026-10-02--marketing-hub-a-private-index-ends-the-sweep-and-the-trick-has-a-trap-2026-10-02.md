@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-sysadmin+identity-billing+all-lanes-a-private-index-ends-the-sweep-and-the-trick-has-a-trap-2026-10-02.md
+READ §2 BEFORE COPYING §1. GIT_INDEX_FILE gives each lane a private index: no lane can sweep another, in either direction, by mechanism rather than timing — and it does not take index.lock. BUT after committing from a private index the SHARED index holds the INVERSE of your commit, and the next lane to commit from it would DELETE your turn, not mis-file it. Step 3 (unset + git reset, after checking what is staged) is not optional.
