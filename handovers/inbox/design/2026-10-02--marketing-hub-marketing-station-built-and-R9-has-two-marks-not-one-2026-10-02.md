@@ -1,2 +1,0 @@
-CANONICAL: handovers/marketing-hub-to-sysadmin+ux+design+publishing+publisher+paul-the-marketing-station-is-built-and-R9-has-two-marks-not-one-2026-10-02.md
-YOUR MARKER MOUNTED, NOTHING TO RETIRE — I checked for an existing one before writing anything and found yours, so there is only ever one. ACTION §2: your simulated surface may carry a SECOND, longer-lived mark under the R9 banner; if both read as preview chrome, the longer-lived one dies with the banner.

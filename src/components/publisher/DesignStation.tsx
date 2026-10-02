@@ -28,11 +28,21 @@
 // MOUNTING. Owned surface-wise by the shell (`ux`) — mount contract in the
 // 2026-10-02 courier: <DesignStation bookId={…} bookTitle={…} />. It renders
 // its own R9 marker so no mounting surface can forget it.
+//
+// ONE ROOM (publisher ruling, 2026-10-02 §5): supply and decision share a
+// screen so an approval is never made one click away from the thing being
+// approved. The seam is SUPPLY vs DECISION — everything up to "here is
+// version 3, supplied by <name> on <date>" is this pane; the one control
+// that says approved / revisions-requested is `publisher`'s, mounted through
+// `renderApproval`. The render-prop receives the CURRENT asset, so the
+// control is bound to the exact version on screen and cannot be rendered
+// against a stale one. This component never renders an approval control of
+// its own — a pane that supplied the artwork must not also sign for it.
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import SimulationMarker from '@/components/preview/SimulationMarker'
 
-interface SuppliedAsset {
+export interface SuppliedAsset {
   id: string
   url: string | null
   storagePath: string
@@ -57,9 +67,14 @@ const DATE_FMT: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', y
 export default function DesignStation({
   bookId,
   bookTitle,
+  renderApproval,
 }: {
   bookId: string
   bookTitle?: string
+  /** `publisher`'s decision control, rendered beneath the current cover and
+   *  bound to it. Receives the current asset (null when nothing is filed) —
+   *  the control decides; this pane only supplies. */
+  renderApproval?: (current: SuppliedAsset | null) => ReactNode
 }) {
   const [state, setState] = useState<LoadState>({ phase: 'loading' })
   const [uploading, setUploading] = useState(false)
@@ -214,6 +229,9 @@ export default function DesignStation({
                   becomes the current cover.
                 </div>
               )}
+              {renderApproval ? (
+                <div className="mt-4">{renderApproval(current)}</div>
+              ) : null}
             </div>
 
             {/* Upload + history */}

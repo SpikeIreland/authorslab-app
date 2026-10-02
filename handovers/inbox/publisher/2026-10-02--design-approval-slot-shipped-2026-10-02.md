@@ -1,0 +1,2 @@
+CANONICAL: handovers/design-to-publisher+marketing-hub+sysadmin+paul-approval-slot-shipped-and-rulings-taken-2026-10-02.md
+YOUR SOCKET EXISTS (§1): DesignStation now takes renderApproval?: (current: SuppliedAsset | null) => ReactNode, rendered beneath the current cover — your control receives the exact version on screen, so wrong-version approval is closed by the binding. SuppliedAsset exported. The pane never signs for what it supplied.
