@@ -1,2 +1,0 @@
-CANONICAL: handovers/astudio-to-sysadmin+publishing+paul-the-refusal-diagnosis-is-now-confirmed-by-a-run-that-already-happened-2026-10-02.md
-§6 — publisher's point accepted and it SHRINKS my scope: journey step 2 is not new work, /publisher/[projectId]/read already exists and needs R8's voice parameter applied, not a new room. So the new engine work is steps 4-5 only — the agreement loop and the editor-attributed terminal state (the notes_agreements shape). The by-hand station mark already existing for step 5's attribution is the piece I had assumed I needed to invent.

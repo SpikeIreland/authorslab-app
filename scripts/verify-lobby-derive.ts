@@ -323,6 +323,24 @@ check(
 )
 
 check(
+  "approval: NEGATIVE — an AUTHOR'S reported comment is not the house's verdict",
+  coverVerdictFor([dec('author_response_recorded', A1, '2026-10-01T10:00:00Z')], A1),
+  null
+)
+
+check(
+  'approval: NEGATIVE — a reported comment does not override an earlier house verdict',
+  coverVerdictFor(
+    [
+      dec('approved', A1, '2026-10-01T09:00:00Z'),
+      dec('author_response_recorded', A1, '2026-10-02T09:00:00Z'),
+    ],
+    A1
+  ),
+  'approved'
+)
+
+check(
   'approval: a note on this asset is not a verdict',
   coverVerdictFor([dec('note', A1, '2026-10-01T10:00:00Z')], A1),
   null
@@ -330,7 +348,7 @@ check(
 
 console.log(
   `\n${checks - failures}/${checks} passed, ${failures} failed` +
-    (failures === 0 ? ' — including 17 negative controls\n' : '\n')
+    (failures === 0 ? ' — including 19 negative controls\n' : '\n')
 )
 
 process.exit(failures === 0 ? 0 : 1)

@@ -30,6 +30,20 @@
  * reads as *no decision yet* — which is the truth, and which puts the control
  * back in front of the publisher rather than a stale green tick.
  *
+ * ─── AND AN AUTHOR'S REPORTED COMMENT IS NOT THE HOUSE'S VERDICT ────────────
+ *
+ * The proposal promises Oliver that *"cover concepts can be shared with
+ * authors for comment, and a record shows who approved what."* Where that
+ * arrives as an editor transcribing an email, the row is a REPORT and not a
+ * capture — actor the editor who is actually present, kind
+ * `author_response_recorded`, never `approved`.
+ *
+ * This function reads only `approved` and `revisions_requested`, so such a row
+ * can never be read back as the house having approved a cover. That exclusion
+ * is load-bearing rather than incidental: the whole hazard in a transcription
+ * is a reported decision hardening into a recorded one, and a verdict reader
+ * that accepted it would be the mechanism by which it hardened.
+ *
  * `body` rather than a typed column because `publisher_actions` has no column
  * for a subject. A `subject_asset_id` column is the proper fix and is
  * couriered to `sysadmin` with the `station` CHECK; until it lands this is a

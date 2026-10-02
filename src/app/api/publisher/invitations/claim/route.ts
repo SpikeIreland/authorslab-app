@@ -50,8 +50,24 @@ export async function POST() {
     return NextResponse.json({ error: 'This account has no email address' }, { status: 400 })
   }
 
-  // The mailbox check. `email_confirmed_at` is set by Supabase when the
-  // confirmation link is used; a session alone does not imply it.
+  // The mailbox check -- AND A CORRECTION TO WHAT IT PROVES.
+  //
+  // This comment used to say `email_confirmed_at` means the confirmation link
+  // was used. That is true of accounts created through the signup flow and
+  // FALSE of accounts created by a seed: measured 2026-10-02, 9 of 20 confirmed
+  // accounts in this estate had the flag set by seeding, on invented
+  // @harrowgate.example addresses, with `last_sign_in_at` NULL. Nobody clicked
+  // anything.
+  //
+  // So what this check actually proves is "something set this flag", and the
+  // set of things that can is {the confirmation flow, us}. Against an outside
+  // caller it still holds -- they cannot set it -- and it remains the right
+  // gate. But the guarantee is narrower than the sentence that was here, and a
+  // comment claiming more than the mechanism delivers is the defect this lane
+  // keeps finding in other people's surfaces.
+  //
+  // The fix is not to weaken the check. It is for the seed to stop setting a
+  // flag that asserts a human act (raised to sysadmin, 2026-10-02).
   if (!user.email_confirmed_at) {
     return NextResponse.json(
       {
