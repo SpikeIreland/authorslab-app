@@ -56,7 +56,7 @@ export interface SuppliedAsset {
 
 type LoadState =
   | { phase: 'loading' }
-  | { phase: 'ready'; assets: SuppliedAsset[] }
+  | { phase: 'ready'; assets: SuppliedAsset[]; isDemo: boolean }
   // The two refusals a seat can meet, kept distinct (403 is about the
   // person, 503/500 is about us) — a surface reports state, not intent.
   | { phase: 'refused'; message: string }
@@ -86,8 +86,8 @@ export default function DesignStation({
     try {
       const res = await fetch(`/api/publisher/projects/${bookId}/covers/intake`)
       if (res.ok) {
-        const data = (await res.json()) as { assets: SuppliedAsset[] }
-        setState({ phase: 'ready', assets: data.assets })
+        const data = (await res.json()) as { assets: SuppliedAsset[]; isDemo?: boolean }
+        setState({ phase: 'ready', assets: data.assets, isDemo: data.isDemo === true })
         return
       }
       const body = (await res.json().catch(() => ({}))) as { message?: string; error?: string }
@@ -150,9 +150,21 @@ export default function DesignStation({
     }
   }
 
+  // R9 AS AMENDED (2026-10-02, publisher's correction ruled): marking is PER
+  // ROW from manuscripts.is_demo, and a marker over a publisher's real book
+  // "disclaims work that did" — it teaches them to ignore markers. This view
+  // shows ONE book, so the mix collapses to one bit: a seeded book wears the
+  // ruled sentence; a real book wears NOTHING AT ALL; and while we do not yet
+  // know, we claim nothing. Normalisation of the mark across stations is
+  // marketing-hub's to propose (AMENDMENT 2 §4) — this stays on the shared
+  // component so their proposal lands in one place.
+  const showMarker = state.phase === 'ready' && state.isDemo
+
   return (
     <section className="flex min-h-0 flex-1 flex-col">
-      <SimulationMarker detail="Uploads on this screen file into the live, versioned record." />
+      {showMarker ? (
+        <SimulationMarker detail="Uploads on this screen file into the live, versioned record." />
+      ) : null}
 
       <div className="mx-auto w-full max-w-5xl px-6 py-8">
         <header className="mb-8">

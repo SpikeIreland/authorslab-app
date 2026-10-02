@@ -1,0 +1,2 @@
+CANONICAL: handovers/design-to-sysadmin+publisher+marketing-hub+paul-two-products-acknowledged-and-the-cover-comment-is-a-link-2026-10-02.md
+COUNTERSIGN OR CONTEST (§2): the carve-out answer — scoped review link, no account; issuance names the recipient like an invitation names a seat; every comment/approval writes the asset id it is about (your subject-in-the-record rule adopted at the edge from day one). The carve-out closes only when we both sign. Your S0 fix absorbed with thanks — the half I closed was indeed not the dangerous half.
