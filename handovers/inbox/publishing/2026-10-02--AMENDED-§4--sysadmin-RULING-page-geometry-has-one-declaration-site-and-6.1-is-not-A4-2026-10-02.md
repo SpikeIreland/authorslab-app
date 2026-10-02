@@ -1,2 +1,0 @@
-CANONICAL: handovers/sysadmin-RULING-page-geometry-has-one-declaration-site-and-6.1-is-not-A4-2026-10-02.md
-AMENDED §4 — APITemplate DOES support Custom paper sizes (Paul checked the dropdown: Letter/Legal/Tabloid/Ledger/A0-A6/Custom). The constraint does not exist and 6x9 is achievable; the production-readiness claim is unaffected. 6.1 resolution: Custom 6in x 9in. MARGINS ARE PUBLISHING'S CALL — do not set values without reconciling against the compiler's own @page, or Settings and compiled HTML will fight and the contradiction simply moves.

@@ -55,6 +55,9 @@ interface Payload {
   readiness: Readiness
   writable: boolean
   printInterior: 'present' | 'not_produced_yet'
+  /** Which interior file the readiness above describes. A handoff names this,
+   *  so a verdict cannot outlive its subject. */
+  interiorIdentity: string | null
 }
 
 type LoadState =
@@ -187,8 +190,16 @@ export default function PublishingStation({
               recorded: [...actions]
                 .reverse()
                 .find(a => a.station === 'channel' && a.kind === 'route_confirmed') ?? null,
+              subject: state.data.interiorIdentity,
               onRecord: () =>
-                record({ station: 'channel', kind: 'route_confirmed', body: 'amazon-kdp' }),
+                record({
+                  station: 'channel',
+                  kind: 'route_confirmed',
+                  // The SUBJECT travels in the record. Channel alone would make
+                  // this a verdict about a station, which is the defect
+                  // `publisher` found on cover approval.
+                  body: `amazon-kdp|${state.data.interiorIdentity ?? 'none'}`,
+                }),
             }}
           />
         )}
@@ -202,7 +213,19 @@ interface Handoff {
   saving: boolean
   lastFailure: string | null
   recorded: { body: string | null; created_at: string } | null
+  /** The interior currently on screen. A record naming a different one is
+   *  STALE and must not read as a handoff. */
+  subject: string | null
   onRecord: () => Promise<boolean> | void
+}
+
+/** The subject a handoff record names, or null for a record that named none. */
+function recordedSubject(body: string | null): string | null {
+  if (!body) return null
+  const i = body.indexOf('|')
+  if (i === -1) return null
+  const s = body.slice(i + 1)
+  return s === 'none' ? null : s
 }
 
 function Ready({ data, handoff }: { data: Payload; handoff: Handoff }) {
@@ -276,9 +299,9 @@ function Ready({ data, handoff }: { data: Payload; handoff: Handoff }) {
             Handoff
           </div>
 
-          {handoff.recorded ? (
+          {handoff.recorded && recordedSubject(handoff.recorded.body) === handoff.subject ? (
             <p className="text-[13px] leading-relaxed text-[#2E4A3C] border border-[#2E4A3C]/30 bg-[#2E4A3C]/5 px-3.5 py-2.5 rounded-[3px]">
-              Handed to KDP — recorded against this book on{' '}
+              Handed to KDP — recorded against this interior on{' '}
               {new Date(handoff.recorded.created_at).toLocaleDateString('en-GB', {
                 day: 'numeric',
                 month: 'short',
@@ -288,9 +311,21 @@ function Ready({ data, handoff }: { data: Payload; handoff: Handoff }) {
             </p>
           ) : (
             <>
+              {handoff.recorded && (
+                // The stale case, named rather than hidden: a verdict whose
+                // subject has changed is not a verdict about what is on screen.
+                <p className="text-[13px] leading-relaxed text-[#8A5A2B] mb-3">
+                  A handoff to KDP was recorded on{' '}
+                  {new Date(handoff.recorded.created_at).toLocaleDateString('en-GB', {
+                    day: 'numeric', month: 'short', year: 'numeric',
+                  })}
+                  , for an earlier interior. The interior has been regenerated
+                  since, so that record does not describe this one.
+                </p>
+              )}
               <p className="text-[13px] leading-relaxed text-[#3F3F3F] mb-3">
-                Records that this title has been handed to KDP, against this book
-                and under your name. It does not upload anything.
+                Records that this interior has been handed to KDP, under your
+                name. It does not upload anything.
               </p>
               <button
                 type="button"

@@ -141,6 +141,17 @@ export async function GET(
     const o = entry as Record<string, unknown>
     return (typeof o.bucket === 'string' && typeof o.path === 'string') || typeof o.url === 'string'
   }
+  // The interior's IDENTITY, not just its existence. `publisher` (2026-10-02):
+  // "'Handed off' is a verdict about a VERSION of a book, not about a station" —
+  // their cover approval read approved on Friday for a version that landed on
+  // Wednesday. A handoff record must name what was handed over, so the surface
+  // can refuse to report it once that thing has changed.
+  function interiorIdentity(): string | null {
+    const entry = formatted.docx
+    if (!entry || typeof entry !== 'object') return null
+    const o = entry as Record<string, unknown>
+    return typeof o.generated_at === 'string' ? o.generated_at : null
+  }
 
   const readiness: Readiness = {
     title: filled(metadata.title) || filled(manuscript.title),
@@ -164,5 +175,6 @@ export async function GET(
     // yet — the PDF branch of 6.1 renders an empty body (P6). Reported as a
     // gap rather than as a false negative on a check.
     printInterior: fileExists('pdf') ? 'present' : 'not_produced_yet',
+    interiorIdentity: interiorIdentity(),
   })
 }
