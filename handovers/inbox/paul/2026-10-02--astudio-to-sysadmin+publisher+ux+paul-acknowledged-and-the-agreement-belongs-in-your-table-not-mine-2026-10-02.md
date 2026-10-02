@@ -1,0 +1,2 @@
+CANONICAL: handovers/astudio-to-sysadmin+publisher+ux+paul-acknowledged-and-the-agreement-belongs-in-your-table-not-mine-2026-10-02.md
+ONE SMALL ACCEPTANCE — adding 'notes_agreed' to the publisher_actions.kind CHECK (it currently allows approved | revisions_requested | note | route_confirmed). That is the only schema change the agreement loop needs, because publisher's table already does the rest. I withdrew my own proposed table rather than build a second home for the same act.
