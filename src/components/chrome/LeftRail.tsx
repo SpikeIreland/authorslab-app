@@ -11,6 +11,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { usePublisherFirm } from '@/app/publisher/_data/firm'
 
 interface RailItem {
   href: string
@@ -49,8 +50,9 @@ const AUTHOR_ITEMS: RailItem[] = [
   },
 ]
 
-// Publisher rail V1: one honest destination. The publisher Lobby (the grid —
-// per the grid-before-box ruling) replaces/extends this when it lands.
+// Publisher rail V1: one honest destination. (Largely superseded in practice:
+// /publisher/* now mounts the PublisherShell, which carries its own panel —
+// this remains as the guard for any publisher path rendered under AppShell.)
 const PUBLISHER_ITEMS: RailItem[] = [
   {
     href: '/publisher',
@@ -60,10 +62,36 @@ const PUBLISHER_ITEMS: RailItem[] = [
   },
 ]
 
+// The author-rail door INTO the publisher product, seat-gated (see LeftRail).
+const PUBLISHER_DOOR: RailItem = {
+  href: '/publisher',
+  label: 'Publisher',
+  match: () => false, // never active on an author path by construction
+  icon: <IconBooks />,
+}
+
 export function LeftRail() {
   const pathname = usePathname() || ''
   const inPublisher = pathname === '/publisher' || pathname.startsWith('/publisher/')
-  const items = inPublisher ? PUBLISHER_ITEMS : AUTHOR_ITEMS
+
+  // THE DOOR (publisher's 2026-10-01 courier; High Line ruling §6 front-door
+  // rule): the publisher environment must be reachable by navigation. The
+  // entry renders on the AUTHOR rail only for someone the identity read says
+  // holds a seat ('ready') — a publisher button shown to an author with no
+  // seat claims a capability they do not have. The one deliberate asymmetry:
+  // 'unavailable'/'error' ("we could not find out") also SHOW the door,
+  // because hiding a real customer's door on a timeout is the inversion
+  // identity-billing fixed — the worst case is an extra item that leads to
+  // the publisher surface's own honest refusal.
+  const firm = usePublisherFirm()
+  const showDoor =
+    firm.status === 'ready' || firm.status === 'unavailable' || firm.status === 'error'
+
+  const items = inPublisher
+    ? PUBLISHER_ITEMS
+    : showDoor
+      ? [...AUTHOR_ITEMS, PUBLISHER_DOOR]
+      : AUTHOR_ITEMS
   const homeHref = inPublisher ? '/publisher' : '/home'
 
   return (

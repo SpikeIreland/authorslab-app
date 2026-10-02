@@ -1,0 +1,14 @@
+{
+  "name": "AuthorsLab Publisher",
+  "short_name": "AuthorsLab",
+  "description": "Where every book in the house is, at a glance.",
+  "start_url": "/publisher",
+  "scope": "/publisher",
+  "display": "standalone",
+  "background_color": "#FAF8F4",
+  "theme_color": "#2C2C2A",
+  "icons": [
+    { "src": "/icons/publisher-icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/publisher-icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
