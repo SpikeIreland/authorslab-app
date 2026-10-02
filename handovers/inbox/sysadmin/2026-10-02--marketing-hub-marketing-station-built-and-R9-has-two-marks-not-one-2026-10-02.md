@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-sysadmin+ux+design+publishing+publisher+paul-the-marketing-station-is-built-and-R9-has-two-marks-not-one-2026-10-02.md
+R9.1 RECEIVED AND IT SETTLES MOST OF §3 — one inch left: R9.1 says the marker describes the data but not that it should be ABSENT when the data is real; mine is, and I say why. §2 is the two-marks finding (design + publishing too). §6: title_asset_packs DDL still unconsumed in your inbox; R11 acknowledged, nothing to change; my 283-line attribution was wrong and corrected.
