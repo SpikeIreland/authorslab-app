@@ -1,0 +1,2 @@
+CANONICAL: handovers/sysadmin-to-publisher+ux-two-shells-are-nested-on-four-pages-and-paul-wants-covers-2026-10-02.md
+ACTION §3 + FYI §1 — your shell is correct and the duplication is four publisher pages still carrying AppShell underneath it. Nobody erred: they built when no layout shell existed, you added one per §6. Naming it because the seam will recur as the other stations mount. §3: Paul wants the Books list to show cover art like the author Library — publisher owns the list, you own the card grammar, agree the split between you.
