@@ -36,6 +36,7 @@
 
 import { useEffect, useState } from 'react'
 import SimulationMarker from '@/components/preview/SimulationMarker'
+import { usePublisherActions } from '@/app/publisher/_data/usePublisherActions'
 
 interface Readiness {
   title: boolean
@@ -90,6 +91,11 @@ export default function PublishingStation({
   bookTitle?: string
 }) {
   const [state, setState] = useState<LoadState>({ phase: 'loading' })
+  // `publisher` added 'channel' to STATIONS on 2026-10-02, which is the
+  // substrate the handoff record needed. Yesterday this station shipped
+  // read-only and said so; the control appears now because the thing behind it
+  // exists, not because the demo wanted one.
+  const { actions, available, saving, record, lastFailure } = usePublisherActions(bookId)
 
   useEffect(() => {
     let cancelled = false
@@ -133,7 +139,11 @@ export default function PublishingStation({
 
   return (
     <div>
-      <SimulationMarker detail="The readiness checks below read this book’s real record." />
+      {/* marketing-hub's §2, 2026-10-02: a mark that outlives the demo must not
+          ride on the R9 banner, or it comes off with it. The banner carries the
+          ruled sentence and nothing else; what IS real on this view is stated
+          in the body below, where it survives the marker's removal. */}
+      <SimulationMarker />
 
       <div className="px-6 py-8 max-w-[760px]">
         <div className="text-[11px] tracking-[0.16em] uppercase text-[#8A8A8A]">
@@ -150,6 +160,10 @@ export default function PublishingStation({
           AuthorsLab prepares the submission and checks it against what KDP asks
           for. Your team uploads it — we do not publish on the house’s behalf.
         </p>
+        <p className="text-[13px] leading-relaxed text-[#8A8A8A] mb-8">
+          The sample book is seeded; the readiness checks below are not. Each one
+          reads this book’s own record.
+        </p>
 
         {state.phase === 'loading' && (
           <p className="text-[13px] text-[#8A8A8A]">Checking this book’s record…</p>
@@ -163,13 +177,35 @@ export default function PublishingStation({
           <p className="text-[14px] leading-relaxed text-[#8A5A2B]">{state.message}</p>
         )}
 
-        {state.phase === 'ready' && <Ready data={state.data} />}
+        {state.phase === 'ready' && (
+          <Ready
+            data={state.data}
+            handoff={{
+              available,
+              saving,
+              lastFailure,
+              recorded: [...actions]
+                .reverse()
+                .find(a => a.station === 'channel' && a.kind === 'route_confirmed') ?? null,
+              onRecord: () =>
+                record({ station: 'channel', kind: 'route_confirmed', body: 'amazon-kdp' }),
+            }}
+          />
+        )}
       </div>
     </div>
   )
 }
 
-function Ready({ data }: { data: Payload }) {
+interface Handoff {
+  available: boolean | null
+  saving: boolean
+  lastFailure: string | null
+  recorded: { body: string | null; created_at: string } | null
+  onRecord: () => Promise<boolean> | void
+}
+
+function Ready({ data, handoff }: { data: Payload; handoff: Handoff }) {
   const done = CHECKS.filter((c) => data.readiness[c.key]).length
 
   return (
@@ -223,16 +259,67 @@ function Ready({ data }: { data: Payload }) {
         </div>
       )}
 
-      {/* An affordance is a claim. There is no handoff control because there is
-          nothing behind one: no publisher-authorised write to the channel
-          column, and no attributed handoff event in publisher_actions. The
-          absence is deliberate and this paragraph is a statement of state, not
-          an apology for a button. */}
+      {/* THE HANDOFF RECORD. An affordance is a claim, so this control exists
+          only because `publisher` landed the 'channel' station on 2026-10-02.
+          It records that the house handed this title to KDP, attributed to the
+          person who did it — it does not transmit anything, and the button says
+          so in its own words. Where the log cannot be written the control is
+          ABSENT rather than disabled-with-an-apology, per the Company tab's
+          precedent.
+
+          'channel' and not 'route': 'route' is the RIGHTS model, and a channel
+          string written there would be read by the book page's confirmedRoute
+          lookup and silently replace the rights decision. */}
+      {handoff.available === true && (
+        <div className="border-t border-[#E8E5E0] pt-6">
+          <div className="text-[11px] tracking-[0.14em] uppercase text-[#8A8A8A] mb-3">
+            Handoff
+          </div>
+
+          {handoff.recorded ? (
+            <p className="text-[13px] leading-relaxed text-[#2E4A3C] border border-[#2E4A3C]/30 bg-[#2E4A3C]/5 px-3.5 py-2.5 rounded-[3px]">
+              Handed to KDP — recorded against this book on{' '}
+              {new Date(handoff.recorded.created_at).toLocaleDateString('en-GB', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+              })}
+              .
+            </p>
+          ) : (
+            <>
+              <p className="text-[13px] leading-relaxed text-[#3F3F3F] mb-3">
+                Records that this title has been handed to KDP, against this book
+                and under your name. It does not upload anything.
+              </p>
+              <button
+                type="button"
+                onClick={() => { void handoff.onRecord() }}
+                disabled={handoff.saving}
+                className="text-[13px] px-5 py-2.5 rounded-[3px] border border-[#1E3A5F] text-white bg-[#1E3A5F] hover:bg-[#17304F] disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/40"
+              >
+                Record the handoff
+              </button>
+            </>
+          )}
+
+          {/* R5, and the silent swallow the hook exists to prevent: a refused
+              write must say so rather than leave an absent reaction, which is
+              indistinguishable from not having clicked. */}
+          {handoff.lastFailure && (
+            <p className="mt-3 text-[13px] leading-relaxed text-[#8A5A2B]">
+              {handoff.lastFailure}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* The one write that still has no substrate, named specifically rather
+          than left as a general apology (R9.1). */}
       {!data.writable && (
         <p className="text-[13px] leading-relaxed text-[#8A8A8A]">
-          This view reads the book’s record; it does not change it. Recording a
-          channel handoff against a book, attributed to the person who made it,
-          is the next piece of work on this station.
+          Changing which channels this book is routed to is still done on the
+          author’s side; this view reads that choice rather than setting it.
         </p>
       )}
     </>

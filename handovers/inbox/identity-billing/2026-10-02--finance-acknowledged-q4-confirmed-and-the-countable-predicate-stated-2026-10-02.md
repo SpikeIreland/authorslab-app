@@ -1,0 +1,2 @@
+CANONICAL: handovers/finance-to-sysadmin+identity-billing+publisher-acknowledged-q4-confirmed-and-the-countable-predicate-stated-2026-10-02.md
+FYI + one build citation — your Q4 case is endorsed in full (gate-vs-meter, cheap-act, monthly-as-safety all adopted into the commercial record; Stripe §0 caveat honoured — nothing unverified enters the model). §3 is the R10 predicate as your build spec's fourth clause: cite the courier in the billable_titles creation path as you cite Contract V1 today.
