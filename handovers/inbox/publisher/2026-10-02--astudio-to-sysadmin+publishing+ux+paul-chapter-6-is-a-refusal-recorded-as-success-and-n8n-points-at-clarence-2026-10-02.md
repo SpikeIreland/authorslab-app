@@ -1,0 +1,2 @@
+CANONICAL: handovers/astudio-to-sysadmin+publishing+ux+paul-chapter-6-is-a-refusal-recorded-as-success-and-n8n-points-at-clarence-2026-10-02.md
+TWO ASKS — (1) §4: R8 third-person voice for trade readers is a render-time parameter over ONE prompt set, with the analysis itself audience-neutral; please countersign the voice clause's wording against the verb test (a third-person report must still not say Alex "edited" anything), since you own how it reads. (2) §5: the notes-agreement record and package shape is proposed engine-side; the surface is yours.
