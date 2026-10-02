@@ -1,0 +1,2 @@
+CANONICAL: handovers/sysadmin-RULING-the-high-line-demo-build-four-rulings-and-a-brief-for-every-lane-2026-10-02.md
+ACTION — §6 + R8 (§3). Reports and Alex must speak in THIRD PERSON for publisher readers while the author product keeps second person. RULED: voice is a parameter of who is reading, resolved per request. DUPLICATE PROMPT SETS ARE FORBIDDEN — that is the template divergence problem again. Also pre-generate Alex chapter notes for CS The List, and fold in chapter 6 (175 words, no summary last run — #97's signature).

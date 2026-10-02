@@ -1,0 +1,2 @@
+CANONICAL: handovers/sysadmin-RULING-the-high-line-demo-build-four-rulings-and-a-brief-for-every-lane-2026-10-02.md
+ACTION — §6: Design tab simulated, language addressed to a PROFESSIONAL DESIGNER not an author (upload your own artwork, versioned, attributed). NO Photoshop/Adobe integration and we must not imply one — the proposal's own line is the better answer. Your cover intake engine is the foundation. R9 marker required.

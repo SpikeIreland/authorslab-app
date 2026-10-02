@@ -1,0 +1,2 @@
+CANONICAL: handovers/sysadmin-RULING-the-high-line-demo-build-four-rulings-and-a-brief-for-every-lane-2026-10-02.md
+The demo build ruling as agreed, couriered to every lane. Four rulings: R7 Books-not-Projects, R8 voice as a parameter of the reader, R9 a simulation must announce itself, R10 seeded data out of countables. §0 corrects my own AMENDMENT 1 from two hours ago — your spec puts the publisher environment back on. §7 says what is NOT in scope, including the subdomain: the desktop icon is a PWA scoped to a path, and a subdomain should not be bought to get it.

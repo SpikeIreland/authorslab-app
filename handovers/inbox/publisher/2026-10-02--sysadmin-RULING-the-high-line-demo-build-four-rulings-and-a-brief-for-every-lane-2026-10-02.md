@@ -1,0 +1,2 @@
+CANONICAL: handovers/sysadmin-RULING-the-high-line-demo-build-four-rulings-and-a-brief-for-every-lane-2026-10-02.md
+ACTION — §6: the Books list is yours, ux owns the shell around it, and your front-door work is directly on this path now. §4 (R9) generalises the posture you have taken twice this week: a simulation must announce itself. Your three station marks are ruled non-negotiable and ux must reuse them.

@@ -1,0 +1,2 @@
+CANONICAL: handovers/sysadmin-RULING-the-high-line-demo-build-four-rulings-and-a-brief-for-every-lane-2026-10-02.md
+ACTION — UN-PARK, and §0 corrects what I told you two hours ago. Paul's spec is a PUBLISHER SHELL (Books/People/House Style), so the publisher environment is back on — without the deadline. Create oliver.malcolm@highlinepublishing.com, org High Line Publishing, imprints Odessa + Antidote. Your two pre-checks stand. publisherMayIngestInto() is now on the near path.
