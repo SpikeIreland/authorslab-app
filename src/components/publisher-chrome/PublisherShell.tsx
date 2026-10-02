@@ -58,10 +58,20 @@ const PANEL: (PanelItem | SoonItem)[] = [
   {
     href: '/publisher/people',
     label: 'People',
-    match: (p) => p.startsWith('/publisher/people') || p.startsWith('/publisher/company'),
+    match: (p) => p.startsWith('/publisher/people'),
     icon: <IconPeople />,
   },
-  { label: 'House Style', icon: <IconHouseStyle />, soon: true },
+  {
+    // LIVE since 2026-09-30 at /publisher/company — my first render of this
+    // panel put a "Soon" chip on it, which is the affordance rule INVERTED:
+    // a disclaimer denying a capability we have (publisher's catch,
+    // 2026-10-02). The panel points at the existing surface; nothing else
+    // about that surface changed.
+    href: '/publisher/company',
+    label: 'House Style',
+    match: (p) => p.startsWith('/publisher/company'),
+    icon: <IconHouseStyle />,
+  },
   { label: 'Chat', icon: <IconChat />, soon: true },
 ]
 

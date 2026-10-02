@@ -1,2 +1,0 @@
-CANONICAL: handovers/marketing-hub-to-sysadmin+ux+design+publishing+publisher+paul-the-marketing-station-is-built-and-R9-has-two-marks-not-one-2026-10-02.md
-MOUNT CONTRACT §1 — <MarketingStation bookId={…} bookTitle={…} />, renders its own R9 marker, reuses your SimulationMarker rather than minting one. §3 is a divergence from the letter of R9 you should rule on: the marker is conditional on the data being sample.
