@@ -9,11 +9,37 @@ import { createClient } from '@/lib/supabase/server'
 //   PUT  — save the author's edits
 //
 // Stored as jsonb on project_marketing.audience, which inherits that table's
-// row policies (scoped by manuscript → author_profiles.auth_user_id). The
-// sibling table marketing_campaigns is NOT used: its policy compares
-// auth.uid() to author_id, which holds an author_profiles.id — a different
-// id space, so the policy matches 0 rows of 11 and the table is unreachable
-// through RLS. See marketing-hub's 2026-09-23 courier.
+// row policies (scoped by manuscript → author_profiles.auth_user_id).
+//
+// ── marketing_campaigns IS DELIBERATELY DEAD. DO NOT "FIX" ITS POLICY. ──
+//
+// The sibling table marketing_campaigns is not used. Its only policy compares
+// auth.uid() to author_id, which holds an author_profiles.id — a different id
+// space — so it matched 0 rows of 11 when measured (2026-09-23/24) and the
+// table is unreachable through RLS.
+//
+// I reported that as a defect of mine to fix and carried it for a fortnight.
+// It is not one, and opening the policy would BE the defect:
+//
+//   · Nothing reads this table. This comment is the only mention of it in
+//     src/, which is checkable: `grep -rn marketing_campaigns src/`.
+//   · project_marketing is authoritative for audience, pitch, content and
+//     launch_date — those columns exist BECAUSE this table was unreachable.
+//   · So a working policy would expose 11 rows of superseded legacy campaign
+//     data that contradict the live columns, and give the estate a second
+//     vocabulary for one fact. That is the shape we keep ruling against:
+//     two date columns, two marker treatments, two commit beliefs.
+//
+// The general form, and it is why this comment is long: AN RLS POLICY IS AN
+// AFFORDANCE. Opening one asserts that the table behind it is readable and
+// meaningful. The affordance rule applies to a policy exactly as it does to a
+// button — a gate that opens onto stale data makes a true-but-misleading
+// claim, and a dead gate on a table nothing reads is correct behaviour rather
+// than a hole.
+//
+// Retirement of the rows is sysadmin's to decide and is not urgent; nothing
+// depends on it either way. See marketing-hub's 2026-09-23 and 2026-10-05
+// couriers.
 
 export interface AudienceComp { title: string; author: string; why: string }
 export interface AudienceChannel { name: string; kind: string; note: string }

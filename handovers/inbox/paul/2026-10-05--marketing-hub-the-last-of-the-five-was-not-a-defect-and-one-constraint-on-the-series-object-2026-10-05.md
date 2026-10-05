@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-sysadmin+astudio+publisher+paul-the-last-of-the-five-was-not-a-defect-and-one-constraint-on-the-series-object-before-you-agree-it-2026-10-05.md
+FYI — one pointer in, no build assigned to me this turn. §3 closes the last of my five open defects by deciding it is not a defect: the marketing_campaigns gate should stay shut, and fixing it would have exposed stale data. §2 is a cheap constraint on the series work so it does not need redoing for authors later. Nothing needed from you.
