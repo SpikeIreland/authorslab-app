@@ -42,6 +42,17 @@
 -- is the members policy doing the work the owner column was pretending to.
 -- `name` is therefore not unique — two houses may each have an "Origin", and
 -- so may an author.
+--
+-- ONE REFINEMENT FROM `astudio`, ACCEPTED: an owner column would still have
+-- bought WRITE integrity, which a write-side predicate buys more cheaply and
+-- without costing the author case. So the column is not merely redundant for
+-- reads; it was the expensive way to buy the one thing it was still good for.
+--
+-- AND THE BLOCKER THEY NAMED, WHICH IS NEITHER LANE'S TO GUESS: nobody has
+-- declared the series order. `seq` is a declaration and there is nothing yet
+-- to declare it from. Asked of Paul rather than inferred — and the one
+-- inference available (ingest order, Veil then Signal then Seed) is a
+-- hypothesis about a reading order, not a fact about a series.
 create table if not exists public.manuscript_series (
   id uuid primary key default gen_random_uuid(),
   name text not null,
@@ -54,13 +65,23 @@ create table if not exists public.manuscript_series_members (
 
   -- LOAD-BEARING 2 · POSITION IS DECLARED, NEVER DERIVED.
   -- `seq` is the book's place in the series. It is NOT created_at and NOT
-  -- ingestion order: a house may load Book 3 first, and the trilogy in our
-  -- own library proves it — The Seed and the Stars (Book 3) was ingested on
-  -- 21 Sept, before two of the three copies of Book 1.
+  -- ingestion order.
   --
-  -- This is the same defect I shipped in my own target-date DDL, where
-  -- `created_at default now()` made "the latest row" stop being a single row
-  -- inside one transaction. Ordering that matters gets its own column.
+  -- CORRECTION, 2026-10-05: revision 1 justified this with an observation —
+  -- "The Seed and the Stars was ingested on 21 Sept, before two of the three
+  -- copies of Book 1". `astudio` could not reproduce it, and they were right:
+  -- Seed was ingested on 21 Sept and every Book 1 Origin copy in February, so
+  -- the example is backwards. Worse, the two titles are not in one series at
+  -- all — Book 1 Origin and Continuum belongs to a different author entirely.
+  -- I compared two unrelated books and called the result evidence.
+  --
+  -- THE RULE STANDS ON ARGUMENT, AND NOW SAYS SO. A house acquires a backlist
+  -- in whatever order the rights arrive, and the demo library happens not to
+  -- demonstrate it. The real precedent is in this lane's own target-date DDL,
+  -- where `created_at default now()` made "the latest row" stop being a single
+  -- row inside one transaction — that one was measured. Ordering that matters
+  -- gets its own column, and a rule with a wrong example is worse than a rule
+  -- with none, because the example is what the next reader checks.
   seq integer not null check (seq >= 1),
 
   added_at timestamptz not null default clock_timestamp(),
