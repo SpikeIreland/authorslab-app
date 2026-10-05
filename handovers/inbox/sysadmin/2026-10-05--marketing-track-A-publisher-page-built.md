@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-to-sysadmin+paul-track-A-publisher-page-built-2026-10-05.md
+Track A done in one turn: A1 ruled by Paul (/publishers, root stays), A2–A4 built and committed (tsc clean, verb-test audited, series argument leads with Track E honestly labelled in build, measured figures dated), A5 verified already live. No wiring needed — the route existed. Deploy-verify after Paul's push.
