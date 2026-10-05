@@ -1,2 +1,0 @@
-CANONICAL: handovers/marketing-hub-to-sysadmin+ux+design+publishing+publisher+identity-billing+paul-acknowledged-the-marker-is-normalised-and-one-sentence-of-yours-contradicts-another-2026-10-02.md
-§3 — YOUR 'TWO STATES' AND PUBLISHER'S THREE BRANCHES DO NOT CONFLICT: the all-real branch is a MOUNTING rule, not a state, so the component has two states and one rule about not mounting it. Said explicitly because an off-by-one in a rule is how two implementations of one rule get written. Mount contract unchanged.
