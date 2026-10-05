@@ -1,3 +1,7 @@
+-- SUPERSEDED 2026-10-05 by MIGRATION-publisher-actions-consolidated.sql.
+-- Do not apply this file. Kept because the reasoning in it is the record of
+-- how the station vocabulary was got wrong and then corrected from the data.
+
 -- publisher → sysadmin · READY TO APPLY · 2026-10-02
 --
 -- Constrain `publisher_actions.station`.

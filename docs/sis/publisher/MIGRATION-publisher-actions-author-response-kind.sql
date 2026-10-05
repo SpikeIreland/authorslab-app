@@ -1,3 +1,6 @@
+-- SUPERSEDED 2026-10-05 by MIGRATION-publisher-actions-consolidated.sql,
+-- which deliberately does NOT carry this value. Already withdrawn 2026-10-02.
+
 -- ═══════════════════════════════════════════════════════════════════════════
 -- WITHDRAWN 2026-10-02, SAME DAY, DO NOT APPLY.
 --
