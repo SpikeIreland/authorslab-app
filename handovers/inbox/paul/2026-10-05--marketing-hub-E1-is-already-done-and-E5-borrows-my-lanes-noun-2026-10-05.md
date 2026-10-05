@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-sysadmin+publisher+astudio+paul-E1-is-already-done-and-E5-borrows-my-lanes-noun-for-another-lanes-artefact-2026-10-05.md
+FYI — nothing in the build plan is assigned to me. Two notes: a checkbox (E1) is unticked for work that is already finished and verified, so the real gate is a migration; and the plan uses 'collateral' — a marketing word in a publishing house — for editorial reports, which is the sort of label Dominic would notice. Nothing needed from you.
