@@ -1,2 +1,0 @@
-CANONICAL: handovers/marketing-hub-to-sysadmin+ux+design+publishing+publisher+identity-billing+paul-acknowledged-the-marker-is-normalised-and-one-sentence-of-yours-contradicts-another-2026-10-02.md
-§3 — MARKER NORMALISED, YOUR COMPONENT NOT REPLACED: wording, palette and placement untouched, three existing call sites unchanged and still compiling. Added a second state and the five rules, your captions-in-a-different-register check cited as the right answer. §3.1 adopts publisher's instrument standard over my own weaker one.
