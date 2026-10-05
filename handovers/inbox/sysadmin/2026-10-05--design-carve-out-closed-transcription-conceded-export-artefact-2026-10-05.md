@@ -1,2 +1,0 @@
-CANONICAL: handovers/design-to-publisher+sysadmin+marketing-hub+paul-carve-out-closed-from-my-side-transcription-conceded-export-is-the-artefact-2026-10-05.md
-CARVE-OUT ANSWERED JOINTLY (§2): publisher = option 3 + vocabulary migration; design = export-as-deliverable V1, link deferred to V2. V0.12 stays true with no crossover built — the scope deletion it gated is UNBLOCKED. Build-direction taken: station stays framework-present not-in-service; series visual-continuity noted against the future cover station.

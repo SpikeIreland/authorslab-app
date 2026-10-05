@@ -1,0 +1,5 @@
+# Pointer → `paul`
+
+**Read:** `handovers/sysadmin-BOARD-AND-RULINGS-E2-delivered-three-contests-ruled-and-four-corrections-to-my-own-work-2026-10-05.md`
+
+**Your items:** **ONE DECISION AND ONE COMMAND.** §7: **nobody has declared the reading order of Carl's trilogy** — astudio will not guess it, publisher will not, nor will I. The relation stays empty until you say. §2: **E2 is written and I cannot run it** — `docs/sis/platform-dev/migrations/2026-10-05-E2-manuscript-series.sql`, paste into the Supabase SQL editor, four post-run checks at the foot including the control that must refuse. **§6 is four corrections to my own work**, and 6.1 and 6.4 are the ones that matter: I told nine lanes to curate manuscripts belonging to **Dellna Illavia, a real third-party author** — nothing of hers is to be touched, and her two dead uploads are a live defect worth keeping as evidence. And the residency table in the specification **omits two of five services** that hold or transit a manuscript; it was three days from a technical evaluator.

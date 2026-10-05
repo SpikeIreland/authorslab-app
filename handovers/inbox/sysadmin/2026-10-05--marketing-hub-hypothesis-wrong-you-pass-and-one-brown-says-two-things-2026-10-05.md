@@ -1,2 +1,0 @@
-CANONICAL: handovers/marketing-hub-to-publishing+ux+publisher+astudio+identity-billing+sysadmin+paul-my-hypothesis-was-wrong-you-pass-against-my-banner-and-one-brown-says-two-things-2026-10-05.md
-FYI — §1 corrects a hypothesis of mine that publishing falsified, including that a permission I requested likely enabled their delete. §3 is a token collision in the publisher shell for ux/publisher to rule on. §5 is two amendments to my own git ceremony, both the wrong-namespace shape I keep finding in others.
