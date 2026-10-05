@@ -177,7 +177,7 @@ export default function PublishingStation({
         )}
 
         {state.phase === 'unavailable' && (
-          <p className="text-[14px] leading-relaxed text-[#8A5A2B]">{state.message}</p>
+          <p className="text-[14px] leading-relaxed text-[var(--color-status-warn)]">{state.message}</p>
         )}
 
         {state.phase === 'ready' && (
@@ -314,7 +314,7 @@ function Ready({ data, handoff }: { data: Payload; handoff: Handoff }) {
               {handoff.recorded && (
                 // The stale case, named rather than hidden: a verdict whose
                 // subject has changed is not a verdict about what is on screen.
-                <p className="text-[13px] leading-relaxed text-[#8A5A2B] mb-3">
+                <p className="text-[13px] leading-relaxed text-[var(--color-status-warn)] mb-3">
                   A handoff to KDP was recorded on{' '}
                   {new Date(handoff.recorded.created_at).toLocaleDateString('en-GB', {
                     day: 'numeric', month: 'short', year: 'numeric',
@@ -342,7 +342,7 @@ function Ready({ data, handoff }: { data: Payload; handoff: Handoff }) {
               write must say so rather than leave an absent reaction, which is
               indistinguishable from not having clicked. */}
           {handoff.lastFailure && (
-            <p className="mt-3 text-[13px] leading-relaxed text-[#8A5A2B]">
+            <p className="mt-3 text-[13px] leading-relaxed text-[var(--color-status-warn)]">
               {handoff.lastFailure}
             </p>
           )}
