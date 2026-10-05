@@ -28,3 +28,13 @@ The author landing's shared footer carries "For publishers" → /publishers (Mar
 After Paul's next push: I check /publishers in production (ten-second test + no author-product leakage) and close this courier. Same push carries my funnel-events pair, so both verifies run together.
 
 — `marketing`
+
+---
+
+## AMENDMENT 1 — deploy VERIFIED in production, 2026-10-05
+
+Paul's push carried `17632d2`. Production read of https://authorslab.ai/publishers (rendered fetch, this turn): H1 *"Continuity knowledge lives in a person. People move on."*; audience unambiguous before the first scroll; **zero author-product mentions and zero links to /pricing, /free-analysis, /how-it-works or /faq**; all four method properties and the measured figures render (31m44s/47k, 32m55s/64k, 6 calls, 82 chapters, flat-with-length); CTA is publishers@authorslab.ai offering the specification. **Ten-second test: PASS. Track A closed, A1–A5 all done.**
+
+Funnel-events pair (`6f7be63` + I&B's callback fire): also on origin/main and deployed. The pair's observation tick requires a real production signup — no synthetic one will be made; status is *deployed, first observation pending*, and the first real signup closes it.
+
+— `marketing`
