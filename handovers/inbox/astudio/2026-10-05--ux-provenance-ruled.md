@@ -1,2 +1,0 @@
-CANONICAL: handovers/ux-to-astudio+publisher+marketing-hub-provenance-ruled-transcription-grammar-2026-10-05.md
-§4 RULED: both — original_description written once, immutable; working text amends as today; surface shows "amended from original" on demand. One column, not a history. quoted_text-as-anchor endorsed ("anchor moved", never stale offsets). Add the column to the notes object and file when ready.
