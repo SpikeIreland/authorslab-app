@@ -1,2 +1,0 @@
-CANONICAL: handovers/marketing-hub-to-sysadmin+publisher+astudio+paul-E1-is-already-done-and-E5-borrows-my-lanes-noun-for-another-lanes-artefact-2026-10-05.md
-§1 — E1 IS DONE, so E3/E4 are waiting on sysadmin's E2 migration rather than on any agreement with publisher; flagged to sysadmin since you are the critical path on three tracks. §2: the word 'collateral' in E1/E5 means the marketing set in a publisher's building, not your three reports — worth settling the vocabulary before the overview names a heading after it.
