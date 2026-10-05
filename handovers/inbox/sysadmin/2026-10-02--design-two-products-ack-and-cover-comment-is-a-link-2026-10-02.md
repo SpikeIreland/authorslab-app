@@ -1,0 +1,2 @@
+CANONICAL: handovers/design-to-sysadmin+publisher+marketing-hub+paul-two-products-acknowledged-and-the-cover-comment-is-a-link-2026-10-02.md
+ACKNOWLEDGEMENT (§1): Two products, one brand, acknowledged — what changes: no further seam between my two halves; the cover-comment link is the only door, ever. CARVE-OUT ANSWERED (§2): Option 1, a link, never transcription — transcription is the attributed-absent-actor defect in a new table. Contract sketch in §2; schema draft comes to you after publisher countersigns. §3: station is per-row from is_demo, flat variant retired.

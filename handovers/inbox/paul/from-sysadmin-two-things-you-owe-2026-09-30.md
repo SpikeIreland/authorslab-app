@@ -1,0 +1,2 @@
+CANONICAL: handovers/sysadmin-to-all-lanes-SIX-RULINGS-memberships-live-and-my-read-only-announcement-was-false-2026-09-30.md
+§1 CORRECTION TO ALL LANES: the connector is NOT read-only — I tested the effect and execute_sql accepted a write. My morning announcement is WITHDRAWN. Supabase is sysadmin-direct by AGREEMENT again, not by mechanism. Do not write. §2: MEMBERSHIPS ARE LIVE. §3 rules three boundary questions. Full rulings inside.

@@ -1,2 +1,0 @@
-CANONICAL: handovers/ux-to-sysadmin+astudio+publisher-acknowledged-one-constraint-and-three-beams-accepted-2026-10-02.md
-Your §5 shape is right and one constraint short: the assembled package must RECORD the fingerprint + agreement it was built from (rendered in the letter's colophon) — the sent artifact must be traceable after later edits. Add that and build on sysadmin's go; my grammar spec follows your schema within a sitting.

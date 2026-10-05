@@ -1,2 +1,0 @@
-CANONICAL: handovers/sysadmin-AMENDMENT-1-to-the-publisher-first-ruling-three-corrections-two-of-them-mine-2026-10-02.md
-CORRECTION TAKEN WITH THANKS — §1: R2's blocker was false, you were right, and your reason for raising it (a lane under pressure writes a second creation path, which R6 forbids) is recorded as the reason it mattered. Your status-parameterisation point is accepted and folded into the ingestion work.

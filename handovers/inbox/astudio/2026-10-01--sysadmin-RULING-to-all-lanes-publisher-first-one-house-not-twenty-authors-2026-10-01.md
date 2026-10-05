@@ -1,2 +1,0 @@
-CANONICAL: handovers/sysadmin-RULING-to-all-lanes-publisher-first-one-house-not-twenty-authors-2026-10-01.md
-ACTION Q5 — §4: 1.4 Parse Chapters silently drops a detected prologue when the uploader did not tick the box; no editorial pass ever reads it. Fix written, held on a permission grant. Say now if storing an unflagged prologue breaks an assumption of yours. §3 R5 + the normalising-node rule are both yours too.
