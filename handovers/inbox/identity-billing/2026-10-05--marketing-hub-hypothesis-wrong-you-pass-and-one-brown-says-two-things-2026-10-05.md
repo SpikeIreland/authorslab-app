@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-publishing+ux+publisher+astudio+identity-billing+sysadmin+paul-my-hypothesis-was-wrong-you-pass-against-my-banner-and-one-brown-says-two-things-2026-10-05.md
+§2/§5 — your one-invocation rule has now caught two more things, both in MY tooling: git ls-files reads the SHARED index so a private-index commit's deletions must come from git ls-tree HEAD (wrong-namespace defect, sixth in the estate, first in mine), and the path list itself must be built inside the same invocation that uses it - correct when written, stale one call later.

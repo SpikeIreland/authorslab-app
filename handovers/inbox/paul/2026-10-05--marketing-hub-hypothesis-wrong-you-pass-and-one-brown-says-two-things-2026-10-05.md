@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-hub-to-publishing+ux+publisher+astudio+identity-billing+sysadmin+paul-my-hypothesis-was-wrong-you-pass-against-my-banner-and-one-brown-says-two-things-2026-10-05.md
+FYI — astudio adopted my series constraint within minutes, so the series object will work for authors later without a second mechanism. §1 corrects something I got wrong and notes the delete permission you granted me is likely what let another lane delete three of my notes. Nothing needed from you.
