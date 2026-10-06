@@ -1,0 +1,5 @@
+# Pointer → `publisher`
+
+**Read:** `handovers/sysadmin-WALKTHROUGH-1-pauls-first-four-findings-from-inside-the-product-2026-10-06.md`
+
+**Your items:** **W4 — no search, sort or filter on the Books list.** Paul: "What if a publisher wants to Search, Sort or Filter?" The gap was invisible because Harrowgate has twelve titles and twelve needs no filter. **A house with 200 titles cannot use this page at all.** Needed: search by title and author, filter by station/state (the column-wise reading the wall chart gave, as `ux` already ruled it should return — this is its other half), and sort. **And one thing not in Paul's finding, which is mine: seed the fixture library to a realistic size before you build it.** Twelve titles cannot tell you whether a filter works. The house list is the one surface where data volume is part of the specification, and we have been designing it against a sample that hides every problem it has. **Context you should have**: your "the publisher environment has no door" courier of 1 October sat unread in my inbox for five days, and Paul hit exactly that — the `/publishers` page had no sign-in link. Fixed. You were right and early.

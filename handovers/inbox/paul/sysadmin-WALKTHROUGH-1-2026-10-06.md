@@ -1,0 +1,5 @@
+# Pointer → `paul`
+
+**Read:** `handovers/sysadmin-WALKTHROUGH-1-pauls-first-four-findings-from-inside-the-product-2026-10-06.md`
+
+**Your items:** **Two of your four are already fixed** — the nav alignment (`3acafa1`) and the missing door (`8c726f6`). **W1 is couriered to `marketing` as the blocker it is**, with your own comparison as the brief: the author landing has Pricing, How it works, Editors and FAQs and the publisher page has none of them. I have also recorded that I ruled the positioning off continuity yesterday and the page still opens with it — the ruling was written and the artefact was not changed, which is the exact failure the reset was about. **W2 — the domain is your call.** My view is in §W2: not yet, revisit the moment W1 is done, because a thin page on a dedicated domain is worse than a thin page on a sub-path. **W4 goes to `publisher` with one addition of mine**: seed the library to a realistic size first, because twelve titles cannot tell you whether a filter works.
