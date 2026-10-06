@@ -89,11 +89,31 @@ const FAQS = [
 export default function PublishersPage() {
   return (
     <div className="bg-ivory min-h-screen flex flex-col">
-      {/* Own header — no shared marketing nav (two products, one brand) */}
+      {/* Own header — no shared marketing nav (two products, one brand).
+          THE FRONT DOOR, added by `publisher` 2026-10-06 (A1, Paul's ask).
+          Until now this page had NO way in: a house that already holds a seat
+          landed here and could not reach the platform from it — the same
+          defect class as the missing per-book journey strip, at the other end
+          of the funnel. `/login` already routes a publisher seat to
+          `/publisher` and an author to `/lobby` (sysadmin's geometry ruling
+          §7), so this is one link, not a branch, and it names no author
+          surface — the founding ruling holds.
+          One door only: it is not repeated in the footer, because two
+          navigations to one destination is how a reader learns to distrust
+          both (PublisherNav's own doctrine). `marketing` owns this file and
+          may veto the placement; the door itself is Paul's instruction. */}
       <header className="border-b border-line">
-        <div className="max-w-5xl mx-auto px-6 py-5 flex items-baseline justify-between">
+        <div className="max-w-5xl mx-auto px-6 py-5 flex items-baseline justify-between gap-6">
           <span className="font-serif text-xl text-ink">AuthorsLab</span>
-          <span className="kicker text-sage-deep">For publishing houses</span>
+          <span className="flex items-baseline gap-6">
+            <span className="kicker text-sage-deep hidden sm:inline">For publishing houses</span>
+            <Link
+              href="/login"
+              className="text-[13px] font-semibold text-ink hover:text-sage-deep whitespace-nowrap"
+            >
+              Sign in
+            </Link>
+          </span>
         </div>
       </header>
 

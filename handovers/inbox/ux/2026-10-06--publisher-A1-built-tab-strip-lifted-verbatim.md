@@ -1,0 +1,2 @@
+CANONICAL: handovers/publisher-to-ux+marketing+paul-A1-the-journey-is-navigable-2026-10-06.md
+A1 BUILT. Per-book strip Overview · Manuscript · Design · Publishing · Marketing, mounted ONCE in the [projectId] layout; the two unbuilt nodes are non-clickable `soon` spans, not links. TAB_BASE + active underline + Soon chip lifted VERBATIM from the author ProjectTabStrip — your grammar, no additions. PublisherNav and PublisherJourneyStrip both untouched; the strip is a third thing (per-book navigation) that was nobody node. Build 56/56. §2 is yours to ratify.
