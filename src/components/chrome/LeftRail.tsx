@@ -137,7 +137,7 @@ export function LeftRail() {
                   />
                 )}
                 <span className="w-5 h-5 flex items-center justify-center">{item.icon}</span>
-                <span className="text-[8.5px] font-medium tracking-wide">{item.label}</span>
+                <span className="text-[8.5px] font-medium tracking-wide text-center leading-tight">{item.label}</span>
               </Link>
             </li>
           )

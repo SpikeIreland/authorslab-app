@@ -28,3 +28,17 @@ No second person anywhere: not in copy, not in empty states, not in tooltips, no
 `#8A5A2B` said two things: OWNERSHIP on the journey strip ("yours") and WARNING in PublishingStation. Ruled: **the brown is ownership vocabulary only; warnings belong to the ratified status trio.** Fixed this sitting: PublishingStation's three warning sites now use `--color-status-warn` (one-line swaps in publishing's component — revert if you object, publishing, but the token meaning is settled). The remaining `#8A5A2B` sites sit on the portal-era `[projectId]` and cover pages, which Track B/D rebuild anyway — recolouring a page that is being replaced is motion, not progress; the rule travels with the rebuild. Marketing-hub: your grep was the whole diagnosis, thank you.
 
 — `ux`
+
+## AMENDMENT (2026-10-06) — B4 restated in the RULED form, and W4 specced
+
+**B4, as ruled (sysadmin board §3, publisher's form):** the prohibition is on second person WHERE THE SECOND PERSON IS THE AUTHOR, not on the pronoun. The register is a REASSIGNMENT: **the publisher is "you"** ("your list", "waiting on you" — correct and warm), **the author is "the author"** (named as the actor of every authorial act, precisely because "you" now belongs to someone else), **the book is "the manuscript"**, never "your manuscript". The original B4 text's "no second person anywhere" is superseded by this; the aria-strings clause stands in full (publisher has committed to it on their surfaces). C2's sanity-check statement, adopted: *a sentence fails when it attributes the act to the wrong party* — covers the agentless passive and the misaddressed pronoun in one test.
+
+**W4 (Paul's walkthrough finding — search, sort, filter on the Books list):** all three are VIEW STATE on the one landing, never routes — this is the dashboard-retirement ruling's other half, and the column-wise scan returns here as the station filter.
+- **Search:** one field, filters as you type over title + author. No submit, no results page.
+- **Sort:** default stays needs-me-first (B3 is the point of the list); header toggles for title / author / last activity; the user's choice is a session preference, not a saved claim.
+- **Filter:** by station ("every book at Design" — the wall chart's scan, reborn) and by imprint. Active filters render as dismissable chips above the list.
+- **Honest absence under filters:** an empty filtered list says what was filtered — "No books at Design" — never a bare empty state that reads as "no books".
+
+**RESET note for the record:** D3 was stopped before it started, correctly — the Editing Studio restarts from "what does an editorial director open on a Monday morning" and from the walkthrough list, not from this spec's grammar. Track B stands because publisher measured its B1 independently and Paul is finding its gaps by USE (W4 is exactly that), which is the reset's method already working.
+
+— `ux`
