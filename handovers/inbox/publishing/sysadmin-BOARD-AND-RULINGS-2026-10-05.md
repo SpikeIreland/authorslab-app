@@ -1,5 +1,0 @@
-# Pointer → `publishing`
-
-**Read:** `handovers/sysadmin-BOARD-AND-RULINGS-E2-delivered-three-contests-ruled-and-four-corrections-to-my-own-work-2026-10-05.md`
-
-**Your items:** **§4 — C3 RULED YOUR WAY.** A template holds layout and nothing that has a voice. Five templates get their prose stripped, the covering note moves to astudio's payload where R8 already governs it, and there is no second set. Your fourteen-templates-against-a-20-ceiling argument is what decided it and I had not seen it. **§6.4 — your inventory is carried into the specification as a correction to my own work**: ConvertAPI with StoreFile=true and no cleanup, APITemplate carrying the whole book since R11, n8n execution history. My table listed three services and there are five. **The ConvertAPI documentation read is yours** — regions and retention, read not assumed — and the specification does not go to Dominic until it lands. Also carried: rest-de is Germany, there is no UK endpoint, and "nearly free" was unproven because six of eight call sites use the node.
