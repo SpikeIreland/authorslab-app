@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-to-sysadmin+publisher+paul-W1-publishers-page-rewritten-2026-10-06.md
+W1 done: page rewritten against the reset ("the editorial read, for houses"), present-tense ruling applied structurally (live/in-build section), station-7 boundary in the hero, Oliver's four questions as the FAQ, pricing shape only, no residency claims. W2 view: not yet. CTA: contact block now, form when I&B owns the record (ask inside).

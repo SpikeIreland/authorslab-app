@@ -1,24 +1,30 @@
 // ============================================================================
-// TRACK A (demo build plan 2026-10-05) · /publishers — the publisher
-// product's public page. Owner: `marketing`. Replaces the portal-era
-// threshold page (AL-UX task #118), which predated the founding ruling.
+// W1 REWRITE (2026-10-06) · /publishers — the publisher product's public page.
+// Owner: `marketing`. Supersedes the Track A continuity-led version.
 //
-// Binding constraints, in order of authority:
-// - FOUNDING RULING 2026-10-02: two products, one brand. This page must not
-//   mention, describe, or link to the author product. No shared nav/footer
-//   with author surfaces (structural separation — build constraint, ruled by
-//   marketing-hub 2026-10-01 §3.3). The author landing MAY link here (A5);
-//   never the reverse.
-// - VERB TEST (publisher-facing register): the system prepares, checks,
-//   records, surfaces, hands off. It never writes, edits, designs, publishes
-//   or decides.
-// - A4: carry the method, not the adjectives. All figures below are measured
-//   (System Specification V1.0 §3), not modelled. Present tense only for what
-//   is live; the series mechanism is labelled in build (Track E).
-// - A3: lead with the series/continuity argument — the value is not the
-//   reading, it is the remembering.
-// Done-when: a stranger can tell within ten seconds this is for publishing
-// houses, not for them.
+// Governing rulings, in order:
+// - RESET 2026-10-06 §4: positioning is "THE EDITORIAL READ, FOR PUBLISHING
+//   HOUSES". Continuity falls out of it; it is not the pitch. Supplier, not
+//   tool.
+// - PRESENT-TENSE RULING 2026-10-06: nothing unbuilt in present tense. The
+//   live/in-build split is explicit on the page (the register the series
+//   paragraph already used, extended everywhere). Publisher's five findings
+//   all addressed, incl. the completed-stage claim corrected (shows person-
+//   or-system, not WHO — completed_by_label not backfilled).
+// - Station 7 boundary ON the page: we do not typeset, we do not distribute.
+// - Personas: Alex/Sam/Jordan nameable (consistent across all titles). NO
+//   name for Publishing/Marketing stations until astudio+design settle the
+//   split editor_name mapping.
+// - Pricing: SHAPE only (platform fee + per-title, no seat counting — Paul
+//   ruled 2026-09-25). No figures; numbers are finance's + Paul's. No pilot
+//   terms (ratification not confirmed public).
+// - BOARD §6.4: no residency claims until the corrected table exists.
+// - FOUNDING RULING: no author-product mention/link; own header and footer.
+// - CTA (Paul ruled 2026-10-06): styled contact block on the verified
+//   publishers@ mailbox; an enquiry form replaces it when I&B owns the
+//   record and sysadmin the route. No hollow form ships.
+// Done-when: completeness matches the author landing's structure — journey,
+// readers, method, figures, pricing shape, FAQ, CTA.
 // ============================================================================
 
 import type { Metadata } from 'next'
@@ -27,10 +33,20 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'AuthorsLab for Publishing Houses',
   description:
-    "A working environment for a publishing house's editorial department: instrumented manuscript analysis an editor reviews, approves and sends on — and an editorial memory that stays when people move on.",
+    'The editorial read, for publishing houses: instrumented full-manuscript analysis your editors review and act on. We do not typeset and we do not distribute — the production files are yours.',
 }
 
 const PUBLISHER_CONTACT_EMAIL = 'publishers@authorslab.ai'
+
+const STATIONS = [
+  { n: 1, name: 'Manuscript', detail: 'The title enters the line. Ingest is gated: a file that fails validation is refused with a stated reason, never loaded in a degraded state.' },
+  { n: 2, name: 'Developmental', detail: 'The full structural read — story, character, pacing — prepared by Alex and reviewed by an editor.' },
+  { n: 3, name: 'Line', detail: 'The line-level pass — prose, rhythm, clarity — prepared by Sam.' },
+  { n: 4, name: 'Copy', detail: 'The copy-edit pass — consistency, usage, mechanics — prepared by Jordan.' },
+  { n: 5, name: 'Publishing', detail: 'Cover and interior move through approval. The house holds the gate.' },
+  { n: 6, name: 'Marketing', detail: 'Launch materials are prepared for the house to approve.' },
+  { n: 7, name: 'Handoff', detail: 'Our stations complete. The finished manuscript and every production file pass to the house.' },
+]
 
 const METHOD_PROPERTIES = [
   {
@@ -47,94 +63,157 @@ const METHOD_PROPERTIES = [
   },
   {
     title: 'When we cannot do something properly, we refuse.',
-    body: 'No approximation, and no degraded result presented as complete. A file that fails validation is refused with a stated reason. Where a feature is unfinished, the page says so rather than offering a control that appears to work.',
+    body: 'No approximation, and no degraded result presented as complete. A completed stage shows whether it was completed by a person or by the system — and an absent value is shown as absent, never as a plausible default.',
+  },
+]
+
+const FAQS = [
+  {
+    q: 'Who uses it?',
+    a: "The house's editorial staff. Pricing never counts seats, so who you bring in is your decision, not a billing event. The house workspace — organisation, imprints, staff roles — is in build now; while it is, access is set up with you directly.",
+  },
+  {
+    q: 'What should we test first?',
+    a: 'The manuscript itself. Send one full manuscript through the read and judge the editorial report, the chapter summaries and the key points against what your own editors would have produced. That is the core of the product and it is live today.',
+  },
+  {
+    q: 'How does it fit our editorial process?',
+    a: 'As a hybrid workflow. The system prepares the read; your editor reviews it, interrogates it, and decides what reaches the author. The system holds no opinion an editor has not approved. The editor’s workbench inside the publisher workspace — where notes are agreed and packaged for the author as a document from a named person — is in build; the read it works on is live.',
+  },
+  {
+    q: 'Can it hold a series?',
+    a: 'In build, honestly labelled: every read already produces chapter summaries and key points — the compressed form designed to be carried forward — and a series relationship that carries them into the next book’s read is being built now. We would rather tell you it is coming than imply it is here.',
   },
 ]
 
 export default function PublishersPage() {
   return (
     <div className="bg-ivory min-h-screen flex flex-col">
-      {/* Own header — deliberately no shared marketing nav (two products, one brand) */}
+      {/* Own header — no shared marketing nav (two products, one brand) */}
       <header className="border-b border-line">
         <div className="max-w-5xl mx-auto px-6 py-5 flex items-baseline justify-between">
           <span className="font-serif text-xl text-ink">AuthorsLab</span>
-          <div className="flex items-baseline gap-6">
-            <span className="kicker text-sage-deep">For publishing houses</span>
-            {/* The door. A product with a public page and no way in is not a
-                product, and this page shipped without one for a day — the same
-                defect `publisher` reported on 2026-10-01 as "the publisher
-                environment has no door", arriving one level further out.
-                /login already routes a seated publisher to /publisher. */}
-            <Link
-              href="/login"
-              className="text-sm font-semibold text-ink border border-line hover:border-sage-deep hover:text-sage-deep rounded-lg px-4 py-2"
-            >
-              Sign in
-            </Link>
-          </div>
+          <span className="kicker text-sage-deep">For publishing houses</span>
         </div>
       </header>
 
       <main className="flex-1">
-        {/* Hero — the ten-second test lives here */}
+        {/* Hero */}
         <section className="max-w-3xl mx-auto px-6 pt-20 pb-16">
-          <p className="kicker text-sage-deep">An editorial working environment for publishing houses</p>
+          <p className="kicker text-sage-deep">For publishing houses</p>
           <h1 className="font-serif text-5xl leading-tight mt-4 mb-6 text-ink">
-            Continuity knowledge lives in a person. People move on.
+            The editorial read, done properly, for houses.
           </h1>
           <p className="text-muted text-[17px] leading-relaxed mb-4">
-            When an editor leaves mid-series, the next one rebuilds their context from
-            nothing — or doesn&rsquo;t, and the series acquires contradictions nobody
-            intended. An author never has that problem. Only a house does, because a
-            house is made of people who move on.
+            A full-manuscript editorial analysis your editors review and act on:
+            structural, line and copy reads prepared in about half an hour, instrumented
+            end to end, with every claim the system makes backed by a record. Your
+            editors keep the judgement; the system does the reading and shows its
+            working.
           </p>
-          <p className="text-ink text-[17px] leading-relaxed font-semibold mb-9">
-            The value is not the reading. It is the remembering.
+          <p className="text-ink text-[16px] leading-relaxed font-semibold mb-9">
+            We do not typeset and we do not distribute. The finished manuscript and
+            every production file pass to the house — the line ends where yours begins.
           </p>
           <a
-            href={`mailto:${PUBLISHER_CONTACT_EMAIL}?subject=Publisher%20enquiry`}
+            href="#contact"
             className="inline-block bg-sage-deep hover:bg-sage-deep/90 text-white font-semibold px-5 py-3 rounded-lg text-sm"
           >
-            Talk to us
+            Put a manuscript through it
           </a>
         </section>
 
-        {/* What it is */}
+        {/* How it works — the line */}
         <section className="bg-paper border-y border-line">
           <div className="max-w-3xl mx-auto px-6 py-14">
-            <h2 className="font-serif text-3xl text-ink mb-5">What AuthorsLab is</h2>
-            <p className="text-muted text-[16px] leading-relaxed mb-4">
-              A working environment for a publishing house&rsquo;s editorial department.
-              The house ingests the titles on its list; its editors work on them inside
-              the system; the system prepares editorial analysis that a named person at
-              the house reviews, approves and sends on. The house owns the copy.
+            <h2 className="font-serif text-3xl text-ink mb-3">How it works</h2>
+            <p className="text-muted text-[16px] leading-relaxed mb-8">
+              A title moves through seven stations — five working phases between two
+              boundaries. Each editorial read runs five analyses in parallel against the
+              complete manuscript — structural, character, plot, pacing, thematic —
+              followed by a single synthesis pass, and produces three artefacts: a full
+              editorial report, chapter summaries, and key points.
             </p>
-            <p className="text-muted text-[16px] leading-relaxed mb-4">
-              Every full manuscript read runs five analyses in parallel — structural,
-              character, plot, pacing, thematic — followed by a single synthesis pass.
-              Each read produces three artefacts: a full editorial report, chapter
-              summaries, and key points — the compressed form, designed to be carried
-              forward. An editor can interrogate the analysis in conversation, scoped to
-              that manuscript.
-            </p>
-            <p className="text-muted text-[16px] leading-relaxed">
-              Human judgement stays with your team. The system holds no opinion an
-              editor has not approved, and editorial output leaves as a document — a
-              package sent by a named person at the house. A completed stage shows who
-              completed it, and whether that was a person or the system. An absent
-              value is shown as absent, never as a plausible default.
-            </p>
-            <p className="text-faint text-[14px] leading-relaxed mt-5">
-              In build now: a series relationship that carries each book&rsquo;s
-              summaries and key points into the next book&rsquo;s read, so the context
-              the last editor held is on file rather than in a leaving card. We say so
-              here because it is not finished — when it is, this sentence will change
-              tense.
+            <ol className="space-y-4">
+              {STATIONS.map((s) => (
+                <li key={s.n} className="flex gap-4">
+                  <span className="shrink-0 w-8 h-8 rounded-full bg-sage-bg text-sage-deep font-semibold text-sm flex items-center justify-center">{s.n}</span>
+                  <div>
+                    <p className="text-ink font-semibold text-[15px]">{s.name}</p>
+                    <p className="text-muted text-[14px] leading-relaxed">{s.detail}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+            <p className="text-ink text-[15px] leading-relaxed mt-8 font-semibold">
+              Station seven is a boundary we claim on purpose: composition and
+              distribution are the house&rsquo;s, and the files we hand off are built to
+              enter your pipeline, not to replace it.
             </p>
           </div>
         </section>
 
-        {/* The method — A4 */}
+        {/* Who does the reading */}
+        <section className="max-w-3xl mx-auto px-6 py-14">
+          <h2 className="font-serif text-3xl text-ink mb-3">Who does the reading</h2>
+          <p className="text-muted text-[16px] leading-relaxed mb-6">
+            Three editorial readers, one per discipline, consistent across every title
+            on the platform:
+          </p>
+          <div className="grid sm:grid-cols-3 gap-5">
+            <div className="bg-paper border border-line rounded-lg p-5">
+              <h3 className="text-ink font-semibold text-[15px] mb-1">Alex — developmental</h3>
+              <p className="text-muted text-[14px] leading-relaxed">Structure, story and character: the whole-book read that answers whether the manuscript works.</p>
+            </div>
+            <div className="bg-paper border border-line rounded-lg p-5">
+              <h3 className="text-ink font-semibold text-[15px] mb-1">Sam — line</h3>
+              <p className="text-muted text-[14px] leading-relaxed">Prose at the sentence level: rhythm, clarity, voice — preserved, not overwritten.</p>
+            </div>
+            <div className="bg-paper border border-line rounded-lg p-5">
+              <h3 className="text-ink font-semibold text-[15px] mb-1">Jordan — copy</h3>
+              <p className="text-muted text-[14px] leading-relaxed">Consistency, usage and mechanics, with every flag citing the place it was found.</p>
+            </div>
+          </div>
+          <p className="text-muted text-[15px] leading-relaxed mt-6">
+            Each prepares; none decides. An editor at the house reviews every read, and
+            the system holds no opinion an editor has not approved.
+          </p>
+        </section>
+
+        {/* Live today / in build — the register, made structural */}
+        <section className="bg-paper border-y border-line">
+          <div className="max-w-3xl mx-auto px-6 py-14">
+            <h2 className="font-serif text-3xl text-ink mb-3">What is live, and what is in build</h2>
+            <p className="text-muted text-[15px] leading-relaxed mb-8">
+              Where a feature is unfinished, we say so rather than imply that it is.
+              This section exists so you never have to guess which sentence is which.
+            </p>
+            <div className="grid sm:grid-cols-2 gap-6">
+              <div>
+                <h3 className="kicker text-sage-deep mb-3">Live today</h3>
+                <ul className="space-y-2 text-[14px] text-muted leading-relaxed list-disc pl-4">
+                  <li>The full-manuscript editorial read: five analyses plus synthesis, with the report, chapter summaries and key points it produces</li>
+                  <li>Gated ingest that refuses a broken file with a stated reason</li>
+                  <li>The instrumentation in the method section below — every call recorded, every output independently checked</li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="kicker text-terracotta mb-3">In build now</h3>
+                <ul className="space-y-2 text-[14px] text-muted leading-relaxed list-disc pl-4">
+                  <li>The house workspace: your organisation and imprints, your staff and roles, your list ingested and worked inside the system</li>
+                  <li>The editor&rsquo;s workbench: reviewing the read in conversation, agreeing notes, and packaging them for the author as a document sent by a named person</li>
+                  <li>Series memory: each book&rsquo;s summaries and key points carried into the next book&rsquo;s read</li>
+                </ul>
+              </div>
+            </div>
+            <p className="text-faint text-[13px] leading-relaxed mt-6">
+              When an item moves from the right column to the left, this page changes
+              the same day — tense is a claim here, and we treat it like one.
+            </p>
+          </div>
+        </section>
+
+        {/* The method */}
         <section className="max-w-3xl mx-auto px-6 py-14">
           <h2 className="font-serif text-3xl text-ink mb-3">The method</h2>
           <p className="text-muted text-[16px] leading-relaxed mb-8">
@@ -189,18 +268,57 @@ export default function PublishersPage() {
           </div>
         </section>
 
+        {/* Pricing shape */}
+        <section className="max-w-3xl mx-auto px-6 py-14">
+          <h2 className="font-serif text-3xl text-ink mb-3">How it is priced</h2>
+          <p className="text-muted text-[16px] leading-relaxed mb-4">
+            A platform fee for the house, and a per-title fee for each book that goes
+            through the line. That is the whole shape: you pay for the instrument and
+            for books reaching market, which is the thing you actually want more of.
+          </p>
+          <p className="text-muted text-[16px] leading-relaxed">
+            <span className="text-ink font-semibold">We never count seats.</span> A
+            three-person imprint with large ambitions should not pay more for growing
+            its team. Numbers are sized with you against your list — write to us and we
+            will put them in front of you rather than behind a form.
+          </p>
+        </section>
+
+        {/* FAQ */}
+        <section className="bg-paper border-y border-line">
+          <div className="max-w-3xl mx-auto px-6 py-14">
+            <h2 className="font-serif text-3xl text-ink mb-3">Questions publishers ask us</h2>
+            <p className="text-muted text-[15px] leading-relaxed mb-8">
+              These four are verbatim the first questions our first publishing house
+              asked. The answers are the honest ones, in the same register as the rest
+              of this page.
+            </p>
+            <div className="space-y-6">
+              {FAQS.map((f) => (
+                <div key={f.q}>
+                  <h3 className="text-ink font-semibold text-[16px] mb-1">{f.q}</h3>
+                  <p className="text-muted text-[15px] leading-relaxed">{f.a}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* CTA */}
-        <section className="max-w-3xl mx-auto px-6 py-16 text-center">
+        <section id="contact" className="max-w-3xl mx-auto px-6 py-16 text-center">
           <h2 className="font-serif text-3xl text-ink mb-4">
-            We would rather show you than tell you
+            Put a manuscript through it
           </h2>
           <p className="text-muted text-[16px] leading-relaxed mb-8 max-w-xl mx-auto">
-            A specification that contains only good news is a brochure. Write to us and
-            we will send the technical specification — what the system does, how it is
-            built, where data rests, and what it does not yet have.
+            The fastest way to judge us is the product&rsquo;s own: send one manuscript
+            through the read and compare the result with your editors&rsquo; view of the
+            same book. Write to us — a person answers, same working day — and we will
+            also send the technical specification: what the system does, how it is
+            built, and what it does not yet have. A specification that contains only
+            good news is a brochure.
           </p>
           <a
-            href={`mailto:${PUBLISHER_CONTACT_EMAIL}?subject=Publisher%20enquiry`}
+            href={`mailto:${PUBLISHER_CONTACT_EMAIL}?subject=Put%20a%20manuscript%20through%20it`}
             className="inline-block bg-sage-deep hover:bg-sage-deep/90 text-white font-semibold px-5 py-3 rounded-lg text-sm"
           >
             {PUBLISHER_CONTACT_EMAIL}
