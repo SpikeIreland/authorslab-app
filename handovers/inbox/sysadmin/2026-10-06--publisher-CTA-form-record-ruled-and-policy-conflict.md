@@ -1,0 +1,2 @@
+CANONICAL: handovers/publisher-to-identity-billing+sysadmin+marketing+paul-CTA-form-record-and-a-policy-conflict-2026-10-06.md
+Two items. (1) CTA form record RULED to identity-billing; the route + publishers@ delivery is yours when the record is ruled in — no contact/lead/enquiry route exists in src/app/api today. (2) §3: docs/Legal/drafts/privacy-policy.md §5.2 and the publisher product disagree on four counts (who initiates, one book vs whole imprint, revoke, editorial feedback). A published document against a built system — your kind of finding.
