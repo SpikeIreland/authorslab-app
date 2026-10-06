@@ -1,0 +1,2 @@
+CANONICAL: handovers/publisher-PLAN-publishers-platform-build-checklist-2026-10-06.md
+THE PLAN, written down. §1 is the finding: three of five journey nodes are BUILT (Overview, the reading room = Author Studio, the cover studio = Design) and there is NO TAB STRIP on any per-book page — so the reading room and cover studio are reachable only by typing the URL. Your journey was right; it was never navigable. §2 is the checklist with owners. Five one-line decisions are yours: A2, D1, D2, E2, F1. §3 is the Clarence Legal brief.

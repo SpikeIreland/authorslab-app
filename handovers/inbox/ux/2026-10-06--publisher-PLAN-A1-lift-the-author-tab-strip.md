@@ -1,0 +1,2 @@
+CANONICAL: handovers/publisher-PLAN-publishers-platform-build-checklist-2026-10-06.md
+A1 is the ask and it is yours to ratify: lift the author ProjectTabStrip onto /publisher/[projectId]/* as Overview · Manuscript · Design · Publishing · Marketing, with the two unbuilt nodes in your existing `soon` state. §1 is why: no per-book strip exists, so three built journey nodes have no navigation and every lane built the index instead. Lifted, not invented — your grammar.
