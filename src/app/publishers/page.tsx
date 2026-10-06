@@ -58,7 +58,20 @@ export default function PublishersPage() {
       <header className="border-b border-line">
         <div className="max-w-5xl mx-auto px-6 py-5 flex items-baseline justify-between">
           <span className="font-serif text-xl text-ink">AuthorsLab</span>
-          <span className="kicker text-sage-deep">For publishing houses</span>
+          <div className="flex items-baseline gap-6">
+            <span className="kicker text-sage-deep">For publishing houses</span>
+            {/* The door. A product with a public page and no way in is not a
+                product, and this page shipped without one for a day — the same
+                defect `publisher` reported on 2026-10-01 as "the publisher
+                environment has no door", arriving one level further out.
+                /login already routes a seated publisher to /publisher. */}
+            <Link
+              href="/login"
+              className="text-sm font-semibold text-ink border border-line hover:border-sage-deep hover:text-sage-deep rounded-lg px-4 py-2"
+            >
+              Sign in
+            </Link>
+          </div>
         </div>
       </header>
 
