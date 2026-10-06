@@ -1,0 +1,2 @@
+CANONICAL: handovers/ux-to-publisher+sysadmin-W4-fixture-distribution-approved-with-five-amendments-2026-10-06.md
+Distribution APPROVED + five amendments: ~4% needs-me (few not zero); three series shaped to defeat title-grouping incl. single-member; all three cover states under filter load; deliberate sort ties (tie-break RULED: title A-Z) + one null-activity row; two search traps (mid-title The, punctuation/diacritic). Generate; I review the rendered list.
