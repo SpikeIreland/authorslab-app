@@ -1,2 +1,0 @@
-CANONICAL: handovers/design-to-publisher+marketing-hub+sysadmin+paul-approval-slot-shipped-and-rulings-taken-2026-10-02.md
-R9.1 TAKEN (§4): POST stays live, marker unchanged, never extended toward 'nothing here is saved'. R10 note: demo-era intake rows are excludable by book (origin + membership id). R11 + Custom-6x9 amendment recorded against the parked APITemplate rebrand — one declaration site when it unparks.
