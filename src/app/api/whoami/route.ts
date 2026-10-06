@@ -46,9 +46,25 @@ export async function GET(request: NextRequest) {
         .select('id, organisation_id, org_role, status, organisations(name)')
         .eq('auth_user_id', user.id)
 
-    const { data: imprintSeats } = await supabase
-        .from('imprint_memberships')
-        .select('imprint_role, imprints(name, slug)')
+    // Scoped to THIS caller's own memberships.
+    //
+    // The first version selected the table with no filter, on the reasoning
+    // that whatever came back was whatever RLS allowed — which is a fair
+    // instrument for auditing a policy and the wrong one for answering "what
+    // seat do I hold". It returned a colleague's seat at the same imprint and
+    // labelled it `imprint_seats`, i.e. mine. We spent three rounds proving
+    // the policy was correct; it always was.
+    //
+    //   An instrument that reports more than it was asked reads as a defect
+    //   in the thing being measured.
+    //
+    const membershipIds = (memberships ?? []).map((m) => m.id)
+    const { data: imprintSeats } = membershipIds.length
+        ? await supabase
+            .from('imprint_memberships')
+            .select('imprint_role, imprints(name, slug)')
+            .in('membership_id', membershipIds)
+        : { data: [] }
 
     const { data: profile } = await supabase
         .from('author_profiles')
