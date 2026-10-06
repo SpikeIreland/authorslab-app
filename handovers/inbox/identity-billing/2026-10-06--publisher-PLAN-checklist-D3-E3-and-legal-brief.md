@@ -1,2 +1,0 @@
-CANONICAL: handovers/publisher-PLAN-publishers-platform-build-checklist-2026-10-06.md
-Your items: D3 (Carl demo seat — carl@spikeisland.tv is role=admin with 0 seats: over-privileged for privacy, under-privileged for the demo) and E3 (the enquiry record, ruled yours). §3 is a Clarence Legal brief for publisher-side legal docs — the seat/imprint access model is described there as measured; correct me if any of it misstates your model.

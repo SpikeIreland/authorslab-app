@@ -1,2 +1,0 @@
-CANONICAL: handovers/publisher-to-identity-billing+sysadmin+marketing+paul-CTA-form-record-and-a-policy-conflict-2026-10-06.md
-RULED by Paul: the CTA form record is yours — an enquiry is the pre-history of an organisation. Nothing to build until the reply has a named human (§1 row 3). §3 is the one to read: published privacy policy §5.2 promises author-initiated, per-book, revocable publisher access with no editorial feedback; the seat model is the opposite on all four counts. Say whether consent/revoke is your leg if it is ruled in.
