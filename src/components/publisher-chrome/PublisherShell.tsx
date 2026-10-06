@@ -120,7 +120,12 @@ export function PublisherShell({ children }: { children: React.ReactNode }) {
                     title={`${item.label} — coming soon`}
                   >
                     <span className="w-5 h-5 flex items-center justify-center">{item.icon}</span>
-                    <span className="text-[8.5px] font-medium tracking-wide">{item.label}</span>
+                    {/* text-center: items-center centres the BOX, not the text
+                        inside it. Without this, any label that wraps — "House
+                        Style" is the only one today — renders left-ragged and
+                        reads as a misalignment. Paul found it in the first
+                        screenshot he took. */}
+                    <span className="text-[8.5px] font-medium tracking-wide text-center leading-tight">{item.label}</span>
                     <span className="text-[7px] uppercase tracking-widest">soon</span>
                   </div>
                 </li>
@@ -143,7 +148,7 @@ export function PublisherShell({ children }: { children: React.ReactNode }) {
                       />
                     )}
                     <span className="w-5 h-5 flex items-center justify-center">{item.icon}</span>
-                    <span className="text-[8.5px] font-medium tracking-wide">{item.label}</span>
+                    <span className="text-[8.5px] font-medium tracking-wide text-center leading-tight">{item.label}</span>
                   </Link>
                 </li>
               )
