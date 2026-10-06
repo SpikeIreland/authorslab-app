@@ -1,5 +1,6 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { gatePublisherManuscript } from '@/lib/publisher/gateManuscript'
 
 // GET /api/publisher/projects/[id]/covers
 //
@@ -125,6 +126,14 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
+
+  // ── THE GATE ───────────────────────────────────────────────────────────────
+  // This route reads with the SERVICE ROLE, which bypasses every row-level
+  // policy. Until 2026-10-06 it performed no authentication at all, so any
+  // caller holding a manuscript id could read what it returns. One call, one
+  // implementation — see src/lib/publisher/gateManuscript.ts.
+  const gate = await gatePublisherManuscript(id)
+  if (!gate.ok) return gate.refusal
 
   // ?include=all keeps wraparound jackets in the payload. The portal's
   // approval row wants portraits only (a 2:1 spread cropped into a 2:3 frame

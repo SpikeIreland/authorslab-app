@@ -1,5 +1,6 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { gatePublisherManuscript } from '@/lib/publisher/gateManuscript'
 
 // GET /api/publisher/projects/[id]
 //
@@ -7,9 +8,14 @@ import { NextResponse } from 'next/server'
 // project page (/publisher/[projectId]). Bypasses RLS via the service role
 // so a publisher in a different browser session can read.
 //
-// See /api/publisher/projects/route.ts for the auth posture, house pattern
-// reference, and explicit-exclusion list. Same rules apply here — no
-// chapter text, no editor notes, no account PII beyond first/last name.
+// AUTH: gated by gatePublisherManuscript() below — the caller must hold a seat
+// on the imprint this title sits on. This header previously pointed at
+// /api/publisher/projects/route.ts for "the auth posture"; THAT FILE HAS NEVER
+// EXISTED, and the route shipped with no authentication at all for that
+// reason. A rule that points at a missing reference reads as a delegation, so
+// every later reader assumes the check lives somewhere else. Fixed 2026-10-06.
+// Content rules unchanged — no chapter text, no editor notes, no account PII
+// beyond first/last name, and no cost figure anywhere on a publisher surface.
 //
 // Additional fields returned vs the list endpoint:
 //   - phase states for all 5 editing phases (so the portal can render
@@ -79,6 +85,14 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
+
+  // ── THE GATE ───────────────────────────────────────────────────────────────
+  // This route reads with the SERVICE ROLE, which bypasses every row-level
+  // policy. Until 2026-10-06 it performed no authentication at all, so any
+  // caller holding a manuscript id could read what it returns. One call, one
+  // implementation — see src/lib/publisher/gateManuscript.ts.
+  const gate = await gatePublisherManuscript(id)
+  if (!gate.ok) return gate.refusal
 
   try {
     const { data: manuscript, error: msError } = await supabaseAdmin
