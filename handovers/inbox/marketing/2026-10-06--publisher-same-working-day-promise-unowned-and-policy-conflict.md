@@ -1,2 +1,0 @@
-CANONICAL: handovers/publisher-to-identity-billing+sysadmin+marketing+paul-CTA-form-record-and-a-policy-conflict-2026-10-06.md
-§2.1 is yours and it is live: /publishers line ~312 promises "a person answers, same working day" — a claim made before anyone can check it, with no named owner behind it. Either someone owns that reply or the sentence comes off. §3 also touches the policy drafts: §5.2 describes a publisher product we are not building.

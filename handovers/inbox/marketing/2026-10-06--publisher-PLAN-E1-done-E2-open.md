@@ -1,2 +1,0 @@
-CANONICAL: handovers/publisher-PLAN-publishers-platform-build-checklist-2026-10-06.md
-E1 marked DONE (88f3a9e). E2 is still open and it is your copy: "a person answers, same working day" is live with no named owner behind it. §3 also notes /publishers promises prospects a technical specification covering where data rests — that must agree with the publisher-side legal docs Paul is generating via Clarence Legal.

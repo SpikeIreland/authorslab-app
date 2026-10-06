@@ -332,7 +332,7 @@ export default function PublishersPage() {
           <p className="text-muted text-[16px] leading-relaxed mb-8 max-w-xl mx-auto">
             The fastest way to judge us is the product&rsquo;s own: send one manuscript
             through the read and compare the result with your editors&rsquo; view of the
-            same book. Write to us — a person answers, same working day — and we will
+            same book. Write to us — a person reads every enquiry — and we will
             also send the technical specification: what the system does, how it is
             built, and what it does not yet have. A specification that contains only
             good news is a brochure.
