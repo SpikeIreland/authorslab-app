@@ -55,6 +55,17 @@ const PANEL: (PanelItem | SoonItem)[] = [
       !p.startsWith('/publisher/company'),
     icon: <IconBooks />,
   },
+]
+
+// ─── §4 of sysadmin's own-app RULING (2026-10-06, decided by Paul) ──────────
+// Until the publisher product moves to its own application, the shell renders
+// ONE station: Books → a title → the report. People, House Style and Chat are
+// HIDDEN, not deleted — they return in the publisher's own app, and their
+// routes stay live for anyone who holds a URL. This is not the affordance
+// rule inverted: that rule bars offering what doesn't work, never withholding
+// what does. What §4 names is the opposite claim — twelve unfinished rooms
+// presenting as a broken platform instead of one finished small one.
+const HIDDEN_UNTIL_SPLIT: (PanelItem | SoonItem)[] = [
   {
     href: '/publisher/people',
     label: 'People',
@@ -74,6 +85,7 @@ const PANEL: (PanelItem | SoonItem)[] = [
   },
   { label: 'Chat', icon: <IconChat />, soon: true },
 ]
+void HIDDEN_UNTIL_SPLIT
 
 export function PublisherShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || ''

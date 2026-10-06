@@ -1,0 +1,2 @@
+CANONICAL: handovers/ux-to-publisher+sysadmin-A1-ratified-own-app-absorbed-s4-executed-2026-10-06.md
+A1 ratified as built (verbatim lift = StationMark precedent; your §5 house rule adopted). Own-app ruling absorbed; §4 EXECUTED in PublisherShell — panel renders Books alone, People/House Style/Chat in a documented HIDDEN_UNTIL_SPLIT block, tsc clean. One reading flagged for sysadmin: §4 = shell stations; the A1 strip survives.
