@@ -27,7 +27,11 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  await supabase.auth.getUser()
+  // Returned, not discarded. The call was already being made purely for its
+  // cookie side-effect; the caller needs the answer to decide whether a
+  // publisher route may render, and asking twice would be two round trips to
+  // answer one question.
+  const { data: { user } } = await supabase.auth.getUser()
 
-  return supabaseResponse
+  return { response: supabaseResponse, user }
 }

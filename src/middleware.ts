@@ -14,7 +14,25 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  const response = await updateSession(request)
+  const { response, user } = await updateSession(request)
+
+  // THE PUBLISHER'S DOOR.
+  //
+  // There was no auth gate on /publisher at all: signed out, it rendered the
+  // shell around an empty list rather than asking who you were. And the
+  // home-screen icon needs somewhere in-scope to land, because a PWA scoped to
+  // /publisher that redirects to /login leaves its own scope on first use and
+  // opens in a browser tab instead of standalone.
+  //
+  // /publisher/login is deliberately INSIDE the scope. One door per product,
+  // and this one never guesses which product you meant.
+  if (
+    pathname.startsWith('/publisher') &&
+    !pathname.startsWith('/publisher/login') &&
+    !user
+  ) {
+    return NextResponse.redirect(new URL('/publisher/login', request.url))
+  }
 
   // MKT-004 Ask 3: first-touch UTM capture.
   // If the URL carries utm_* params AND the al_utm cookie doesn't already
