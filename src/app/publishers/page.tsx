@@ -108,7 +108,7 @@ export default function PublishersPage() {
           <span className="flex items-baseline gap-6">
             <span className="kicker text-sage-deep hidden sm:inline">For publishing houses</span>
             <Link
-              href="/login"
+              href="/publisher/login"
               className="text-[13px] font-semibold text-ink hover:text-sage-deep whitespace-nowrap"
             >
               Sign in
