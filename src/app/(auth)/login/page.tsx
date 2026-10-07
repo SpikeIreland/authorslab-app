@@ -57,32 +57,31 @@ function LoginContent() {
       // Was: legacy /onboarding?userId=… flow for first-time authors, which
       // is the pre-pivot uploader and inconsistent with the new architecture
       // where all new-project starts flow from the dashboard.
-      // Step 4: ask the server where this person belongs.
+      // Step 4: THE AUTHOR'S DOOR GOES TO THE AUTHOR'S PRODUCT. Always.
       //
-      // Was an unconditional push to /lobby. A publisher seat now lands on
-      // /publisher instead (sysadmin's geometry ruling §7, ux's Q3 spec). The
-      // conditional itself is NOT here -- it lives once, in
-      // postLoginDestination(), because a membership question has to be
-      // answered server-side where RLS can check the answer, and because R6's
-      // one-declaration-site rule applies to a branch as much as to a route.
+      // This block used to ask /api/auth/destination which product the person
+      // "belonged to", and send a publisher seat to /publisher instead. It was
+      // reasoned carefully and it was wrong, and two people hit it:
       //
-      // Falls back to /lobby if the lookup fails for any reason: a routing
-      // default should be the one that makes no claim about the person. An
-      // author landed on /publisher is told they hold no seat before they have
-      // done anything; a publisher landed on /lobby simply takes the door.
-      let destination = '/lobby'
-      try {
-        const res = await fetch('/api/auth/destination', { cache: 'no-store' })
-        if (res.ok) {
-          const body = await res.json()
-          if (typeof body?.destination === 'string') destination = body.destination
-        }
-      } catch {
-        // Swallowed on purpose -- see above. Sign-in has already succeeded and
-        // must not fail on a routing hint.
-      }
-      console.log('✅ Redirecting to', destination)
-      router.push(destination)
+      //   · Carl signed in here to work on his own book and landed in the
+      //     publisher platform, because he also holds an editor seat.
+      //   · Paul signed in here and landed on the publisher home page, because
+      //     he had been given a seat that morning.
+      //
+      // The defect is not the resolver, which answers its question correctly.
+      // It is the question. ONE PERSON CAN BE BOTH AN AUTHOR AND AN EDITOR,
+      // so "which product does this person belong to" has no answer — and a
+      // door that guesses will be wrong for exactly the people who use both.
+      //
+      //   The door someone CHOSE is the only reliable statement of intent
+      //   they have made. Overriding it with an inference about who they are
+      //   is how the two products came to feel like one.
+      //
+      // So: /login is the author's door and lands in The Library.
+      // /publisher/login is the publisher's door and lands on the house list.
+      // Neither asks about the other. This is the two-products ruling in the
+      // one place the architecture can actually express it today.
+      router.push('/lobby')
 
     } catch (error: unknown) {
       console.error('Login error:', error)
