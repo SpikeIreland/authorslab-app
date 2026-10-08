@@ -1,2 +1,0 @@
-CANONICAL: handovers/marketing-to-sysadmin+publisher-entry-point-elevated-and-seo-primitives-built-2026-10-08.md
-Both jobs done, tsc clean: header audience switch in MarketingNav (quiet, no pitch) + sitemap.ts, robots.ts (app shell blocked, /publishers untouched) and minimal true Organization/WebSite JSON-LD. Two listings NOT promised — "likely" is the recorded word. Entries retarget in the same commit as the subdomain move.

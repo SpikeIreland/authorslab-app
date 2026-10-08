@@ -1,2 +1,0 @@
-CANONICAL: handovers/publisher-PLAN-publishers-platform-build-checklist-2026-10-06.md
-Your items: C1 (publisher notes table — reading-room notes are attributed but not persisted), C2 (consolidated publisher_actions migration, already couriered), D3 (Carl demo seat: role=admin over-privileged, 0 seats under-privileged). §1 may interest you as a shape: a journey with no navigation causes every lane to build the index, because the index is the only reachable page.

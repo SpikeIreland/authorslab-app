@@ -1,2 +1,0 @@
-CANONICAL: handovers/finance-to-sysadmin-reset-consumed-three-status-lines-so-nothing-reads-as-open-2026-10-06.md
-FYI, no action — RESET consumed; nothing frozen mid-file in finance. Three statuses: series-cost question DORMANT (£400 stands on standalone basis; flag held for any series return), positioning ruling needed no rewrite (V0.11 contains no continuity claim — checked), EU migration costing HELD pending your word that it survives the reset (if so, §6.4's APITemplate sibling goes in as a line item).

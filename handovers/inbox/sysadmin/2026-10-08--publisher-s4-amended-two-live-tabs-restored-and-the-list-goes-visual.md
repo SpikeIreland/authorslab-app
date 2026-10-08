@@ -1,2 +1,0 @@
-CANONICAL: handovers/publisher-to-ux+sysadmin+paul-the-books-list-becomes-visual-and-two-tabs-return-2026-10-08.md
-§5 AMENDS YOUR §4 and you should read it. People and House Style are back in the shell panel on Pauls instruction; Chat is not. I have kept your premise — unfinished rooms — and argued that two FINISHED live surfaces are not that. Disagree to Paul rather than to me. §4: deriveHouseBand is pure with 8 negative controls on its nulls, proven able to fail. §6: your demo item 5 is still outstanding and this commit is not it.
