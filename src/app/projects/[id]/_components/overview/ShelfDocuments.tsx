@@ -30,16 +30,9 @@ export function ShelfDocuments({ docs }: ShelfDocumentsProps) {
     <div className="space-y-2">
       <p className="kicker">On your shelf</p>
       <ul className="space-y-1">
-        {docs.map(doc => (
-          <li key={doc.id}>
-            <a
-              href={doc.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2.5 py-1.5 px-1 -mx-1 rounded transition-colors group"
-              onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-paper-warm)' }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
-            >
+        {docs.map(doc => {
+          const body = (
+            <>
               <DocSpine kind={doc.kind} />
               <div className="flex-1 min-w-0">
                 <p className="text-[13px] leading-tight truncate" style={{ color: 'var(--color-ink)' }}>
@@ -51,15 +44,41 @@ export function ShelfDocuments({ docs }: ShelfDocumentsProps) {
                   </p>
                 )}
               </div>
-              <span
-                className="text-[11px] transition-opacity opacity-0 group-hover:opacity-100"
-                style={{ color: 'var(--color-sage-deep)' }}
-              >
-                Open →
-              </span>
-            </a>
-          </li>
-        ))}
+              {doc.url && (
+                <span
+                  className="text-[11px] transition-opacity opacity-0 group-hover:opacity-100"
+                  style={{ color: 'var(--color-sage-deep)' }}
+                >
+                  Open →
+                </span>
+              )}
+            </>
+          )
+          return (
+            <li key={doc.id}>
+              {doc.url ? (
+                <a
+                  href={doc.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2.5 py-1.5 px-1 -mx-1 rounded transition-colors group"
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-paper-warm)' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                >
+                  {body}
+                </a>
+              ) : (
+                /* No url — the document is real but nothing serves it yet
+                   (A4 §4: the versions route has never existed). The object
+                   sits on the shelf without an "Open" affordance, because an
+                   affordance is a claim and this one 404'd for every draft. */
+                <div className="flex items-center gap-2.5 py-1.5 px-1 -mx-1">
+                  {body}
+                </div>
+              )}
+            </li>
+          )
+        })}
       </ul>
     </div>
   )

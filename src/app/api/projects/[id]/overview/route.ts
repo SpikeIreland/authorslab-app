@@ -10,8 +10,10 @@ export interface OverviewShelfDoc {
   label: string
   /** Kind hint for icon/spine colour. */
   kind: 'assessment' | 'line_notes' | 'copy_notes' | 'manuscript' | 'draft' | 'cover'
-  /** Absolute or signed URL to open. */
-  url: string
+  /** Absolute or signed URL to open. ABSENT when nothing serves the
+   *  document yet — the shelf then shows the object without an "Open"
+   *  affordance (an affordance is a claim; publisher's A4 §4 finding). */
+  url?: string
   /** Optional secondary text ("PDF · 2 pages", "12 May 2026"). */
   meta?: string
 }
@@ -255,7 +257,10 @@ export async function GET(
       id: `version-${v.id}`,
       label: `${phaseLabel} draft${editor ? ` · ${editor}` : ''}`,
       kind: 'draft',
-      url: `/api/projects/${id}/versions/${v.id}`,
+      // NO url. The link this used to build — /api/projects/[id]/versions/[versionId]
+      // — has never existed, so every draft row 404'd on click (publisher's A4 §4
+      // finding, 2026-10-06, MEASURED). The snapshot row is real and stays on the
+      // shelf; the url returns here the day a route actually serves a version.
       meta: v.word_count ? `${v.word_count.toLocaleString()} words` : undefined,
     })
   }
