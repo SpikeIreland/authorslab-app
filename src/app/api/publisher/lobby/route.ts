@@ -15,6 +15,7 @@ import {
   type Register,
   type Risk,
   type RiskBasis,
+  deriveHouseBand,
 } from './_derive'
 
 // GET /api/publisher/lobby
@@ -198,6 +199,41 @@ export interface LobbyTitle {
   hasCoverAsset: boolean
   /** The seven stations, for the dashboard. */
   stations: StationCell[]
+
+  /* ── THE FOUR VISUAL FACTS (added 2026-10-08) ──────────────────────────────
+   * Paul: "I like the idea of visual displays of progress and reporting. The
+   * publishing industry are embedded with creative people and pages that look
+   * 'flat' and 'content-only' rendered doesn't seem fitting."
+   *
+   * Each is a COLUMN THAT ALREADY EXISTS, surfaced rather than computed. None
+   * of them is an estimate, and every one is nullable so that absence reaches
+   * the page as absence — a progress bar fed a guessed denominator is the
+   * fallback rule in a prettier form.
+   */
+
+  /** `manuscripts.total_chapters`. Null when the book has not been chaptered. */
+  totalChapters: number | null
+  /**
+   * Chapters through the ACTIVE pass, from `editing_phases`. Null when no pass
+   * is running, or when the columns are empty on the row that is running —
+   * which is NOT the same as zero chapters through, and must not render as a
+   * bar at 0%.
+   */
+  passProgress: { approved: number; analyzed: number; of: number | null } | null
+  /** Editorial reports available to the house: phases with a report_pdf_url. */
+  reportCount: number
+  /**
+   * Cover concepts on the title. Counted from the existence rows the route
+   * already fetches, so this costs nothing extra and signs nothing.
+   *
+   * NOTE for the `hasCoverAsset` header above, which recorded "MEASURED
+   * 2026-10-02: 0 of the 9 titles on any publisher list have a cover asset,
+   * so that third state is unreachable today." IT IS REACHABLE NOW —
+   * The Veil and the Flame has four concepts (measured 2026-10-08). The state
+   * was settled before the first cover existed, which is what that note was
+   * for.
+   */
+  coverConceptCount: number
 }
 
 /**
@@ -337,7 +373,7 @@ export async function GET() {
 
     const { data: manuscripts } = await supabaseAdmin
       .from('manuscripts')
-      .select('id, title, imprint_id, is_demo, author_profiles!inner (first_name, last_name)')
+      .select('id, title, imprint_id, is_demo, total_chapters, author_profiles!inner (first_name, last_name)')
       .in('imprint_id', imprintIds)
 
     const rows = manuscripts ?? []
@@ -381,9 +417,13 @@ export async function GET() {
     // `completed_by_label` rides with `completion_source`: both arrived in the
     // same migration, so one probe answers for both. Probing them separately
     // would be two round trips certifying the same fact.
+    // `chapters_analyzed`, `chapters_approved` and `report_pdf_url` ride on
+    // BOTH branches: they predate the register-split migration, so gating them
+    // behind the probe would make the progress bars disappear for a reason
+    // that has nothing to do with them.
     const phaseColumns = registerSplitAvailable
-      ? 'manuscript_id, phase_number, phase_status, editor_name, started_at, completed_at, completion_source, completed_by_label'
-      : 'manuscript_id, phase_number, phase_status, editor_name, started_at, completed_at'
+      ? 'manuscript_id, phase_number, phase_status, editor_name, started_at, completed_at, chapters_analyzed, chapters_approved, report_pdf_url, completion_source, completed_by_label'
+      : 'manuscript_id, phase_number, phase_status, editor_name, started_at, completed_at, chapters_analyzed, chapters_approved, report_pdf_url'
 
     const { data: phases } = await supabaseAdmin
       .from('editing_phases')
@@ -435,6 +475,13 @@ export async function GET() {
       ((coverAssetRows ?? []) as { manuscript_id: string }[]).map((r) => r.manuscript_id)
     )
 
+    // Concept COUNT, from the rows already in hand. Still no storage_path and
+    // still no signing — counting what exists is not the same as showing it.
+    const conceptCount = new Map<string, number>()
+    for (const r of (coverAssetRows ?? []) as { manuscript_id: string }[]) {
+      conceptCount.set(r.manuscript_id, (conceptCount.get(r.manuscript_id) ?? 0) + 1)
+    }
+
     const { data: targetDates } = await supabaseAdmin
       .from('title_target_dates')
       .select('manuscript_id, kind, target_date, seq')
@@ -462,6 +509,9 @@ export async function GET() {
       completed_at: string | null
       completion_source?: string | null
       completed_by_label?: string | null
+      chapters_analyzed?: number | null
+      chapters_approved?: number | null
+      report_pdf_url?: string | null
     }
 
     const phasesByManuscript = new Map<string, PhaseRow[]>()
@@ -613,6 +663,28 @@ export async function GET() {
         publicationDate,
         risk,
         riskBasis,
+        totalChapters:
+          typeof (r as unknown as { total_chapters?: number | null }).total_chapters === 'number' &&
+          (r as unknown as { total_chapters: number }).total_chapters > 0
+            ? (r as unknown as { total_chapters: number }).total_chapters
+            : null,
+        passProgress: (() => {
+          if (!active) return null
+          const approved = active.chapters_approved
+          const analyzed = active.chapters_analyzed
+          // Both columns empty on the running row means the pass has reported
+          // nothing yet. That is not "zero chapters through" and must not
+          // render as a bar sitting at 0% — it renders as no bar.
+          if (approved === null && analyzed === null) return null
+          const of =
+            typeof (r as unknown as { total_chapters?: number | null }).total_chapters === 'number' &&
+            (r as unknown as { total_chapters: number }).total_chapters > 0
+              ? (r as unknown as { total_chapters: number }).total_chapters
+              : null
+          return { approved: approved ?? 0, analyzed: analyzed ?? 0, of }
+        })(),
+        reportCount: ps.filter((x) => x.report_pdf_url).length,
+        coverConceptCount: conceptCount.get(r.id) ?? 0,
       }
     })
 
@@ -636,6 +708,8 @@ export async function GET() {
        *  the page can say it rather than imply on-track. */
       datesAvailable: titles.some((t) => t.handoffDate !== null),
       ...sampleDisclosure(titles),
+      /** The figure band. Pure, proven in scripts/verify-lobby-derive.ts. */
+      band: deriveHouseBand(titles),
     })
   } catch (err) {
     console.error('[publisher/lobby] failed:', err)

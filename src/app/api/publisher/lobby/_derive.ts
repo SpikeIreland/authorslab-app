@@ -187,3 +187,91 @@ export function sampleDisclosure(titles: readonly SampleFact[]): {
       `${sampleCount === 1 ? 'sample' : 'samples'}. Every sample is marked on its own row.`,
   }
 }
+
+/* ───────────────────────────────────────────────────────────────────────────
+ * THE HOUSE BAND
+ *
+ * Paul, 2026-10-08: the Books list "feels too thin", and "the publishing
+ * industry are embedded with creative people and pages that look 'flat' and
+ * 'content-only' rendered doesn't seem fitting."
+ *
+ * A band of aggregate figures across the top of the list. It is pure so that
+ * it can be proven, because the failure mode of an aggregate is silent: a
+ * denominator that quietly defaults is still a number on a page, and nobody
+ * reading the page can tell.
+ *
+ * ─── Every figure is `number | null`, and null means NOT KNOWABLE ──────────
+ *
+ * Not zero. "0 chapters read" across a house whose books have never been
+ * chaptered is a claim about the house; "we cannot say" is a claim about us,
+ * and only the second one is true. The renderer omits a null figure rather
+ * than printing a dash, because a dash in a figure band reads as zero.
+ *
+ * ─── And nothing here is a verdict ─────────────────────────────────────────
+ *
+ * No "on track", no "needs attention", no cover "awaiting approval". Approval
+ * state is per-asset and per-version and lives behind the evidenced read in
+ * `_approval.ts`; counting concepts is a fact, calling them undecided is not.
+ * R5: a surface reports state, not intent.
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+export interface BandFact {
+  totalChapters: number | null
+  reportCount: number
+  coverConceptCount: number
+  stations: readonly { state: 'complete' | 'in-progress' | 'not-started' }[]
+}
+
+export interface HouseBand {
+  /** Always knowable: it is the length of the list. */
+  titles: number
+  /** Null when NO title on the list carries a chapter count. */
+  chapters: number | null
+  /** How many titles contributed to `chapters`, so the page can qualify it. */
+  chaptersFromTitles: number
+  reports: number
+  coverConcepts: number
+  /** Station completions over station cells. Null on an empty list. */
+  stationsComplete: number | null
+  stationsTotal: number | null
+  /** Titles with a pass currently running. */
+  running: number
+}
+
+export function deriveHouseBand(titles: readonly BandFact[]): HouseBand {
+  if (titles.length === 0) {
+    // An empty list is not a house with zero chapters — it is a house we have
+    // nothing to say about. Everything divisible is null.
+    return {
+      titles: 0,
+      chapters: null,
+      chaptersFromTitles: 0,
+      reports: 0,
+      coverConcepts: 0,
+      stationsComplete: null,
+      stationsTotal: null,
+      running: 0,
+    }
+  }
+
+  const withChapters = titles.filter(
+    (t) => typeof t.totalChapters === 'number' && t.totalChapters > 0
+  )
+
+  return {
+    titles: titles.length,
+    chapters:
+      withChapters.length === 0
+        ? null
+        : withChapters.reduce((n, t) => n + (t.totalChapters as number), 0),
+    chaptersFromTitles: withChapters.length,
+    reports: titles.reduce((n, t) => n + t.reportCount, 0),
+    coverConcepts: titles.reduce((n, t) => n + t.coverConceptCount, 0),
+    stationsComplete: titles.reduce(
+      (n, t) => n + t.stations.filter((s) => s.state === 'complete').length,
+      0
+    ),
+    stationsTotal: titles.reduce((n, t) => n + t.stations.length, 0),
+    running: titles.filter((t) => t.stations.some((s) => s.state === 'in-progress')).length,
+  }
+}

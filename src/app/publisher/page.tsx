@@ -49,6 +49,10 @@ import { PublisherNav } from './_components/PublisherNav'
 import { PublisherBookCover } from '@/components/publisher-chrome/PublisherBookCover'
 import { PublisherJourneyStrip } from '@/components/publisher-chrome/PublisherJourneyStrip'
 import type { StationCell } from './_components/StationMark'
+import { HouseBand } from './_components/HouseBand'
+import { ChapterDensity } from './_components/ChapterDensity'
+import { PassProgress, StationTally } from './_components/PassProgress'
+import { deriveHouseBand, type HouseBand as Band } from '@/app/api/publisher/lobby/_derive'
 
 
 type Register = 'list' | 'line'
@@ -72,6 +76,11 @@ interface LobbyTitle {
   /** The seven stations in journey order, as the route builds them. The strip
    *  and the wall chart read the same cells from the same component. */
   stations: StationCell[]
+  /** The four visual facts — see the route's LobbyTitle header. */
+  totalChapters?: number | null
+  passProgress?: { approved: number; analyzed: number; of: number | null } | null
+  reportCount?: number
+  coverConceptCount?: number
   register: Register | null
   currentStationName: string | null
   currentStationOperator: string | null
@@ -107,8 +116,29 @@ interface LobbyPayload {
   sampleCount?: number
   realCount?: number
   datesAvailable?: boolean
+  /** The figure band, computed by deriveHouseBand and proven in
+   *  scripts/verify-lobby-derive.ts. Optional so an older cached response
+   *  renders the list without a band rather than crashing. */
+  band?: Band
   available?: false
   reason?: string
+}
+
+/**
+ * The served `band` describes the WHOLE list. When an imprint filter is on,
+ * the band must describe what is actually on screen, so it is recomputed from
+ * the same pure function the route uses — one implementation, two callers,
+ * rather than a second sum written here that could drift from the proven one.
+ */
+function deriveBandFor(titles: LobbyTitle[]): Band {
+  return deriveHouseBand(
+    titles.map((t) => ({
+      totalChapters: t.totalChapters ?? null,
+      reportCount: t.reportCount ?? 0,
+      coverConceptCount: t.coverConceptCount ?? 0,
+      stations: t.stations,
+    }))
+  )
 }
 
 // ─── 1. Risk presentation ─────────────────────────────────────────────────────
@@ -192,14 +222,20 @@ function TitleRow({
             stand-in, because on a publisher's list an object that looks like
             a cover claims the design station has run.
 
-            MEASURED 2026-10-02: 0 of the 9 titles on any publisher list have
-            a cover asset or a selection, so this ships as nine empty slots
-            and the first real cover is what will prove it. Said plainly here
-            rather than reported as "covers are on the list now". */}
+            MEASURED 2026-10-02: 0 of the 9 titles on any publisher list had
+            a cover asset or a selection, so it shipped as nine empty slots.
+
+            RE-MEASURED 2026-10-08: the house list is two real titles, and The
+            Veil and the Flame carries FOUR cover concepts. The first real
+            cover exists, so the slot is no longer hypothetical — which is why
+            the size went up. Paul, 2026-10-08: the industry "are embedded with
+            creative people and pages that look 'flat' and 'content-only'
+            rendered doesn't seem fitting." A book list that leads with text
+            when it has artwork to show is making that mistake on purpose. */}
         <PublisherBookCover
           coverUrl={t.coverUrl}
           title={t.title}
-          size="sm"
+          size="md"
           /* The third state, shipped by `ux` the same afternoon it was
              raised: a cover that EXISTS but cannot be shown on a list reads
              "Cover chosen", never "No cover yet". The payload carries
@@ -269,6 +305,43 @@ function TitleRow({
             ) : (
               <>No station open</>
             )}
+          </div>
+
+          {/* ─── THE VISUAL LAYER (2026-10-08) ───────────────────────────────
+              Paul asked for "visual displays of progress and reporting" on a
+              surface that read as text rows.
+
+              Order is deliberate: the meter for the pass that is RUNNING, then
+              the density of the book as a whole, then the tally and what is
+              readable. Each renders NOTHING when its column is empty, so a
+              title with no recorded progress shows a shorter row rather than a
+              row of zeroed bars. An empty bar is a precise-looking claim built
+              on an absent value, and this list has been the place that defect
+              appeared before. */}
+          <div className="mt-3 space-y-2.5">
+            <PassProgress
+              stationName={t.currentStationName}
+              operator={t.currentStationOperator}
+              progress={t.passProgress ?? null}
+            />
+            <ChapterDensity
+              total={t.totalChapters ?? null}
+              approved={t.passProgress?.approved ?? 0}
+              analyzed={t.passProgress?.analyzed ?? 0}
+            />
+            <div className="flex items-center gap-x-4 gap-y-1 flex-wrap">
+              <StationTally stations={t.stations} />
+              {(t.reportCount ?? 0) > 0 && (
+                <span className="text-[11.5px] tabular-nums" style={{ color: 'var(--color-muted)' }}>
+                  {t.reportCount} {t.reportCount === 1 ? 'report' : 'reports'} ready
+                </span>
+              )}
+              {(t.coverConceptCount ?? 0) > 0 && (
+                <span className="text-[11.5px] tabular-nums" style={{ color: 'var(--color-muted)' }}>
+                  {t.coverConceptCount} cover {t.coverConceptCount === 1 ? 'concept' : 'concepts'}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -760,6 +833,21 @@ export default function PublisherLobbyPage() {
               a whole backlog arrives and the answer is "everything" — so a
               title on the LIST is observed and never nagged, and only a title
               on the LINE is escalated. */}
+          {/* ─── THE HOUSE BAND ──────────────────────────────────────────────
+              Above both register sections, because it is about the house
+              rather than about either half of the list. It renders nothing on
+              an empty list, and drops any figure the estate cannot answer.
+
+              It reads the FILTERED set, not the whole payload: when a reader
+              has picked an imprint, a band describing the whole organisation
+              would silently disagree with the list under it. */}
+          {!loading && !error && !refusal && filtered.length > 0 && (
+            <HouseBand
+              band={deriveBandFor(filtered)}
+              organisationName={imprintFilter === 'all' ? payload?.organisation?.name ?? null : null}
+            />
+          )}
+
           {!loading && !error && !refusal && filtered.length > 0 && !splitAvailable && (
             <>
               <div className="space-y-2.5">

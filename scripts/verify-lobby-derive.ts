@@ -24,6 +24,8 @@ import {
   sampleDisclosure,
   STALL_DAYS,
   type PhaseFact,
+  deriveHouseBand,
+  type BandFact,
 } from '../src/app/api/publisher/lobby/_derive'
 
 let failures = 0
@@ -346,9 +348,71 @@ check(
   null
 )
 
+/* ─── THE HOUSE BAND ────────────────────────────────────────────────────────
+ * The failure mode of an aggregate is SILENT: a defaulted denominator is
+ * still a number on a page and no reader can tell. So every null case gets a
+ * control, and the nulls are the point — not the sums.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+const S = (n: number, state: 'complete' | 'in-progress' | 'not-started') =>
+  Array.from({ length: n }, () => ({ state }))
+
+const bandTitle = (over: Partial<BandFact> = {}): BandFact => ({
+  totalChapters: 10,
+  reportCount: 0,
+  coverConceptCount: 0,
+  stations: S(7, 'not-started'),
+  ...over,
+})
+
+// The measured house, 2026-10-08: Veil 37 chapters / 3 reports / 4 concepts,
+// Signal 69 chapters / 2 reports / 0 concepts.
+const measured = deriveHouseBand([
+  bandTitle({ totalChapters: 37, reportCount: 3, coverConceptCount: 4, stations: [...S(3, 'complete'), ...S(4, 'not-started')] }),
+  bandTitle({ totalChapters: 69, reportCount: 2, coverConceptCount: 0, stations: [...S(1, 'complete'), ...S(1, 'in-progress'), ...S(5, 'not-started')] }),
+])
+check('band: titles', measured.titles, 2)
+check('band: chapters sum', measured.chapters, 106)
+check('band: reports sum', measured.reports, 5)
+check('band: cover concepts sum', measured.coverConcepts, 4)
+check('band: stations complete', measured.stationsComplete, 4)
+check('band: stations total', measured.stationsTotal, 14)
+check('band: titles with a pass running', measured.running, 1)
+
+// NEGATIVE CONTROL: an empty list is not a house with zero chapters.
+const empty = deriveHouseBand([])
+check('band control: empty list -> chapters NULL, not 0', empty.chapters, null)
+check('band control: empty list -> stationsComplete NULL', empty.stationsComplete, null)
+check('band control: empty list -> stationsTotal NULL', empty.stationsTotal, null)
+check('band control: empty list -> titles 0 (this one IS knowable)', empty.titles, 0)
+
+// NEGATIVE CONTROL: nobody chaptered -> null, never 0.
+check(
+  'band control: no title carries a chapter count -> NULL',
+  deriveHouseBand([bandTitle({ totalChapters: null }), bandTitle({ totalChapters: null })]).chapters,
+  null
+)
+check(
+  'band control: a zero chapter count is not a chapter count',
+  deriveHouseBand([bandTitle({ totalChapters: 0 })]).chapters,
+  null
+)
+
+// NEGATIVE CONTROL: a partial count must be declared partial, not averaged up.
+const partial = deriveHouseBand([bandTitle({ totalChapters: 40 }), bandTitle({ totalChapters: null })])
+check('band control: partial -> sums only what it has', partial.chapters, 40)
+check('band control: partial -> says how many titles it came from', partial.chaptersFromTitles, 1)
+
+// NEGATIVE CONTROL: in-progress is not complete.
+check(
+  'band control: an in-progress station is not counted complete',
+  deriveHouseBand([bandTitle({ stations: S(7, 'in-progress') })]).stationsComplete,
+  0
+)
+
 console.log(
   `\n${checks - failures}/${checks} passed, ${failures} failed` +
-    (failures === 0 ? ' — including 19 negative controls\n' : '\n')
+    (failures === 0 ? ' — including 26 negative controls\n' : '\n')
 )
 
 process.exit(failures === 0 ? 0 : 1)
