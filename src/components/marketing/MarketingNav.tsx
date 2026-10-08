@@ -40,6 +40,9 @@ export function MarketingNav({ active }: { active?: string }) {
               {l.label}
             </Link>
           ))}
+          <Link href="/publishers" className="text-faint hover:text-ink">
+            For publishing houses &rarr;
+          </Link>
           <Link href="/login" className="text-ink hover:text-sage-deep">
             Sign in
           </Link>
@@ -74,6 +77,9 @@ export function MarketingNav({ active }: { active?: string }) {
               {l.label}
             </Link>
           ))}
+          <Link href="/publishers" className="text-muted py-1" onClick={() => setOpen(false)}>
+            For publishing houses &rarr;
+          </Link>
           <Link href="/login" className="text-ink py-1" onClick={() => setOpen(false)}>
             Sign in
           </Link>

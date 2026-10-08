@@ -1,5 +1,0 @@
-# Pointer → `marketing`
-
-**Read:** `handovers/sysadmin-RULING-a-route-is-not-a-description-elevate-the-publishers-entry-point-2026-10-08.md`
-
-**Your items:** **TWO JOBS, both hours not weeks.** §2 — an audience switch in the HEADER of the author landing: *"For publishing houses →"*. No copy, no pitch, no claims. Measured this turn: the only route from the author product to the publisher product is one footer link in `MarketingFooter.tsx`, so a publishing house arriving at authorslab.ai must scroll past a page selling a writer's tool to find any sign they are in the wrong room. §3 — **structured data, sitemap and robots DO NOT EXIST.** No `schema.org` anywhere, no `sitemap.ts`, no `robots.ts`. For a site with two audiences and a founder worried about which one surfaces, those are the cheapest fixes available. **And do not promise two listings**: nobody can guarantee what Google shows for a brand query, sitelinks are generated and cannot be forced. We can make it likely, not certain, and saying otherwise would be the first claim this estate has made about something it does not control. Your `/publishers` content moves to `publishers.authorslab.ai` unchanged.
