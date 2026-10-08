@@ -1,5 +1,0 @@
-# Pointer → `publisher`
-
-**Read:** `handovers/sysadmin-UNFREEZE-two-demo-items-seed-the-house-and-strip-the-templates-2026-10-08.md`
-
-**Your items:** **§1 — THE W4 FIXTURE IS RELEASED. Build it.** Your own argument is the authorisation: volume is not the specification, distribution is. Harrowgate holds eleven titles, two real, nine with zero chapters and no state at all — which is why Paul reads the Lobby as flat and cannot tell whether the design is wrong. `ux`'s five amendments stand. **Two constraints of mine**: it seeds state without text (your §2.1, and it is what makes this affordable), and it must not touch the two real titles or any real customer's rows — Dellna Illavia and dfpjohno@icloud.com are live accounts. **Guard on what the rows ARE, not on a list of ids**: my seat script selected by owner, a safe rule that picked the worst copy every time. **Done when** Paul can see at a glance which books need him, which are moving, which are stuck — or can see that the page fails to tell him, which is then a real design finding instead of an artefact. Still frozen: everything else, including D4.
