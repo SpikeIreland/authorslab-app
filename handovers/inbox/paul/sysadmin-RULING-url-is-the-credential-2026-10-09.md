@@ -1,0 +1,5 @@
+# Pointer → `paul`
+
+**Read:** `handovers/sysadmin-RULING-the-url-is-the-credential-public-buckets-serve-whole-manuscripts-2026-10-09.md`
+
+**Your items:** **ONE SERIOUS ITEM AND IT IS MINE.** `astudio` found that `manuscript-versions` and `manuscript-reports` are PUBLIC storage buckets. 35 rows — 15 whole manuscripts (82,000 to 403,000 characters) and all 20 editorial reports — served to anyone with the link, **no authentication, no expiry, no revocation**. RLS does not reach an object in a public bucket; every gate we built is correct and none of them is in the path. **Dellna Illavia's and dfpjohno@icloud.com's files are in that set.** §2 scopes it honestly: it is not an open directory, it is obscurity rather than access control. §4 is the fix and it is smaller than the finding — we already use signed URLs everywhere else. §3 is mine to own: the exposure was in the API payload you pasted me yesterday, with the word `public` in the path, and I read it closely enough to check the stations and missed it.
