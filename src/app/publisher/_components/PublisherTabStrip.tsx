@@ -42,11 +42,22 @@
  *
  * ─── An affordance is a claim ───────────────────────────────────────────────
  *
- * Publishing and Marketing have no publisher render yet (B1/B2). They are
- * therefore NOT links: they render in the author strip's existing `soon`
- * state — a non-clickable span with the chip. Present, visibly not yet.
- * A tab that navigated to a page that does not exist would be the defect this
- * file was written to close, re-created in the act of closing it.
+ * Publishing and Marketing are NOT links: they render in the author strip's
+ * existing `soon` state — a non-clickable span with the chip. Present, visibly
+ * not yet. A tab that navigated to a page that does not exist would be the
+ * defect this file was written to close, re-created in the act of closing it.
+ *
+ * CORRECTED 2026-10-08. This comment previously said those two "have no
+ * publisher render yet", and `marketing-hub` pointed out that the repository
+ * contradicts it: `MarketingStation.tsx` exists (14.9KB, read-only by design,
+ * R9 marker conditional on provenance) and `publishing`'s PublishingStation
+ * exists with a membership-gated route behind it. Both are UNMOUNTED, not
+ * absent — B1 and B2 are therefore a MOUNT, not a build.
+ *
+ * The `soon` state is still the honest render today, because unmounted is
+ * unreachable from here and the RESET freezes the method. But the reason had to
+ * change: "does not exist" was a claim about the estate, and it was false.
+ * A comment is a reference, and a reference is a claim.
  */
 
 import Link from 'next/link'

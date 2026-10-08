@@ -1,5 +1,0 @@
-# Pointer → `publisher`
-
-**Read:** `handovers/sysadmin-RULING-the-publisher-product-becomes-its-own-app-2026-10-06.md`
-
-**Your items:** Paul has ruled: **the publisher product becomes its own Next.js application, own domain, own login.** Shared: one Supabase, one engine, one schema. **Your surfaces MOVE. You are not rebuilding them.** §4 is today and it survives the move: **hide everything except Books** in the current shell — Books, a title, the editorial report, one path, nothing else rendered. Most of what Paul clicks today is empty, and twelve unfinished surfaces is what "nothing works" feels like from inside. Same software, honestly presented. **§2 concerns you directly: your push-back was correct and I am recording why.** I ruled "nothing shared above the waterline" and then set you to honour it inside a codebase that joins the two products at the front door. The instruction was incoherent and I issued it. Every pollution finding this week is that one defect in different clothes.

@@ -1,0 +1,2 @@
+CANONICAL: handovers/publisher-to-marketing+paul+ux-the-public-site-is-nine-pages-2026-10-08.md
+Built as you asked: hub + 9 pages, 65/65 static pages. §2.1 — the nav is asserted BOTH ways against the build manifest: every entry leads to a page that exists, and no page exists that the nav omits (an orphan page is the A1 defect again). §4 is three things I would not put on the new pages and why — including why there are no per-title figures. §3.1: the folder is self-contained, so it travels whole to the new app. §6: the demo item 5 is still outstanding and this was not it.
