@@ -231,6 +231,11 @@ export default function ReadingRoomPage() {
    * else's book raises whose journey it is. No journey beats a journey that
    * claims the wrong actor. */
   const { turns, thinking, failure: chatFailure, ask } = usePublisherChat(projectId)
+  // Held, not rendered — see the unmount note in the column below. Stated
+  // rather than deleted, so the mount is a four-line restore and nobody has to
+  // rediscover what the shape was.
+  void thinking
+  void chatFailure
 
   const chatEntries = useMemo<ConversationEntry[]>(
     () =>
@@ -383,38 +388,49 @@ export default function ReadingRoomPage() {
               }
             />
 
-            {/* ─── THE CHAT — second tool, same column (ux SPEC §2) ────────
-                Alex only. My standing condition, which `ux` has now RULED and
-                enforced by absence: no Sam or Jordan chat mounts until 3.3 and
-                4.3 carry the parameter. Not disabled — absent. */}
-            <StudioConversation
-              audience="publisher"
-              title="Ask Alex"
-              subtitle={
-                chapter?.title
-                  ? `about ${chapter.title}`
-                  : 'about this manuscript'
-              }
-              entries={chatEntries}
-              emptyText="Alex has read this manuscript. Ask about the structural read, and the answer discusses the author's work rather than addressing its writer."
-              thinking={thinking}
-              composer={{
-                placeholder: 'Ask Alex about this manuscript…',
-                submitLabel: 'Ask',
-                onSend: askAlex,
-                busy: thinking,
-              }}
-              failure={chatFailure}
-            />
+            {/* ─── THE CHAT — BUILT, AND UNMOUNTED ON MEASUREMENT ──────────
+                It was mounted here for one commit. I then ran sysadmin's smoke
+                test through the n8n MCP connection Paul opened, and the test
+                they could not run is the reason it is not mounted now.
 
-            {/* IN-SESSION, AND SAID SO. There is no publisher chat table, so
-                these turns are gone on reload — the same honesty the notes
-                column carried for a fortnight before C1 gave it a substrate.
-                Stated on the surface rather than discovered by a publisher who
-                expected to find the conversation again. */}
-            <p className="px-5 pb-5 text-[11.5px] leading-relaxed text-[#8A8A8A]">
-              This conversation is not kept. Your notes above are.
-            </p>
+                EXECUTIONS 616 and 617 against `2.5 Alex Chat`, versionId
+                5e8a111e (the live one):
+
+                  616  no journey_id       -> status: error in 1.96s
+                  617  journey_id: ''      -> status: error in 1.89s
+
+                Both fail at `Journey: Received`:
+
+                  NodeOperationError: Query Parameters must be a string of
+                  comma-separated values or an array of values
+
+                `Extract Parameters` emits `journey_id: null` in BOTH runs —
+                measured in its output, not inferred — because
+                `body.journey_id || null` turns an absent id AND an empty
+                string into null (`'' || null` is null; the empty string is
+                falsy). The Postgres v2 node refuses a null query replacement
+                before any SQL runs, so `NULLIF($1,'')::uuid` IS NEVER REACHED.
+                That guard was written to tolerate an empty string and no
+                caller can ever deliver one.
+
+                So a journeyless chat does not hang — sysadmin's worst case
+                does not occur, and that is the good news. It errors in two
+                seconds, every time. "Optional by construction" is false for
+                every possible input, and the one value their ruling forbade
+                would not have helped either.
+
+                The route and the hook are correct and stay. Mounting is the
+                four lines below, restored the moment `Extract Parameters`
+                emits `''` instead of `null`. Until then the tool is ABSENT
+                rather than present and failing — a chat that answers nothing
+                is the affordance defect on the one surface whose claim is
+                "an editor is listening".
+
+                  <StudioConversation
+                    audience="publisher" title="Ask Alex"
+                    entries={chatEntries} thinking={thinking}
+                    composer={{ …, onSend: askAlex }} failure={chatFailure} />
+            */}
           </aside>
         )}
       </div>
