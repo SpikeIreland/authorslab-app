@@ -25,7 +25,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 
 import { FirmChip } from '../../_components/FirmChip'
-import { usePublisherActions, notesAt } from '../../_data/usePublisherActions'
+import { usePublisherNotes, type PublisherNote } from '../../_data/usePublisherNotes'
 // ─── 1. Types ─────────────────────────────────────────────────────────────────
 
 interface SpineEntry {
@@ -41,7 +41,6 @@ interface ChapterBody {
   wordCount: number
 }
 
-import type { PublisherAction as PublisherNote } from '../../_data/usePublisherActions'
 import {
   StudioSpine,
   StudioWorkCentre,
@@ -77,8 +76,20 @@ export default function ReadingRoomPage() {
   const [chapter, setChapter] = useState<ChapterBody | null>(null)
   const [loadingChapter, setLoadingChapter] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { actions, available, saving, record } = usePublisherActions(projectId)
-  const notesAvailable = available === true
+  /* ─── NOTES NOW PERSIST (C1, applied 2026-10-09) ─────────────────────────
+   * This room's header used to say notes were "attributed but NOT PERSISTED —
+   * there is no publisher-notes table yet". There is one now, and its policies
+   * run on `can_work_manuscript_as_house` — the house leg ALONE, no author leg
+   * and no is_admin — so the author of the book cannot read the house's notes
+   * about it. That was sysadmin's reason for declining to reuse
+   * `can_read_manuscript()`, whose first leg is the author.
+   *
+   * `unavailable` is NOT `empty`, which is why this reads a discriminated
+   * state rather than a boolean: a failed read and a seatless caller must not
+   * render as "no notes yet". */
+  const { state: notesState, addNote: persistNote, saving, lastFailure } =
+    usePublisherNotes(projectId)
+  const notesAvailable = notesState.status === 'ready'
 
   // ── Load the spine, then open the first chapter ──────────────────────────
   useEffect(() => {
@@ -146,33 +157,37 @@ export default function ReadingRoomPage() {
     }
   }, [projectId, current])
 
-  const notesForChapter = useMemo(
-    () => notesAt(actions, 'manuscript', current),
-    [actions, current]
+  const notesForChapter = useMemo<PublisherNote[]>(
+    () =>
+      notesState.status === 'ready'
+        ? notesState.notes.filter((n) => n.chapter_number === current)
+        : [],
+    [notesState, current]
   )
 
   const addNote = useCallback(
     async (body: string) => {
-      if (current === null) return
-      await record({
-        station: 'manuscript',
-        kind: 'note',
-        body,
-        chapterNumber: current,
-      })
+      // `current` may be null — a note on the BOOK rather than a chapter. C1
+      // makes chapter_number nullable precisely so that is sayable, so it is
+      // passed through rather than guarded against.
+      const result = await persistNote(body, current)
+      if (!result.ok) console.error('note not saved:', result.reason)
     },
-    [current, record]
+    [current, persistNote]
   )
 
   const noteCountByChapter = useMemo(() => {
-    const m = new Map<number, number>()
-    for (const a of actions) {
-      if (a.kind !== 'note' || a.station !== 'manuscript') continue
-      if (a.chapter_number === null) continue
-      m.set(a.chapter_number, (m.get(a.chapter_number) ?? 0) + 1)
+    const counts = new Map<number, number>()
+    if (notesState.status !== 'ready') return counts
+    for (const n of notesState.notes) {
+      // A book-level note belongs to no chapter row, so it is counted nowhere
+      // rather than attributed to chapter 0 — which is a REAL chapter in this
+      // estate (the prologue renders as 'P').
+      if (n.chapter_number === null) continue
+      counts.set(n.chapter_number, (counts.get(n.chapter_number) ?? 0) + 1)
     }
-    return m
-  }, [actions])
+    return counts
+  }, [notesState])
 
   if (error) {
     return (
@@ -216,7 +231,7 @@ export default function ReadingRoomPage() {
 
       {/*
         The notes column is only rendered when the publisher log can actually
-        be written (see usePublisherActions). When it is absent the grid must
+        be written (see usePublisherNotes). When it is absent the grid must
         COLLAPSE to two tracks — an empty 300px gutter reads as a broken page,
         which is its own kind of dishonesty: it shows a hole where a feature
         was rather than a page that simply does not have that feature yet.
@@ -262,8 +277,12 @@ export default function ReadingRoomPage() {
             chapterTitle={chapter?.title ?? ''}
             notes={notesForChapter}
             onAdd={addNote}
-            disabled={current === null || saving}
-            available={available}
+            disabled={saving}
+            available={notesAvailable}
+            lastFailure={lastFailure}
+            myMembershipId={
+              notesState.status === 'ready' ? notesState.myMembershipId : null
+            }
             hasChapters={spine === null ? null : spine.length > 0}
           />
         )}
@@ -309,13 +328,19 @@ function NotesPane({
   disabled,
   hasChapters,
   available,
+  lastFailure,
+  myMembershipId,
 }: {
   chapterTitle: string
   notes: PublisherNote[]
   onAdd: (body: string) => void | Promise<void>
   disabled: boolean
   hasChapters: boolean | null
-  available: boolean | null
+  available: boolean
+  /** A write that failed. Rendered, never swallowed. */
+  lastFailure: string | null
+  /** The viewer's own membership, so "You" is a fact and not a guess. */
+  myMembershipId: string | null
 }) {
   const [draft, setDraft] = useState('')
 
@@ -328,7 +353,7 @@ function NotesPane({
 
   // An affordance is a claim. Where notes cannot be recorded, the column does
   // not offer to record one — it is not disabled-with-an-apology, it is absent.
-  if (available !== true) return null
+  if (!available) return null
 
   // A note attaches to a CHAPTER. With no chapters there is nothing to attach
   // one to, and with none selected there is nothing chosen — so the composer
@@ -336,7 +361,10 @@ function NotesPane({
   // textarea accepted text, "Add note" looked live, and `addNote` returned
   // early on a null chapter, discarding what had been typed with no feedback.
   // A control that pretends to succeed is worse than one that is missing.
-  const nothingToNoteOn = hasChapters === false || disabled
+  // A note with no chapter selected is a note ON THE BOOK — C1 makes
+  // chapter_number nullable precisely so that is sayable. So the composer
+  // stays; only a title with no manuscript at all has nothing to note on.
+  const nothingToNoteOn = hasChapters === false
 
   return (
     <aside className="border-l border-[#E8E5E0] bg-white/60 lg:max-h-[calc(100vh-61px)] lg:overflow-y-auto">
@@ -367,8 +395,19 @@ function NotesPane({
                 className="border border-[#E8E5E0] bg-white rounded-[3px] px-3.5 py-3"
               >
                 <div className="text-[14px] leading-[1.55] text-[#2A2A2A]">{n.body}</div>
+                {/* ATTRIBUTION, AND WHAT WE WILL NOT INVENT.
+                    The old pane printed `actor_firm`, a column C1 does not
+                    have: a note is attributed to a MEMBERSHIP id, with no
+                    label. So this says the one thing the row supports —
+                    whether the note is yours — and says nothing where it
+                    cannot. Printing the house's own name against a colleague's
+                    note would be the `actor_firm` defect again in the other
+                    direction: a label that looks like attribution and names
+                    nobody. A display name needs either a join in the notes
+                    route or a label column; couriered as a question. */}
                 <div className="text-[11px] text-[#B8B8B8] mt-2">
-                  {n.actor_firm} &middot; {formatWhen(n.created_at)}
+                  {n.author_membership_id === myMembershipId ? 'You' : 'A colleague'}
+                  {' '}&middot; {formatWhen(n.created_at)}
                 </div>
               </div>
             ))}
@@ -377,6 +416,16 @@ function NotesPane({
 
         {!nothingToNoteOn && (
         <>
+        {/* A write that failed, said out loud. The console is not a surface. */}
+        {lastFailure && (
+          <p className="text-[12.5px] leading-relaxed mb-3" style={{ color: '#B5654A' }}>
+            That note was not saved{lastFailure === 'not_on_your_list'
+              ? ' — this title is not on your list.'
+              : lastFailure === 'no_seat'
+                ? ' — your account holds no seat on this list.'
+                : '. Nothing was recorded; try again.'}
+          </p>
+        )}
         <textarea
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
