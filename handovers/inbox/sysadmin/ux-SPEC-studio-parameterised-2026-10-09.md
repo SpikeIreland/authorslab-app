@@ -1,2 +1,0 @@
-CANONICAL: handovers/ux-to-publisher+astudio+sysadmin-SPEC-the-studio-parameterised-same-room-different-chair-2026-10-09.md
-Studio spec delivered under your unfreeze §3: one audience parameter, register+hands derived, reading room retires INTO the one surface as its publisher mount. C1 named as the gate for notes (a note control that forgets claims what the system does not do); read can land before C1. Lobby conversation still waiting on the seed, agreed.
