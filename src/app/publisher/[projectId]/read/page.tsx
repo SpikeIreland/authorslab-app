@@ -42,20 +42,15 @@ interface ChapterBody {
 }
 
 import type { PublisherAction as PublisherNote } from '../../_data/usePublisherActions'
+import {
+  StudioSpine,
+  StudioWorkCentre,
+  type StudioChapter,
+} from '@/components/studio/StudioRoom'
 
 // ─── 2. Helpers ───────────────────────────────────────────────────────────────
 
-function formatWordCount(n: number): string {
-  return n.toLocaleString('en-GB')
-}
 
-/** Chapter prose is stored as plain text; split on blank lines to paragraphs. */
-function toParagraphs(content: string): string[] {
-  return content
-    .split(/\n\s*\n/)
-    .map((p) => p.trim())
-    .filter((p) => p.length > 0)
-}
 
 function formatWhen(iso: string): string {
   try {
@@ -196,6 +191,25 @@ export default function ReadingRoomPage() {
     )
   }
 
+  /* The surface takes the shared shape; this room keeps its own fetch. The
+   * mapping is here rather than in the components because the SHAPE is the
+   * contract and the field names are this room's business. */
+  const spineChapters: StudioChapter[] | null =
+    spine === null
+      ? null
+      : spine.map((e) => ({
+          chapter_number: e.chapterNumber,
+          title: e.title,
+          word_count: e.wordCount,
+        }))
+
+  /* THREE STATES, KEPT APART. null = still loading; '' = a chapter that holds
+   * no text on the record; a string = the prose. Collapsing loading into
+   * empty would show "no text on the record" about a chapter we have not
+   * fetched yet, which is a claim about the book made from a claim about us. */
+  const workCentreText: string | null =
+    loadingChapter || current === null ? null : chapter?.content ?? ''
+
   return (
     <div className="min-h-screen bg-[#F7F7F5] text-[#3F3F3F] flex flex-col">
       <ReadHeader onBack={() => router.push(`/publisher/${projectId}`)} />
@@ -214,16 +228,34 @@ export default function ReadingRoomPage() {
             : 'lg:grid-cols-[240px_minmax(0,1fr)]'
         }`}
       >
-        <Spine
-          entries={spine}
-          current={current}
-          noteCounts={noteCountByChapter}
+        {/* ─── THE ONE SURFACE, PUBLISHER CHAIR (ux SPEC §2, 2026-10-09) ──
+            This room's own Spine and ChapterPane are RETIRED, not refactored.
+            `ux`: "the reading room's layout was right, and its reward is
+            retirement: it becomes the publisher MOUNT of the one surface, not
+            a sibling of it."
+
+            They were a sibling in the literal sense that matters to
+            acceptance test 3 — this room's spine carried its own geometry and
+            its own navy accent, so a publisher and an author looking at the
+            same book did NOT recognise each other's screen. Same job, two
+            appearances, which is the divergence the lift exists to end.
+
+            `audience="publisher"` is the whole of the difference. Hands and
+            register both derive from it, and no management handler is passed
+            — but passing one would render nothing anyway, which is the
+            property proven in scripts/verify-studio-chairs.tsx by rendering
+            this chair with every write handler wired. */}
+        <StudioSpine
+          audience="publisher"
+          chapters={spineChapters ?? []}
+          currentChapter={current}
           onSelect={setCurrent}
+          noteCounts={noteCountByChapter}
         />
-        <ChapterPane
-          chapter={chapter}
-          loading={loadingChapter}
-          hasChapters={spine === null ? null : spine.length > 0}
+        <StudioWorkCentre
+          audience="publisher"
+          title={chapter?.title ?? null}
+          text={workCentreText}
         />
         {notesAvailable && (
           <NotesPane
@@ -264,137 +296,9 @@ function ReadHeader({ onBack }: { onBack: () => void }) {
 
 // ─── 5. The spine ─────────────────────────────────────────────────────────────
 
-function Spine({
-  entries,
-  current,
-  noteCounts,
-  onSelect,
-}: {
-  entries: SpineEntry[] | null
-  current: number | null
-  noteCounts: Map<number, number>
-  onSelect: (n: number) => void
-}) {
-  return (
-    <nav className="border-r border-[#E8E5E0] bg-white/60 lg:max-h-[calc(100vh-61px)] lg:overflow-y-auto">
-      <div className="px-5 py-4 text-[11px] tracking-[0.14em] uppercase text-[#8A8A8A] border-b border-[#E8E5E0]">
-        Contents
-      </div>
-      {entries === null ? (
-        <div className="p-5 text-[13px] text-[#8A8A8A]">Loading&hellip;</div>
-      ) : entries.length === 0 ? (
-        /* A labelled panel with nothing in it reads as a page that broke.
-         * Say what is true instead: there is no manuscript here yet. */
-        <div className="p-5 text-[13px] leading-relaxed text-[#8A8A8A]">
-          No chapters yet. The manuscript appears here once the author has
-          uploaded it.
-        </div>
-      ) : (
-        <ul>
-          {entries.map((e) => {
-            const active = e.chapterNumber === current
-            const noteCount = noteCounts.get(e.chapterNumber) ?? 0
-            return (
-              <li key={e.chapterNumber}>
-                <button
-                  type="button"
-                  onClick={() => onSelect(e.chapterNumber)}
-                  aria-current={active ? 'true' : undefined}
-                  className={`w-full text-left px-5 py-2.5 border-l-2 transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#1E3A5F]/30 ${
-                    active
-                      ? 'border-l-[#1E3A5F] bg-white'
-                      : 'border-l-transparent hover:bg-white'
-                  }`}
-                >
-                  <div className="flex items-baseline gap-2">
-                    <span
-                      className={`text-[13px] truncate ${active ? 'text-[#1A1A1A]' : 'text-[#3F3F3F]'}`}
-                    >
-                      {e.title}
-                    </span>
-                    {noteCount > 0 && (
-                      <span className="ml-auto text-[10px] text-white bg-[#1E3A5F] rounded-full px-1.5 py-0.5 flex-shrink-0">
-                        {noteCount}
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-[11px] text-[#8A8A8A] mt-0.5">
-                    {formatWordCount(e.wordCount)} words
-                  </div>
-                </button>
-              </li>
-            )
-          })}
-        </ul>
-      )}
-    </nav>
-  )
-}
 
 // ─── 6. The chapter ───────────────────────────────────────────────────────────
 
-function ChapterPane({
-  chapter,
-  loading,
-  hasChapters,
-}: {
-  chapter: ChapterBody | null
-  loading: boolean
-  /** null while the spine is still loading. */
-  hasChapters: boolean | null
-}) {
-  if (loading && !chapter) {
-    return (
-      <main className="px-8 py-16 flex justify-center">
-        <div className="w-6 h-6 border-2 border-[#E8E5E0] border-t-[#1E3A5F] rounded-full animate-spin" />
-      </main>
-    )
-  }
-  if (!chapter) {
-    // "Choose a chapter to begin reading" was shown on books with NO chapters
-    // — an instruction to do something impossible, with nothing saying the
-    // manuscript was empty. Found on every one of the nine demo titles.
-    return (
-      <main className="px-8 py-16 text-center text-[14px] text-[#8A8A8A]">
-        {hasChapters === false
-          ? 'There is no manuscript to read yet.'
-          : 'Choose a chapter to begin reading.'}
-      </main>
-    )
-  }
-
-  const paragraphs = toParagraphs(chapter.content)
-
-  return (
-    <main className="px-8 lg:px-14 py-12 lg:max-h-[calc(100vh-61px)] lg:overflow-y-auto">
-      <article className="max-w-[640px] mx-auto">
-        <h1
-          className="text-[30px] leading-tight text-[#1A1A1A] mb-2"
-          style={{ fontFamily: 'Iowan Old Style, Palatino, Georgia, serif' }}
-        >
-          {chapter.title}
-        </h1>
-        <div className="text-[12px] text-[#8A8A8A] mb-10">
-          {formatWordCount(chapter.wordCount)} words
-        </div>
-
-        {paragraphs.length === 0 ? (
-          <p className="text-[15px] text-[#8A8A8A]">This chapter is empty.</p>
-        ) : (
-          paragraphs.map((p, i) => (
-            <p
-              key={i}
-              className="text-[17px] leading-[1.75] text-[#2A2A2A] mb-6"
-              style={{ fontFamily: 'Iowan Old Style, Palatino, Georgia, serif' }}
-            >
-              {p}
-            </p>
-          ))
-        )}
-      </article>
-    </main>
-  )
-}
 
 // ─── 7. The publisher's notes ─────────────────────────────────────────────────
 
