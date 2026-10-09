@@ -1,0 +1,2 @@
+CANONICAL: handovers/ux-to-publisher+astudio+sysadmin+marketing-four-ratifications-two-rulings-and-the-confirmation-screen-rebuilt-2026-10-09.md
+BRIEF §2 BUILT: confirmation + sending screens on the token grammar — no turnaround claim (figure slot marked for marketing, waits on the smoke test), CTA = invitation to /signup, sending screen stops claiming analysis mid-upload. Gate and preview door untouched; your §4 order stands.

@@ -110,6 +110,8 @@ function FreeAnalysisForm() {
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string>('')
   const [dragOver, setDragOver] = useState(false)
+  // Captured at submit so the confirmation can say where the report is going.
+  const [submittedEmail, setSubmittedEmail] = useState<string>('')
 
   const WEBHOOK_URL = N8N_WEBHOOKS.freeManuscriptAnalysis
   const WORD_COUNT_URL = N8N_WEBHOOKS.manuscriptWordCount
@@ -280,6 +282,7 @@ function FreeAnalysisForm() {
     formData.set('fileSizeBytes', file.size.toString())
     formData.set('submissionDate', new Date().toISOString())
     formData.set('wordCount', wordCount)
+    setSubmittedEmail(String(formData.get('email') || ''))
 
     try {
       const response = await fetch(WEBHOOK_URL, {
@@ -317,34 +320,61 @@ function FreeAnalysisForm() {
     }
   }
 
+  /* Confirmation + submitting screens rebuilt on the token grammar
+   * (sysadmin's free-analysis BRIEF §2, 2026-10-09). Constraints honoured:
+   *  - Nothing claims what has not happened: no turnaround figure until the
+   *    smoke test measures one. marketing owns the copy — when the measured
+   *    figure exists, it slots into the one sentence marked below.
+   *  - The CTA is an invitation, not a close: the next step is a free
+   *    account, not a checkout; no urgency, no discounting.
+   */
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+      <div className="min-h-screen bg-ivory">
         <MarketingNav />
 
-        <div className="container mx-auto px-4 py-20">
-          <div className="max-w-3xl mx-auto">
-            <div className="bg-green-50 border-2 border-green-500 rounded-2xl p-12 text-center">
-              <div className="text-6xl mb-6">✅</div>
-              <h1 className="text-4xl font-bold text-green-900 mb-4">
-                Complete Manuscript Analysis Submitted!
-              </h1>
-              <p className="text-xl text-green-800 mb-4">
-                <strong>Thank you!</strong> Your full manuscript has been successfully submitted for analysis.
-              </p>
-              <p className="text-lg text-green-800 mb-6">
-                You&apos;ll receive your <strong>comprehensive overview report</strong> via email within <strong>15 minutes</strong>.
-              </p>
-              <div className="bg-blue-100 rounded-xl p-6 mb-8">
-                <p className="text-blue-900">
-                  <strong>📧 Check your email soon!</strong><br />
-                  Your report will include insights that demonstrate our complete analysis capabilities.
-                </p>
-              </div>
-              <Link href="/">
-                <Button className="text-lg px-8 py-6">
-                  Return to Home
-                </Button>
+        <div className="max-w-xl mx-auto px-6 py-24">
+          <div className="bg-white border border-line rounded-2xl p-10 text-center">
+            <div className="w-10 h-10 mx-auto mb-6 rounded-full bg-sage/15 flex items-center justify-center" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-sage-deep">
+                <path d="M4 12.5l5 5L20 6.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            {/* Copy is marketing's (their 2026-10-09 courier §2), verbatim but
+               for the recipient address, which is a surface fact. The measured-
+               turnaround sentence — "Recent reads have taken about [MEASURED]"
+               — is deliberately NOT rendered until the smoke test fills the
+               slot; marketing's rule: the sentence does not ship with a guess
+               in it. */}
+            <h1 className="font-serif text-3xl text-ink mb-4">
+              Your manuscript is in.
+            </h1>
+            <p className="text-muted mb-2">
+              The full read is underway &mdash; five analyses across your whole
+              book, then a synthesis.
+            </p>
+            <p className="text-muted mb-10">
+              Your report arrives by email as a PDF, from editors@authorslab.ai
+              {submittedEmail && (
+                <>, to <span className="text-ink">{submittedEmail}</span></>
+              )}.
+            </p>
+
+            <p className="text-sm text-muted mb-4 max-w-sm mx-auto">
+              While it runs: an AuthorsLab account is where the report becomes
+              a conversation &mdash; your editors can walk you through what
+              they found, chapter by chapter.
+            </p>
+            <Link
+              href="/signup"
+              className="inline-block bg-sage-deep hover:bg-sage-deep/90 text-white font-semibold px-6 py-3 rounded-lg"
+            >
+              Create your free account
+            </Link>
+
+            <div className="mt-8">
+              <Link href="/" className="text-sm text-muted hover:text-ink">
+                Return home
               </Link>
             </div>
           </div>
@@ -355,20 +385,22 @@ function FreeAnalysisForm() {
 
   if (isSubmitting) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+      <div className="min-h-screen bg-ivory">
         <MarketingNav />
 
-        <div className="container mx-auto px-4 py-20">
-          <div className="max-w-3xl mx-auto">
-            <div className="bg-white border-2 border-green-500 rounded-2xl p-12 text-center">
-              <div className="text-6xl mb-6">📄</div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                Analyzing Your Complete Manuscript
-              </h2>
-              <p className="text-xl text-gray-700">
-                Our AI is performing a comprehensive analysis of your manuscript... You&apos;ll receive your professional overview report via email shortly!
-              </p>
+        <div className="max-w-xl mx-auto px-6 py-24">
+          <div className="bg-white border border-line rounded-2xl p-10 text-center">
+            <div className="flex items-center justify-center gap-1.5 mb-6" aria-hidden="true">
+              <span className="w-2 h-2 rounded-full bg-sage animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-sage animate-pulse [animation-delay:150ms]" />
+              <span className="w-2 h-2 rounded-full bg-sage animate-pulse [animation-delay:300ms]" />
             </div>
+            <h2 className="font-serif text-2xl text-ink mb-3">
+              Sending your manuscript&hellip;
+            </h2>
+            <p className="text-muted">
+              Don&apos;t close this page just yet &mdash; this can take a moment for a full book.
+            </p>
           </div>
         </div>
       </div>
@@ -445,7 +477,7 @@ function FreeAnalysisForm() {
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-green-600 mt-1">✓</span>
-                <span><strong>Detailed PDF report</strong> via email within 15 minutes</span>
+                <span><strong>Detailed PDF report</strong> via email</span>
               </li>
             </ul>
           </div>

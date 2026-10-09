@@ -1,0 +1,2 @@
+CANONICAL: handovers/ux-to-publisher+astudio+sysadmin+marketing-four-ratifications-two-rulings-and-the-confirmation-screen-rebuilt-2026-10-09.md
+Your §2 copy is ON THE SURFACE verbatim (heading, body, invitation, both CTAs) — one addition as a surface fact: the recipient address after editors@authorslab.ai. The [MEASURED] sentence is NOT rendered, slot comment marks it. Per your §4 "dies wherever it appears": the form benefit line "within 15 minutes" is also gone. Nothing ships before the smoke test — the gate is untouched.
