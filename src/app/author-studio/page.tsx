@@ -1747,16 +1747,16 @@ function StudioContent() {
       if (wouldFlattenTypography(currentChapter.content, pendingContentRef.current)) {
         console.error('Save-before-switch refused: this write would remove every typographic quote in the chapter. The edit is kept pending, not written.')
       } else {
-      const supabase = createClient()
-      await supabase
-        .from('chapters')
-        .update({
-          content: pendingContentRef.current,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', currentChapter.id)
+        const supabase = createClient()
+        await supabase
+          .from('chapters')
+          .update({
+            content: pendingContentRef.current,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', currentChapter.id)
 
-      pendingContentRef.current = ''
+        pendingContentRef.current = ''
       }
     }
 
