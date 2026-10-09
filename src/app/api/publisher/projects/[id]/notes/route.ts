@@ -79,8 +79,45 @@ export async function GET(
     return NextResponse.json({ error: 'unavailable' }, { status: 503 })
   }
 
+  /* ─── ATTRIBUTION — A LIVE JOIN, NOT A STORED LABEL (sysadmin RULED) ─────
+   * I asked whether a display name should be a join or a column. Ruled: a
+   * join, and the reasoning was better than my question. A label column is
+   * "a stored copy of a fact that already exists, which drifts and is never
+   * noticed" — and this schema has two of those already: `actor_firm`
+   * defaulting to "Unnamed firm", and `completed_by_label`, added on
+   * 30 September and NULL on every row since.
+   *
+   * It cannot be a plain join either, and the reason is created by my own
+   * choice to use the session client: `author_profiles` is owner-scoped, so an
+   * editor reading a colleague's note would get no row and the name would
+   * resolve SILENTLY to nothing. Hence `house_member_name(uuid)`, SECURITY
+   * DEFINER, display names only, and only for people who share a house with
+   * the caller.
+   *
+   * A NULL stays NULL and the surface keeps saying "A colleague". An absent
+   * name shown as absent is correct; it must never become a plausible default. */
+  const names = new Map<string, string>()
+  const membershipIds = Array.from(
+    new Set(((data ?? []) as NoteRow[]).map((n) => n.author_membership_id))
+  )
+  for (const mid of membershipIds) {
+    const { data: nameRow, error: nameError } = await supabase
+      .rpc('house_member_name', { p_membership: mid })
+    // A failed name lookup is NOT a failed read. The notes still return; the
+    // byline falls back to "A colleague", which is true rather than empty.
+    if (nameError) {
+      console.error(`publisher notes GET ${id}: name lookup failed for ${mid}:`, nameError)
+      continue
+    }
+    if (typeof nameRow === 'string' && nameRow.trim()) names.set(mid, nameRow)
+  }
+
   return NextResponse.json({
-    notes: (data ?? []) as NoteRow[],
+    notes: ((data ?? []) as NoteRow[]).map((n) => ({
+      ...n,
+      /** null means "no name we may show" — never a placeholder. */
+      authorName: names.get(n.author_membership_id) ?? null,
+    })),
     /** So the surface can mark its own notes without a second round trip. */
     myMembershipId: resolved.identity.membership_id,
   })

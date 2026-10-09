@@ -59,6 +59,9 @@ export interface PublisherNote {
   chapter_number: number | null
   body: string
   author_membership_id: string
+  /** Resolved live by `house_member_name` on the server. NULL means there is
+   *  no name we may show — the surface says "A colleague", never a default. */
+  authorName: string | null
   created_at: string
 }
 

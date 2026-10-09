@@ -50,6 +50,7 @@ import {
   StudioConversation,
   type ConversationEntry,
 } from '@/components/studio/StudioConversation'
+import { usePublisherChat } from '../../_data/usePublisherChat'
 
 // ─── 2. Helpers ───────────────────────────────────────────────────────────────
 
@@ -222,6 +223,46 @@ export default function ReadingRoomPage() {
           word_count: e.wordCount,
         }))
 
+  /* ─── THE CHAT, NOW MOUNTED (sysadmin RULED 2026-10-09) ──────────────────
+   * Journeyless: the route passes no journey_id at all. Both of my questions
+   * were answered — the field is optional by construction, and whether a
+   * publisher-originated chat should create a journey is ruled NOT YET,
+   * because a journey has an actor and a house's conversation about someone
+   * else's book raises whose journey it is. No journey beats a journey that
+   * claims the wrong actor. */
+  const { turns, thinking, failure: chatFailure, ask } = usePublisherChat(projectId)
+
+  const chatEntries = useMemo<ConversationEntry[]>(
+    () =>
+      turns.map((t) => ({
+        id: t.id,
+        body: t.body,
+        // 'Alex' appears ONLY on a reply the service actually returned. A
+        // failure never becomes an entry, so no byline can be attached to
+        // something no editor said.
+        byline: t.from === 'house' ? 'You' : 'Alex',
+        when: formatWhen(t.at),
+      })),
+    [turns]
+  )
+
+  const askAlex = useCallback(
+    async (message: string) => {
+      /* NO manuscriptTitle. This room does not hold the book's title — its
+       * spine endpoint returns chapters, not the manuscript — and the chat
+       * workflow fetches manuscript context from the id it is given. Sending
+       * an empty string, or the chapter's title standing in for the book's,
+       * would be telling the service something untrue to fill a field. The
+       * route omits the key entirely when it is absent. */
+      await ask(message, {
+        chapterNumber: current,
+        chapterTitle: chapter?.title ?? '',
+        chapterContent: chapter?.content ?? '',
+      })
+    },
+    [ask, current, chapter]
+  )
+
   /* The shared column's entry shape. The byline says the one thing the row
    * supports — whether the note is the viewer's own — because C1 stores a
    * membership id and no label. `null` would render no byline at all; here we
@@ -231,7 +272,13 @@ export default function ReadingRoomPage() {
     return notesForChapter.map((n) => ({
       id: n.id,
       body: n.body,
-      byline: n.author_membership_id === notesState.myMembershipId ? 'You' : 'A colleague',
+      /* "You" for your own; the resolved name where the house may show one;
+       * "A colleague" where it may not. Three states, and the third is an
+       * honest absence rather than a stand-in. */
+      byline:
+        n.author_membership_id === notesState.myMembershipId
+          ? 'You'
+          : n.authorName ?? 'A colleague',
       when: formatWhen(n.created_at),
     }))
   }, [notesState, notesForChapter])
@@ -336,19 +383,38 @@ export default function ReadingRoomPage() {
               }
             />
 
-            {/* ─── THE CHAT, DELIBERATELY ABSENT ─────────────────────────────
-                `ux` §2 puts chat and notes in this column together, and
-                `astudio` has `audience: 'trade'` in service on 2.5 Alex Chat.
-                It is still not mounted, and the reason is a payload I have not
-                verified rather than a gate I am waiting on:
+            {/* ─── THE CHAT — second tool, same column (ux SPEC §2) ────────
+                Alex only. My standing condition, which `ux` has now RULED and
+                enforced by absence: no Sam or Jordan chat mounts until 3.3 and
+                4.3 carry the parameter. Not disabled — absent. */}
+            <StudioConversation
+              audience="publisher"
+              title="Ask Alex"
+              subtitle={
+                chapter?.title
+                  ? `about ${chapter.title}`
+                  : 'about this manuscript'
+              }
+              entries={chatEntries}
+              emptyText="Alex has read this manuscript. Ask about the structural read, and the answer discusses the author's work rather than addressing its writer."
+              thinking={thinking}
+              composer={{
+                placeholder: 'Ask Alex about this manuscript…',
+                submitLabel: 'Ask',
+                onSend: askAlex,
+                busy: thinking,
+              }}
+              failure={chatFailure}
+            />
 
-                the author chat posts `journey_id` from `startJourney(...)`,
-                and whether a PUBLISHER-originated journey row is permitted —
-                or required — is astudio's to say. Mounting a chat I cannot
-                prove responds would be an affordance that is a claim, on the
-                one surface where the claim is "an editor is listening".
-
-                Absent, not disabled. Couriered with the question. */}
+            {/* IN-SESSION, AND SAID SO. There is no publisher chat table, so
+                these turns are gone on reload — the same honesty the notes
+                column carried for a fortnight before C1 gave it a substrate.
+                Stated on the surface rather than discovered by a publisher who
+                expected to find the conversation again. */}
+            <p className="px-5 pb-5 text-[11.5px] leading-relaxed text-[#8A8A8A]">
+              This conversation is not kept. Your notes above are.
+            </p>
           </aside>
         )}
       </div>

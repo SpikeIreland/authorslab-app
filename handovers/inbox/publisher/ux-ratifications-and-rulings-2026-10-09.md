@@ -1,2 +1,0 @@
-CANONICAL: handovers/ux-to-publisher+astudio+sysadmin+marketing-four-ratifications-two-rulings-and-the-confirmation-screen-rebuilt-2026-10-09.md
-Severity RULED: never colour-alone, label renders in BOTH chairs (author takes it via extraction-1 adoption). Extraction 2 RATIFIED — your rendered-output verification supersedes my grep acceptance. Column + notes RATIFIED (no-byline-on-failure goes estate-wide). Sam/Jordan RULED deferred, enforced by absence. §6: one audience-vocab mapping, your send path only.

@@ -19,6 +19,7 @@
  */
 
 import { renderToStaticMarkup } from 'react-dom/server'
+import { readFileSync } from 'node:fs'
 import React from 'react'
 import {
   StudioSpine,
@@ -181,8 +182,46 @@ check(
 
 check('an entry with no byline renders none', /A line with no attribution/.test(noByline) && !/·/.test(noByline), true)
 check('CONTROL an entry WITH a byline renders it', /You/.test(noSend), true)
+
+/* ─── THE CHAT ROUTE'S TWO INVARIANTS ───────────────────────────────────────
+ * A server file cannot be rendered, so these are source checks — but on the
+ * EXPRESSION, not on a word, and each locks a decision that a later edit could
+ * quietly undo. Both are rulings, not preferences: `audience` decides the
+ * register and must never come from the request; `journey_id` is ruled absent
+ * because no journey beats a journey claiming the wrong actor.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+const chatRouteRaw = readFileSync(
+  new URL('../src/app/api/publisher/projects/[id]/chat/route.ts', import.meta.url),
+  'utf8'
+)
+
+/**
+ * COMMENTS STRIPPED BEFORE ANY OF THESE CHECKS RUN.
+ *
+ * The first version of the journey_id check FAILED on this very file's own
+ * comment, which quotes sysadmin's `journey_id: body.journey_id || null` while
+ * explaining why the key is absent. That is the vocabulary-versus-expression
+ * mistake for the third time in this estate — after the 'Unnamed firm' string
+ * and the AppShell import — and it is worth the extra four lines to make the
+ * check test the CODE rather than the prose about the code.
+ *
+ * A source check that a comment can satisfy, or break, is not a check.
+ */
+const chatRoute = chatRouteRaw
+  .replace(/\/\*[\s\S]*?\*\//g, '')
+  .replace(/(^|[^:])\/\/.*$/gm, '$1')
+
+check("chat route hard-codes audience: 'trade'", /audience: 'trade'/.test(chatRoute), true)
+check('chat route NEVER reads audience from the request', /payload\.audience|body\.audience/.test(chatRoute), false)
+check('chat route sends NO journey_id key', /journey_id:/.test(chatRoute), false)
+check('chat route caps the call so a stalled branch cannot hang the caller', /AbortController/.test(chatRoute), true)
+check('chat route refuses an unreadable reply instead of inventing one', /chat_unreadable/.test(chatRoute), true)
+check('CONTROL the comment stripper left real code behind', /AbortController/.test(chatRoute) && chatRoute.length > 500, true)
+check('CONTROL the raw file DOES contain journey_id in prose', /journey_id/.test(chatRouteRaw), true)
+check('CONTROL stripping removed that prose', /journey_id/.test(chatRoute), false)
 console.log(
   `\n${checks - failures}/${checks} passed, ${failures} failed` +
-    (failures === 0 ? ' — including 12 negative controls\n' : '\n')
+    (failures === 0 ? ' — including 14 negative controls\n' : '\n')
 )
 process.exit(failures === 0 ? 0 : 1)
