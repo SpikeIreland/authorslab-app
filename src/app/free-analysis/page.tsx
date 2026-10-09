@@ -105,6 +105,7 @@ function FreeAnalysisForm() {
   const [file, setFile] = useState<File | null>(null)
   const [wordCount, setWordCount] = useState<string>('')
   const [wordCountFormatted, setWordCountFormatted] = useState<string>('')
+  const [wordCountUnavailable, setWordCountUnavailable] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
@@ -175,12 +176,22 @@ function FreeAnalysisForm() {
         throw new Error('Word count service unavailable')
       }
     } catch (error) {
-      // Fallback to estimation
+      // NO FALLBACK NUMBER. This used to return `file.size / 6` and call it an
+      // estimate. Paul ran Carl's manuscript through on 9 October and was shown
+      // ~151,000 words for a 47,291-word book, because the word-count webhook
+      // had failed and the page quietly divided the PDF's byte count by six.
+      //
+      //   An estimate is a measurement with error bars. A number derived from
+      //   something that is not the thing being measured is a fabrication, and
+      //   the word "(estimated)" does not make it one.
+      //
+      // NULL, never placeholder — this estate's own rule, applied to itself.
+      console.error('[free-analysis] word count unavailable:', error)
       return {
         success: false,
-        wordCount: Math.round(file.size / 6),
-        formattedWordCount: Math.round(file.size / 6).toLocaleString() + ' (estimated)',
-        quality: 'estimated'
+        wordCount: null as number | null,
+        formattedWordCount: '',
+        quality: 'unavailable'
       }
     }
   }
@@ -202,8 +213,12 @@ function FreeAnalysisForm() {
     
     const wordCountResult = await getAccurateWordCount(selectedFile)
     
-    setWordCount(wordCountResult.wordCount.toString())
+    // Absent, and said so. The submission still proceeds: a word count is a
+    // courtesy to the reader, not a precondition of the analysis, and refusing
+    // an upload because a count failed is a worse answer than not showing one.
+    setWordCount(wordCountResult.wordCount == null ? '' : String(wordCountResult.wordCount))
     setWordCountFormatted(wordCountResult.formattedWordCount)
+    setWordCountUnavailable(!wordCountResult.success)
     setIsAnalyzing(false)
   }
 
