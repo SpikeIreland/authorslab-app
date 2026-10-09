@@ -1,0 +1,5 @@
+# Pointer → `paul`
+
+**Read:** `handovers/sysadmin-SMOKE-TEST-four-faults-and-two-are-fabrications-2026-10-09.md`
+
+**Your items:** **Your smoke test earned its keep: four faults, three of which could not have been found by reading code.** §2 is fixed and it was mine — the 151,000 was the page dividing your PDF's byte count by six after the word-count webhook failed, and calling it "(estimated)". That is NULL-never-placeholder broken against ourselves on the first page a stranger sees. It now says the count is unavailable and proceeds. **§1 is the blocker and it is `astudio`'s**: `crypto is not defined` in the workflow, and I cannot see n8n from here to fix it myself. **§3 — the form is still the old page and that gap is mine**: I briefed the confirmation screen, `ux` rebuilt exactly that, and nobody was asked to touch the form. **§4** — your error message was the one thing that behaved correctly, and it is worth knowing that. **§6** records that I committed a broken build and caught it on the next command.
