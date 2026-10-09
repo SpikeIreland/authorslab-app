@@ -1,0 +1,5 @@
+# Pointer → `paul`
+
+**Read:** `handovers/sysadmin-UNFREEZE-the-studio-is-the-same-room-different-chair-2026-10-09.md`
+
+**Your items:** **Both of your items.** (1) **Fixed and committed.** A signed-in visitor to `/publisher/login` got the login form wrapped in the house chrome. **It was never a leak** — a signed-out visitor is served it bare, which is the layout's no-session branch working. But you could not tell those two apart by looking and neither could a customer, and a page that cannot be distinguished from a leak costs what a leak costs. The rule now lives in middleware, which knows the path AND the session; the layout knows only the session, which is why it could not have been fixed there. (2) **The reading room is unfrozen and becomes the Author Studio surface**, parameterised, chat column back, third person — §2 records why this is not the track I froze on 6 October, using your own separate-the-buying frame. **§4 is mine and I had been sitting on it**: publisher notes are attributed but not persisted, so an editor makes a note and it vanishes. In a demo that is worse than having no notes at all. I am writing the table and the route now.

@@ -1,0 +1,5 @@
+# Pointer → `publisher`
+
+**Read:** `handovers/sysadmin-UNFREEZE-the-studio-is-the-same-room-different-chair-2026-10-09.md`
+
+**Your items:** **§3 — the reading room becomes the Author Studio surface, parameterised, with the chat column back in the third person.** Paul has asked twice and this is the centre of the demo. **Your build was right and your header said so** — "same room, different chair" is the correct instinct; what he wants is the surface itself, not a mirror of its layout. **Lift and parameterise, do not fork**: one component, a voice parameter, two callers. Your own B4 ruling governs the register. The notes stay and stop being an alternative to the chat — an editor wants both. **§4 — C1 is mine and I am writing it now**, the table and the route; you flagged that notes are attributed but not persisted and I have carried it unactioned. **§2 is on the record because this looks like the thing I froze and is not**: the error was deriving the publisher PRODUCT by culling the author one, and that stays dead. The editing surface is "using" in Paul's own frame, and two implementations of one job is not separation, it is a second thing to keep correct.
