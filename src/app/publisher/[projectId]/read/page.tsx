@@ -231,11 +231,6 @@ export default function ReadingRoomPage() {
    * else's book raises whose journey it is. No journey beats a journey that
    * claims the wrong actor. */
   const { turns, thinking, failure: chatFailure, ask } = usePublisherChat(projectId)
-  // Held, not rendered — see the unmount note in the column below. Stated
-  // rather than deleted, so the mount is a four-line restore and nobody has to
-  // rediscover what the shape was.
-  void thinking
-  void chatFailure
 
   const chatEntries = useMemo<ConversationEntry[]>(
     () =>
@@ -388,49 +383,64 @@ export default function ReadingRoomPage() {
               }
             />
 
-            {/* ─── THE CHAT — BUILT, AND UNMOUNTED ON MEASUREMENT ──────────
-                It was mounted here for one commit. I then ran sysadmin's smoke
-                test through the n8n MCP connection Paul opened, and the test
-                they could not run is the reason it is not mounted now.
+            {/* ─── THE CHAT — MOUNTED ON A GREEN RUN, not on a report ───────
+                It came off on execution 625 and goes back on execution 626.
 
-                EXECUTIONS 616 and 617 against `2.5 Alex Chat`, versionId
-                5e8a111e (the live one):
+                  616  no journey_id, version 5e8a111e  -> error, 1.96s
+                  617  journey_id: '',  version 5e8a111e  -> error, 1.89s
+                  625  no journey_id, version 8f41defb  -> error, 3.05s
+                  626  no journey_id, version 023a573b  -> SUCCESS, 13.2s
 
-                  616  no journey_id       -> status: error in 1.96s
-                  617  journey_id: ''      -> status: error in 1.89s
+                626 reached `Respond to Webhook` through
+                `Has Journey? (ready)` output 1 — the false branch — which is
+                `astudio` taking my gate in my own shape: the journey nodes do
+                not run when there is no journey, rather than running against
+                a placeholder. A journey update with no journey is a statement
+                we have nothing to say.
 
-                Both fail at `Journey: Received`:
+                THE REGISTER IS RIGHT, and this is the first live evidence of
+                it rather than a prompt review. From 626's reply, verbatim:
 
-                  NodeOperationError: Query Parameters must be a string of
-                  comma-separated values or an array of values
+                  "What's the thinking behind opening this way?"
+                  "…this information might land harder when HE learns it"
 
-                `Extract Parameters` emits `journey_id: null` in BOTH runs —
-                measured in its output, not inferred — because
-                `body.journey_id || null` turns an absent id AND an empty
-                string into null (`'' || null` is null; the empty string is
-                falsy). The Postgres v2 node refuses a null query replacement
-                before any SQL runs, so `NULLIF($1,'')::uuid` IS NEVER REACHED.
-                That guard was written to tolerate an empty string and no
-                caller can ever deliver one.
+                It asks the house about the author's choice and names the
+                character in the third person. No authorial act is attributed
+                to the reader, which is B4's check-statement passing on live
+                output.
 
-                So a journeyless chat does not hang — sysadmin's worst case
-                does not occur, and that is the good news. It errors in two
-                seconds, every time. "Optional by construction" is false for
-                every possible input, and the one value their ruling forbade
-                would not have helped either.
+                And the per-call ledger came back journeyless exactly as
+                sysadmin said it would: sonnet-4-5, 1238 in / 231 out, 9.6s,
+                $0.0072. Telemetry does not depend on a journey.
 
-                The route and the hook are correct and stay. Mounting is the
-                four lines below, restored the moment `Extract Parameters`
-                emits `''` instead of `null`. Until then the tool is ABSENT
-                rather than present and failing — a chat that answers nothing
-                is the affordance defect on the one surface whose claim is
-                "an editor is listening".
+                Alex only. Sam and Jordan stay absent until 3.3 and 4.3 carry
+                the parameter — `ux` ruled it, enforced by absence. */}
+            <StudioConversation
+              audience="publisher"
+              title="Ask Alex"
+              subtitle={
+                chapter?.title ? `about ${chapter.title}` : 'about this manuscript'
+              }
+              entries={chatEntries}
+              emptyText="Alex has read this manuscript. Ask about the structural read — the answer discusses the author's work rather than addressing its writer."
+              thinking={thinking}
+              composer={{
+                placeholder: 'Ask Alex about this manuscript…',
+                submitLabel: 'Ask',
+                onSend: askAlex,
+                busy: thinking,
+              }}
+              failure={chatFailure}
+            />
 
-                  <StudioConversation
-                    audience="publisher" title="Ask Alex"
-                    entries={chatEntries} thinking={thinking}
-                    composer={{ …, onSend: askAlex }} failure={chatFailure} />
-            */}
+            {/* IN-SESSION, AND SAID SO. There is no publisher chat table, so
+                these turns are gone on reload. Stated on the surface rather
+                than discovered by a publisher who went back to look for the
+                conversation — the same honesty the notes column carried for a
+                fortnight before C1 gave it a substrate. */}
+            <p className="px-5 pb-5 text-[11.5px] leading-relaxed text-[#8A8A8A]">
+              This conversation is not kept. Your notes above are.
+            </p>
           </aside>
         )}
       </div>
