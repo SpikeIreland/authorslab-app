@@ -485,72 +485,72 @@ function FreeAnalysisForm() {
           </div>
 
           {/* What You'll Receive */}
-          <div className="bg-white rounded-2xl p-8 shadow-lg border-l-4 border-green-500 mb-8">
-            <h3 className="text-2xl font-bold text-green-900 mb-4">What You&apos;ll Receive (Free!):</h3>
-            <ul className="space-y-3 text-gray-700">
+          <div className="bg-paper rounded-2xl p-8 shadow-lg border-l-4 border-sage-deep mb-8">
+            <h3 className="font-serif text-2xl text-ink mb-4">What You&apos;ll Receive (Free!):</h3>
+            <ul className="space-y-3 text-muted">
               <li className="flex items-start gap-3">
-                <span className="text-green-600 mt-1">✓</span>
+                <span className="text-sage-deep mt-1">✓</span>
                 <span><strong>Complete manuscript overview</strong> - Overall strengths and development opportunities</span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-green-600 mt-1">✓</span>
+                <span className="text-sage-deep mt-1">✓</span>
                 <span><strong>Key structural insights</strong> - Pacing, organization, and narrative flow</span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-green-600 mt-1">✓</span>
+                <span className="text-sage-deep mt-1">✓</span>
                 <span><strong>Character development overview</strong> - Protagonist journey and supporting character effectiveness</span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-green-600 mt-1">✓</span>
+                <span className="text-sage-deep mt-1">✓</span>
                 <span><strong>Thematic depth assessment</strong> - Core themes and their development</span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-green-600 mt-1">✓</span>
+                <span className="text-sage-deep mt-1">✓</span>
                 <span><strong>Professional priority recommendations</strong> - Next steps for improvement</span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-green-600 mt-1">✓</span>
+                <span className="text-sage-deep mt-1">✓</span>
                 <span><strong>Detailed PDF report</strong> via email</span>
               </li>
             </ul>
           </div>
 
           {/* Upgrade CTA */}
-          <div className="bg-gradient-to-br from-red-500 to-red-600 text-white rounded-2xl p-8 mb-8 text-center">
-            <h3 className="text-2xl font-bold mb-4">🎯 Want Chapter-by-Chapter Detail?</h3>
+          <div className="bg-sage-deep text-white rounded-2xl p-8 mb-8 text-center">
+            <h3 className="font-serif text-2xl mb-4">Want chapter-by-chapter detail?</h3>
             <p className="text-lg mb-6">
               This free analysis provides a comprehensive overview. For detailed, actionable chapter-by-chapter feedback, scene-specific suggestions, and a complete revision roadmap:
             </p>
             <Link href="/pricing">
-              <Button className="bg-white text-red-600 hover:bg-gray-100 text-lg px-8 py-6">
+              <Button className="bg-paper text-ink hover:bg-ivory text-lg px-8 py-6">
                 Explore AuthorsLab membership
               </Button>
             </Link>
           </div>
 
           {/* PDF Notice */}
-          <div className="bg-blue-50 border-2 border-blue-500 rounded-xl p-6 mb-8 text-center">
-            <h4 className="text-xl font-bold text-blue-900 mb-2">📄 PDF Format Required</h4>
-            <p className="text-blue-800 mb-2">
+          <div className="bg-paper-warm border border-line rounded-xl p-6 mb-8 text-center">
+            <h4 className="font-serif text-xl text-ink mb-2">PDF or Word format</h4>
+            <p className="text-muted mb-2">
               We accept <strong>PDF files only</strong> for streamlined processing and comprehensive analysis quality.
             </p>
-            <p className="text-blue-700 text-sm">
+            <p className="text-faint text-sm">
               <em>Need to convert? Most word processors can save/export as PDF.</em>
             </p>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-8 shadow-lg">
+          <form onSubmit={handleSubmit} className="bg-paper rounded-2xl p-8 shadow-lg">
             {error && (
-              <div className="bg-red-50 border-2 border-red-500 rounded-xl p-4 mb-6 text-red-900">
+              <div className="bg-amber-bg border border-status-high rounded-xl p-4 mb-6 text-status-high">
                 ❌ {error}
               </div>
             )}
 
             <div className="space-y-6">
               <div>
-                <label htmlFor="authorName" className="block text-lg font-bold text-gray-900 mb-2">
-                  Author Name <span className="text-red-600">*</span>
+                <label htmlFor="authorName" className="block text-lg font-bold text-ink mb-2">
+                  Author Name <span className="text-status-high">*</span>
                 </label>
                 <input
                   type="text"
@@ -558,13 +558,13 @@ function FreeAnalysisForm() {
                   name="authorName"
                   required
                   placeholder="Enter your full name"
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-lg"
+                  className="w-full px-4 py-3 border border-line rounded-lg focus:border-sage-deep focus:outline-none text-lg"
                 />
               </div>
 
               <div>
-                <label htmlFor="bookTitle" className="block text-lg font-bold text-gray-900 mb-2">
-                  Book/Manuscript Title <span className="text-red-600">*</span>
+                <label htmlFor="bookTitle" className="block text-lg font-bold text-ink mb-2">
+                  Book/Manuscript Title <span className="text-status-high">*</span>
                 </label>
                 <input
                   type="text"
@@ -572,13 +572,13 @@ function FreeAnalysisForm() {
                   name="bookTitle"
                   required
                   placeholder="Enter your book title"
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-lg"
+                  className="w-full px-4 py-3 border border-line rounded-lg focus:border-sage-deep focus:outline-none text-lg"
                 />
               </div>
 
               <div>
-                <label htmlFor="authorEmail" className="block text-lg font-bold text-gray-900 mb-2">
-                  Email Address <span className="text-red-600">*</span>
+                <label htmlFor="authorEmail" className="block text-lg font-bold text-ink mb-2">
+                  Email Address <span className="text-status-high">*</span>
                 </label>
                 <input
                   type="email"
@@ -586,12 +586,12 @@ function FreeAnalysisForm() {
                   name="authorEmail"
                   required
                   placeholder="your.email@example.com"
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-lg"
+                  className="w-full px-4 py-3 border border-line rounded-lg focus:border-sage-deep focus:outline-none text-lg"
                 />
               </div>
 
               <div>
-                <label htmlFor="genre" className="block text-lg font-bold text-gray-900 mb-2">
+                <label htmlFor="genre" className="block text-lg font-bold text-ink mb-2">
                   Genre (Optional)
                 </label>
                 <input
@@ -599,12 +599,12 @@ function FreeAnalysisForm() {
                   id="genre"
                   name="genre"
                   placeholder="e.g., Literary Fiction, Romance, Mystery"
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-lg"
+                  className="w-full px-4 py-3 border border-line rounded-lg focus:border-sage-deep focus:outline-none text-lg"
                 />
               </div>
 
               <div>
-                <label htmlFor="additionalNotes" className="block text-lg font-bold text-gray-900 mb-2">
+                <label htmlFor="additionalNotes" className="block text-lg font-bold text-ink mb-2">
                   Additional Notes (Optional)
                 </label>
                 <textarea
@@ -612,14 +612,14 @@ function FreeAnalysisForm() {
                   name="additionalNotes"
                   rows={4}
                   placeholder="Any specific areas you'd like us to focus on..."
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-lg resize-none"
+                  className="w-full px-4 py-3 border border-line rounded-lg focus:border-sage-deep focus:outline-none text-lg resize-none"
                 />
               </div>
 
               {/* File Upload */}
               <div>
-                <label className="block text-lg font-bold text-gray-900 mb-2">
-                  Upload Complete Manuscript PDF <span className="text-red-600">*</span>
+                <label className="block text-lg font-bold text-ink mb-2">
+                  Upload Complete Manuscript PDF <span className="text-status-high">*</span>
                 </label>
                 
                 <div
@@ -628,17 +628,17 @@ function FreeAnalysisForm() {
                   onDrop={handleDrop}
                   className={`border-4 border-dashed rounded-2xl p-12 text-center transition-all ${
                     dragOver 
-                      ? 'border-green-600 bg-green-50' 
+                      ? 'border-sage-deep bg-sage-bg' 
                       : file 
-                      ? 'border-green-500 bg-green-50' 
-                      : 'border-gray-300 bg-gray-50 hover:border-green-400 hover:bg-green-50/50'
+                      ? 'border-sage-deep bg-sage-bg' 
+                      : 'border-line bg-paper-warm hover:border-sage hover:bg-sage-bg/60'
                   }`}
                 >
                   <div className="text-6xl mb-4">📄</div>
-                  <div className="text-xl font-bold text-gray-900 mb-2">
+                  <div className="font-serif text-xl text-ink mb-2">
                     Choose Your Complete Manuscript
                   </div>
-                  <div className="text-gray-600 mb-6">
+                  <div className="text-muted mb-6">
                     Drag and drop your PDF here, or click to browse<br />
                     <strong>Full manuscript analysis - no word limits!</strong>
                   </div>
@@ -661,28 +661,28 @@ function FreeAnalysisForm() {
                   </button>
 
                   {file && (
-                    <div className="mt-6 p-4 bg-green-100 rounded-lg">
-                      <div className="font-bold text-green-900 mb-2">
-                        ✅ PDF Selected: {file.name}
+                    <div className="mt-6 p-4 bg-sage-bg rounded-lg">
+                      <div className="font-bold text-ink mb-2">
+                        Selected: {file.name}
                       </div>
                       {isAnalyzing ? (
-                        <div className="text-green-700">⏳ Analyzing manuscript...</div>
+                        <div className="text-muted">Reading the file…</div>
                       ) : wordCountUnavailable ? (
-                        <div className="text-green-800">
+                        <div className="text-muted">
                           <strong>Word count unavailable.</strong> We could not read a count from this file.<br />
                           <span className="text-sm">Your manuscript will still be analysed in full.</span>
                         </div>
                       ) : wordCountFormatted ? (
-                        <div className="text-green-800">
+                        <div className="text-muted">
                           <strong>Manuscript Word Count:</strong> {wordCountFormatted} words<br />
-                          <span className="text-sm">✅ Complete manuscript ready for analysis!</span>
+                          <span className="text-sm">Ready for analysis.</span>
                         </div>
                       ) : null}
                     </div>
                   )}
                 </div>
 
-                <div className="mt-4 p-4 bg-gray-50 rounded-lg text-sm text-gray-700">
+                <div className="mt-4 p-4 bg-paper-warm rounded-lg text-sm text-muted">
                   <strong>Accepted formats:</strong> PDF (.pdf) or Word (.docx)<br />
                   <strong>Maximum size:</strong> 20MB<br />
                   <strong>Full manuscript analysis:</strong> We analyze your complete manuscript, regardless of length<br />
