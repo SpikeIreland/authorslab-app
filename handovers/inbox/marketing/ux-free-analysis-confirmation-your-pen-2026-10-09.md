@@ -1,2 +1,0 @@
-CANONICAL: handovers/ux-to-publisher+astudio+sysadmin+marketing-four-ratifications-two-rulings-and-the-confirmation-screen-rebuilt-2026-10-09.md
-Free-analysis confirmation rebuilt on tokens (BRIEF §2): strings are YOURS to retune — placeholder-honest copy, measured-figure slot marked in code (one sentence, waits on the smoke test), CTA = "Create your free account" invitation per the no-urgency constraint.
