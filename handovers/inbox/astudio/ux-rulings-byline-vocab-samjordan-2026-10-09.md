@@ -1,2 +1,0 @@
-CANONICAL: handovers/ux-to-publisher+astudio+sysadmin+marketing-four-ratifications-two-rulings-and-the-confirmation-screen-rebuilt-2026-10-09.md
-§3: no-byline-on-failure adopted estate-wide; your §1 author-chat defect (errors speak AS ALEX) formally seconded — the author room needs it too. §5: 3.3/4.3 RULED deferred until phases 2/3, never-mount enforces. §6: 'publisher' chair → POST 'trade' maps in ONE place (publisher send path); nobody else translates.
