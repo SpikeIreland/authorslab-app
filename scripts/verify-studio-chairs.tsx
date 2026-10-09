@@ -26,6 +26,7 @@ import {
   assertAudience,
   type StudioChapter,
 } from '../src/components/studio/StudioRoom'
+import { StudioConversation } from '../src/components/studio/StudioConversation'
 
 let checks = 0
 let failures = 0
@@ -121,8 +122,67 @@ let threwEmpty = false
 try { assertAudience('') } catch { threwEmpty = true }
 check('CONTROL an empty string errors too (it is not "absent")', threwEmpty, true)
 
+
+/* ─── THE CONVERSATION COLUMN ───────────────────────────────────────────────
+ * Two guarantees, both of which exist because of defects found in the author
+ * studio's chat: a composer must be ABSENT rather than disabled when there is
+ * no send path, and a failure must never be rendered as a person speaking.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+const entries = [
+  { id: 'n1', body: 'The second act sags.', byline: 'You', when: '2 Oct' },
+  { id: 'n2', body: 'Agreed.', byline: 'A colleague', when: '3 Oct' },
+]
+
+const noSend = renderToStaticMarkup(
+  <StudioConversation
+    audience="publisher"
+    title="Your notes"
+    entries={entries}
+    emptyText="Nothing yet."
+    composer={null}
+    failure="That note was not saved."
+  />
+)
+
+const withSend = renderToStaticMarkup(
+  <StudioConversation
+    audience="publisher"
+    title="Your notes"
+    entries={entries}
+    emptyText="Nothing yet."
+    composer={{ placeholder: 'A note…', submitLabel: 'Add note', onSend: () => {} }}
+  />
+)
+
+const noByline = renderToStaticMarkup(
+  <StudioConversation
+    audience="publisher"
+    title="Chat"
+    entries={[{ id: 'x', body: 'A line with no attribution.', byline: null, when: null }]}
+    emptyText="Nothing yet."
+  />
+)
+
+console.log('\nthe conversation column:\n')
+
+check('no send path -> NO textarea mounted', /<textarea/.test(noSend), false)
+check('no send path -> NO submit button mounted', /Add note<\/button>/.test(noSend), false)
+check('CONTROL with a send path -> textarea IS mounted', /<textarea/.test(withSend), true)
+check('CONTROL with a send path -> submit button IS mounted', /Add note<\/button>/.test(withSend), true)
+
+// The failure must appear, and must NOT be inside an entry card with a byline.
+check('a failure is rendered', /That note was not saved/.test(noSend), true)
+check(
+  'a failure carries no byline — it is the surface, not a person',
+  /That note was not saved[^<]*<\/p>/.test(noSend),
+  true
+)
+
+check('an entry with no byline renders none', /A line with no attribution/.test(noByline) && !/·/.test(noByline), true)
+check('CONTROL an entry WITH a byline renders it', /You/.test(noSend), true)
 console.log(
   `\n${checks - failures}/${checks} passed, ${failures} failed` +
-    (failures === 0 ? ' — including 8 negative controls\n' : '\n')
+    (failures === 0 ? ' — including 12 negative controls\n' : '\n')
 )
 process.exit(failures === 0 ? 0 : 1)

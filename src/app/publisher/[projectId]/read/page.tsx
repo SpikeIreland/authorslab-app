@@ -46,6 +46,10 @@ import {
   StudioWorkCentre,
   type StudioChapter,
 } from '@/components/studio/StudioRoom'
+import {
+  StudioConversation,
+  type ConversationEntry,
+} from '@/components/studio/StudioConversation'
 
 // ─── 2. Helpers ───────────────────────────────────────────────────────────────
 
@@ -218,6 +222,20 @@ export default function ReadingRoomPage() {
           word_count: e.wordCount,
         }))
 
+  /* The shared column's entry shape. The byline says the one thing the row
+   * supports — whether the note is the viewer's own — because C1 stores a
+   * membership id and no label. `null` would render no byline at all; here we
+   * do have a fact, so it is stated. */
+  const noteEntries = useMemo<ConversationEntry[]>(() => {
+    if (notesState.status !== 'ready') return []
+    return notesForChapter.map((n) => ({
+      id: n.id,
+      body: n.body,
+      byline: n.author_membership_id === notesState.myMembershipId ? 'You' : 'A colleague',
+      when: formatWhen(n.created_at),
+    }))
+  }, [notesState, notesForChapter])
+
   /* THREE STATES, KEPT APART. null = still loading; '' = a chapter that holds
    * no text on the record; a string = the prose. Collapsing loading into
    * empty would show "no text on the record" about a chapter we have not
@@ -272,19 +290,66 @@ export default function ReadingRoomPage() {
           title={chapter?.title ?? null}
           text={workCentreText}
         />
+        {/* ─── THE CONVERSATION COLUMN (ux SPEC §2) ───────────────────────
+            One column, stacked tools. Notes is the first caller of the shared
+            component and injects its own send path; the chat is the second and
+            is NOT MOUNTED — see the header note below. */}
         {notesAvailable && (
-          <NotesPane
-            chapterTitle={chapter?.title ?? ''}
-            notes={notesForChapter}
-            onAdd={addNote}
-            disabled={saving}
-            available={notesAvailable}
-            lastFailure={lastFailure}
-            myMembershipId={
-              notesState.status === 'ready' ? notesState.myMembershipId : null
-            }
-            hasChapters={spine === null ? null : spine.length > 0}
-          />
+          <aside className="border-l border-[#E8E5E0] bg-white/60 lg:max-h-[calc(100vh-61px)] lg:overflow-y-auto">
+            <StudioConversation
+              audience="publisher"
+              title="Your notes"
+              subtitle={chapter?.title ? `on ${chapter.title}` : 'on this title'}
+              entries={noteEntries}
+              emptyText={
+                spine !== null && spine.length === 0
+                  ? 'Notes attach to a chapter or to the book. There is no manuscript here yet.'
+                  : current === null
+                    ? 'Nothing yet. A note left with no chapter selected sits against the book.'
+                    : 'Nothing yet. Notes you leave here sit against this chapter.'
+              }
+              composer={
+                /* NOT MOUNTED where there is nothing to note on. A title with
+                   no manuscript has no chapter and no book text to annotate;
+                   everywhere else a note is possible, including with no
+                   chapter selected, because C1 takes a null chapter. */
+                spine !== null && spine.length === 0
+                  ? null
+                  : {
+                      placeholder:
+                        current === null
+                          ? 'A note on this book…'
+                          : 'A note on this chapter…',
+                      submitLabel: 'Add note',
+                      onSend: addNote,
+                      busy: saving,
+                    }
+              }
+              failure={
+                lastFailure
+                  ? lastFailure === 'not_on_your_list'
+                    ? 'That note was not saved — this title is not on your list.'
+                    : lastFailure === 'no_seat'
+                      ? 'That note was not saved — your account holds no seat on this list.'
+                      : 'That note was not saved. Nothing was recorded; try again.'
+                  : null
+              }
+            />
+
+            {/* ─── THE CHAT, DELIBERATELY ABSENT ─────────────────────────────
+                `ux` §2 puts chat and notes in this column together, and
+                `astudio` has `audience: 'trade'` in service on 2.5 Alex Chat.
+                It is still not mounted, and the reason is a payload I have not
+                verified rather than a gate I am waiting on:
+
+                the author chat posts `journey_id` from `startJourney(...)`,
+                and whether a PUBLISHER-originated journey row is permitted —
+                or required — is astudio's to say. Mounting a chat I cannot
+                prove responds would be an affordance that is a claim, on the
+                one surface where the claim is "an editor is listening".
+
+                Absent, not disabled. Couriered with the question. */}
+          </aside>
         )}
       </div>
     </div>
@@ -321,130 +386,3 @@ function ReadHeader({ onBack }: { onBack: () => void }) {
 
 // ─── 7. The publisher's notes ─────────────────────────────────────────────────
 
-function NotesPane({
-  chapterTitle,
-  notes,
-  onAdd,
-  disabled,
-  hasChapters,
-  available,
-  lastFailure,
-  myMembershipId,
-}: {
-  chapterTitle: string
-  notes: PublisherNote[]
-  onAdd: (body: string) => void | Promise<void>
-  disabled: boolean
-  hasChapters: boolean | null
-  available: boolean
-  /** A write that failed. Rendered, never swallowed. */
-  lastFailure: string | null
-  /** The viewer's own membership, so "You" is a fact and not a guess. */
-  myMembershipId: string | null
-}) {
-  const [draft, setDraft] = useState('')
-
-  async function submit() {
-    const body = draft.trim()
-    if (!body) return
-    await onAdd(body)
-    setDraft('')
-  }
-
-  // An affordance is a claim. Where notes cannot be recorded, the column does
-  // not offer to record one — it is not disabled-with-an-apology, it is absent.
-  if (!available) return null
-
-  // A note attaches to a CHAPTER. With no chapters there is nothing to attach
-  // one to, and with none selected there is nothing chosen — so the composer
-  // is absent rather than present-and-silently-inert. It was the latter: the
-  // textarea accepted text, "Add note" looked live, and `addNote` returned
-  // early on a null chapter, discarding what had been typed with no feedback.
-  // A control that pretends to succeed is worse than one that is missing.
-  // A note with no chapter selected is a note ON THE BOOK — C1 makes
-  // chapter_number nullable precisely so that is sayable. So the composer
-  // stays; only a title with no manuscript at all has nothing to note on.
-  const nothingToNoteOn = hasChapters === false
-
-  return (
-    <aside className="border-l border-[#E8E5E0] bg-white/60 lg:max-h-[calc(100vh-61px)] lg:overflow-y-auto">
-      <div className="px-5 py-4 text-[11px] tracking-[0.14em] uppercase text-[#8A8A8A] border-b border-[#E8E5E0]">
-        Your notes
-      </div>
-
-      <div className="px-5 py-4">
-        {chapterTitle && (
-          <div className="text-[12px] text-[#8A8A8A] mb-4">on {chapterTitle}</div>
-        )}
-
-        {nothingToNoteOn ? (
-          <p className="text-[13px] text-[#8A8A8A] leading-relaxed">
-            {hasChapters === false
-              ? 'Notes attach to a chapter. There is no manuscript here yet.'
-              : 'Select a chapter to leave a note on it.'}
-          </p>
-        ) : notes.length === 0 ? (
-          <p className="text-[13px] text-[#8A8A8A] leading-relaxed mb-5">
-            Nothing yet. Notes you leave here sit against this chapter.
-          </p>
-        ) : (
-          <div className="space-y-3 mb-5">
-            {notes.map((n) => (
-              <div
-                key={n.id}
-                className="border border-[#E8E5E0] bg-white rounded-[3px] px-3.5 py-3"
-              >
-                <div className="text-[14px] leading-[1.55] text-[#2A2A2A]">{n.body}</div>
-                {/* ATTRIBUTION, AND WHAT WE WILL NOT INVENT.
-                    The old pane printed `actor_firm`, a column C1 does not
-                    have: a note is attributed to a MEMBERSHIP id, with no
-                    label. So this says the one thing the row supports —
-                    whether the note is yours — and says nothing where it
-                    cannot. Printing the house's own name against a colleague's
-                    note would be the `actor_firm` defect again in the other
-                    direction: a label that looks like attribution and names
-                    nobody. A display name needs either a join in the notes
-                    route or a label column; couriered as a question. */}
-                <div className="text-[11px] text-[#B8B8B8] mt-2">
-                  {n.author_membership_id === myMembershipId ? 'You' : 'A colleague'}
-                  {' '}&middot; {formatWhen(n.created_at)}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {!nothingToNoteOn && (
-        <>
-        {/* A write that failed, said out loud. The console is not a surface. */}
-        {lastFailure && (
-          <p className="text-[12.5px] leading-relaxed mb-3" style={{ color: '#B5654A' }}>
-            That note was not saved{lastFailure === 'not_on_your_list'
-              ? ' — this title is not on your list.'
-              : lastFailure === 'no_seat'
-                ? ' — your account holds no seat on this list.'
-                : '. Nothing was recorded; try again.'}
-          </p>
-        )}
-        <textarea
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          disabled={disabled}
-          rows={4}
-          placeholder="A note on this chapter&hellip;"
-          className="w-full text-[13px] px-3 py-2.5 border border-[#E8E5E0] rounded-[3px] bg-white focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 focus:border-[#1E3A5F] resize-none disabled:opacity-50"
-        />
-        <button
-          type="button"
-          onClick={submit}
-          disabled={disabled || !draft.trim()}
-          className="mt-2.5 w-full text-[13px] px-4 py-2 rounded-[3px] border border-[#1E3A5F] text-white bg-[#1E3A5F] hover:bg-[#17304F] disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/40"
-        >
-          Add note
-        </button>
-        </>
-        )}
-      </div>
-    </aside>
-  )
-}
