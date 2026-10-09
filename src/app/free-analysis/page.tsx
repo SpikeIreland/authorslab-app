@@ -115,7 +115,6 @@ function FreeAnalysisForm() {
   const [submittedEmail, setSubmittedEmail] = useState<string>('')
 
   const WEBHOOK_URL = N8N_WEBHOOKS.freeManuscriptAnalysis
-  const WORD_COUNT_URL = N8N_WEBHOOKS.manuscriptWordCount
 
   const DOCX_MIME =
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
@@ -153,46 +152,65 @@ function FreeAnalysisForm() {
     return new File([textBlob], `${baseName}.txt`, { type: 'text/plain' })
   }
 
+  /**
+   * The word count, counted where we actually have the words.
+   *
+   * ─── WHY THIS NO LONGER CALLS A WEBHOOK ─────────────────────────────────
+   *
+   * It used to POST the file to `manuscript-word-count`. Measured 9 October:
+   * NO WORKFLOW IS ON THAT PATH. The two word-count workflows in n8n — "1.2
+   * PDF Word Count" (active) and "00.05 PDF Word Count" (inactive since April)
+   * — both sit on `pdf-word-count`. So every call 404'd, silently, forever.
+   *
+   * And repointing the config would have turned a 404 into a 500: despite its
+   * name, 1.2 does no PDF parsing and accepts no file. It expects
+   * `{ manuscriptText: "..." }` as JSON. This page sends multipart with a PDF.
+   *
+   *   The config file had already flagged this — "⚠ Workflow currently
+   *   INACTIVE in n8n. Paul to confirm" — and the page kept calling it anyway,
+   *   because the fallback hid the failure behind a plausible number.
+   *
+   * ─── SO: EXACT WHERE WE CAN BE, ABSENT WHERE WE CANNOT ──────────────────
+   *
+   * For DOCX we already extract the text in this browser, with mammoth, to
+   * build the upload. Counting it is free and exact — no network, no service,
+   * nothing to be down.
+   *
+   * For PDF we hold no text client-side, so there is no count to give, and we
+   * say so. A manuscript still uploads and is still analysed in full: the
+   * count was always a courtesy to the reader, never a precondition.
+   */
   const getAccurateWordCount = async (file: File) => {
+    const unavailable = {
+      success: false,
+      wordCount: null as number | null,
+      formattedWordCount: '',
+      quality: 'unavailable',
+    }
+
+    const isDocx =
+      file.name.toLowerCase().endsWith('.docx') || file.type === DOCX_MIME
+
+    if (!isDocx) return unavailable
+
     try {
-      const formData = new FormData()
-      formData.append('manuscript', file)
-      formData.append('phaseType', 'developmental_editing')
-      
-      const response = await fetch(WORD_COUNT_URL, {
-        method: 'POST',
-        body: formData
-      })
-      
-      if (response.ok) {
-        const result = await response.json()
-        return {
-          success: true,
-          wordCount: result.wordCount,
-          formattedWordCount: result.formattedWordCount,
-          quality: result.extractionQuality
-        }
-      } else {
-        throw new Error('Word count service unavailable')
+      const mammoth = await import('mammoth/mammoth.browser')
+      const arrayBuffer = await file.arrayBuffer()
+      const { value } = await mammoth.extractRawText({ arrayBuffer })
+      // \S+ rather than splitting on whitespace: a split yields a leading
+      // empty string on text that starts with a space, which would count one
+      // word too many on exactly the files nobody checks.
+      const count = (value.match(/\S+/g) || []).length
+      if (count === 0) return unavailable
+      return {
+        success: true,
+        wordCount: count,
+        formattedWordCount: count.toLocaleString(),
+        quality: 'exact',
       }
     } catch (error) {
-      // NO FALLBACK NUMBER. This used to return `file.size / 6` and call it an
-      // estimate. Paul ran Carl's manuscript through on 9 October and was shown
-      // ~151,000 words for a 47,291-word book, because the word-count webhook
-      // had failed and the page quietly divided the PDF's byte count by six.
-      //
-      //   An estimate is a measurement with error bars. A number derived from
-      //   something that is not the thing being measured is a fabrication, and
-      //   the word "(estimated)" does not make it one.
-      //
-      // NULL, never placeholder — this estate's own rule, applied to itself.
-      console.error('[free-analysis] word count unavailable:', error)
-      return {
-        success: false,
-        wordCount: null as number | null,
-        formattedWordCount: '',
-        quality: 'unavailable'
-      }
+      console.error('[free-analysis] could not read the document to count it:', error)
+      return unavailable
     }
   }
 

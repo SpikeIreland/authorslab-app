@@ -62,6 +62,7 @@ import {
   getSeverityLabel,
   getSeverityColor,
 } from '@/lib/studio/issueVocabulary'
+import { quoteTolerantRegExp, wouldFlattenTypography } from '@/lib/studio/typography'
 
 // AL-UX-007: highlight re-tinted from Tailwind amber to Manuscript Room warm amber
 const highlightStyles = `
@@ -82,72 +83,41 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
   console.log('=== EDITOR DEBUG ===');
   console.log('🔍 Looking for issue text:', quotedText);
 
-  // Get the HTML content and normalize for matching
-  const htmlContent = editorRef.innerHTML;
-  const normalizedContent = htmlContent
-    .replace(/<br\s*\/?>/gi, ' ')
-    .replace(/\s+/g, ' ')
+  // 2026-10-09 (astudio): THE EDITOR'S innerHTML IS NOT TOUCHED HERE.
+  // It used to be rewritten to ASCII quotes so Mark.js could match an issue's
+  // quoted_text, `originalHTML` was saved and never restored, and the author's
+  // next keystroke carried the flattened innerText into the autosave ref. So a
+  // read-only click rewrote an author's typography and committed it unasked.
+  // Found by `publisher` while lifting the chapter reader; released by
+  // `sysadmin` as outranking everything else in this lane.
+  //
+  // The defect was never the normalisation — it was the normalisation ESCAPING
+  // into the document being edited. The match is now a quote-tolerant regex
+  // (src/lib/studio/typography.ts), so nothing is rewritten and nothing can
+  // leak into a save. Trade accepted deliberately: markRegExp has no
+  // `ignorePunctuation`, so a quote whose punctuation differs from the stored
+  // text may fail to highlight. A missed highlight is visible and harmless;
+  // rewriting the manuscript was neither.
+  const needle = quoteTolerantRegExp(quotedText);
 
-  // Create a temporary div to get clean text
-  const tempDiv = document.createElement('div');
-  tempDiv.innerHTML = normalizedContent;
-  let editorText = (tempDiv.textContent || '').replace(/\s+/g, ' ').trim();
+  const probe = document.createElement('div');
+  probe.innerHTML = editorRef.innerHTML.replace(/<br\s*\/?>/gi, ' ');
+  const editorText = (probe.textContent || '');
 
-  // Normalize BOTH editor text AND issue text for quotes
-  const normalizeQuotes = (text: string) => {
-    return text
-      .replace(/[\u201C\u201D]/g, '"')   // Smart double quotes (8220, 8221) to straight (34)
-      .replace(/[\u2018\u2019]/g, "'")   // Smart single quotes (8216, 8217) to straight (39)
-  };
-
-  editorText = normalizeQuotes(editorText);
-  const normalizedQuote = normalizeQuotes(quotedText.replace(/\s+/g, ' ').trim());
-
-  console.log('📄 Normalized editor text (first 300):', editorText.substring(0, 300));
-  console.log('🔍 Normalized issue text:', normalizedQuote);
-  console.log('🔬 Issue text char codes (first 50):',
-    normalizedQuote.substring(0, 50).split('').map(c => c.charCodeAt(0)).join(',')
-  );
-  console.log('🔬 Editor text char codes (first 50):',
-    editorText.substring(0, 50).split('').map(c => c.charCodeAt(0)).join(',')
-  );
-
-  // Check if text exists
-  const textExists = editorText.includes(normalizedQuote);
-  console.log('✅ Text exists in editor:', textExists);
-  console.log('=== END DEBUG ===');
-
-  if (!textExists) {
-    console.log('❌ Issue text not found in current chapter');
+  if (!needle.test(editorText)) {
+    console.log('No match for this issue in the current chapter');
     return false;
   }
+  needle.lastIndex = 0;
 
-  // Use Mark.js with the editor element - but normalize HTML first
   const markInstance = new Mark(editorRef);
 
-  // Save original HTML in case we need to restore it
-  const originalHTML = editorRef.innerHTML;
-
-  // Temporarily normalize the HTML to straight quotes for Mark.js
-  editorRef.innerHTML = editorRef.innerHTML
-    .replace(/\u201C/g, '"')  // Left smart double quote to straight
-    .replace(/\u201D/g, '"')  // Right smart double quote to straight
-    .replace(/\u2018/g, "'")  // Left smart single quote to straight
-    .replace(/\u2019/g, "'"); // Right smart single quote to straight
-
-  // Clear previous highlights
   markInstance.unmark({
     done: () => {
-      console.log('✅ Cleared old highlights');
-
-      // Now search with straight quotes in normalized HTML
-      markInstance.mark(normalizedQuote, {
+      markInstance.markRegExp(needle, {
         className: 'issue-highlight',
-        accuracy: 'partially',
-        separateWordSearch: false,
-        ignorePunctuation: ['.', ',', '!', '?', ';', ':'],
         acrossElements: true,
-        each: (element) => {
+        each: (element: Element) => {
           const el = element as HTMLElement;
           el.style.backgroundColor = '#F6E7C9';
           el.style.borderRadius = '2px';
@@ -156,14 +126,12 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
         },
         done: (counter: number) => {
           if (counter > 0) {
-            console.log(`✅ Highlighted ${counter} matches`);
-
             const highlights = editorRef.querySelectorAll('.issue-highlight');
             setTimeout(() => {
               highlights[0]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 100);
           } else {
-            console.log('❌ No matches found');
+            console.log('No matches highlighted');
           }
         }
       });
@@ -1776,6 +1744,9 @@ function StudioContent() {
     // Save current chapter if unsaved
     if (hasUnsavedChanges && currentChapter && pendingContentRef.current) {
       console.log('💾 Saving before switch')
+      if (wouldFlattenTypography(currentChapter.content, pendingContentRef.current)) {
+        console.error('Save-before-switch refused: this write would remove every typographic quote in the chapter. The edit is kept pending, not written.')
+      } else {
       const supabase = createClient()
       await supabase
         .from('chapters')
@@ -1786,6 +1757,7 @@ function StudioContent() {
         .eq('id', currentChapter.id)
 
       pendingContentRef.current = ''
+      }
     }
 
     // Get chapter ID from state
@@ -2169,6 +2141,14 @@ function StudioContent() {
     }
 
     console.log('💾 Saving chapter:', currentChapter.chapter_number, 'Auto:', isAutoSave)
+
+    // 2026-10-09 (astudio): refuse a write that would flatten the chapter's
+    // typography. One keystroke cannot legitimately remove every curly quote in
+    // a chapter, so this shape of change is a defect upstream, not an edit.
+    if (wouldFlattenTypography(currentChapter.content, editorContent)) {
+      console.error('Save refused: this write would remove every typographic quote in the chapter. Nothing was written.')
+      return
+    }
 
     if (!isAutoSave) setIsLocked(true)
     setIsSaving(true)

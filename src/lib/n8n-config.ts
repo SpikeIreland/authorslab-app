@@ -31,10 +31,25 @@ export const N8N_WEBHOOKS = {
      *  or retire the free-analysis page. */
     freeManuscriptAnalysis: webhook('free-manuscript-analysis'),
 
-    /** 00.05 PDF Word Count (legacy / free-analysis path).
-     *  ⚠ Workflow currently INACTIVE in n8n. Paul to confirm whether this
-     *  should be replaced with pdfWordCount (01.02) or kept separate. */
-    manuscriptWordCount: webhook('manuscript-word-count'),
+    /** 00.05 PDF Word Count — RETIRED 2026-10-09, and it never worked.
+     *
+     *  MEASURED: no workflow is on `manuscript-word-count`. Both word-count
+     *  workflows in n8n ("1.2 PDF Word Count", active; "00.05 PDF Word Count",
+     *  inactive since April) sit on `pdf-word-count`. Every call 404'd.
+     *
+     *  Nobody noticed for months because the one caller — the free-analysis
+     *  page — caught the failure and substituted `file.size / 6`, which for a
+     *  PDF produced roughly three times the real figure and presented it as a
+     *  count. The warning above this comment was written, read, and left.
+     *
+     *    A dependency that fails silently behind a plausible fallback is not
+     *    a broken dependency. It is an invisible one.
+     *
+     *  Nor could it be repaired by repointing: 1.2 does no PDF parsing and
+     *  accepts no file — it expects `{ manuscriptText }` as JSON. The caller
+     *  now counts DOCX text client-side and shows nothing for PDF.
+     *
+     *  Removed rather than left pointing at a path that does not exist. */
 
     // ─────────────────────────────────────────────
     // Phase 1 — Upload & Pre-Processing Pipeline
