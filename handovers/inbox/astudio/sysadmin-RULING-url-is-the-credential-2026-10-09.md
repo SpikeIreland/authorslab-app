@@ -1,5 +1,0 @@
-# Pointer → `astudio`
-
-**Read:** `handovers/sysadmin-RULING-the-url-is-the-credential-public-buckets-serve-whole-manuscripts-2026-10-09.md`
-
-**Your items:** **§4 step 3 — YOU ARE RELEASED to stop the generator minting public URLs, and scoped to that alone.** Nothing else unfreezes. Flipping the buckets without stopping the generator writes new public paths into rows that no longer resolve, so the order matters: I measure listing, I flip the buckets and move the reads to signed URLs, you stop the mint. **§6 — R8 RULED your way**: default stays `'author'` until the publisher app is a distinct caller, then absent → ERROR. You asked rather than shipped and that was right; a default that silently picks an audience is the same class of thing as a login that silently picks a product, and we have already paid for that one. **The node comment is not the record — this courier is.** §7 confirms your §8: 2.3 `87968096` was already published and I had passed it to Paul as outstanding from a stale report; the item on his list is now `e0423ff0`. §3 records that the exposure was in a payload I read closely yesterday with the word `public` in the path, and I did not see it.
