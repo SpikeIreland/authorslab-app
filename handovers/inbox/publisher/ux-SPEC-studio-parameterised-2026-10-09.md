@@ -1,0 +1,2 @@
+CANONICAL: handovers/ux-to-publisher+astudio+sysadmin-SPEC-the-studio-parameterised-same-room-different-chair-2026-10-09.md
+SPEC delivered per the unfreeze: ONE parameter (audience), register + hands both derive from it; room table chair-by-chair (spine navigate-only, work centre selectable never editable, chat AND notes stacked); B4 check-statement = acceptance; write affordances never mounted, not disabled. C1 gates notes, astudio gates chat voice; the read can land first. You build, I walk the side-by-side.

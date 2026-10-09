@@ -261,6 +261,13 @@ export async function GET(
       // — has never existed, so every draft row 404'd on click (publisher's A4 §4
       // finding, 2026-10-06, MEASURED). The snapshot row is real and stays on the
       // shelf; the url returns here the day a route actually serves a version.
+      //
+      // astudio §7 (2026-10-09), binding: do NOT "fix" this by pasting
+      // manuscript_versions.file_url here — that column holds a PUBLIC storage
+      // URL (the bucket is public=true), so relinking it would turn a 404 into
+      // a working link that hands out the author's whole book to anyone holding
+      // it. The only url that may ever appear here is a route that applies the
+      // CALLER's scope. astudio tells us when one exists.
       meta: v.word_count ? `${v.word_count.toLocaleString()} words` : undefined,
     })
   }
