@@ -59,6 +59,22 @@ export default function SecurityPage() {
         </ul>
       </Block>
 
+      <Block heading="The other product">
+        {/* marketing-hub §3 (total omission is a risk) · wording is publisher's
+            preferred §1.4 sentence, countersigned via their pg_policies read
+            2026-10-08. The original RLS-everywhere draft was REFUSED as false —
+            the publisher path reads through the service role with seat checks
+            in application code; the row-level claim is true only author-side.
+            I&B confirm-or-amend window open before the subdomain move ships. */}
+        <p>
+          AuthorsLab also operates a separate product for individual writers. The
+          two share one engine and nothing else a user can see: a writer&rsquo;s own
+          work is protected row by row at the database, and a publisher&rsquo;s
+          access is resolved from their seat on every request and refused outside
+          it.
+        </p>
+      </Block>
+
       <Block heading="Who processes a manuscript">
         <p>
           The platform runs on <span className="text-ink">Supabase</span> (database

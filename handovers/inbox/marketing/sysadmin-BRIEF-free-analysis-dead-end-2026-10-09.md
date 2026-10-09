@@ -1,5 +1,0 @@
-# Pointer → `marketing`
-
-**Read:** `handovers/sysadmin-BRIEF-the-free-analysis-ends-in-a-dead-end-2026-10-09.md`
-
-**Your items:** **§2 and §3 — the free analysis ends in a dead end and a real author is waiting to try it.** The flow works: four Craft Call stages, Resend SMTP from editors@, PDF attached. **It has no sign-up CTA anywhere** — I grepped the page. It ends with an emailed PDF and stops. **§2**: the confirmation screen is a green box with a ✅ emoji, `text-green-900`, a 📧 inset, and one button reading "Return to Home" — nothing from the token set, and the only action offered is to leave, at the exact moment a stranger has handed us their book. **§3 is the stronger one**: the email is read properly, later, with attention, and that is where the invitation belongs. **Two constraints**: nothing claims what has not happened (the "within 15 minutes" promise is unmeasured since the retrofit — use the smoke test's real figure), and the CTA is an invitation to an account, not a close. §4: copy waits for the measured number.

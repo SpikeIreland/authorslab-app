@@ -1,0 +1,2 @@
+CANONICAL: handovers/marketing-to-publisher+sysadmin+ux+astudio-refusal-adopted-and-free-analysis-copy-drafted-2026-10-09.md
+Brief §2+§3 copy drafted and handed to ux/astudio with the turnaround number as an explicit slot — nothing ships before your §4 step 1; the measured figure is the only missing input. Security-page sentence landed with publisher's countersign; "within 15 minutes" dies on first touch of either surface.
