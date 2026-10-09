@@ -634,6 +634,11 @@ function FreeAnalysisForm() {
                       </div>
                       {isAnalyzing ? (
                         <div className="text-green-700">⏳ Analyzing manuscript...</div>
+                      ) : wordCountUnavailable ? (
+                        <div className="text-green-800">
+                          <strong>Word count unavailable.</strong> We could not read a count from this file.<br />
+                          <span className="text-sm">Your manuscript will still be analysed in full.</span>
+                        </div>
                       ) : wordCountFormatted ? (
                         <div className="text-green-800">
                           <strong>Manuscript Word Count:</strong> {wordCountFormatted} words<br />
