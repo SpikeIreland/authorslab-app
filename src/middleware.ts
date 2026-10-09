@@ -26,12 +26,31 @@ export async function middleware(request: NextRequest) {
   //
   // /publisher/login is deliberately INSIDE the scope. One door per product,
   // and this one never guesses which product you meant.
-  if (
-    pathname.startsWith('/publisher') &&
-    !pathname.startsWith('/publisher/login') &&
-    !user
-  ) {
+  const isPublisherLogin = pathname.startsWith('/publisher/login')
+
+  if (pathname.startsWith('/publisher') && !isPublisherLogin && !user) {
     return NextResponse.redirect(new URL('/publisher/login', request.url))
+  }
+
+  // AND THE OTHER DIRECTION, which the first version missed.
+  //
+  // A signed-in person has no business on a sign-in page, and the layout
+  // cannot help: it decides whether to draw the shell from whether there is a
+  // session, and a server layout cannot read the pathname. So a signed-in
+  // visitor to /publisher/login got the login form wrapped in the house
+  // chrome — Harrowgate House in the header, People and House Style in the
+  // panel, around a form asking them to sign in.
+  //
+  // It was never a leak: a signed-out visitor is served the page bare, which
+  // is what the layout's no-session branch is for. But Paul could not tell
+  // those two apart by looking, and neither could a customer. A page that
+  // cannot be distinguished from a leak costs what a leak costs.
+  //
+  // Fixing it here rather than in the layout keeps one rule in one place:
+  // middleware knows the path AND the session; the layout knows only the
+  // session. The condition belongs where both facts are.
+  if (isPublisherLogin && user) {
+    return NextResponse.redirect(new URL('/publisher', request.url))
   }
 
   // MKT-004 Ask 3: first-touch UTM capture.
