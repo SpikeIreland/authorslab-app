@@ -403,20 +403,64 @@ where d.kind = 'handoff' and r.n % 8 = 0;
 --   STATE 1  no cover            — every row not touched below. The majority.
 --   STATE 2  cover chosen and renderable — selected_cover_url is an http URL,
 --            so PublisherBookCover renders artwork.
---   STATE 3  cover EXISTS but this list cannot render it — needs a
---            `cover_assets` row, and `cover_assets.created_by` is NOT NULL
---            with an FK I have not read. SYSADMIN: that column is yours.
---            One row per state-3 title is all it needs; say what `created_by`
---            must point at and I will add the block.
+--   STATE 3  cover EXISTS but this list cannot render it — seeded in 2.5.
 --
 -- State 3 is the one that proves `hasCoverAsset` — the field that stops the
--- list saying "No cover yet" about a book whose cover exists. It is the most
--- valuable of the three and it is the one I will not guess at.
+-- list saying "No cover yet" about a book whose cover exists.
+--
+-- ANSWERED 2026-10-09. sysadmin: `cover_assets.created_by` points at
+-- `auth.users.id`, measured at covers/intake/route.ts:356, not inferred. I
+-- then read the constraints myself rather than take the one answer and run:
+--
+--   created_by               FK -> auth.users(id)
+--   kind                     CHECK IN ('generated','uploaded')
+--   origin                   CHECK IN ('generated','supplied')
+--   supplied_has_supplier    CHECK origin='generated' OR supplied_by_label IS NOT NULL
+--   manuscript_id            FK -> manuscripts(id) ON DELETE CASCADE
+--
+-- Two consequences worth stating. The fixture uses origin='generated', which
+-- is the only value that does not oblige a supplier label — a 'supplied' row
+-- would need a supplier this fixture does not have, and inventing one would
+-- put a name on an artwork provenance record. And the CASCADE means STEP 4's
+-- rollback already removes these rows with their titles: no second delete,
+-- and no orphan if someone runs only the first statement.
 insert into publishing_progress (manuscript_id, selected_cover_url)
 select r.id,
        concat('https://images.authorslab.ai/fixture/', r.n % 6, '.jpg')
 from _w4_rows r
 where r.n % 9 = 0;
+
+-- ── 2.5 · COVER STATE 3 — a cover that exists and cannot be shown here ─────
+-- `ux` amendment 3's third state, and the most valuable of the three.
+--
+-- `created_by` is resolved BY PROPERTY from a fixture author's own
+-- `auth_user_id` — no uuid literal, consistent with the id guard that governs
+-- this whole file. `rights_confirmed` is left NULL ON PURPOSE on half of
+-- them: sysadmin measured NULL on all four of Veil's real concepts and ruled
+-- that the Design tab must read "not recorded" rather than omit the field,
+-- because a publishing house asks about artwork rights first and an omission
+-- reads as an answer. A fixture that only produced `true` would never put
+-- that path under load.
+--
+-- storage_path points at a path that does not exist, deliberately: this state
+-- is about a row EXISTING, not about an image resolving, and the list signs
+-- nothing. If a future surface tries to sign these it will fail loudly, which
+-- is the correct way for a fixture to be wrong.
+insert into cover_assets
+  (manuscript_id, kind, origin, storage_path, created_by, rights_confirmed)
+select r.id,
+       'generated',
+       'generated',
+       concat('fixture/no-such-object/', r.id, '.png'),
+       ap.auth_user_id,
+       case when r.n % 2 = 0 then true else null end
+from _w4_rows r
+join manuscripts m on m.id = r.id
+join author_profiles ap on ap.id = m.author_id
+-- Rows 12, 24, 36 ... — a different slice from the 2.3 selection (n % 9) so
+-- some titles land in state 2, some in state 3, and a few in BOTH, which is
+-- the combination the list has to disambiguate.
+where r.n % 12 = 0;
 
 -- ── 2.4 · Three series, shaped against title-grouping (ux amendment 2) ─────
 -- The amendment's point: a series must not be inferable from titles that look
@@ -499,8 +543,16 @@ union all select 'with a publication date',
 union all select 'with a selected cover (state 2)',
   (select count(*)::text from publishing_progress p
     where p.selected_cover_url is not null and p.manuscript_id in (select id from r))
-union all select 'cover state 3 (EXPECTED 0 — needs sysadmin, see 2.3)',
+union all select 'cover state 3 — cover_assets rows (seeded in 2.5)',
   (select count(*)::text from cover_assets c where c.manuscript_id in (select id from r))
+union all select '  of which rights_confirmed is NULL (reads "not recorded")',
+  (select count(*)::text from cover_assets c where c.rights_confirmed is null
+     and c.manuscript_id in (select id from r))
+union all select 'titles in BOTH state 2 and state 3',
+  (select count(*)::text from r
+    where exists (select 1 from publishing_progress p
+                   where p.manuscript_id = r.id and p.selected_cover_url is not null)
+      and exists (select 1 from cover_assets c where c.manuscript_id = r.id))
 union all select 'complete phases marked system',
   (select count(*)::text from editing_phases p where p.phase_status='complete'
      and p.completion_source='system' and p.manuscript_id in (select id from r))
@@ -544,8 +596,9 @@ union all select 'REAL titles flagged demo anywhere (MUST be 0)',
 -- imprint), the nine earlier fixtures (no imprint), or the twelve real
 -- customer titles (no imprint, not demo).
 --
--- Run only if the fixture is being withdrawn. Phases, dates, covers and
--- series members go with their titles by FK; series shells are named.
+-- Run only if the fixture is being withdrawn. Phases, dates, cover assets and
+-- series members go with their titles by FK (cover_assets is ON DELETE
+-- CASCADE, verified 2026-10-09); only the series shells are named.
 -- ════════════════════════════════════════════════════════════════════════════
 --
 -- delete from manuscripts m
