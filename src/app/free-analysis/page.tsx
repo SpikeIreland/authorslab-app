@@ -7,6 +7,8 @@ import { N8N_WEBHOOKS } from '@/lib/n8n-config'
 import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { MarketingFooter } from '@/components/marketing/MarketingFooter'
 import { trackEvent } from '@/lib/analytics'
+import { Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 
 // -----------------------------------------------------------------------------
 // TEMPORARY GATE — free-analysis retrofit in progress (MKT-005 / MKT-006).
@@ -19,7 +21,35 @@ import { trackEvent } from '@/lib/analytics'
 const FREE_ANALYSIS_ACTIVE = false
 
 export default function FreeAnalysisPage() {
-  if (!FREE_ANALYSIS_ACTIVE) {
+  return (
+    <Suspense fallback={<FreeAnalysisComingSoon />}>
+      <FreeAnalysisGate />
+    </Suspense>
+  )
+}
+
+/**
+ * THE PREVIEW DOOR.
+ *
+ * The gate above has been false since the ad ran, and it must stay false until
+ * an end-to-end run has succeeded. But the smoke test that would prove it
+ * cannot be run against a page nobody can reach, and testing a reimplementation
+ * of the form proves something about the reimplementation.
+ *
+ *   A path that has never been exercised in production is not known to work,
+ *   however carefully each of its parts was built.
+ *
+ * So `?preview=1` renders the real form, on the real deployment, posting to the
+ * real webhook. Everyone else still gets "opening this week", unchanged.
+ *
+ * This is deliberately NOT a secret and NOT a security boundary — it hides a
+ * form from casual traffic, nothing more. It comes out in the same commit that
+ * flips FREE_ANALYSIS_ACTIVE to true, and that removal is the definition of
+ * this being finished.
+ */
+function FreeAnalysisGate() {
+  const preview = useSearchParams().get('preview') === '1'
+  if (!FREE_ANALYSIS_ACTIVE && !preview) {
     return <FreeAnalysisComingSoon />
   }
   return <FreeAnalysisForm />
