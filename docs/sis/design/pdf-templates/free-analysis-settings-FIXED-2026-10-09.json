@@ -1,0 +1,36 @@
+{
+  "_comment": "FREE-ANALYSIS TEMPLATE · corrected header/footer. Paste header_html and footer_html into the template's Settings tab in APITemplate, replacing what is there. Also change margin_bottom. Nothing else needs touching.",
+
+  "_what_was_wrong": [
+    "The header was a <div> with display:flex, justify-content:space-between and padding:0 18mm.",
+    "Chrome's PDF header/footer renders in a constrained print context that IGNORES padding, display:flex and text-align on a bare <div>. So the padding vanished, the flex collapsed, and the two spans concatenated against the page edge — 'AuthorsLabManuscript Assessment'.",
+    "A <table> IS honoured where a <div> is not. This was found on the Alex template on 2026-10-02, fixed there, and written up in docs/n8n/APITEMPLATE-MIGRATION-STATUS-2026-10-01.md with the warning that 'the other six almost certainly carry it'. They did. This is one of them.",
+    "A fix recorded in a document and not applied to the artefacts is not a fix. It is a note."
+  ],
+
+  "paper_size": "A4",
+  "orientation": "portrait",
+  "margin_top": "22mm",
+  "margin_bottom": "26mm",
+  "margin_left": "18mm",
+  "margin_right": "18mm",
+  "display_header_footer": true,
+
+  "_margin_bottom_note": "18mm → 26mm. The footer is two rows and did not have the vertical space; the same fault on the Alex template overlapped the page number with the body panel. Reserve height in proportion to the number of rows.",
+
+  "header_html": "<style>#header{padding:0 !important;margin:0 !important;}</style><table style=\"width:100%;border-collapse:collapse;font-family:Georgia,serif;font-size:8pt;color:#8A857C;\"><tr><td style=\"padding:10px 0 5px 18mm;text-align:left;border-bottom:1px solid #8FAF8A;\"><span style=\"display:inline-block;width:8px;height:8px;border-radius:2px;background:#5C7A6B;margin-right:6px;\"></span>AuthorsLab</td><td style=\"padding:10px 18mm 5px 0;text-align:right;border-bottom:1px solid #8FAF8A;font-family:-apple-system,'Segoe UI',sans-serif;font-size:7pt;letter-spacing:0.12em;text-transform:uppercase;\">Manuscript Assessment</td></tr></table>",
+
+  "footer_html": "<style>#footer{padding:0 !important;margin:0 !important;}</style><table style=\"width:100%;border-collapse:collapse;font-family:-apple-system,'Segoe UI',sans-serif;color:#B5AFA4;\"><tr><td style=\"padding:6px 18mm 0 18mm;text-align:center;font-size:7pt;\">Page <span class=\"pageNumber\"></span> of <span class=\"totalPages\"></span> &nbsp;&middot;&nbsp; <a style=\"color:#5C7A6B;text-decoration:none;font-weight:600;\" href=\"https://authorslab.ai/pricing?utm_source=pdf&utm_medium=report&utm_campaign=free-analysis&utm_content=footer\">Continue the journey &rarr; authorslab.ai/pricing</a></td></tr><tr><td style=\"padding:2px 18mm 6px 18mm;text-align:center;font-size:6.5pt;\">&copy; 2026 AuthorsLab &middot; a Spike Island Studios company &middot; authorslab.ai</td></tr></table>",
+
+  "_changes": [
+    "div → table in both. The only change that matters.",
+    "Side padding 18mm on the outer cells, matching margin_left/margin_right so header, body and footer align on the same vertical.",
+    "The border-bottom moved onto the cells; on a table it must sit on the cells, not the wrapper.",
+    "#header / #footer padding reset — APITemplate's own wrapper adds padding that shifts the table.",
+    "{{manuscriptId}} REMOVED from the footer. It rendered as the literal string in the PDF Paul received, because the free-analysis payload has no manuscriptId — a free analysis creates no manuscript record. A token with nothing behind it is a placeholder on a customer's document."
+  ],
+
+  "_still_wrong_elsewhere_and_not_fixed_here": [
+    "The cover says '≈1170 words · read in full'. That is the word count of ALEX'S ANALYSIS, not of the manuscript — Code5 sets totalWordCount from analysisText.split(/\\s+/).length. The Veil and the Flame is 47,291 words. The report currently tells an author how long our assessment is while appearing to tell them how long their book is. Same family as the file.size/6 fabrication fixed on the page today: a number that is real, correctly computed, and measuring the wrong thing. Fix belongs in the workflow, not the template."
+  ]
+}
