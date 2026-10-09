@@ -55,6 +55,13 @@ import {
 } from '@/lib/supabase/helpers'
 
 import { EDITOR_CONFIG, ISSUE_CATEGORIES_BY_PHASE } from '@/types/database'
+import {
+  getEditorColorClasses,
+  getCategoryColor,
+  getSeverityIcon,
+  getSeverityLabel,
+  getSeverityColor,
+} from '@/lib/studio/issueVocabulary'
 
 // AL-UX-007: highlight re-tinted from Tailwind amber to Manuscript Room warm amber
 const highlightStyles = `
@@ -169,127 +176,14 @@ function highlightTextInEditor(quotedText: string, editorRef: HTMLElement | null
 // AL-UX-007: DB keys unchanged; values now point at the CVD-validated persona
 // quintet tokens defined in globals.css @theme. Identity ≠ state — the sage
 // state grammar is never used for persona identity, and vice versa.
-function getEditorColorClasses(color: string) {
-  const colorMap = {
-    green: {  // Alex
-      bg: 'bg-alex',
-      bgHover: 'hover:bg-alex-text',
-      bgLight: 'bg-alex-light',
-      text: 'text-alex-text',
-      border: 'border-alex',
-      borderLight: 'border-alex/40',
-      borderColor: 'border-alex/25',
-      ring: 'focus:ring-alex',
-    },
-    purple: {  // Sam
-      bg: 'bg-sam',
-      bgHover: 'hover:bg-sam-text',
-      bgLight: 'bg-sam-light',
-      text: 'text-sam-text',
-      border: 'border-sam',
-      borderLight: 'border-sam/40',
-      borderColor: 'border-sam/25',
-      ring: 'focus:ring-sam',
-    },
-    blue: {  // Jordan
-      bg: 'bg-jordan',
-      bgHover: 'hover:bg-jordan-text',
-      bgLight: 'bg-jordan-light',
-      text: 'text-jordan-text',
-      border: 'border-jordan',
-      borderLight: 'border-jordan/40',
-      borderColor: 'border-jordan/25',
-      ring: 'focus:ring-jordan',
-    },
-    teal: {  // Taylor
-      bg: 'bg-taylor',
-      bgHover: 'hover:bg-taylor-text',
-      bgLight: 'bg-taylor-light',
-      text: 'text-taylor-text',
-      border: 'border-taylor',
-      borderLight: 'border-taylor/40',
-      borderColor: 'border-taylor/25',
-      ring: 'focus:ring-taylor',
-    },
-    orange: {  // Riley
-      bg: 'bg-riley',
-      bgHover: 'hover:bg-riley-text',
-      bgLight: 'bg-riley-light',
-      text: 'text-riley-text',
-      border: 'border-riley',
-      borderLight: 'border-riley/40',
-      borderColor: 'border-riley/25',
-      ring: 'focus:ring-riley',
-    },
-  }
-  return colorMap[color as keyof typeof colorMap] || colorMap.green
-}
 
 // Helper function to get category color classes
-function getCategoryColor(category: string): string {
-  const colors: Record<string, string> = {
-    // Phase 1 (Alex)
-    'character': 'bg-alex-light text-alex-text',
-    'plot': 'bg-alex-light text-alex-text',
-    'pacing': 'bg-alex-light text-alex-text',
-    'structure': 'bg-alex-light text-alex-text',
-    'theme': 'bg-alex-light text-alex-text',
-    // Phase 2 (Sam)
-    'word_choice': 'bg-sam-light text-sam-text',
-    'sentence_flow': 'bg-sam-light text-sam-text',
-    'dialogue': 'bg-sam-light text-sam-text',
-    'voice': 'bg-sam-light text-sam-text',
-    'clarity': 'bg-sam-light text-sam-text',
-    // Phase 3 (Jordan)
-    'grammar': 'bg-jordan-light text-jordan-text',
-    'punctuation': 'bg-jordan-light text-jordan-text',
-    'consistency': 'bg-jordan-light text-jordan-text',
-    'formatting': 'bg-jordan-light text-jordan-text',
-  }
-  return colors[category] || 'bg-line-soft text-muted'
-}
 
 // Severity display helpers
 // AL-UX-007: emoji circles replaced by a plain dot — the surrounding span
 // already carries getSeverityColor, so the dot inherits the status colour.
-function getSeverityIcon(severity: string): string {
-  const icons: Record<string, string> = {
-    'low': '●',
-    'medium': '●',
-    'high': '●',
-    // Backward compatibility for old values
-    'minor': '●',
-    'moderate': '●',
-    'major': '●',
-  }
-  return icons[severity] || '○'
-}
 
-function getSeverityLabel(severity: string): string {
-  const labels: Record<string, string> = {
-    'low': 'Low Priority',
-    'medium': 'Medium Priority',
-    'high': 'High Priority',
-    // Backward compatibility
-    'minor': 'Low Priority',
-    'moderate': 'Medium Priority',
-    'major': 'High Priority',
-  }
-  return labels[severity] || severity
-}
 
-function getSeverityColor(severity: string): string {
-  const colors: Record<string, string> = {
-    'low': 'text-status-ok',
-    'medium': 'text-status-warn',
-    'high': 'text-status-high',
-    // Backward compatibility
-    'minor': 'text-status-ok',
-    'moderate': 'text-status-warn',
-    'major': 'text-status-high',
-  }
-  return colors[severity] || 'text-muted'
-}
 
 const WEBHOOKS = {
   alexFullAnalysis: N8N_WEBHOOKS.alexFullManuscriptAnalysis,
