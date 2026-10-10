@@ -8,17 +8,32 @@ import { MarketingNav } from '@/components/marketing/MarketingNav'
 import { MarketingFooter } from '@/components/marketing/MarketingFooter'
 import { trackEvent } from '@/lib/analytics'
 import { Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
 
 // -----------------------------------------------------------------------------
-// TEMPORARY GATE — free-analysis retrofit in progress (MKT-005 / MKT-006).
-// While false, the page shows an "opening this week" state instead of the form,
-// so ad traffic from Marketing's trial ad doesn't hit a form that would error.
-// Flip to `true` once the n8n workflow retrofit + content swaps + brand mailbox
-// + APITemplate.io template swap all land, and the smoke test passes.
-// See: docs/sis/platform-dev/2026-07-30-R1-mvp-launch-checklist.md §6
+// OPEN. Paul, 2026-10-10.
+//
+// The gate went up in August so a marketing ad would not land traffic on a form
+// mid-retrofit. It stayed up long after the retrofit finished, because nobody
+// — me included — said out loud that it was waiting on a DECISION rather than
+// on work. Paul asked twice whether the free analysis was resolved while every
+// piece behind this constant was already done.
+//
+//   A switch nobody owns is not a safeguard. It is a thing that gets left.
+//
+// What had to be true before it opened, and now is:
+//   · 00.04 completes end to end (first ever successful run, 9 Oct, after four
+//     stacked faults: crypto global, orphan journey FK, inverted extract
+//     routing, and a failure reported as success).
+//   · The form is on the brand's token set.
+//   · The confirmation offers an account rather than "Return to Home".
+//   · The word count is the manuscript's, not the assessment's.
+//
+// NOT yet verified, and accepted as the cost of opening today: the APITemplate
+// header/footer alignment and the corrected word count have not been seen in a
+// rendered report. Worst case is a left-shifted header on a PDF, which is
+// visible, recoverable, and a smaller cost than another week shut.
 // -----------------------------------------------------------------------------
-const FREE_ANALYSIS_ACTIVE = false
+const FREE_ANALYSIS_ACTIVE = true
 
 export default function FreeAnalysisPage() {
   return (
@@ -29,27 +44,20 @@ export default function FreeAnalysisPage() {
 }
 
 /**
- * THE PREVIEW DOOR.
+ * The preview door is gone.
  *
- * The gate above has been false since the ad ran, and it must stay false until
- * an end-to-end run has succeeded. But the smoke test that would prove it
- * cannot be run against a page nobody can reach, and testing a reimplementation
- * of the form proves something about the reimplementation.
+ * `?preview=1` existed so the smoke test could run against the real form, on
+ * the real deployment, posting to the real webhook, while the page stayed shut
+ * to everyone else. It did its job: four faults that no amount of reading had
+ * found turned up in two runs through it.
  *
- *   A path that has never been exercised in production is not known to work,
- *   however carefully each of its parts was built.
- *
- * So `?preview=1` renders the real form, on the real deployment, posting to the
- * real webhook. Everyone else still gets "opening this week", unchanged.
- *
- * This is deliberately NOT a secret and NOT a security boundary — it hides a
- * form from casual traffic, nothing more. It comes out in the same commit that
- * flips FREE_ANALYSIS_ACTIVE to true, and that removal is the definition of
- * this being finished.
+ * It was always going to be deleted in the commit that opened the gate, and
+ * that deletion is what makes this finished rather than merely switched on.
+ * FreeAnalysisComingSoon is kept — a gate that cannot be closed again is not a
+ * gate, and the next retrofit will want it.
  */
 function FreeAnalysisGate() {
-  const preview = useSearchParams().get('preview') === '1'
-  if (!FREE_ANALYSIS_ACTIVE && !preview) {
+  if (!FREE_ANALYSIS_ACTIVE) {
     return <FreeAnalysisComingSoon />
   }
   return <FreeAnalysisForm />
@@ -329,10 +337,10 @@ function FreeAnalysisForm() {
         throw new Error(`Submission failed (${response.status})`)
       }
 
-      // MKT-004 Ask 3: fire free_analysis_submitted once webhook accepts the
-      // submission. (Free-analysis form is currently gated behind
-      // FREE_ANALYSIS_ACTIVE = false; this is instrumented for when the gate
-      // flips.)
+      // MKT-004 Ask 3: fire free_analysis_submitted once the webhook accepts
+      // the submission. Live from 2026-10-10 — the gate is open, so this is
+      // now a real attribution signal rather than instrumentation waiting on
+      // one. `marketing` should expect the first events today.
       trackEvent('free_analysis_submitted', {
         wordCount: Number(wordCount) || 0,
         fileSizeBytes: file.size,
